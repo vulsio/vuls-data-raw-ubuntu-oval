@@ -1,0 +1,47 @@
+{
+  "class": "vulnerability",
+  "id": "oval:com.ubuntu.jammy:def:202220530000000",
+  "version": "1",
+  "metadata": {
+    "Title": "CVE-2022-2053 on Ubuntu 22.04 LTS (jammy) - medium.",
+    "Description": "When a POST request comes through AJP and the request exceeds the max-post-size limit (maxEntitySize), Undertow's AjpServerRequestConduit implementation closes a connection without sending any response to the client/proxy. This behavior results in that a front-end proxy marking the backend worker (application server) as an error state and not forward requests to the worker for a while. In mod_cluster, this continues until the next STATUS request (10 seconds intervals) from the application server updates the server state. So, in the worst case, it can result in \"All workers are in error state\" and mod_cluster responds \"503 Service Unavailable\" for a while (up to 10 seconds). In mod_proxy_balancer, it does not forward requests to the worker until the \"retry\" timeout passes. However, luckily, mod_proxy_balancer has \"forcerecovery\" setting (On by default; this parameter can force the immediate recovery of all workers without considering the retry parameter of the workers if all workers of a balancer are in error state.). So, unlike mod_cluster, mod_proxy_balancer does not result in responding \"503 Service Unavailable\". An attacker could use this behavior to send a malicious request and trigger server errors, resulting in DoS (denial of service). This flaw was fixed in Undertow 2.2.19.Final, Undertow 2.3.0.Alpha2.",
+    "affected": {
+      "family": "unix",
+      "Platform": "Ubuntu 22.04 LTS"
+    },
+    "reference": {
+      "source": "CVE",
+      "ref_id": "CVE-2022-2053",
+      "ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2053"
+    },
+    "advisory": {
+      "Severity": "Medium",
+      "Rights": "Copyright (C) 2022 Canonical Ltd.",
+      "PublicDate": "2022-08-05 16:15:00 UTC",
+      "Bug": null,
+      "cve": {
+        "text": "CVE-2022-2053",
+        "href": "https://ubuntu.com/security/CVE-2022-2053",
+        "public": "20220805",
+        "cvss_score": "7.5",
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "PublicDateAtUsn": "",
+      "AssignedTo": "",
+      "DiscoveredBy": "",
+      "Crd": "",
+      "Ref": null
+    }
+  },
+  "notes": {
+    "Note": ""
+  },
+  "criteria": {
+    "criterions": [
+      {
+        "test_ref": "oval:com.ubuntu.jammy:tst:201810470000000",
+        "comment": "undertow package in jammy is affected and may need fixing."
+      }
+    ]
+  }
+}

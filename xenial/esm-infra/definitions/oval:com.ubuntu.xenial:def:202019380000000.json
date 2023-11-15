@@ -1,0 +1,62 @@
+{
+  "class": "vulnerability",
+  "id": "oval:com.ubuntu.xenial:def:202019380000000",
+  "version": "1",
+  "metadata": {
+    "Title": "CVE-2020-1938 on Ubuntu 16.04 ESM (xenial) - low.",
+    "Description": "When using the Apache JServ Protocol (AJP), care must be taken when trusting incoming connections to Apache Tomcat. Tomcat treats AJP connections as having higher trust than, for example, a similar HTTP connection. If such connections are available to an attacker, they can be exploited in ways that may be surprising. In Apache Tomcat 9.0.0.M1 to 9.0.0.30, 8.5.0 to 8.5.50 and 7.0.0 to 7.0.99, Tomcat shipped with an AJP Connector enabled by default that listened on all configured IP addresses. It was expected (and recommended in the security guide) that this Connector would be disabled if not required. This vulnerability report identified a mechanism that allowed: - returning arbitrary files from anywhere in the web application - processing any file in the web application as a JSP Further, if the web application allowed file upload and stored those files within the web application (or the attacker was able to control the content of the web application by some other means) then this, along with the ability to process a file as a JSP, made remote code execution possible. It is important to note that mitigation is only required if an AJP port is accessible to untrusted users. Users wishing to take a defence-in-depth approach and block the vector that permits returning arbitrary files and execution as JSP may upgrade to Apache Tomcat 9.0.31, 8.5.51 or 7.0.100 or later. A number of changes were made to the default AJP Connector configuration in 9.0.31 to harden the default configuration. It is likely that users upgrading to 9.0.31, 8.5.51 or 7.0.100 or later will need to make small changes to their configurations.",
+    "affected": {
+      "family": "unix",
+      "Platform": "Ubuntu 16.04 ESM"
+    },
+    "reference": {
+      "source": "CVE",
+      "ref_id": "CVE-2020-1938",
+      "ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-1938"
+    },
+    "advisory": {
+      "Severity": "Low",
+      "Rights": "Copyright (C) 2020 Canonical Ltd.",
+      "PublicDate": "2020-02-24 22:15:00 UTC",
+      "Bug": [
+        "http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=952437",
+        "http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=952438",
+        "http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=952436",
+        "https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=959747 (apache support)",
+        "https://bugs.launchpad.net/bugs/1865904"
+      ],
+      "cve": {
+        "text": "CVE-2020-1938",
+        "href": "https://ubuntu.com/security/CVE-2020-1938",
+        "public": "20200224",
+        "cvss_score": "9.8",
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      "PublicDateAtUsn": "",
+      "AssignedTo": "",
+      "DiscoveredBy": "",
+      "Crd": "",
+      "Ref": null
+    }
+  },
+  "notes": {
+    "Note": "mdeslaur> In Ubuntu packages, the AJP connector is disabled by default, so unless specifically enabled by an admin, deployments made using the package are not vulnerable to this issue.  One of the upstream fixes for this issue renames the requiredSecret parameter to secret and adds a secretRequired parameter that defaults to \"true\". Adding this change to stable releases will result in servers failing to start until the administrator either changes secretRequired to \"false\", or configures an adequate secret. Apache starting supporting a secret in mod_proxy_ajp starting with 2.4.42, which means to enable a secret we will have to issue Apache updates with the backported secret support."
+  },
+  "criteria": {
+    "criterias": [
+      {
+        "operator": "OR",
+        "criterions": [
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201653880000010",
+            "comment": "tomcat7: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support, was needed')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:202019380000010",
+            "comment": "tomcat8 package in xenial is affected and needs fixing."
+          }
+        ]
+      }
+    ]
+  }
+}

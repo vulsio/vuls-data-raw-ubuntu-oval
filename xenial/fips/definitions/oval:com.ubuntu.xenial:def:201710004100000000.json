@@ -1,0 +1,141 @@
+{
+  "class": "vulnerability",
+  "id": "oval:com.ubuntu.xenial:def:201710004100000000",
+  "version": "1",
+  "metadata": {
+    "Title": "CVE-2017-1000410 on Ubuntu 16.04 FIPS Certified (xenial) - low.",
+    "Description": "The Linux kernel version 3.3-rc1 and later is affected by a vulnerability lies in the processing of incoming L2CAP commands - ConfigRequest, and ConfigResponse messages. This info leak is a result of uninitialized stack variables that may be returned to an attacker in their uninitialized state. By manipulating the code flows that precede the handling of these configuration messages, an attacker can also gain some control over which data will be held in the uninitialized stack variables. This can allow him to bypass KASLR, and stack canaries protection - as both pointers and stack canaries may be leaked in this manner. Combining this vulnerability (for example) with the previously disclosed RCE vulnerability in L2CAP configuration parsing (CVE-2017-1000251) may allow an attacker to exploit the RCE against kernels which were built with the above mitigations. These are the specifics of this vulnerability: In the function l2cap_parse_conf_rsp and in the function l2cap_parse_conf_req the following variable is declared without initialization: struct l2cap_conf_efs efs; In addition, when parsing input configuration parameters in both of these functions, the switch case for handling EFS elements may skip the memcpy call that will write to the efs variable: ... case L2CAP_CONF_EFS: if (olen == sizeof(efs)) memcpy(&efs, (void *)val, olen); ... The olen in the above if is attacker controlled, and regardless of that if, in both of these functions the efs variable would eventually be added to the outgoing configuration request that is being built: l2cap_add_conf_opt(&ptr, L2CAP_CONF_EFS, sizeof(efs), (unsigned long) &efs); So by sending a configuration request, or response, that contains an L2CAP_CONF_EFS element, but with an element length that is not sizeof(efs) - the memcpy to the uninitialized efs variable can be avoided, and the uninitialized variable would be returned to the attacker (16 bytes). It was discovered that an information leak vulnerability existed in the Bluetooth implementation of the Linux kernel. An attacker within Bluetooth range could possibly expose sensitive information (kernel memory).\n\nUpdate Instructions:\n\nRun `sudo pro fix CVE-2017-1000410` to fix the vulnerability. The problem can be corrected\nby updating your system to the following package versions:\n\nlinux-image-4.4.0-119-generic - 4.4.0-119.143\nlinux-image-4.4.0-119-generic-lpae - 4.4.0-119.143\nlinux-image-4.4.0-119-lowlatency - 4.4.0-119.143\nlinux-image-4.4.0-119-powerpc-e500mc - 4.4.0-119.143\nlinux-image-4.4.0-119-powerpc-smp - 4.4.0-119.143\nlinux-image-4.4.0-119-powerpc64-emb - 4.4.0-119.143\nlinux-image-4.4.0-119-powerpc64-smp - 4.4.0-119.143\nlinux-image-extra-4.4.0-119-generic - 4.4.0-119.143\nNo subscription required\n\nlinux-image-4.4.0-1054-aws - 4.4.0-1054.63\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1013-azure - 4.15.0-1013.13~16.04.2\nNo subscription required\n\nlinux-image-4.15.0-1014-gcp - 4.15.0-1014.14~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1031-gke - 4.4.0-1031.31\nlinux-image-extra-4.4.0-1031-gke - 4.4.0-1031.31\nNo subscription required\n\nlinux-image-4.15.0-24-generic - 4.15.0-24.26~16.04.1\nlinux-image-4.15.0-24-generic-lpae - 4.15.0-24.26~16.04.1\nlinux-image-4.15.0-24-lowlatency - 4.15.0-24.26~16.04.1\nlinux-image-unsigned-4.15.0-24-generic - 4.15.0-24.26~16.04.1\nlinux-image-unsigned-4.15.0-24-lowlatency - 4.15.0-24.26~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1020-kvm - 4.4.0-1020.25\nNo subscription required\n\nlinux-image-4.13.0-1008-oem - 4.13.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1086-raspi2 - 4.4.0-1086.94\nNo subscription required\n\nlinux-image-4.4.0-119-generic - 4.4.0-119.143\nlinux-image-4.4.0-119-generic-lpae - 4.4.0-119.143\nlinux-image-4.4.0-119-lowlatency - 4.4.0-119.143\nlinux-image-4.4.0-119-powerpc-e500mc - 4.4.0-119.143\nlinux-image-4.4.0-119-powerpc-smp - 4.4.0-119.143\nlinux-image-4.4.0-119-powerpc64-emb - 4.4.0-119.143\nlinux-image-4.4.0-119-powerpc64-smp - 4.4.0-119.143\nlinux-image-extra-4.4.0-119-generic - 4.4.0-119.143\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1013-azure - 4.15.0-1013.13~16.04.2\nNo subscription required\n\nlinux-image-4.15.0-1014-gcp - 4.15.0-1014.14~16.04.1\nNo subscription required\n\nlinux-image-4.15.0-24-generic - 4.15.0-24.26~16.04.1\nlinux-image-4.15.0-24-generic-lpae - 4.15.0-24.26~16.04.1\nlinux-image-4.15.0-24-lowlatency - 4.15.0-24.26~16.04.1\nlinux-image-unsigned-4.15.0-24-generic - 4.15.0-24.26~16.04.1\nlinux-image-unsigned-4.15.0-24-lowlatency - 4.15.0-24.26~16.04.1\nNo subscription required\n\nlinux-image-4.13.0-1008-oem - 4.13.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1088-snapdragon - 4.4.0-1088.93\nNo subscription required",
+    "affected": {
+      "family": "unix",
+      "Platform": "Ubuntu 16.04 FIPS Certified"
+    },
+    "reference": {
+      "source": "CVE",
+      "ref_id": "CVE-2017-1000410",
+      "ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-1000410"
+    },
+    "advisory": {
+      "Severity": "Low",
+      "Rights": "Copyright (C) 2017 Canonical Ltd.",
+      "PublicDate": "2017-12-07",
+      "Bug": null,
+      "cve": {
+        "text": "CVE-2017-1000410",
+        "href": "https://ubuntu.com/security/CVE-2017-1000410",
+        "public": "20171207",
+        "cvss_score": "7.5",
+        "cvss_vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "usns": "3933-1,3933-2"
+      },
+      "PublicDateAtUsn": "2017-12-07",
+      "AssignedTo": "",
+      "DiscoveredBy": "",
+      "Crd": "",
+      "Ref": null
+    }
+  },
+  "notes": {
+    "Note": ""
+  },
+  "criteria": {
+    "criterias": [
+      {
+        "operator": "OR",
+        "criterions": [
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201708610000000",
+            "comment": "linux package in xenial was vulnerable but has been fixed (note: '4.4.0-119.143')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201708610000010",
+            "comment": "linux-aws package in xenial was vulnerable but has been fixed (note: '4.4.0-1054.63')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:2017109110000020",
+            "comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201710004100000030",
+            "comment": "linux-azure package in xenial was vulnerable but has been fixed (note: '4.15.0-1013.13~16.04.2')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+            "comment": "linux-euclid: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support, was needs-triage')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+            "comment": "linux-flo: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201710004100000060",
+            "comment": "linux-gcp package in xenial was vulnerable but has been fixed (note: '4.15.0-1014.14~16.04.1')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201710002510000060",
+            "comment": "linux-gke package in xenial was vulnerable but has been fixed (note: '4.4.0-1031.31')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+            "comment": "linux-goldfish: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support, was needed')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201710004100000090",
+            "comment": "linux-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-24.26~16.04.1')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201708610000090",
+            "comment": "linux-kvm package in xenial was vulnerable but has been fixed (note: '4.4.0-1020.25')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201245420000110",
+            "comment": "linux-mako: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:2017109110000130",
+            "comment": "linux-oem package in xenial, is related to the CVE in some way and has been fixed (note: '4.13.0-1008.9')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:2017109110000140",
+            "comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201708610000120",
+            "comment": "linux-raspi2 package in xenial was vulnerable but has been fixed (note: '4.4.0-1086.94')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201708610000130",
+            "comment": "linux-signed package in xenial was vulnerable but has been fixed (note: '4.4.0-119.143')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:2017109110000170",
+            "comment": "linux-signed-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201710004100000170",
+            "comment": "linux-signed-azure package in xenial was vulnerable but has been fixed (note: '4.15.0-1013.13~16.04.2')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201710004100000180",
+            "comment": "linux-signed-gcp package in xenial was vulnerable but has been fixed (note: '4.15.0-1014.14~16.04.1')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201710004100000190",
+            "comment": "linux-signed-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-24.26~16.04.1')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:2017109110000210",
+            "comment": "linux-signed-oem package in xenial, is related to the CVE in some way and has been fixed (note: '4.13.0-1008.9')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:2017109110000220",
+            "comment": "linux-signed-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+          },
+          {
+            "test_ref": "oval:com.ubuntu.xenial:tst:201708610000180",
+            "comment": "linux-snapdragon package in xenial was vulnerable but has been fixed (note: '4.4.0-1088.93')."
+          }
+        ]
+      }
+    ]
+  }
+}

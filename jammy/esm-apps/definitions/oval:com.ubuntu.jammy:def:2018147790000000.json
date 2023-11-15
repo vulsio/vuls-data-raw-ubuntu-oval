@@ -1,0 +1,50 @@
+{
+  "class": "vulnerability",
+  "id": "oval:com.ubuntu.jammy:def:2018147790000000",
+  "version": "1",
+  "metadata": {
+    "Title": "CVE-2018-14779 on Ubuntu 22.04 ESM (jammy) - high.",
+    "Description": "A buffer overflow issue was discovered in the Yubico-Piv 1.5.0 smartcard driver. The file lib/ykpiv.c contains the following code in the function `ykpiv_transfer_data()`: {% highlight c %} if(*out_len + recv_len - 2 > max_out) { fprintf(stderr, \"Output buffer to small, wanted to write %lu, max was %lu.\", *out_len + recv_len - 2, max_out); } if(out_data) { memcpy(out_data, data, recv_len - 2); out_data += recv_len - 2; *out_len += recv_len - 2; } {% endhighlight %} -- it is clearly checked whether the buffer is big enough to hold the data copied using `memcpy()`, but no error handling happens to avoid the `memcpy()` in such cases. This code path can be triggered with malicious data coming from a smartcard. It was discovered that libykpiv, a supporting library of the Yubico PIV tool and YubiKey PIV Manager, mishandled specially crafted input. An attacker with a custom-made, malicious USB device could potentially execute arbitrary code on a computer running the Yubico PIV Tool or Yubikey PIV Manager.\n\nUpdate Instructions:\n\nRun `sudo pro fix CVE-2018-14779` to fix the vulnerability. The problem can be corrected\nby updating your system to the following package versions:\n\nlibykpiv2 - 1.7.0-1\nykcs11 - 1.7.0-1\nyubico-piv-tool - 1.7.0-1\nNo subscription required",
+    "affected": {
+      "family": "unix",
+      "Platform": "Ubuntu 22.04 ESM"
+    },
+    "reference": {
+      "source": "CVE",
+      "ref_id": "CVE-2018-14779",
+      "ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-14779"
+    },
+    "advisory": {
+      "Severity": "High",
+      "Rights": "Copyright (C) 2018 Canonical Ltd.",
+      "PublicDate": "2018-08-15 18:29:00 UTC",
+      "Bug": [
+        "http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=906128"
+      ],
+      "cve": {
+        "text": "CVE-2018-14779",
+        "href": "https://ubuntu.com/security/CVE-2018-14779",
+        "public": "20180815",
+        "cvss_score": "6.8",
+        "cvss_vector": "CVSS:3.0/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "usns": "4276-1"
+      },
+      "PublicDateAtUsn": "2018-08-15 18:29:00 UTC",
+      "AssignedTo": "",
+      "DiscoveredBy": "",
+      "Crd": "",
+      "Ref": null
+    }
+  },
+  "notes": {
+    "Note": ""
+  },
+  "criteria": {
+    "criterions": [
+      {
+        "test_ref": "oval:com.ubuntu.jammy:tst:2018147790000000",
+        "comment": "yubico-piv-tool package in jammy, is related to the CVE in some way and has been fixed (note: '1.7.0-1')."
+      }
+    ]
+  }
+}
