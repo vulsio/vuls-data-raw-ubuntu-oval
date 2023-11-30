@@ -3,8 +3,8 @@
 	"id": "oval:com.ubuntu.xenial:def:2023344540000000",
 	"version": "1",
 	"metadata": {
-		"Title": "CVE-2023-34454 on Ubuntu 16.04 ESM (xenial) - medium.",
-		"Description": "snappy-java is a fast compressor/decompressor for Java. Due to unchecked multiplications, an integer overflow may occur in versions prior to 1.1.10.1, causing an unrecoverable fatal error. The function `compress(char[] input)` in the file `Snappy.java` receives an array of characters and compresses it. It does so by multiplying the length by 2 and passing it to the rawCompress` function. Since the length is not tested, the multiplication by two can cause an integer overflow and become negative. The rawCompress function then uses the received length and passes it to the natively compiled maxCompressedLength function, using the returned value to allocate a byte array. Since the maxCompressedLength function treats the length as an unsigned integer, it doesn’t care that it is negative, and it returns a valid value, which is casted to a signed integer by the Java engine. If the result is negative, a `java.lang.NegativeArraySizeException` exception will be raised while trying to allocate the array `buf`. On the other side, if the result is positive, the `buf` array will successfully be allocated, but its size might be too small to use for the compression, causing a fatal Access Violation error. The same issue exists also when using the `compress` functions that receive double, float, int, long and short, each using a different multiplier that may cause the same issue. The issue most likely won’t occur when using a byte array, since creating a byte array of size 0x80000000 (or any other negative value) is impossible in the first place. Version 1.1.10.1 contains a patch for this issue.",
+		"Title": "CVE-2023-34454 on Ubuntu 16.04 ESM (xenial) - medium",
+		"Description": "snappy-java is a fast compressor/decompressor for Java. Due to uncheckedmultiplications, an integer overflow may occur in versions prior to1.1.10.1, causing an unrecoverable fatal error. The function`compress(char[] input)` in the file `Snappy.java` receives an array ofcharacters and compresses it. It does so by multiplying the length by 2 andpassing it to the rawCompress` function. Since the length is not tested,the multiplication by two can cause an integer overflow and becomenegative. The rawCompress function then uses the received length and passesit to the natively compiled maxCompressedLength function, using thereturned value to allocate a byte array. Since the maxCompressedLengthfunction treats the length as an unsigned integer, it doesn’t care that itis negative, and it returns a valid value, which is casted to a signedinteger by the Java engine. If the result is negative, a`java.lang.NegativeArraySizeException` exception will be raised whiletrying to allocate the array `buf`. On the other side, if the result ispositive, the `buf` array will successfully be allocated, but its sizemight be too small to use for the compression, causing a fatal AccessViolation error. The same issue exists also when using the `compress`functions that receive double, float, int, long and short, each using adifferent multiplier that may cause the same issue. The issue most likelywon’t occur when using a byte array, since creating a byte array of size0x80000000 (or any other negative value) is impossible in the first place.Version 1.1.10.1 contains a patch for this issue.",
 		"affected": {
 			"family": "unix",
 			"Platform": "Ubuntu 16.04 ESM"
@@ -37,10 +37,15 @@
 		"Note": ""
 	},
 	"criteria": {
-		"criterions": [
+		"criterias": [
 			{
-				"test_ref": "oval:com.ubuntu.xenial:tst:2023344530000000",
-				"comment": "snappy-java package in xenial is affected and may need fixing."
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2023344530000000",
+						"comment": "snappy-java package in esm-apps/xenial is affected and may need fixing."
+					}
+				]
 			}
 		]
 	}
