@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"Title": "CVE-2023-0215 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"Description": "The public API function BIO_new_NDEF is a helper function used forstreaming ASN.1 data via a BIO. It is primarily used internally to OpenSSLto support the SMIME, CMS and PKCS7 streaming capabilities, but may also becalled directly by end user applications. The function receives a BIO fromthe caller, prepends a new BIO_f_asn1 filter BIO onto the front of it toform a BIO chain, and then returns the new head of the BIO chain to thecaller. Under certain conditions, for example if a CMS recipient public keyis invalid, the new filter BIO is freed and the function returns a NULLresult indicating a failure. However, in this case, the BIO chain is notproperly cleaned up and the BIO passed by the caller still retains internalpointers to the previously freed filter BIO. If the caller then goes on tocall BIO_pop() on the BIO then a use-after-free will occur. This will mostlikely result in a crash. This scenario occurs directly in the internalfunction B64_write_ASN1() which may cause BIO_new_NDEF() to be called andwill subsequently call BIO_pop() on the BIO. This internal function is inturn called by the public API functions PEM_write_bio_ASN1_stream,PEM_write_bio_CMS_stream, PEM_write_bio_PKCS7_stream, SMIME_write_ASN1,SMIME_write_CMS and SMIME_write_PKCS7. Other public API functions that maybe impacted by this include i2d_ASN1_bio_stream, BIO_new_CMS,BIO_new_PKCS7, i2d_CMS_bio_stream and i2d_PKCS7_bio_stream. The OpenSSL cmsand smime command line applications are similarly affected.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-0215` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlibssl1.1 - 1.1.1f-1ubuntu2.17\nopenssl - 1.1.1f-1ubuntu2.17\nNo subscription required",
+		"Description": "The public API function BIO_new_NDEF is a helper function used forstreaming ASN.1 data via a BIO. It is primarily used internally to OpenSSLto support the SMIME, CMS and PKCS7 streaming capabilities, but may also becalled directly by end user applications. The function receives a BIO fromthe caller, prepends a new BIO_f_asn1 filter BIO onto the front of it toform a BIO chain, and then returns the new head of the BIO chain to thecaller. Under certain conditions, for example if a CMS recipient public keyis invalid, the new filter BIO is freed and the function returns a NULLresult indicating a failure. However, in this case, the BIO chain is notproperly cleaned up and the BIO passed by the caller still retains internalpointers to the previously freed filter BIO. If the caller then goes on tocall BIO_pop() on the BIO then a use-after-free will occur. This will mostlikely result in a crash. This scenario occurs directly in the internalfunction B64_write_ASN1() which may cause BIO_new_NDEF() to be called andwill subsequently call BIO_pop() on the BIO. This internal function is inturn called by the public API functions PEM_write_bio_ASN1_stream,PEM_write_bio_CMS_stream, PEM_write_bio_PKCS7_stream, SMIME_write_ASN1,SMIME_write_CMS and SMIME_write_PKCS7. Other public API functions that maybe impacted by this include i2d_ASN1_bio_stream, BIO_new_CMS,BIO_new_PKCS7, i2d_CMS_bio_stream and i2d_PKCS7_bio_stream. The OpenSSL cmsand smime command line applications are similarly affected.",
 		"affected": {
 			"family": "unix",
 			"Platform": "Ubuntu 20.04 FIPS Certified"
@@ -47,8 +47,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:202243040000000",
-						"comment": "openssl package in focal was vulnerable but has been fixed (note: '1.1.1f-1ubuntu2.17')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201435660000000",
+						"comment": "openssl package in fips/focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2021282160000000",
