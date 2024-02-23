@@ -1,0 +1,226 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.focal:def:2023524520000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52452 on Ubuntu 20.04 FIPS Certified (focal) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Fix accesses to uninit stack slotsPrivileged programs are supposed to be able to read uninitialized stackmemory (ever since 6715df8d5) but, before this patch, these accesseswere permitted inconsistently. In particular, accesses were permittedabove state->allocated_stack, but not below it. In other words, if thestack was already \"large enough\", the access was permitted, butotherwise the access was rejected instead of being allowed to \"grow thestack\". This undesired rejection was happening in two places:- in check_stack_slot_within_bounds()- in check_stack_range_initialized()This patch arranges for these accesses to be permitted. A bunch of teststhat were relying on the old rejection had to change; all of them werechanged to add also run unprivileged, in which case the old behaviorpersists. One tests couldn't be updated - global_func16 - because itcan't run unprivileged for other reasons.This patch also fixes the tracking of the stack size for variable-offsetreads. This second fix is bundled in the same commit as the first onebecause they're inter-related. Before this patch, writes to the stackusing registers containing a variable offset (as opposed to registerswith fixed, known values) were not properly contributing to thefunction's needed stack size. As a result, it was possible for a programto verify, but then to attempt to read out-of-bounds data at runtimebecause a too small stack had been allocated for it.Each function tracks the size of the stack it needs inbpf_subprog_info.stack_depth, which is maintained byupdate_stack_depth(). For regular memory accesses, check_mem_access()was calling update_state_depth() but it was passing in only the fixedpart of the offset register, ignoring the variable offset. This wasincorrect; the minimum possible value of that register should be usedinstead.This tracking is now fixed by centralizing the tracking of stack size ingrow_stack_state(), and by lifting the calls to grow_stack_state() tocheck_stack_access_within_bounds() as suggested by Andrii. The code isnow simpler and more convincingly tracks the correct maximum stack size.check_stack_range_initialized() can now rely on enough stack having beenallocated for the access; this helps with the fix for the first issue.A few tests were changed to also check the stack depth computation. Theone that fails without this patch isverifier_var_off:stack_write_priv_vs_unpriv.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 20.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52452",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52452"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-22",
+			"cve": {
+				"text": "CVE-2023-52452",
+				"href": "https://ubuntu.com/security/CVE-2023-52452",
+				"public": "20240222"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
+						"comment": "linux package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
+						"comment": "linux-hwe-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000180",
+						"comment": "linux-hwe-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000260",
+						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
+						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
+						"comment": "linux-kvm package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
+						"comment": "linux-aws package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
+						"comment": "linux-aws-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000190",
+						"comment": "linux-aws-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000270",
+						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
+						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
+						"comment": "linux-azure package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
+						"comment": "linux-azure-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000200",
+						"comment": "linux-azure-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000310",
+						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
+						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
+						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
+						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
+						"comment": "linux-bluefield package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
+						"comment": "linux-fips package in fips/focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
+						"comment": "linux-gcp package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
+						"comment": "linux-gcp-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000230",
+						"comment": "linux-gcp-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000290",
+						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
+						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000370",
+						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
+						"comment": "linux-gkeop package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
+						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
+						"comment": "linux-ibm package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
+						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
+						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
+						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
+						"comment": "linux-iot package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
+						"comment": "linux-oracle package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
+						"comment": "linux-oracle-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000210",
+						"comment": "linux-oracle-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000280",
+						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
+						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
+						"comment": "linux-oem-5.6: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-5.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000110",
+						"comment": "linux-oem-5.10: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201585530000000",
+						"comment": "linux-oem-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-5.14')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000240",
+						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
+						"comment": "linux-raspi package in focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
+						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
