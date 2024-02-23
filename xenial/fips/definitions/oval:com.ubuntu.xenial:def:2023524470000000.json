@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023524470000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52447 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Defer the free of inner map when necessaryWhen updating or deleting an inner map in map array or map htab, the mapmay still be accessed by non-sleepable program or sleepable program.However bpf_map_fd_put_ptr() decreases the ref-counter of the inner mapdirectly through bpf_map_put(), if the ref-counter is the last one(which is true for most cases), the inner map will be freed byops->map_free() in a kworker. But for now, most .map_free() callbacksdon't use synchronize_rcu() or its variants to wait for the elapse of aRCU grace period, so after the invocation of ops->map_free completes,the bpf program which is accessing the inner map may incuruse-after-free problem.Fix the free of inner map by invoking bpf_map_free_deferred() after bothone RCU grace period and one tasks trace RCU grace period if the innermap has been removed from the outer map before. The deferment isaccomplished by using call_rcu() or call_rcu_tasks_trace() whenreleasing the last ref-counter of bpf map. The newly-added rcu_headfield in bpf_map shares the same storage space with work field toreduce the size of bpf_map.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52447",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52447"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-22",
+			"cve": {
+				"text": "CVE-2023-52447",
+				"href": "https://ubuntu.com/security/CVE-2023-52447",
+				"public": "20240222"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000020",
+						"comment": "linux-snapdragon: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}
