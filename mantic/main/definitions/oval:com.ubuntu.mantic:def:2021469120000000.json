@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2021469120000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-46912 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: Make tcp_allowed_congestion_control readonly in non-init netnsCurrently, tcp_allowed_congestion_control is global and writable;writing to it in any net namespace will leak into all other netnamespaces.tcp_available_congestion_control and tcp_allowed_congestion_control arethe only sysctls in ipv4_net_table (the per-netns sysctl table) with aNULL data pointer; their handlers (proc_tcp_available_congestion_controland proc_allowed_congestion_control) have no other way of referencing astruct net. Thus, they operate globally.Because ipv4_net_table does not use designated initializers, there is noeasy way to fix up this one \"bad\" table entry. However, the data pointerupdating logic shouldn't be applied to NULL pointers anyway, so weinstead force these entries to be read-only.These sysctls used to exist in ipv4_table (init-net only), but they weremoved to the per-net ipv4_net_table, presumably without realizing thattcp_allowed_congestion_control was writable and thus introduced a leak.Because the intent of that commit was only to know (i.e. read) \"whichcongestion algorithms are available or allowed\", this read-only solutionshould be sufficient.The logic added in recent commit31c4d2f160eb: (\"net: Ensure net namespace isolation of sysctls\")does not and cannot check for NULL data pointers, becauseother table entries (e.g. /proc/sys/net/netfilter/nf_log/) have.data=NULL but use other methods (.extra2) to access the struct net.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-46912",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-46912"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-27 07:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-46912",
+				"href": "https://ubuntu.com/security/CVE-2021-46912",
+				"public": "20240227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

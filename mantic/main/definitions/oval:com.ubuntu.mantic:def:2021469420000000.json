@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2021469420000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-46942 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:io_uring: fix shared sqpoll cancellation hangs[  736.982891] INFO: task iou-sqp-4294:4295 blocked for more than 122seconds.[  736.982897] Call Trace:[  736.982901]  schedule+0x68/0xe0[  736.982903]  io_uring_cancel_sqpoll+0xdb/0x110[  736.982908]  io_sqpoll_cancel_cb+0x24/0x30[  736.982911]  io_run_task_work_head+0x28/0x50[  736.982913]  io_sq_thread+0x4e3/0x720We call io_uring_cancel_sqpoll() one by one for each ctx either insq_thread() itself or via task works, and it's intended to cancel allrequests of a specified context. However the function uses per-taskcounters to track the number of inflight requests, so it counts morerequests than available via currect io_uring ctx and goes to sleep forthem to appear (e.g. from IRQ), that will never happen.Cancel a bit more than before, i.e. all ctxs that share sqpolland continue to use shared counters. Don't forget that we should notremove ctx from the list before running that task_work sqpoll-cancel,otherwise the function wouldn't be able to find the context and willhang.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-46942",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-46942"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-27 19:04:00 UTC",
+			"cve": {
+				"text": "CVE-2021-46942",
+				"href": "https://ubuntu.com/security/CVE-2021-46942",
+				"public": "20240227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

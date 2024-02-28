@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021469100000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-46910 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ARM: 9063/1: mm: reduce maximum number of CPUs if DEBUG_KMAP_LOCAL isenabledThe debugging code for kmap_local() doubles the number of per-CPU fixmapslots allocated for kmap_local(), in order to use half of them as guardregions. This causes the fixmap region to grow downwards beyond the startof its reserved window if the supported number of CPUs is large, andcollidewith the newly added virtual DT mapping right below it, which is obviouslynot good.One manifestation of this is EFI boot on a kernel built with NR_CPUS=32and CONFIG_DEBUG_KMAP_LOCAL=y, which may pass the FDT in highmem, resultingin block entries below the fixmap region that the fixmap code misidentifiesas fixmap table entries, and subsequently tries to dereference using aphys-to-virt translation that is only valid for lowmem. This results in acryptic splat such as the one below.  ftrace: allocating 45548 entries in 89 pages  8<--- cut here ---  Unable to handle kernel paging request at virtual address fc6006f0  pgd = (ptrval)  [fc6006f0] *pgd=80000040207003, *pmd=00000000  Internal error: Oops: a06 [#1] SMP ARM  Modules linked in:  CPU: 0 PID: 0 Comm: swapper Not tainted 5.11.0+ #382  Hardware name: Generic DT based system  PC is at cpu_ca15_set_pte_ext+0x24/0x30  LR is at __set_fixmap+0xe4/0x118  pc : [<c041ac9c>]    lr : [<c04189d8>]    psr: 400000d3  sp : c1601ed8  ip : 00400000  fp : 00800000  r10: 0000071f  r9 : 00421000  r8 : 00c00000  r7 : 00c00000  r6 : 0000071f  r5 : ffade000  r4 : 4040171f  r3 : 00c00000  r2 : 4040171f  r1 : c041ac78  r0 : fc6006f0  Flags: nZcv  IRQs off  FIQs off  Mode SVC_32  ISA ARM  Segment none  Control: 30c5387d  Table: 40203000  DAC: 00000001  Process swapper (pid: 0, stack limit = 0x(ptrval))So let's limit CONFIG_NR_CPUS to 16 when CONFIG_DEBUG_KMAP_LOCAL=y. Also,fix the BUILD_BUG_ON() check that was supposed to catch this, by checkingwhether the region grows below the start address rather than above the endaddress.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-46910",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-46910"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-27 07:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-46910",
+				"href": "https://ubuntu.com/security/CVE-2021-46910",
+				"public": "20240227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000020",
+						"comment": "linux-snapdragon: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

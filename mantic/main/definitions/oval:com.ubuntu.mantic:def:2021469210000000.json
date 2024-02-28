@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2021469210000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-46921 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:locking/qrwlock: Fix ordering in queued_write_lock_slowpath()While this code is executed with the wait_lock held, a reader canacquire the lock without holding wait_lock.  The writer side loopschecking the value with the atomic_cond_read_acquire(), but only trulyacquires the lock when the compare-and-exchange is completedsuccessfully which isn’t ordered. This exposes the window between theacquire and the cmpxchg to an A-B-A problem which allows readsfollowing the lock acquisition to observe values speculatively beforethe write lock is truly acquired.We've seen a problem in epoll where the reader does a xchg whileholding the read lock, but the writer can see a value change out fromunder it.  Writer                                | Reader--------------------------------------------------------------------------------  ep_scan_ready_list()                  |  |- write_lock_irq()                   |      |- queued_write_lock_slowpath()   |\t|- atomic_cond_read_acquire()   |\t\t\t\t        | read_lock_irqsave(&ep->lock, flags);     --> (observes value before unlock) |  chain_epi_lockless()     |                                  |    epi->next = xchg(&ep->ovflist,epi);     |                                  | read_unlock_irqrestore(&ep->lock,flags);     |                                  |     |     atomic_cmpxchg_relaxed()     |     |-- READ_ONCE(ep->ovflist);        |A core can order the read of the ovflist ahead of theatomic_cmpxchg_relaxed(). Switching the cmpxchg to use acquiresemantics addresses this issue at which point the atomic_cond_read canbe switched to use relaxed semantics.[peterz: use try_cmpxchg()]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-46921",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-46921"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-27 10:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-46921",
+				"href": "https://ubuntu.com/security/CVE-2021-46921",
+				"public": "20240227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

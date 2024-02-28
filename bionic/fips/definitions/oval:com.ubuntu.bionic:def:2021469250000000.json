@@ -1,0 +1,174 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2021469250000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-46925 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/smc: fix kernel panic caused by race of smc_sockA crash occurs when smc_cdc_tx_handler() tries to access smc_sockbut smc_release() has already freed it.[ 4570.695099] BUG: unable to handle page fault for address:000000002eae9e88[ 4570.696048] #PF: supervisor write access in kernel mode[ 4570.696728] #PF: error_code(0x0002) - not-present page[ 4570.697401] PGD 0 P4D 0[ 4570.697716] Oops: 0002 [#1] PREEMPT SMP NOPTI[ 4570.698228] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.16.0-rc4+ #111[ 4570.699013] Hardware name: Alibaba Cloud Alibaba Cloud ECS, BIOS 8c24b4c04/0[ 4570.699933] RIP: 0010:_raw_spin_lock+0x1a/0x30<...>[ 4570.711446] Call Trace:[ 4570.711746]  <IRQ>[ 4570.711992]  smc_cdc_tx_handler+0x41/0xc0[ 4570.712470]  smc_wr_tx_tasklet_fn+0x213/0x560[ 4570.712981]  ? smc_cdc_tx_dismisser+0x10/0x10[ 4570.713489]  tasklet_action_common.isra.17+0x66/0x140[ 4570.714083]  __do_softirq+0x123/0x2f4[ 4570.714521]  irq_exit_rcu+0xc4/0xf0[ 4570.714934]  common_interrupt+0xba/0xe0Though smc_cdc_tx_handler() checked the existence of smc connection,smc_release() may have already dismissed and released the smc socketbefore smc_cdc_tx_handler() further visits it.smc_cdc_tx_handler()           |smc_release()if (!conn)                     |                               |                               |smc_cdc_tx_dismiss_slots()                               |      smc_cdc_tx_dismisser()                               |                               |sock_put(&smc->sk) <- last sock_put,                               |                      smc_sock freedbh_lock_sock(&smc->sk) (panic) |To make sure we won't receive any CDC messages after we free thesmc_sock, add a refcount on the smc_connection for inflight CDCmessage(posted to the QP but haven't received related CQE), anddon't release the smc_connection until all the inflight CDC messageshaven been done, for both success or failed ones.Using refcount on CDC messages brings another problem: when the linkis going to be destroyed, smcr_link_clear() will reset the QP, whichthen remove all the pending CQEs related to the QP in the CQ. To makesure all the CQEs will always come back so the refcount on thesmc_connection can always reach 0, smc_ib_modify_qp_reset() was replacedby smc_ib_modify_qp_error().And remove the timeout in smc_wr_tx_wait_no_pending_sends() since weneed to wait for all pending WQEs done, or we may encounter use-after-free when handling CQEs.For IB device removal routine, we need to wait for all the QPs on thatdevice been destroyed before we can destroy CQs on the device, orthe refcount on smc_connection won't reach 0 and smc_sock cannot bereleased.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-46925",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-46925"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-27 10:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-46925",
+				"href": "https://ubuntu.com/security/CVE-2021-46925",
+				"public": "20240227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000300",
+						"comment": "linux-dell300x: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000060",
+						"comment": "linux-gke-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000170",
+						"comment": "linux-gke-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000120",
+						"comment": "linux-oem-osp1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000160",
+						"comment": "linux-raspi2-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000020",
+						"comment": "linux-snapdragon: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}
