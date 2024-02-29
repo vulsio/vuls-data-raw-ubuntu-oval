@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2021470260000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47026 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:RDMA/rtrs-clt: destroy sysfs after removing session from active listA session can be removed dynamically by sysfs interface \"remove_path\" thateventually calls rtrs_clt_remove_path_from_sysfs function.  The currentrtrs_clt_remove_path_from_sysfs first removes the sysfs interfaces andfrees sess->stats object. Second it removes the session from the activelist.Therefore some functions could access non-connected session and access thefreed sess->stats object even-if they check the session status beforeaccessing the session.For instance rtrs_clt_request and get_next_path_min_inflight check thesession status and try to send IO to the session.  The session statuscould be changed when they are trying to send IO but they could not catchthe change and update the statistics information in sess->stats object,and generate use-after-free problem.(see: \"RDMA/rtrs-clt: Check state of the rtrs_clt_sess before reading itsstats\")This patch changes the rtrs_clt_remove_path_from_sysfs to remove thesession from the active session list and then destroy the sysfsinterfaces.Each function still should check the session status because closing orerror recovery paths can change the status.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47026",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-47026"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-29",
+			"cve": {
+				"text": "CVE-2021-47026",
+				"href": "https://ubuntu.com/security/CVE-2021-47026",
+				"public": "20240229"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

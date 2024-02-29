@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021469820000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-46982 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: compress: fix race condition of overwrite vs truncatepos_fsstress testcase complains a panic as belew:------------[ cut here ]------------kernel BUG at fs/f2fs/compress.c:1082!invalid opcode: 0000 [#1] SMP PTICPU: 4 PID: 2753477 Comm: kworker/u16:2 Tainted: G           OE5.12.0-rc1-custom #1Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.14.0-204/01/2014Workqueue: writeback wb_workfn (flush-252:16)RIP: 0010:prepare_compress_overwrite+0x4c0/0x760 [f2fs]Call Trace: f2fs_prepare_compress_overwrite+0x5f/0x80 [f2fs] f2fs_write_cache_pages+0x468/0x8a0 [f2fs] f2fs_write_data_pages+0x2a4/0x2f0 [f2fs] do_writepages+0x38/0xc0 __writeback_single_inode+0x44/0x2a0 writeback_sb_inodes+0x223/0x4d0 __writeback_inodes_wb+0x56/0xf0 wb_writeback+0x1dd/0x290 wb_workfn+0x309/0x500 process_one_work+0x220/0x3c0 worker_thread+0x53/0x420 kthread+0x12f/0x150 ret_from_fork+0x22/0x30The root cause is truncate() may race with overwrite as below,so that one reference count left in page can not guarantee thepage attaching in mapping tree all the time, after truncation,later find_lock_page() may return NULL pointer.- prepare_compress_overwrite - f2fs_pagecache_get_page - unlock_page\t\t\t\t\t- f2fs_setattr\t\t\t\t\t - truncate_setsize\t\t\t\t\t  - truncate_inode_page\t\t\t\t\t   - delete_from_page_cache - find_lock_pageFix this by avoiding referencing updated page.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-46982",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-46982"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-29",
+			"cve": {
+				"text": "CVE-2021-46982",
+				"href": "https://ubuntu.com/security/CVE-2021-46982",
+				"public": "20240229"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000020",
+						"comment": "linux-snapdragon: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

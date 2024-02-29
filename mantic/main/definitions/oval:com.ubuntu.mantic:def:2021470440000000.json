@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2021470440000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47044 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:sched/fair: Fix shift-out-of-bounds in load_balance()Syzbot reported a handful of occurrences where an sd->nr_balance_failed cangrow to much higher values than one would expect.A successful load_balance() resets it to 0; a failed one incrementsit. Once it gets to sd->cache_nice_tries + 3, this *should* trigger anactive balance, which will either set it to sd->cache_nice_tries+1 or resetit to 0. However, in case the to-be-active-balanced task is not allowed torun on env->dst_cpu, then the increment is done without any furthermodification.This could then be repeated ad nauseam, and would explain the absurdly highvalues reported by syzbot (86, 149). VincentG noted there is value inletting sd->cache_nice_tries grow, so the shift itself should befixed. That means preventing:  \"\"\"  If the value of the right operand is negative or is greater than or equal  to the width of the promoted left operand, the behavior is undefined.  \"\"\"Thus we need to cap the shift exponent to  BITS_PER_TYPE(typeof(lefthand)) - 1.I had a look around for other similar cases via coccinelle:  @expr@  position pos;  expression E1;  expression E2;  @@  (  E1 >> E2@pos  |  E1 >> E2@pos  )  @cst depends on expr@  position pos;  expression expr.E1;  constant cst;  @@  (  E1 >> cst@pos  |  E1 << cst@pos  )  @script:python depends on !cst@  pos << expr.pos;  exp << expr.E2;  @@  # Dirty hack to ignore constexpr  if exp.upper() != exp:     coccilib.report.print_report(pos[0], \"Possible UB shift here\")The only other match in kernel/sched is rq_clock_thermal() which employssched_thermal_decay_shift, and that exponent is already capped to 10, sothat one is fine.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47044",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-47044"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-29",
+			"cve": {
+				"text": "CVE-2021-47044",
+				"href": "https://ubuntu.com/security/CVE-2021-47044",
+				"public": "20240229"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
