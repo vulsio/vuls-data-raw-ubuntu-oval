@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52463 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:efivarfs: force RO when remounting if SetVariable is not supportedIf SetVariable at runtime is not supported by the firmware we never assigna callback for that function. At the same time mount the efivarfs asRO so no one can call that.  However, we never check the permission flagswhen someone remounts the filesystem as RW. As a result this leads to acrash looking like this:$ mount -o remount,rw /sys/firmware/efi/efivars$ efi-updatevar -f PK.auth PK[  303.279166] Unable to handle kernel NULL pointer dereference at virtualaddress 0000000000000000[  303.280482] Mem abort info:[  303.280854]   ESR = 0x0000000086000004[  303.281338]   EC = 0x21: IABT (current EL), IL = 32 bits[  303.282016]   SET = 0, FnV = 0[  303.282414]   EA = 0, S1PTW = 0[  303.282821]   FSC = 0x04: level 0 translation fault[  303.283771] user pgtable: 4k pages, 48-bit VAs, pgdp=000000004258c000[  303.284913] [0000000000000000] pgd=0000000000000000,p4d=0000000000000000[  303.286076] Internal error: Oops: 0000000086000004 [#1] PREEMPT SMP[  303.286936] Modules linked in: qrtr tpm_tis tpm_tis_core crct10dif_cearm_smccc_trng rng_core drm fuse ip_tables x_tables ipv6[  303.288586] CPU: 1 PID: 755 Comm: efi-updatevar Not tainted6.3.0-rc1-00108-gc7d0c4695c68 #1[  303.289748] Hardware name: Unknown Unknown Product/Unknown Product, BIOS2023.04-00627-g88336918701d 04/01/2023[  303.291150] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBSBTYPE=--)[  303.292123] pc : 0x0[  303.292443] lr : efivar_set_variable_locked+0x74/0xec[  303.293156] sp : ffff800008673c10[  303.293619] x29: ffff800008673c10 x28: ffff0000037e8000 x27:0000000000000000[  303.294592] x26: 0000000000000800 x25: ffff000002467400 x24:0000000000000027[  303.295572] x23: ffffd49ea9832000 x22: ffff0000020c9800 x21:ffff000002467000[  303.296566] x20: 0000000000000001 x19: 00000000000007fc x18:0000000000000000[  303.297531] x17: 0000000000000000 x16: 0000000000000000 x15:0000aaaac807ab54[  303.298495] x14: ed37489f673633c0 x13: 71c45c606de13f80 x12:47464259e219acf4[  303.299453] x11: ffff000002af7b01 x10: 0000000000000003 x9 :0000000000000002[  303.300431] x8 : 0000000000000010 x7 : ffffd49ea8973230 x6 :0000000000a85201[  303.301412] x5 : 0000000000000000 x4 : ffff0000020c9800 x3 :00000000000007fc[  303.302370] x2 : 0000000000000027 x1 : ffff000002467400 x0 :ffff000002467000[  303.303341] Call trace:[  303.303679]  0x0[  303.303938]  efivar_entry_set_get_size+0x98/0x16c[  303.304585]  efivarfs_file_write+0xd0/0x1a4[  303.305148]  vfs_write+0xc4/0x2e4[  303.305601]  ksys_write+0x70/0x104[  303.306073]  __arm64_sys_write+0x1c/0x28[  303.306622]  invoke_syscall+0x48/0x114[  303.307156]  el0_svc_common.constprop.0+0x44/0xec[  303.307803]  do_el0_svc+0x38/0x98[  303.308268]  el0_svc+0x2c/0x84[  303.308702]  el0t_64_sync_handler+0xf4/0x120[  303.309293]  el0t_64_sync+0x190/0x194[  303.309794] Code: ???????? ???????? ???????? ???????? (????????)[  303.310612] ---[ end trace 0000000000000000 ]---Fix this by adding a .reconfigure() function to the fs operations whichwe can use to check the requested flags and deny anything that's not ROif the firmware doesn't implement SetVariable at runtime.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:efivarfs: force RO when remounting if SetVariable is not supportedIf SetVariable at runtime is not supported by the firmware we never assigna callback for that function. At the same time mount the efivarfs asRO so no one can call that.  However, we never check the permission flagswhen someone remounts the filesystem as RW. As a result this leads to acrash looking like this:$ mount -o remount,rw /sys/firmware/efi/efivars$ efi-updatevar -f PK.auth PK[  303.279166] Unable to handle kernel NULL pointer dereference at virtualaddress 0000000000000000[  303.280482] Mem abort info:[  303.280854]   ESR = 0x0000000086000004[  303.281338]   EC = 0x21: IABT (current EL), IL = 32 bits[  303.282016]   SET = 0, FnV = 0[  303.282414]   EA = 0, S1PTW = 0[  303.282821]   FSC = 0x04: level 0 translation fault[  303.283771] user pgtable: 4k pages, 48-bit VAs, pgdp=000000004258c000[  303.284913] [0000000000000000] pgd=0000000000000000,p4d=0000000000000000[  303.286076] Internal error: Oops: 0000000086000004 [#1] PREEMPT SMP[  303.286936] Modules linked in: qrtr tpm_tis tpm_tis_core crct10dif_cearm_smccc_trng rng_core drm fuse ip_tables x_tables ipv6[  303.288586] CPU: 1 PID: 755 Comm: efi-updatevar Not tainted6.3.0-rc1-00108-gc7d0c4695c68 #1[  303.289748] Hardware name: Unknown Unknown Product/Unknown Product, BIOS2023.04-00627-g88336918701d 04/01/2023[  303.291150] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBSBTYPE=--)[  303.292123] pc : 0x0[  303.292443] lr : efivar_set_variable_locked+0x74/0xec[  303.293156] sp : ffff800008673c10[  303.293619] x29: ffff800008673c10 x28: ffff0000037e8000 x27:0000000000000000[  303.294592] x26: 0000000000000800 x25: ffff000002467400 x24:0000000000000027[  303.295572] x23: ffffd49ea9832000 x22: ffff0000020c9800 x21:ffff000002467000[  303.296566] x20: 0000000000000001 x19: 00000000000007fc x18:0000000000000000[  303.297531] x17: 0000000000000000 x16: 0000000000000000 x15:0000aaaac807ab54[  303.298495] x14: ed37489f673633c0 x13: 71c45c606de13f80 x12:47464259e219acf4[  303.299453] x11: ffff000002af7b01 x10: 0000000000000003 x9 :0000000000000002[  303.300431] x8 : 0000000000000010 x7 : ffffd49ea8973230 x6 :0000000000a85201[  303.301412] x5 : 0000000000000000 x4 : ffff0000020c9800 x3 :00000000000007fc[  303.302370] x2 : 0000000000000027 x1 : ffff000002467400 x0 :ffff000002467000[  303.303341] Call trace:[  303.303679]  0x0[  303.303938]  efivar_entry_set_get_size+0x98/0x16c[  303.304585]  efivarfs_file_write+0xd0/0x1a4[  303.305148]  vfs_write+0xc4/0x2e4[  303.305601]  ksys_write+0x70/0x104[  303.306073]  __arm64_sys_write+0x1c/0x28[  303.306622]  invoke_syscall+0x48/0x114[  303.307156]  el0_svc_common.constprop.0+0x44/0xec[  303.307803]  do_el0_svc+0x38/0x98[  303.308268]  el0_svc+0x2c/0x84[  303.308702]  el0t_64_sync_handler+0xf4/0x120[  303.309293]  el0t_64_sync+0x190/0x194[  303.309794] Code: ???????? ???????? ???????? ???????? (????????)[  303.310612] ---[ end trace 0000000000000000 ]---Fix this by adding a .reconfigure() function to the fs operations whichwe can use to check the requested flags and deny anything that's not ROif the firmware doesn't implement SetVariable at runtime.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52463` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000000",
+						"comment": "linux package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-9.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -49,15 +49,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000010",
+						"comment": "linux-kvm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-aws package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -73,11 +73,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-aws-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
+						"comment": "linux-azure package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1006.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -93,7 +93,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
@@ -101,19 +101,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-fde-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000080",
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
 						"comment": "linux-fips package in fips/focal is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-gcp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -129,7 +129,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gcp-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -140,20 +140,20 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000030",
+						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gkeop-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000000",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-ibm-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -161,19 +161,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-intel-iotg-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2020274180000000",
+						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-oracle package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -189,7 +189,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-oracle-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -208,16 +208,16 @@
 						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000050",
+						"comment": "linux-raspi package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201973080000000",
+						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]
 			}
