@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024266390000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26639 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm, kmsan: fix infinite recursion due to RCU critical sectionAlexander Potapenko writes in [1]: \"For every memory access in the codeinstrumented by KMSAN we call kmsan_get_metadata() to obtain the metadatafor the memory being accessed.  For virtual memory the metadata pointersare stored in the corresponding `struct page`, therefore we need to callvirt_to_page() to get them.According to the comment in arch/x86/include/asm/page.h,virt_to_page(kaddr) returns a valid pointer iff virt_addr_valid(kaddr) istrue, so KMSAN needs to call virt_addr_valid() as well.To avoid recursion, kmsan_get_metadata() must not call instrumented code,therefore ./arch/x86/include/asm/kmsan.h forks parts ofarch/x86/mm/physaddr.c to check whether a virtual address is valid or not.But the introduction of rcu_read_lock() to pfn_valid() added instrumentedRCU API calls to virt_to_page_or_null(), which is called bykmsan_get_metadata(), so there is an infinite recursion now.  I do notthink it is correct to stop that recursion by doingkmsan_enter_runtime()/kmsan_exit_runtime() in kmsan_get_metadata(): thatwould prevent instrumented functions called from within the runtime fromtracking the shadow values, which might introduce false positives.\"Fix the issue by switching pfn_valid() to the _sched() variant ofrcu_read_lock/unlock(), which does not require calling into RCU.  Giventhe critical section in pfn_valid() is very small, this is a reasonabletrade-off (with preemptible RCU).KMSAN further needs to be careful to suppress calls into the scheduler,which would be another source of recursion.  This can be done by wrappingthe call to pfn_valid() into preempt_disable/enable_no_resched().  Thedownside is that this sacrifices breaking scheduling guarantees; however,a kernel compiled with KMSAN has already given up any performanceguarantees due to being heavily instrumented.Note, KMSAN code already disables tracing via Makefile, and since mmzone.his included, it is not necessary to use the notrace variant, which isgenerally preferred in all other cases.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26639",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26639"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-19",
+			"cve": {
+				"text": "CVE-2024-26639",
+				"href": "https://ubuntu.com/security/CVE-2024-26639",
+				"public": "20240319"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

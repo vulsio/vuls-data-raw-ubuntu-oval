@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2023526090000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52609 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:binder: fix race between mmput() and do_exit()Task A calls binder_update_page_range() to allocate and insert pages ona remote address space from Task B. For this, Task A pins the remote mmvia mmget_not_zero() first. This can race with Task B do_exit() and thefinal mmput() refcount decrement will come from Task A.  Task A            | Task B  ------------------+------------------  mmget_not_zero()  |                    |  do_exit()                    |    exit_mm()                    |      mmput()  mmput()           |    exit_mmap()     |      remove_vma()  |        fput()      |In this case, the work of ____fput() from Task B is queued up in Task Aas TWA_RESUME. So in theory, Task A returns to userspace and the cleanupwork gets executed. However, Task A instead sleep, waiting for a replyfrom Task B that never comes (it's dead).This means the binder_deferred_release() is blocked until an unrelatedbinder event forces Task A to go back to userspace. All the associateddeath notifications will also be delayed until then.In order to fix this use mmput_async() that will schedule the work inthe corresponding mm->async_put_work WQ instead of Task A.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52609",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52609"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-19",
+			"cve": {
+				"text": "CVE-2023-52609",
+				"href": "https://ubuntu.com/security/CVE-2023-52609",
+				"public": "20240319"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

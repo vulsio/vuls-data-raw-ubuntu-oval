@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023524860000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52486 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm: Don't unref the same fb many times by mistake due to deadlock handlingIf we get a deadlock after the fb lookup in drm_mode_page_flip_ioctl()we proceed to unref the fb and then retry the whole thing from the top.But we forget to reset the fb pointer back to NULL, and so if we thenget another error during the retry, before the fb lookup, we proceedthe unref the same fb again without having gotten another reference.The end result is that the fb will (eventually) end up being freedwhile it's still in use.Reset fb to NULL once we've unreffed it to avoid doing it againuntil we've done another fb lookup.This turned out to be pretty easy to hit on a DG2 when doing asyncflips (and CONFIG_DEBUG_WW_MUTEX_SLOWPATH=y). The first symptom Isaw that drm_closefb() simply got stuck in a busy loop while walkingthe framebuffer list. Fortunately I was able to convince it to oopsinstead, and from there it was easier to track down the culprit.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52486",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52486"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-19",
+			"cve": {
+				"text": "CVE-2023-52486",
+				"href": "https://ubuntu.com/security/CVE-2023-52486",
+				"public": "20240319"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023524900000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52490 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: migrate: fix getting incorrect page mapping during page migrationWhen running stress-ng testing, we found below kernel crash after a fewhours:Unable to handle kernel NULL pointer dereference at virtual address0000000000000000pc : dentry_name+0xd8/0x224lr : pointer+0x22c/0x370sp : ffff800025f134c0......Call trace:  dentry_name+0xd8/0x224  pointer+0x22c/0x370  vsnprintf+0x1ec/0x730  vscnprintf+0x2c/0x60  vprintk_store+0x70/0x234  vprintk_emit+0xe0/0x24c  vprintk_default+0x3c/0x44  vprintk_func+0x84/0x2d0  printk+0x64/0x88  __dump_page+0x52c/0x530  dump_page+0x14/0x20  set_migratetype_isolate+0x110/0x224  start_isolate_page_range+0xc4/0x20c  offline_pages+0x124/0x474  memory_block_offline+0x44/0xf4  memory_subsys_offline+0x3c/0x70  device_offline+0xf0/0x120  ......After analyzing the vmcore, I found this issue is caused by page migration.The scenario is that, one thread is doing page migration, and we will usethetarget page's ->mapping field to save 'anon_vma' pointer between page unmapandpage move, and now the target page is locked and refcount is 1.Currently, there is another stress-ng thread performing memory hotplug,attempting to offline the target page that is being migrated. It discoversthatthe refcount of this target page is 1, preventing the offline operation,thusproceeding to dump the page. However, page_mapping() of the target page mayreturn an incorrect file mapping to crash the system in dump_mapping(),sincethe target page->mapping only saves 'anon_vma' pointer without settingPAGE_MAPPING_ANON flag.There are seveval ways to fix this issue:(1) Setting the PAGE_MAPPING_ANON flag for target page's ->mapping whensaving'anon_vma', but this can confuse PageAnon() for PFN walkers, since thetargetpage has not built mappings yet.(2) Getting the page lock to call page_mapping() in __dump_page() to avoidcrashingthe system, however, there are still some PFN walkers that callpage_mapping()without holding the page lock, such as compaction.(3) Using target page->private field to save the 'anon_vma' pointer and 2bitspage state, just as page->mapping records an anonymous page, which canremovethe page_mapping() impact for PFN walkers and also seems a simple way.So I choose option 3 to fix this issue, and this can also fix otherpotentialissues for PFN walkers, such as compaction.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52490",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52490"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-19",
+			"cve": {
+				"text": "CVE-2023-52490",
+				"href": "https://ubuntu.com/security/CVE-2023-52490",
+				"public": "20240319"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

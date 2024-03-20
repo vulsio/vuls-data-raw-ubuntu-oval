@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024266200000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26620 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:s390/vfio-ap: always filter entire AP matrixThe vfio_ap_mdev_filter_matrix function is called whenever a new adapter ordomain is assigned to the mdev. The purpose of the function is to updatethe guest's AP configuration by filtering the matrix of adapters anddomains assigned to the mdev. When an adapter or domain is assigned, onlythe APQNs associated with the APID of the new adapter or APQI of the newdomain are inspected. If an APQN does not reference a queue device bound tothe vfio_ap device driver, then it's APID will be filtered from the mdev'smatrix when updating the guest's AP configuration.Inspecting only the APID of the new adapter or APQI of the new domain willresult in passing AP queues through to a guest that are not bound to thevfio_ap device driver under certain circumstances. Consider the following:guest's AP configuration (all also assigned to the mdev's matrix):14.000414.000514.000616.000416.000516.0006unassign domain 4unbind queue 16.0005assign domain 4When domain 4 is re-assigned, since only domain 4 will be inspected, theAPQNs that will be examined will be:14.000416.0004Since both of those APQNs reference queue devices that are bound to thevfio_ap device driver, nothing will get filtered from the mdev's matrixwhen updating the guest's AP configuration. Consequently, queue 16.0005will get passed through despite not being bound to the driver. Thisviolates the linux device model requirement that a guest shall only begiven access to devices bound to the device driver facilitating theirpass-through.To resolve this problem, every adapter and domain assigned to the mdev willbe inspected when filtering the mdev's matrix.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26620",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26620"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-19",
+			"cve": {
+				"text": "CVE-2024-26620",
+				"href": "https://ubuntu.com/security/CVE-2024-26620",
+				"public": "20240319"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2023526110000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52611 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: rtw88: sdio: Honor the host max_req_size in the RX pathLukas reports skb_over_panic errors on his Banana Pi BPI-CM4 which comeswith an Amlogic A311D (G12B) SoC and a RTL8822CS SDIO wifi/Bluetoothcombo card. The error he observed is identical to what has been fixedin commit e967229ead0e (\"wifi: rtw88: sdio: Check the HISR RX_REQUESTbit in rtw_sdio_rx_isr()\") but that commit didn't fix Lukas' problem.Lukas found that disabling or limiting RX aggregation works around theproblem for some time (but does not fully fix it). In the followingdiscussion a few key topics have been discussed which have an impact onthis problem:- The Amlogic A311D (G12B) SoC has a hardware bug in the SDIO controller  which prevents DMA transfers. Instead all transfers need to go through  the controller SRAM which limits transfers to 1536 bytes- rtw88 chips don't split incoming (RX) packets, so if a big packet is  received this is forwarded to the host in it's original form- rtw88 chips can do RX aggregation, meaning more multiple incoming  packets can be pulled by the host from the card with one MMC/SDIO  transfer. This Depends on settings in the REG_RXDMA_AGG_PG_TH  register (BIT_RXDMA_AGG_PG_TH limits the number of packets that will  be aggregated, BIT_DMA_AGG_TO_V1 configures a timeout for aggregation  and BIT_EN_PRE_CALC makes the chip honor the limits more effectively)Use multiple consecutive reads in rtw_sdio_read_port() and limit thenumber of bytes which are copied by the host from the card in oneMMC/SDIO transfer. This allows receiving a buffer that's larger thanthe hosts max_req_size (number of bytes which can be transferred inone MMC/SDIO transfer). As a result of this the skb_over_panic erroris gone as the rtw88 driver is now able to receive more than 1536 bytesfrom the card (either because the incoming packet is larger than thator because multiple packets have been aggregated).In case of an receive errors (-EILSEQ has been observed by Lukas) weneed to drain the remaining data from the card's buffer, otherwise thecard will return corrupt data for the next rtw_sdio_read_port() call.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52611",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52611"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-19",
+			"cve": {
+				"text": "CVE-2023-52611",
+				"href": "https://ubuntu.com/security/CVE-2023-52611",
+				"public": "20240319"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
