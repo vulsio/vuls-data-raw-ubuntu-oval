@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52517 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "(In the Linux kernel, the following vulnerability has been resolved: s ...)",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:spi: sun6i: fix race between DMA RX transfer completion and RX FIFO drainPreviously the transfer complete IRQ immediately drained to RX FIFO toread any data remaining in FIFO to the RX buffer. This behaviour iscorrect when dealing with SPI in interrupt mode. However in DMA mode thetransfer complete interrupt still fires as soon as all bytes to betransferred have been stored in the FIFO. At that point data in the FIFOstill needs to be picked up by the DMA engine. Thus the drain procedureand DMA engine end up racing to read from RX FIFO, corrupting any dataread. Additionally the RX buffer pointer is never adjusted according toDMA progress in DMA mode, thus calling the RX FIFO drain procedure in DMAmode is a bug.Fix corruptions in DMA RX mode by draining RX FIFO only in interrupt mode.Also wait for completion of RX DMA when in DMA mode before returning toensure all data has been copied to the supplied memory buffer.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-03-19",
+			"public_date": "2024-03-02 22:15:00 UTC",
 			"cve": {
 				"text": "CVE-2023-52517",
 				"href": "https://ubuntu.com/security/CVE-2023-52517",
-				"public": "20240319"
+				"public": "20240302"
 			}
 		}
 	},

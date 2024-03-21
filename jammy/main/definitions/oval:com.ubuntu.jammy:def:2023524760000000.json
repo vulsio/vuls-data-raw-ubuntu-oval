@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52476 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "(In the Linux kernel, the following vulnerability has been resolved: p ...)",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:perf/x86/lbr: Filter vsyscall addressesWe found that a panic can occur when a vsyscall is made while LBR samplingis active. If the vsyscall is interrupted (NMI) for perf sampling, thiscall sequence can occur (most recent at top):    __insn_get_emulate_prefix()    insn_get_emulate_prefix()    insn_get_prefixes()    insn_get_opcode()    decode_branch_type()    get_branch_type()    intel_pmu_lbr_filter()    intel_pmu_handle_irq()    perf_event_nmi_handler()Within __insn_get_emulate_prefix() at frame 0, a macro is called:    peek_nbyte_next(insn_byte_t, insn, i)Within this macro, this dereference occurs:    (insn)->next_byteInspecting registers at this point, the value of the next_byte field is theaddress of the vsyscall made, for example the location of the vsyscallversion of gettimeofday() at 0xffffffffff600000. The access to an addressin the vsyscall region will trigger an oops due to an unhandled page fault.To fix the bug, filtering for vsyscalls can be done whendetermining the branch type. This patch will returna \"none\" branch if a kernel address if found to lie in thevsyscall region.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-03-19",
+			"public_date": "2024-02-29 06:15:00 UTC",
 			"cve": {
 				"text": "CVE-2023-52476",
 				"href": "https://ubuntu.com/security/CVE-2023-52476",
-				"public": "20240319"
+				"public": "20240229"
 			}
 		}
 	},

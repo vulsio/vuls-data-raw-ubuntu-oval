@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52568 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "(In the Linux kernel, the following vulnerability has been resolved: x ...)",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/sgx: Resolves SECS reclaim vs. page fault for EAUG raceThe SGX EPC reclaimer (ksgxd) may reclaim the SECS EPC page for anenclave and set secs.epc_page to NULL. The SECS page is used for EAUGand ELDU in the SGX page fault handler. However, the NULL check forsecs.epc_page is only done for ELDU, not EAUG before being used.Fix this by doing the same NULL check and reloading of the SECS page asneeded for both EAUG and ELDU.The SECS page holds global enclave metadata. It can only be reclaimedwhen there are no other enclave pages remaining. At that point,virtually nothing can be done with the enclave until the SECS page ispaged back in.An enclave can not run nor generate page faults without a resident SECSpage. But it is still possible for a #PF for a non-SECS page to racewith paging out the SECS page: when the last resident non-SECS page Atriggers a #PF in a non-resident page B, and then page A and the SECSboth are paged out before the #PF on B is handled.Hitting this bug requires that race triggered with a #PF for EAUG.Following is a trace when it happens.BUG: kernel NULL pointer dereference, address: 0000000000000000RIP: 0010:sgx_encl_eaug_page+0xc7/0x210Call Trace: ? __kmem_cache_alloc_node+0x16a/0x440 ? xa_load+0x6e/0xa0 sgx_vma_fault+0x119/0x230 __do_fault+0x36/0x140 do_fault+0x12f/0x400 __handle_mm_fault+0x728/0x1110 handle_mm_fault+0x105/0x310 do_user_addr_fault+0x1ee/0x750 ? __this_cpu_preempt_check+0x13/0x20 exc_page_fault+0x76/0x180 asm_exc_page_fault+0x27/0x30",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-03-19",
+			"public_date": "2024-03-02 22:15:00 UTC",
 			"cve": {
 				"text": "CVE-2023-52568",
 				"href": "https://ubuntu.com/security/CVE-2023-52568",
-				"public": "20240319"
+				"public": "20240302"
 			}
 		}
 	},

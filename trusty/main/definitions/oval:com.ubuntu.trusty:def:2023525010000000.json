@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52501 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "(In the Linux kernel, the following vulnerability has been resolved: r ...)",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ring-buffer: Do not attempt to read past \"commit\"When iterating over the ring buffer while the ring buffer is active, thewriter can corrupt the reader. There's barriers to help detect this andhandle it, but that code missed the case where the last event was at thevery end of the page and has only 4 bytes left.The checks to detect the corruption by the writer to reads needs to see thelength of the event. If the length in the first 4 bytes is zero then thelength is stored in the second 4 bytes. But if the writer is in the processof updating that code, there's a small window where the length in the first4 bytes could be zero even though the length is only 4 bytes. That willcause rb_event_length() to read the next 4 bytes which could happen to beoff theallocated page.To protect against this, fail immediately if the next event pointer isless than 8 bytes from the end of the commit (last byte of data), as allevents must be a minimum of 8 bytes anyway.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-03-19",
+			"public_date": "2024-03-02 22:15:00 UTC",
 			"cve": {
 				"text": "CVE-2023-52501",
 				"href": "https://ubuntu.com/security/CVE-2023-52501",
-				"public": "20240319"
+				"public": "20240302"
 			}
 		}
 	},

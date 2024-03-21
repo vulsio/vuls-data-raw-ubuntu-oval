@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52566 on Ubuntu 23.10 (mantic) - medium",
-		"description": "(In the Linux kernel, the following vulnerability has been resolved: n ...)",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix potential use after free in nilfs_gccache_submit_read_data()In nilfs_gccache_submit_read_data(), brelse(bh) is called to drop thereference count of bh when the call to nilfs_dat_translate() fails.  Ifthe reference count hits 0 and its owner page gets unlocked, bh may befreed.  However, bh->b_page is dereferenced to put the page after that,which may result in a use-after-free bug.  This patch moves the releaseoperation after unlocking and putting the page.NOTE: The function in question is only called in GC, and in combinationwith current userland tools, address translation using DAT does not occurin that function, so the code path that causes this issue will not beexecuted.  However, it is possible to run that code path by intentionallymodifying the userland GC library or by calling the GC ioctl directly.[konishi.ryusuke@gmail.com: NOTE added to the commit log]",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-03-19",
+			"public_date": "2024-03-02 22:15:00 UTC",
 			"cve": {
 				"text": "CVE-2023-52566",
 				"href": "https://ubuntu.com/security/CVE-2023-52566",
-				"public": "20240319"
+				"public": "20240302"
 			}
 		}
 	},
