@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47100 on Ubuntu 20.04 FIPS Certified (focal) - low",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:ipmi: Fix UAF when uninstall ipmi_si and ipmi_msghandler moduleHi,When testing install and uninstall of ipmi_si.ko and ipmi_msghandler.ko,the system crashed.The log as follows:[  141.087026] BUG: unable to handle kernel paging request atffffffffc09b3a5a[  141.087241] PGD 8fe4c0d067 P4D 8fe4c0d067 PUD 8fe4c0f067 PMD 103ad89067PTE 0[  141.087464] Oops: 0010 [#1] SMP NOPTI[  141.087580] CPU: 67 PID: 668 Comm: kworker/67:1 Kdump: loaded Nottainted 4.18.0.x86_64 #47[  141.088009] Workqueue: events 0xffffffffc09b3a40[  141.088009] RIP: 0010:0xffffffffc09b3a5a[  141.088009] Code: Bad RIP value.[  141.088009] RSP: 0018:ffffb9094e2c3e88 EFLAGS: 00010246[  141.088009] RAX: 0000000000000000 RBX: ffff9abfdb1f04a0 RCX:0000000000000000[  141.088009] RDX: 0000000000000000 RSI: 0000000000000246 RDI:0000000000000246[  141.088009] RBP: 0000000000000000 R08: ffff9abfffee3cb8 R09:00000000000002e1[  141.088009] R10: ffffb9094cb73d90 R11: 00000000000f4240 R12:ffff9abfffee8700[  141.088009] R13: 0000000000000000 R14: ffff9abfdb1f04a0 R15:ffff9abfdb1f04a8[  141.088009] FS:  0000000000000000(0000) GS:ffff9abfffec0000(0000)knlGS:0000000000000000[  141.088009] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[  141.088009] CR2: ffffffffc09b3a30 CR3: 0000008fe4c0a001 CR4:00000000007606e0[  141.088009] DR0: 0000000000000000 DR1: 0000000000000000 DR2:0000000000000000[  141.088009] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:0000000000000400[  141.088009] PKRU: 55555554[  141.088009] Call Trace:[  141.088009]  ? process_one_work+0x195/0x390[  141.088009]  ? worker_thread+0x30/0x390[  141.088009]  ? process_one_work+0x390/0x390[  141.088009]  ? kthread+0x10d/0x130[  141.088009]  ? kthread_flush_work_fn+0x10/0x10[  141.088009]  ? ret_from_fork+0x35/0x40] BUG: unable to handle kernelpaging request at ffffffffc0b28a5a[  200.223240] PGD 97fe00d067 P4D 97fe00d067 PUD 97fe00f067 PMD a580cbf067PTE 0[  200.223464] Oops: 0010 [#1] SMP NOPTI[  200.223579] CPU: 63 PID: 664 Comm: kworker/63:1 Kdump: loaded Nottainted 4.18.0.x86_64 #46[  200.224008] Workqueue: events 0xffffffffc0b28a40[  200.224008] RIP: 0010:0xffffffffc0b28a5a[  200.224008] Code: Bad RIP value.[  200.224008] RSP: 0018:ffffbf3c8e2a3e88 EFLAGS: 00010246[  200.224008] RAX: 0000000000000000 RBX: ffffa0799ad6bca0 RCX:0000000000000000[  200.224008] RDX: 0000000000000000 RSI: 0000000000000246 RDI:0000000000000246[  200.224008] RBP: 0000000000000000 R08: ffff9fe43fde3cb8 R09:00000000000000d5[  200.224008] R10: ffffbf3c8cb53d90 R11: 00000000000f4240 R12:ffff9fe43fde8700[  200.224008] R13: 0000000000000000 R14: ffffa0799ad6bca0 R15:ffffa0799ad6bca8[  200.224008] FS:  0000000000000000(0000) GS:ffff9fe43fdc0000(0000)knlGS:0000000000000000[  200.224008] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[  200.224008] CR2: ffffffffc0b28a30 CR3: 00000097fe00a002 CR4:00000000007606e0[  200.224008] DR0: 0000000000000000 DR1: 0000000000000000 DR2:0000000000000000[  200.224008] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:0000000000000400[  200.224008] PKRU: 55555554[  200.224008] Call Trace:[  200.224008]  ? process_one_work+0x195/0x390[  200.224008]  ? worker_thread+0x30/0x390[  200.224008]  ? process_one_work+0x390/0x390[  200.224008]  ? kthread+0x10d/0x130[  200.224008]  ? kthread_flush_work_fn+0x10/0x10[  200.224008]  ? ret_from_fork+0x35/0x40[  200.224008] kernel fault(0x1) notification starting on CPU 63[  200.224008] kernel fault(0x1) notification finished on CPU 63[  200.224008] CR2: ffffffffc0b28a5a[  200.224008] ---[ end trace c82a412d93f57412 ]---The reason is as follows:T1: rmmod ipmi_si.    ->ipmi_unregister_smi()        -> ipmi_bmc_unregister()            -> __ipmi_bmc_unregister()                -> kref_put(&bmc->usecount, cleanup_bmc_device);                    -> schedule_work(&bmc->remove_work);T2: rmmod ipmi_msghandl---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ipmi: Fix UAF when uninstall ipmi_si and ipmi_msghandler moduleHi,When testing install and uninstall of ipmi_si.ko and ipmi_msghandler.ko,the system crashed.The log as follows:[  141.087026] BUG: unable to handle kernel paging request atffffffffc09b3a5a[  141.087241] PGD 8fe4c0d067 P4D 8fe4c0d067 PUD 8fe4c0f067 PMD 103ad89067PTE 0[  141.087464] Oops: 0010 [#1] SMP NOPTI[  141.087580] CPU: 67 PID: 668 Comm: kworker/67:1 Kdump: loaded Nottainted 4.18.0.x86_64 #47[  141.088009] Workqueue: events 0xffffffffc09b3a40[  141.088009] RIP: 0010:0xffffffffc09b3a5a[  141.088009] Code: Bad RIP value.[  141.088009] RSP: 0018:ffffb9094e2c3e88 EFLAGS: 00010246[  141.088009] RAX: 0000000000000000 RBX: ffff9abfdb1f04a0 RCX:0000000000000000[  141.088009] RDX: 0000000000000000 RSI: 0000000000000246 RDI:0000000000000246[  141.088009] RBP: 0000000000000000 R08: ffff9abfffee3cb8 R09:00000000000002e1[  141.088009] R10: ffffb9094cb73d90 R11: 00000000000f4240 R12:ffff9abfffee8700[  141.088009] R13: 0000000000000000 R14: ffff9abfdb1f04a0 R15:ffff9abfdb1f04a8[  141.088009] FS:  0000000000000000(0000) GS:ffff9abfffec0000(0000)knlGS:0000000000000000[  141.088009] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[  141.088009] CR2: ffffffffc09b3a30 CR3: 0000008fe4c0a001 CR4:00000000007606e0[  141.088009] DR0: 0000000000000000 DR1: 0000000000000000 DR2:0000000000000000[  141.088009] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:0000000000000400[  141.088009] PKRU: 55555554[  141.088009] Call Trace:[  141.088009]  ? process_one_work+0x195/0x390[  141.088009]  ? worker_thread+0x30/0x390[  141.088009]  ? process_one_work+0x390/0x390[  141.088009]  ? kthread+0x10d/0x130[  141.088009]  ? kthread_flush_work_fn+0x10/0x10[  141.088009]  ? ret_from_fork+0x35/0x40] BUG: unable to handle kernelpaging request at ffffffffc0b28a5a[  200.223240] PGD 97fe00d067 P4D 97fe00d067 PUD 97fe00f067 PMD a580cbf067PTE 0[  200.223464] Oops: 0010 [#1] SMP NOPTI[  200.223579] CPU: 63 PID: 664 Comm: kworker/63:1 Kdump: loaded Nottainted 4.18.0.x86_64 #46[  200.224008] Workqueue: events 0xffffffffc0b28a40[  200.224008] RIP: 0010:0xffffffffc0b28a5a[  200.224008] Code: Bad RIP value.[  200.224008] RSP: 0018:ffffbf3c8e2a3e88 EFLAGS: 00010246[  200.224008] RAX: 0000000000000000 RBX: ffffa0799ad6bca0 RCX:0000000000000000[  200.224008] RDX: 0000000000000000 RSI: 0000000000000246 RDI:0000000000000246[  200.224008] RBP: 0000000000000000 R08: ffff9fe43fde3cb8 R09:00000000000000d5[  200.224008] R10: ffffbf3c8cb53d90 R11: 00000000000f4240 R12:ffff9fe43fde8700[  200.224008] R13: 0000000000000000 R14: ffffa0799ad6bca0 R15:ffffa0799ad6bca8[  200.224008] FS:  0000000000000000(0000) GS:ffff9fe43fdc0000(0000)knlGS:0000000000000000[  200.224008] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[  200.224008] CR2: ffffffffc0b28a30 CR3: 00000097fe00a002 CR4:00000000007606e0[  200.224008] DR0: 0000000000000000 DR1: 0000000000000000 DR2:0000000000000000[  200.224008] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:0000000000000400[  200.224008] PKRU: 55555554[  200.224008] Call Trace:[  200.224008]  ? process_one_work+0x195/0x390[  200.224008]  ? worker_thread+0x30/0x390[  200.224008]  ? process_one_work+0x390/0x390[  200.224008]  ? kthread+0x10d/0x130[  200.224008]  ? kthread_flush_work_fn+0x10/0x10[  200.224008]  ? ret_from_fork+0x35/0x40[  200.224008] kernel fault(0x1) notification starting on CPU 63[  200.224008] kernel fault(0x1) notification finished on CPU 63[  200.224008] CR2: ffffffffc0b28a5a[  200.224008] ---[ end trace c82a412d93f57412 ]---The reason is as follows:T1: rmmod ipmi_si.    ->ipmi_unregister_smi()        -> ipmi_bmc_unregister()            -> __ipmi_bmc_unregister()                -> kref_put(&bmc->usecount, cleanup_bmc_device);                    -> schedule_work(&bmc->remove_work);T2: rmmod ipmi_msghandl---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47100` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-105.119')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -48,16 +48,16 @@
 						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2020261440000000",
+						"comment": "linux-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1059.62')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1069.73')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -72,12 +72,12 @@
 						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2020261440000010",
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1073.76')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -92,20 +92,20 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"comment": "linux-azure-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1032.35')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
@@ -113,7 +113,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1068.72')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -128,8 +128,8 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2020261440000020",
+						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -141,39 +141,39 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1037.38')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201973080000010",
+						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"comment": "linux-ibm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1018.20')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201973080000020",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000090",
+						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2020274180000000",
+						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2020261440000000",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1067.72')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -188,8 +188,8 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2020261440000040",
+						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -209,15 +209,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1056.63')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201973080000000",
+						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]
 			}
