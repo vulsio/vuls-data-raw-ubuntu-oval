@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021471400000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47140 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:iommu/amd: Clear DMA ops when switching domainSince commit 08a27c1c3ecf (\"iommu: Add support to change default domainof an iommu group\") a user can switch a device between IOMMU and directDMA through sysfs. This doesn't work for AMD IOMMU at the moment becausedev->dma_ops is not cleared when switching from a DMA to an identityIOMMU domain. The DMA layer thus attempts to use the dma-iommu ops on anidentity domain, causing an oops:  # echo 0000:00:05.0 > /sys/sys/bus/pci/drivers/e1000e/unbind  # echo identity > /sys/bus/pci/devices/0000:00:05.0/iommu_group/type  # echo 0000:00:05.0 > /sys/sys/bus/pci/drivers/e1000e/bind   ...  BUG: kernel NULL pointer dereference, address: 0000000000000028   ...   Call Trace:    iommu_dma_alloc    e1000e_setup_tx_resources    e1000e_openSince iommu_change_dev_def_domain() calls probe_finalize() again, clearthe dma_ops there like Vt-d does.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47140",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-47140"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-25",
+			"cve": {
+				"text": "CVE-2021-47140",
+				"href": "https://ubuntu.com/security/CVE-2021-47140",
+				"public": "20240325"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

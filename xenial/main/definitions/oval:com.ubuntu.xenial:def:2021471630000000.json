@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021471630000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47163 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:tipc: wait and exit until all work queues are doneOn some host, a crash could be triggered simply by repeating thesecommands several times:  # modprobe tipc  # tipc bearer enable media udp name UDP1 localip 127.0.0.1  # rmmod tipc  [] BUG: unable to handle kernel paging request at ffffffffc096bb00  [] Workqueue: events 0xffffffffc096bb00  [] Call Trace:  []  ? process_one_work+0x1a7/0x360  []  ? worker_thread+0x30/0x390  []  ? create_worker+0x1a0/0x1a0  []  ? kthread+0x116/0x130  []  ? kthread_flush_work_fn+0x10/0x10  []  ? ret_from_fork+0x35/0x40When removing the TIPC module, the UDP tunnel sock will be delayed torelease in a work queue as sock_release() can't be done in rtnl_lock().If the work queue is schedule to run after the TIPC module is removed,kernel will crash as the work queue function cleanup_beareri() code nolonger exists when trying to invoke it.To fix it, this patch introduce a member wq_count in tipc_net to trackthe numbers of work queues in schedule, and  wait and exit until allwork queues are done in tipc_exit_net().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47163",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-47163"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-25",
+			"cve": {
+				"text": "CVE-2021-47163",
+				"href": "https://ubuntu.com/security/CVE-2021-47163",
+				"public": "20240325"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
