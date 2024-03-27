@@ -1,0 +1,142 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2023526220000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52622 on Ubuntu 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ext4: avoid online resizing failures due to oversized flex bgWhen we online resize an ext4 filesystem with a oversized flexbg_size,     mkfs.ext4 -F -G 67108864 $dev -b 4096 100M     mount $dev $dir     resize2fs $dev 16Gthe following WARN_ON is triggered:==================================================================WARNING: CPU: 0 PID: 427 at mm/page_alloc.c:4402 __alloc_pages+0x411/0x550Modules linked in: sg(E)CPU: 0 PID: 427 Comm: resize2fs Tainted: G  E  6.6.0-rc5+ #314RIP: 0010:__alloc_pages+0x411/0x550Call Trace: <TASK> __kmalloc_large_node+0xa2/0x200 __kmalloc+0x16e/0x290 ext4_resize_fs+0x481/0xd80 __ext4_ioctl+0x1616/0x1d90 ext4_ioctl+0x12/0x20 __x64_sys_ioctl+0xf0/0x150 do_syscall_64+0x3b/0x90==================================================================This is because flexbg_size is too large and the size of the new_group_dataarray to be allocated exceeds MAX_ORDER. Currently, the minimum value ofMAX_ORDER is 8, the minimum value of PAGE_SIZE is 4096, the correspondingmaximum number of groups that can be allocated is: (PAGE_SIZE << MAX_ORDER) / sizeof(struct ext4_new_group_data) ? 21845And the value that is down-aligned to the power of 2 is 16384. Therefore,this value is defined as MAX_RESIZE_BG, and the number of groups addedeach time does not exceed this value during resizing, and is added multipletimes to complete the online resizing. The difference is that the metadatain a flex_bg may be more dispersed.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52622",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52622"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-26 18:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52622",
+				"href": "https://ubuntu.com/security/CVE-2023-52622",
+				"public": "20240326"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

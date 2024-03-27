@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024266500000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26650 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:platform/x86: p2sb: Allow p2sb_bar() calls during PCI device probep2sb_bar() unhides P2SB device to get resources from the device. Itguards the operation by locking pci_rescan_remove_lock so that parallelrescans do not find the P2SB device. However, this lock causes deadlockwhen PCI bus rescan is triggered by /sys/bus/pci/rescan. The rescanlocks pci_rescan_remove_lock and probes PCI devices. When PCI devicescall p2sb_bar() during probe, it locks pci_rescan_remove_lock again.Hence the deadlock.To avoid the deadlock, do not lock pci_rescan_remove_lock in p2sb_bar().Instead, do the lock at fs_initcall. Introduce p2sb_cache_resources()for fs_initcall which gets and caches the P2SB resources. At p2sb_bar(),refer the cache and return to the caller.Before operating the device at P2SB DEVFN for resource cache, checkthat its device class is PCI_CLASS_MEMORY_OTHER 0x0580 that PCHspecifications define. This avoids unexpected operation to other devicesat the same DEVFN.Tested-by Klara Modin <klarasmodin@gmail.com>",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26650",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26650"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-26 18:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26650",
+				"href": "https://ubuntu.com/security/CVE-2024-26650",
+				"public": "20240326"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
