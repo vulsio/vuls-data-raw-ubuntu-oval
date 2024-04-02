@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024266700000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26670 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:arm64: entry: fix ARM64_WORKAROUND_SPECULATIVE_UNPRIV_LOADCurrently the ARM64_WORKAROUND_SPECULATIVE_UNPRIV_LOAD workaround isn'tquite right, as it is supposed to be applied after the last explicitmemory access, but is immediately followed by an LDR.The ARM64_WORKAROUND_SPECULATIVE_UNPRIV_LOAD workaround is used tohandle Cortex-A520 erratum 2966298 and Cortex-A510 erratum 3117295,which are described in:* https://developer.arm.com/documentation/SDEN2444153/0600/?lang=en* https://developer.arm.com/documentation/SDEN1873361/1600/?lang=enIn both cases the workaround is described as:| If pagetable isolation is disabled, the context switch logic in the| kernel can be updated to execute the following sequence on affected| cores before exiting to EL0, and after all explicit memory accesses:|| 1. A non-shareable TLBI to any context and/or address, including|    unused contexts or addresses, such as a `TLBI VALE1 Xzr`.|| 2. A DSB NSH to guarantee completion of the TLBI.The important part being that the TLBI+DSB must be placed \"after allexplicit memory accesses\".Unfortunately, as-implemented, the TLBI+DSB is immediately followed byan LDR, as we have:| alternative_if ARM64_WORKAROUND_SPECULATIVE_UNPRIV_LOAD| \ttlbi\tvale1, xzr| \tdsb\tnsh| alternative_else_nop_endif| alternative_if_not ARM64_UNMAP_KERNEL_AT_EL0| \tldr\tlr, [sp, #S_LR]| \tadd\tsp, sp, #PT_REGS_SIZE\t\t// restore sp| \teret| alternative_else_nop_endif|| [ ... KPTI exception return path ... ]This patch fixes this by reworking the logic to place the TLBI+DSBimmediately before the ERET, after all explicit memory accesses.The ERET is currently in a separate alternative block, and alternativescannot be nested. To account for this, the alternative block forARM64_UNMAP_KERNEL_AT_EL0 is replaced with a single alternative branchto skip the KPTI logic, with the new shape of the logic being:| alternative_insn \"b .L_skip_tramp_exit_\\@\", nop,ARM64_UNMAP_KERNEL_AT_EL0| \t[ ... KPTI exception return path ... ]| .L_skip_tramp_exit_\\@:|| \tldr\tlr, [sp, #S_LR]| \tadd\tsp, sp, #PT_REGS_SIZE\t\t// restore sp|| alternative_if ARM64_WORKAROUND_SPECULATIVE_UNPRIV_LOAD| \ttlbi\tvale1, xzr| \tdsb\tnsh| alternative_else_nop_endif| \teretThe new structure means that the workaround is only applied when KPTI isnot in use; this is fine as noted in the documented implications of theerratum:| Pagetable isolation between EL0 and higher level ELs prevents the| issue from occurring.... and as per the workaround description quoted above, the workaroundis only necessary \"If pagetable isolation is disabled\".",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26670",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26670"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-02",
+			"cve": {
+				"text": "CVE-2024-26670",
+				"href": "https://ubuntu.com/security/CVE-2024-26670",
+				"public": "20240402"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

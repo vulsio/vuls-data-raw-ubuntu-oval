@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023526300000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52630 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:blk-iocost: Fix an UBSAN shift-out-of-bounds warningWhen iocg_kick_delay() is called from a CPU different than the one whichsetthe delay, @now may be in the past of @iocg->delay_at leading to thefollowing warning:  UBSAN: shift-out-of-bounds in block/blk-iocost.c:1359:23  shift exponent 18446744073709 is too large for 64-bit type 'u64' (aka'unsigned long long')  ...  Call Trace:   <TASK>   dump_stack_lvl+0x79/0xc0   __ubsan_handle_shift_out_of_bounds+0x2ab/0x300   iocg_kick_delay+0x222/0x230   ioc_rqos_merge+0x1d7/0x2c0   __rq_qos_merge+0x2c/0x80   bio_attempt_back_merge+0x83/0x190   blk_attempt_plug_merge+0x101/0x150   blk_mq_submit_bio+0x2b1/0x720   submit_bio_noacct_nocheck+0x320/0x3e0   __swap_writepage+0x2ab/0x9d0The underflow itself doesn't really affect the behavior in any meaningfulway; however, the past timestamp may exaggerate the delay amount calculatedlater in the code, which shouldn't be a material problem given the natureofthe delay mechanism.If @now is in the past, this CPU is racing another CPU which recently setupthe delay and there's nothing this CPU can contribute w.r.t. the delay.Let's bail early from iocg_kick_delay() in such cases.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52630",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52630"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-02",
+			"cve": {
+				"text": "CVE-2023-52630",
+				"href": "https://ubuntu.com/security/CVE-2023-52630",
+				"public": "20240402"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2023526360000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52636 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:libceph: just wait for more data to be available on the socketA short read may occur while reading the message footer from thesocket.  Later, when the socket is ready for another read, themessenger invokes all read_partial_*() handlers, includingread_partial_sparse_msg_data().  The expectation is thatread_partial_sparse_msg_data() would bail, allowing the messenger toinvoke read_partial() for the footer and pick up where it left off.However read_partial_sparse_msg_data() violates that and ends upcalling into the state machine in the OSD client.  The sparse-readstate machine assumes that it's a new op and interprets some piece ofthe footer as the sparse-read header and returns bogus extents/datalength, etc.To determine whether read_partial_sparse_msg_data() should bail, let'sreuse cursor->total_resid.  Because once it reaches to zero that meansall the extents and data have been successfully received in last read,else it could break out when partially reading any of the extents anddata.  And then osd_sparse_read() could continue where it left off.[ idryomov: changelog ]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52636",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52636"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-02",
+			"cve": {
+				"text": "CVE-2023-52636",
+				"href": "https://ubuntu.com/security/CVE-2023-52636",
+				"public": "20240402"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
