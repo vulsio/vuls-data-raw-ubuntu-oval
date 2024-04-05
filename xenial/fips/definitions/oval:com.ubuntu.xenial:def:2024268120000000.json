@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024268120000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26812 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:vfio/pci: Create persistent INTx handlerA vulnerability exists where the eventfd for INTx signaling can bedeconfigured, which unregisters the IRQ handler but still allowseventfds to be signaled with a NULL context through the SET_IRQS ioctlor through unmask irqfd if the device interrupt is pending.Ideally this could be solved with some additional locking; the igatemutex serializes the ioctl and config space accesses, and the interrupthandler is unregistered relative to the trigger, but the irqfd pathruns asynchronous to those.  The igate mutex cannot be acquired from theatomic context of the eventfd wake function.  Disabling the irqfdrelative to the eventfd registration is potentially incompatible withexisting userspace.As a result, the solution implemented here moves configuration of theINTx interrupt handler to track the lifetime of the INTx context objectand irq_type configuration, rather than registration of a particulartrigger eventfd.  Synchronization is added between the ioctl path andeventfd_signal() wrapper such that the eventfd trigger can bedynamically updated relative to in-flight interrupts or irqfd callbacks.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26812",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26812"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-05",
+			"cve": {
+				"text": "CVE-2024-26812",
+				"href": "https://ubuntu.com/security/CVE-2024-26812",
+				"public": "20240405"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
