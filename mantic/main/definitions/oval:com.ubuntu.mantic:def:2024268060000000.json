@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2024268060000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26806 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:spi: cadence-qspi: remove system-wide suspend helper calls from runtime PMhooksThe ->runtime_suspend() and ->runtime_resume() callbacks are notexpected to call spi_controller_suspend() and spi_controller_resume().Remove calls to those in the cadence-qspi driver.Those helpers have two roles currently: - They stop/start the queue, including dealing with the kworker. - They toggle the SPI controller SPI_CONTROLLER_SUSPENDED flag. It   requires acquiring ctlr->bus_lock_mutex.Step one is irrelevant because cadence-qspi is not queued. Step twohowever has two implications: - A deadlock occurs, because ->runtime_resume() is called in a context   where the lock is already taken (in the ->exec_op() callback, where   the usage count is incremented). - It would disallow all operations once the device is auto-suspended.Here is a brief call tree highlighting the mutex deadlock:spi_mem_exec_op()        ...        spi_mem_access_start()                mutex_lock(&ctlr->bus_lock_mutex)        cqspi_exec_mem_op()                pm_runtime_resume_and_get()                        cqspi_resume()                                spi_controller_resume()                                        mutex_lock(&ctlr->bus_lock_mutex)                ...        spi_mem_access_end()                mutex_unlock(&ctlr->bus_lock_mutex)        ...",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26806",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26806"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-04",
+			"cve": {
+				"text": "CVE-2024-26806",
+				"href": "https://ubuntu.com/security/CVE-2024-26806",
+				"public": "20240404"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

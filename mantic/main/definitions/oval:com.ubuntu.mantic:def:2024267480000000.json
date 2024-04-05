@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2024267480000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26748 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: cdns3: fix memory double free when handle zero packet829  if (request->complete) {830          spin_unlock(&priv_dev->lock);831          usb_gadget_giveback_request(&priv_ep->endpoint,832                                    request);833          spin_lock(&priv_dev->lock);834  }835836  if (request->buf == priv_dev->zlp_buf)837      cdns3_gadget_ep_free_request(&priv_ep->endpoint, request);Driver append an additional zero packet request when queue a packet, whichlength mod max packet size is 0. When transfer complete, run to line 831,usb_gadget_giveback_request() will free this requestion. 836 condition istrue, so cdns3_gadget_ep_free_request() free this request again.Log:[ 1920.140696][  T150] BUG: KFENCE: use-after-free read incdns3_gadget_giveback+0x134/0x2c0 [cdns3][ 1920.140696][  T150][ 1920.151837][  T150] Use-after-free read at 0x000000003d1cd10b (inkfence-#36):[ 1920.159082][  T150]  cdns3_gadget_giveback+0x134/0x2c0 [cdns3][ 1920.164988][  T150]  cdns3_transfer_completed+0x438/0x5f8 [cdns3]Add check at line 829, skip call usb_gadget_giveback_request() if it isadditional zero length packet request. Needn't callusb_gadget_giveback_request() because it is allocated in this driver.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26748",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26748"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-04",
+			"cve": {
+				"text": "CVE-2024-26748",
+				"href": "https://ubuntu.com/security/CVE-2024-26748",
+				"public": "20240404"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

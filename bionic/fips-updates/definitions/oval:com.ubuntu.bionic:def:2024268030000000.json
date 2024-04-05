@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024268030000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26803 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: veth: clear GRO when clearing XDP even when downveth sets NETIF_F_GRO automatically when XDP is enabled,because both features use the same NAPI machinery.The logic to clear NETIF_F_GRO sits in veth_disable_xdp() whichis called both on ndo_stop and when XDP is turned off.To avoid the flag from being cleared when the device is broughtdown, the clearing is skipped when IFF_UP is not set.Bringing the device down should indeed not modify its features.Unfortunately, this means that clearing is also skipped whenXDP is disabled _while_ the device is down. And there's nothingon the open path to bring the device features back into sync.IOW if user enables XDP, disables it and then brings the deviceup we'll end up with a stray GRO flag set but no NAPI instances.We don't depend on the GRO flag on the datapath, so the datapathwon't crash. We will crash (or hang), however, next time featuresare sync'ed (either by user via ethtool or peer changing its config).The GRO flag will go away, and veth will try to disable the NAPIs.But the open path never created them since XDP was off, the GRO flagwas a stray. If NAPI was initialized before we'll hang in napi_disable().If it never was we'll crash trying to stop uninitialized hrtimer.Move the GRO flag updates to the XDP enable / disable paths,instead of mixing them with the ndo_open / ndo_close paths.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26803",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26803"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-04",
+			"cve": {
+				"text": "CVE-2024-26803",
+				"href": "https://ubuntu.com/security/CVE-2024-26803",
+				"public": "20240404"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

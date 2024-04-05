@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024267560000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26756 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:md: Don't register sync_thread for reshape directlyCurrently, if reshape is interrupted, then reassemble the array willregister sync_thread directly from pers->run(), in this case'MD_RECOVERY_RUNNING' is set directly, however, there is no guaranteethat md_do_sync() will be executed, hence stop_sync_thread() will hangbecause 'MD_RECOVERY_RUNNING' can't be cleared.Last patch make sure that md_do_sync() will set MD_RECOVERY_DONE,however, following hang can still be triggered by dm-raid testshell/lvconvert-raid-reshape.sh occasionally:[root@fedora ~]# cat /proc/1982/stack[<0>] stop_sync_thread+0x1ab/0x270 [md_mod][<0>] md_frozen_sync_thread+0x5c/0xa0 [md_mod][<0>] raid_presuspend+0x1e/0x70 [dm_raid][<0>] dm_table_presuspend_targets+0x40/0xb0 [dm_mod][<0>] __dm_destroy+0x2a5/0x310 [dm_mod][<0>] dm_destroy+0x16/0x30 [dm_mod][<0>] dev_remove+0x165/0x290 [dm_mod][<0>] ctl_ioctl+0x4bb/0x7b0 [dm_mod][<0>] dm_ctl_ioctl+0x11/0x20 [dm_mod][<0>] vfs_ioctl+0x21/0x60[<0>] __x64_sys_ioctl+0xb9/0xe0[<0>] do_syscall_64+0xc6/0x230[<0>] entry_SYSCALL_64_after_hwframe+0x6c/0x74Meanwhile mddev->recovery is:MD_RECOVERY_RUNNING |MD_RECOVERY_INTR |MD_RECOVERY_RESHAPE |MD_RECOVERY_FROZENFix this problem by remove the code to register sync_thread directlyfrom raid10 and raid5. And let md_check_recovery() to registersync_thread.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26756",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26756"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-04",
+			"cve": {
+				"text": "CVE-2024-26756",
+				"href": "https://ubuntu.com/security/CVE-2024-26756",
+				"public": "20240404"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

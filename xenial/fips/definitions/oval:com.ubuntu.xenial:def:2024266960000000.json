@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024266960000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26696 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix hang in nilfs_lookup_dirty_data_buffers()Syzbot reported a hang issue in migrate_pages_batch() called by mbind()and nilfs_lookup_dirty_data_buffers() called in the log writer of nilfs2.While migrate_pages_batch() locks a folio and waits for the writeback tocomplete, the log writer thread that should bring the writeback tocompletion picks up the folio being written back innilfs_lookup_dirty_data_buffers() that it calls for subsequent logcreation and was trying to lock the folio.  Thus causing a deadlock.In the first place, it is unexpected that folios/pages in the middle ofwriteback will be updated and become dirty.  Nilfs2 adds a checksum toverify the validity of the log being written and uses it for recovery atmount, so data changes during writeback are suppressed.  Since this isbroken, an unclean shutdown could potentially cause recovery to fail.Investigation revealed that the root cause is that the wait for writebackcompletion in nilfs_page_mkwrite() is conditional, and if the backingdevice does not require stable writes, data may be modified withoutwaiting.Fix these issues by making nilfs_page_mkwrite() wait for writeback tofinish regardless of the stable write requirement of the backing device.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26696",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26696"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-04",
+			"cve": {
+				"text": "CVE-2024-26696",
+				"href": "https://ubuntu.com/security/CVE-2024-26696",
+				"public": "20240404"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2023526380000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52638 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:can: j1939: prevent deadlock by changing j1939_socks_lock to rwlockThe following 3 locks would race against each other, causing thedeadlock situation in the Syzbot bug report:- j1939_socks_lock- active_session_list_lock- sk_session_queue_lockA reasonable fix is to change j1939_socks_lock to an rwlock, since inthe rare situations where a write lock is required for the linked listthat j1939_socks_lock is protecting, the code does not attempt toacquire any more locks. This would break the circular lock dependency,where, for example, the current thread already locks j1939_socks_lockand attempts to acquire sk_session_queue_lock, and at the same time,another thread attempts to acquire j1939_socks_lock while holdingsk_session_queue_lock.NOTE: This patch along does not fix the unregister_netdevice bugreported by Syzbot; instead, it solves a deadlock situation to preparefor one or more further patches to actually fix the Syzbot bug, whichappears to be a reference counting problem within the j1939 codebase.[mkl: remove unrelated newline change]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52638",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-52638"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-04",
+			"cve": {
+				"text": "CVE-2023-52638",
+				"href": "https://ubuntu.com/security/CVE-2023-52638",
+				"public": "20240404"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

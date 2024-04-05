@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024267660000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26766 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:IB/hfi1: Fix sdma.h tx->num_descs off-by-one errorUnfortunately the commit `fd8958efe877` introduced another errorcausing the `descs` array to overflow. This reults in further crasheseasily reproducible by `sendmsg` system call.[ 1080.836473] general protection fault, probably for non-canonical address0x400300015528b00a: 0000 [#1] PREEMPT SMP PTI[ 1080.869326] RIP:0010:hfi1_ipoib_build_ib_tx_headers.constprop.0+0xe1/0x2b0 [hfi1]--[ 1080.974535] Call Trace:[ 1080.976990]  <TASK>[ 1081.021929]  hfi1_ipoib_send_dma_common+0x7a/0x2e0 [hfi1][ 1081.027364]  hfi1_ipoib_send_dma_list+0x62/0x270 [hfi1][ 1081.032633]  hfi1_ipoib_send+0x112/0x300 [hfi1][ 1081.042001]  ipoib_start_xmit+0x2a9/0x2d0 [ib_ipoib][ 1081.046978]  dev_hard_start_xmit+0xc4/0x210--[ 1081.148347]  __sys_sendmsg+0x59/0xa0crash> ipoib_txreq 0xffff9cfeba229f00struct ipoib_txreq {  txreq = {    list = {      next = 0xffff9cfeba229f00,      prev = 0xffff9cfeba229f00    },    descp = 0xffff9cfeba229f40,    coalesce_buf = 0x0,    wait = 0xffff9cfea4e69a48,    complete = 0xffffffffc0fe0760 <hfi1_ipoib_sdma_complete>,    packet_len = 0x46d,    tlen = 0x0,    num_desc = 0x0,    desc_limit = 0x6,    next_descq_idx = 0x45c,    coalesce_idx = 0x0,    flags = 0x0,    descs = {{        qw = {0x8024000120dffb00, 0x4}  # SDMA_DESC0_FIRST_DESC_FLAG (bit63)      }, {        qw = {  0x3800014231b108, 0x4}      }, {        qw = { 0x310000e4ee0fcf0, 0x8}      }, {        qw = {  0x3000012e9f8000, 0x8}      }, {        qw = {  0x59000dfb9d0000, 0x8}      }, {        qw = {  0x78000e02e40000, 0x8}      }}  },  sdma_hdr =  0x400300015528b000,  <<< invalid pointer in the tx requeststructure  sdma_status = 0x0,                   SDMA_DESC0_LAST_DESC_FLAG (bit 62)  complete = 0x0,  priv = 0x0,  txq = 0xffff9cfea4e69880,  skb = 0xffff9d099809f400}If an SDMA send consists of exactly 6 descriptors and requires dwordpadding (in the 7th descriptor), the sdma_txreq descriptor array is notproperly expanded and the packet will overflow into the containerstructure. This results in a panic when the send completion runs. Theexact panic varies depending on what elements of the container structureget corrupted. The fix is to use the correct expression in_pad_sdma_tx_descs() to test the need to expand the descriptor array.With this patch the crashes are no longer reproducible and the machine isstable.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26766",
+			"ref_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-26766"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-04",
+			"cve": {
+				"text": "CVE-2024-26766",
+				"href": "https://ubuntu.com/security/CVE-2024-26766",
+				"public": "20240404"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
