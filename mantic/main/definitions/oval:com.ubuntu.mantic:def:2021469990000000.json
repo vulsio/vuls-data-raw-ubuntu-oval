@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-46999 on Ubuntu 23.10 (mantic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: sctp:do asoc update earlier in sctp_sf_do_dupcook_a There's a panic that occursin a few of envs, the call trace is as below: [] general protection fault,... 0x29acd70f1000a: 0000 [#1] SMP PTI [] RIP:0010:sctp_ulpevent_notify_peer_addr_change+0x4b/0x1fa [sctp] []sctp_assoc_control_transport+0x1b9/0x210 [sctp] []sctp_do_8_2_transport_strike.isra.16+0x15c/0x220 [sctp] []sctp_cmd_interpreter.isra.21+0x1231/0x1a10 [sctp] [] sctp_do_sm+0xc3/0x2a0[sctp] [] sctp_generate_timeout_event+0x81/0xf0 [sctp] This is caused by atransport use-after-free issue. When processing a duplicate COOKIE-ECHOchunk in sctp_sf_do_dupcook_a(), both COOKIE-ACK and SHUTDOWN chunks areallocated with the transort from the new asoc. However, later in thesideeffect machine, the old asoc is used to send them out and old asoc'sshutdown_last_sent_to is set to the transport that SHUTDOWN chunk attachedto in sctp_cmd_setup_t2(), which actually belongs to the new asoc. Afterthe new_asoc is freed and the old asoc T2 timeout, the old asoc'sshutdown_last_sent_to that is already freed would be accessed insctp_sf_t2_timer_expire(). Thanks Alexander and Jere for helping dig intothis issue. To fix it, this patch is to do the asoc update first, thenallocate the COOKIE-ACK and SHUTDOWN chunks with the 'updated' old asoc.This would make more sense, as a chunk from an asoc shouldn't be sent outwith another asoc. We had fixed quite a few issues caused by this.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: sctp:do asoc update earlier in sctp_sf_do_dupcook_a There's a panic that occursin a few of envs, the call trace is as below: [] general protection fault,... 0x29acd70f1000a: 0000 [#1] SMP PTI [] RIP:0010:sctp_ulpevent_notify_peer_addr_change+0x4b/0x1fa [sctp] []sctp_assoc_control_transport+0x1b9/0x210 [sctp] []sctp_do_8_2_transport_strike.isra.16+0x15c/0x220 [sctp] []sctp_cmd_interpreter.isra.21+0x1231/0x1a10 [sctp] [] sctp_do_sm+0xc3/0x2a0[sctp] [] sctp_generate_timeout_event+0x81/0xf0 [sctp] This is caused by atransport use-after-free issue. When processing a duplicate COOKIE-ECHOchunk in sctp_sf_do_dupcook_a(), both COOKIE-ACK and SHUTDOWN chunks areallocated with the transort from the new asoc. However, later in thesideeffect machine, the old asoc is used to send them out and old asoc'sshutdown_last_sent_to is set to the transport that SHUTDOWN chunk attachedto in sctp_cmd_setup_t2(), which actually belongs to the new asoc. Afterthe new_asoc is freed and the old asoc T2 timeout, the old asoc'sshutdown_last_sent_to that is already freed would be accessed insctp_sf_t2_timer_expire(). Thanks Alexander and Jere for helping dig intothis issue. To fix it, this patch is to do the asoc update first, thenallocate the COOKIE-ACK and SHUTDOWN chunks with the 'updated' old asoc.This would make more sense, as a chunk from an asoc shouldn't be sent outwith another asoc. We had fixed quite a few issues caused by this.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46999` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-6.2.0-20-generic-lpae - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic-64k - 6.2.0-20.20\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-aws - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-azure - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1005-gcp - 6.2.0-1005.5\nNo subscription required\n\nlinux-image-6.5.0-1003-laptop - 6.5.0-1003.6\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-lowlatency - 6.2.0-1003.3\nlinux-image-unsigned-6.2.0-1003-lowlatency-64k - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-oracle - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-6.2.0-1004-raspi - 6.2.0-1004.5\nlinux-image-6.2.0-1004-raspi-nolpae - 6.2.0-1004.5\nNo subscription required\n\nlinux-image-6.5.0-1002-starfive - 6.5.0-1002.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
-						"comment": "linux package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000000",
+						"comment": "linux package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-20.20')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
-						"comment": "linux-aws package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000010",
+						"comment": "linux-aws package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
-						"comment": "linux-azure package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000010",
+						"comment": "linux-azure package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
-						"comment": "linux-gcp package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000020",
+						"comment": "linux-gcp package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
 						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
-						"comment": "linux-laptop package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000030",
+						"comment": "linux-laptop package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1003.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
-						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000010",
+						"comment": "linux-lowlatency package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
-						"comment": "linux-oracle package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000010",
+						"comment": "linux-oracle package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
-						"comment": "linux-raspi package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000040",
+						"comment": "linux-raspi package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
-						"comment": "linux-starfive package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000050",
+						"comment": "linux-starfive package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1002.3')."
 					}
 				]
 			}

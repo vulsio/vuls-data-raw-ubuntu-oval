@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-46989 on Ubuntu 23.10 (mantic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:hfsplus: prevent corruption in shrinking truncate I believe there are someissues introduced by commit 31651c607151 (\"hfsplus: avoid deadlock on filetruncation\") HFS+ has extent records which always contains 8 extents. Incase the first extent record in catalog file gets full, new ones areallocated from extents overflow file. In case shrinking truncate happens tomiddle of an extent record which locates in extents overflow file, thelogic in hfsplus_file_truncate() was changed so that call tohfs_brec_remove() is not guarded any more. Right action would be justfreeing the extents that exceed the new size inside extent record bycalling hfsplus_free_extents(), and then check if the whole extent recordshould be removed. However since the guard (blk_cnt > start) is now afterthe call to hfs_brec_remove(), this has unfortunate effect that the lastmatching extent record is removed unconditionally. To reproduce this issue,create a file which has at least 10 extents, and then perform shrinkingtruncate into middle of the last extent record, so that the number ofremaining extents is not under or divisible by 8. This causes the lastextent record (8 extents) to be removed totally instead of truncating intomiddle of it. Thus this causes corruption, and lost data. Fix for this issimply checking if the new truncated end is below the start of this extentrecord, making it safe to remove the full extent record. However call tohfs_brec_remove() can't be moved to it's previous place since we'redropping ->tree_lock and it can cause a race condition and the cached infobeing invalidated possibly corrupting the node data. Another issue isrelated to this one. When entering into the block (blk_cnt > start) we arenot holding the ->tree_lock. We break out from the loop not holding thelock, but hfs_find_exit() does unlock it. Not sure if it's possible forsomeone else to take the lock under our feet, but it can cause hard todebug errors and premature unlocking. Even if there's no real risk of it,the locking should still always be kept in balance. Thus taking the locknow just before the check.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:hfsplus: prevent corruption in shrinking truncate I believe there are someissues introduced by commit 31651c607151 (\"hfsplus: avoid deadlock on filetruncation\") HFS+ has extent records which always contains 8 extents. Incase the first extent record in catalog file gets full, new ones areallocated from extents overflow file. In case shrinking truncate happens tomiddle of an extent record which locates in extents overflow file, thelogic in hfsplus_file_truncate() was changed so that call tohfs_brec_remove() is not guarded any more. Right action would be justfreeing the extents that exceed the new size inside extent record bycalling hfsplus_free_extents(), and then check if the whole extent recordshould be removed. However since the guard (blk_cnt > start) is now afterthe call to hfs_brec_remove(), this has unfortunate effect that the lastmatching extent record is removed unconditionally. To reproduce this issue,create a file which has at least 10 extents, and then perform shrinkingtruncate into middle of the last extent record, so that the number ofremaining extents is not under or divisible by 8. This causes the lastextent record (8 extents) to be removed totally instead of truncating intomiddle of it. Thus this causes corruption, and lost data. Fix for this issimply checking if the new truncated end is below the start of this extentrecord, making it safe to remove the full extent record. However call tohfs_brec_remove() can't be moved to it's previous place since we'redropping ->tree_lock and it can cause a race condition and the cached infobeing invalidated possibly corrupting the node data. Another issue isrelated to this one. When entering into the block (blk_cnt > start) we arenot holding the ->tree_lock. We break out from the loop not holding thelock, but hfs_find_exit() does unlock it. Not sure if it's possible forsomeone else to take the lock under our feet, but it can cause hard todebug errors and premature unlocking. Even if there's no real risk of it,the locking should still always be kept in balance. Thus taking the locknow just before the check.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46989` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-6.2.0-20-generic-lpae - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic-64k - 6.2.0-20.20\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-aws - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-azure - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1005-gcp - 6.2.0-1005.5\nNo subscription required\n\nlinux-image-6.5.0-1003-laptop - 6.5.0-1003.6\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-lowlatency - 6.2.0-1003.3\nlinux-image-unsigned-6.2.0-1003-lowlatency-64k - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-oracle - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-6.2.0-1004-raspi - 6.2.0-1004.5\nlinux-image-6.2.0-1004-raspi-nolpae - 6.2.0-1004.5\nNo subscription required\n\nlinux-image-6.5.0-1002-starfive - 6.5.0-1002.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
-						"comment": "linux package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000000",
+						"comment": "linux package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-20.20')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
-						"comment": "linux-aws package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000010",
+						"comment": "linux-aws package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
-						"comment": "linux-azure package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000010",
+						"comment": "linux-azure package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
-						"comment": "linux-gcp package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000020",
+						"comment": "linux-gcp package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
 						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
-						"comment": "linux-laptop package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000030",
+						"comment": "linux-laptop package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1003.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
-						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000010",
+						"comment": "linux-lowlatency package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
-						"comment": "linux-oracle package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000010",
+						"comment": "linux-oracle package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
-						"comment": "linux-raspi package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000040",
+						"comment": "linux-raspi package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
-						"comment": "linux-starfive package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2019251600000050",
+						"comment": "linux-starfive package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1002.3')."
 					}
 				]
 			}
