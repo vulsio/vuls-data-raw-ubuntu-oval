@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-46936 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: net:fix use-after-free in tw_timer_handler A real world panic issue was foundas follow in Linux 5.4. BUG: unable to handle page fault for address:ffffde49a863de28 PGD 7e6fe62067 P4D 7e6fe62067 PUD 7e6fe63067 PMDf51e064067 PTE 0 RIP: 0010:tw_timer_handler+0x20/0x40 Call Trace: <IRQ>call_timer_fn+0x2b/0x120 run_timer_softirq+0x1ef/0x450__do_softirq+0x10d/0x2b8 irq_exit+0xc7/0xd0smp_apic_timer_interrupt+0x68/0x120 apic_timer_interrupt+0xf/0x20 Thisissue was also reported since 2017 in the thread [1], unfortunately, theissue was still can be reproduced after fixing DCCP. The ipv4_mib_exit_netis called before tcp_sk_exit_batch when a net namespace is destroyed sincetcp_sk_ops is registered befrore ipv4_mib_ops, which means tcp_sk_ops is inthe front of ipv4_mib_ops in the list of pernet_list. There will be ause-after-free on net->mib.net_statistics in tw_timer_handler afteripv4_mib_exit_net if there are some inflight time-wait timers. This bug isnot introduced by commit f2bf415cfed7 (\"mib: add net to NET_ADD_STATS_BH\")since the net_statistics is a global variable instead of dynamic allocationand freeing. Actually, commit 61a7e26028b9 (\"mib: put net statistics onstruct net\") introduces the bug since it put net statistics on struct netand free it when net namespace is destroyed. Moving init_ipv4_mibs() to thefront of tcp_init() to fix this bug and replace pr_crit() with panic()since continuing is meaningless when init_ipv4_mibs() fails. [1]https://groups.google.com/g/syzkaller/c/p1tn-_Kc6l4/m/smuL_FMAAgAJ?pli=1",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:fix use-after-free in tw_timer_handler A real world panic issue was foundas follow in Linux 5.4. BUG: unable to handle page fault for address:ffffde49a863de28 PGD 7e6fe62067 P4D 7e6fe62067 PUD 7e6fe63067 PMDf51e064067 PTE 0 RIP: 0010:tw_timer_handler+0x20/0x40 Call Trace: <IRQ>call_timer_fn+0x2b/0x120 run_timer_softirq+0x1ef/0x450__do_softirq+0x10d/0x2b8 irq_exit+0xc7/0xd0smp_apic_timer_interrupt+0x68/0x120 apic_timer_interrupt+0xf/0x20 Thisissue was also reported since 2017 in the thread [1], unfortunately, theissue was still can be reproduced after fixing DCCP. The ipv4_mib_exit_netis called before tcp_sk_exit_batch when a net namespace is destroyed sincetcp_sk_ops is registered befrore ipv4_mib_ops, which means tcp_sk_ops is inthe front of ipv4_mib_ops in the list of pernet_list. There will be ause-after-free on net->mib.net_statistics in tw_timer_handler afteripv4_mib_exit_net if there are some inflight time-wait timers. This bug isnot introduced by commit f2bf415cfed7 (\"mib: add net to NET_ADD_STATS_BH\")since the net_statistics is a global variable instead of dynamic allocationand freeing. Actually, commit 61a7e26028b9 (\"mib: put net statistics onstruct net\") introduces the bug since it put net statistics on struct netand free it when net namespace is destroyed. Moving init_ipv4_mibs() to thefront of tcp_init() to fix this bug and replace pr_crit() with panic()since continuing is meaningless when init_ipv4_mibs() fails. [1]https://groups.google.com/g/syzkaller/c/p1tn-_Kc6l4/m/smuL_FMAAgAJ?pli=1\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46936` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-164-generic - 4.4.0-253.287~14.04.1\nlinux-image-4.4.0-164-generic-lpae - 4.4.0-253.287~14.04.1\nlinux-image-4.4.0-164-lowlatency - 4.4.0-253.287~14.04.1\nlinux-image-4.4.0-164-powerpc-e500mc - 4.4.0-253.287~14.04.1\nlinux-image-4.4.0-164-powerpc-smp - 4.4.0-253.287~14.04.1\nlinux-image-4.4.0-164-powerpc64-emb - 4.4.0-253.287~14.04.1\nlinux-image-4.4.0-164-powerpc64-smp - 4.4.0-253.287~14.04.1\nlinux-image-unsigned-4.4.0-164-generic - 4.4.0-253.287~14.04.1\nlinux-image-unsigned-4.4.0-164-lowlatency - 4.4.0-253.287~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1054-aws - 4.4.0-1130.136\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -23,8 +23,13 @@
 				"href": "https://ubuntu.com/security/CVE-2021-46936",
 				"public": "20240227",
 				"cvss_score": "7.8",
-				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
-			}
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+				"usns": "6739-1"
+			},
+			"public_date_at_usn": "2024-02-27 10:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6739-1"
+			]
 		}
 	},
 	"notes": {},
@@ -38,12 +43,12 @@
 						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2019251620000000",
+						"comment": "linux-lts-xenial package in trusty was vulnerable but has been fixed (note: '4.4.0-253.287~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2019251620000010",
+						"comment": "linux-aws package in trusty was vulnerable but has been fixed (note: '4.4.0-1130.136')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",

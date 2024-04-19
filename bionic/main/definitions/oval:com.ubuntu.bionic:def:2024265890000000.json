@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26589 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:Reject variable offset alu on PTR_TO_FLOW_KEYS For PTR_TO_FLOW_KEYS,check_flow_keys_access() only uses fixed off for validation. However,variable offset ptr alu is not prohibited for this ptr kind. So thevariable offset is not checked. The following prog is accepted: func#0 @00: R1=ctx() R10=fp0 0: (bf) r6 = r1 ; R1=ctx() R6_w=ctx() 1: (79) r7 =*(u64 *)(r6 +144) ; R6_w=ctx() R7_w=flow_keys() 2: (b7) r8 = 1024 ;R8_w=1024 3: (37) r8 /= 1 ; R8_w=scalar() 4: (57) r8 &= 1024 ;R8_w=scalar(smin=smin32=0, smax=umax=smax32=umax32=1024,var_off=(0x0;0x400)) 5: (0f) r7 += r8 mark_precise: frame0: last_idx 5 first_idx 0subseq_idx -1 mark_precise: frame0: regs=r8 stack= before 4: (57) r8 &=1024 mark_precise: frame0: regs=r8 stack= before 3: (37) r8 /= 1mark_precise: frame0: regs=r8 stack= before 2: (b7) r8 = 1024 6:R7_w=flow_keys(smin=smin32=0,smax=umax=smax32=umax32=1024,var_off =(0x0;0x400)) R8_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1024,var_off=(0x0; 0x400)) 6: (79) r0 = *(u64 *)(r7 +0) ; R0_w=scalar() 7: (95)exit This prog loads flow_keys to r7, and adds the variable offset r8 tor7, and finally causes out-of-bounds access: BUG: unable to handle pagefault for address: ffffc90014c80038 [...] Call Trace: <TASK>bpf_dispatcher_nop_func include/linux/bpf.h:1231 [inline] __bpf_prog_runinclude/linux/filter.h:651 [inline] bpf_prog_run include/linux/filter.h:658[inline] bpf_prog_run_pin_on_cpu include/linux/filter.h:675 [inline]bpf_flow_dissect+0x15f/0x350 net/core/flow_dissector.c:991bpf_prog_test_run_flow_dissector+0x39d/0x620 net/bpf/test_run.c:1359bpf_prog_test_run kernel/bpf/syscall.c:4107 [inline] __sys_bpf+0xf8f/0x4560kernel/bpf/syscall.c:5475 __do_sys_bpf kernel/bpf/syscall.c:5561 [inline]__se_sys_bpf kernel/bpf/syscall.c:5559 [inline] __x64_sys_bpf+0x73/0xb0kernel/bpf/syscall.c:5559 do_syscall_x64 arch/x86/entry/common.c:52[inline] do_syscall_64+0x3f/0x110 arch/x86/entry/common.c:83entry_SYSCALL_64_after_hwframe+0x63/0x6b Fix this by rejecting ptr alu withvariable offset on flow_keys. Applying the patch rejects the program with\"R7 pointer arithmetic on flow_keys prohibited\".\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26589` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-4.15.0-214-generic-lpae - 4.13.0-16.19\nlinux-image-4.15.0-214-lowlatency - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-lowlatency - 4.13.0-16.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1143-kvm - 4.15.0-1002.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1159-aws - 4.15.0-1001.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1168-azure - 4.15.0-1082.92\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1153-gcp - 4.15.0-1071.81\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1122-oracle - 4.15.0-1007.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:Reject variable offset alu on PTR_TO_FLOW_KEYS For PTR_TO_FLOW_KEYS,check_flow_keys_access() only uses fixed off for validation. However,variable offset ptr alu is not prohibited for this ptr kind. So thevariable offset is not checked. The following prog is accepted: func#0 @00: R1=ctx() R10=fp0 0: (bf) r6 = r1 ; R1=ctx() R6_w=ctx() 1: (79) r7 =*(u64 *)(r6 +144) ; R6_w=ctx() R7_w=flow_keys() 2: (b7) r8 = 1024 ;R8_w=1024 3: (37) r8 /= 1 ; R8_w=scalar() 4: (57) r8 &= 1024 ;R8_w=scalar(smin=smin32=0, smax=umax=smax32=umax32=1024,var_off=(0x0;0x400)) 5: (0f) r7 += r8 mark_precise: frame0: last_idx 5 first_idx 0subseq_idx -1 mark_precise: frame0: regs=r8 stack= before 4: (57) r8 &=1024 mark_precise: frame0: regs=r8 stack= before 3: (37) r8 /= 1mark_precise: frame0: regs=r8 stack= before 2: (b7) r8 = 1024 6:R7_w=flow_keys(smin=smin32=0,smax=umax=smax32=umax32=1024,var_off =(0x0;0x400)) R8_w=scalar(smin=smin32=0,smax=umax=smax32=umax32=1024,var_off=(0x0; 0x400)) 6: (79) r0 = *(u64 *)(r7 +0) ; R0_w=scalar() 7: (95)exit This prog loads flow_keys to r7, and adds the variable offset r8 tor7, and finally causes out-of-bounds access: BUG: unable to handle pagefault for address: ffffc90014c80038 [...] Call Trace: <TASK>bpf_dispatcher_nop_func include/linux/bpf.h:1231 [inline] __bpf_prog_runinclude/linux/filter.h:651 [inline] bpf_prog_run include/linux/filter.h:658[inline] bpf_prog_run_pin_on_cpu include/linux/filter.h:675 [inline]bpf_flow_dissect+0x15f/0x350 net/core/flow_dissector.c:991bpf_prog_test_run_flow_dissector+0x39d/0x620 net/bpf/test_run.c:1359bpf_prog_test_run kernel/bpf/syscall.c:4107 [inline] __sys_bpf+0xf8f/0x4560kernel/bpf/syscall.c:5475 __do_sys_bpf kernel/bpf/syscall.c:5561 [inline]__se_sys_bpf kernel/bpf/syscall.c:5559 [inline] __x64_sys_bpf+0x73/0xb0kernel/bpf/syscall.c:5559 do_syscall_x64 arch/x86/entry/common.c:52[inline] do_syscall_64+0x3f/0x110 arch/x86/entry/common.c:83entry_SYSCALL_64_after_hwframe+0x63/0x6b Fix this by rejecting ptr alu withvariable offset on flow_keys. Applying the patch rejects the program with\"R7 pointer arithmetic on flow_keys prohibited\".\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26589` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-4.15.0-214-generic-lpae - 4.13.0-16.19\nlinux-image-4.15.0-214-lowlatency - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-lowlatency - 4.13.0-16.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-152-generic - 5.4.0-177.197~18.04.1\nlinux-image-5.4.0-152-generic-lpae - 5.4.0-177.197~18.04.1\nlinux-image-5.4.0-152-lowlatency - 5.4.0-177.197~18.04.1\nlinux-image-unsigned-5.4.0-152-generic - 5.4.0-177.197~18.04.1\nlinux-image-unsigned-5.4.0-152-lowlatency - 5.4.0-177.197~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1143-kvm - 4.15.0-1002.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1159-aws - 4.15.0-1001.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1104-aws - 5.4.0-1123.133~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1168-azure - 4.15.0-1082.92\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1110-azure - 5.4.0-1128.135~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1153-gcp - 4.15.0-1071.81\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1107-gcp - 5.4.0-1127.136~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1051-ibm - 5.4.0-1070.75~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1122-oracle - 4.15.0-1007.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1103-oracle - 5.4.0-1122.131~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-1088-raspi - 5.4.0-1107.119~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -24,13 +24,15 @@
 				"public": "20240222",
 				"cvss_score": "7.8",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
-				"usns": "6688-1,6725-1,6725-2"
+				"usns": "6688-1,6725-1,6725-2,6741-1,6743-1"
 			},
 			"public_date_at_usn": "2024-02-22 17:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-6688-1",
 				"https://ubuntu.com/security/notices/USN-6725-1",
-				"https://ubuntu.com/security/notices/USN-6725-2"
+				"https://ubuntu.com/security/notices/USN-6725-2",
+				"https://ubuntu.com/security/notices/USN-6741-1",
+				"https://ubuntu.com/security/notices/USN-6743-1"
 			]
 		}
 	},
@@ -49,8 +51,8 @@
 						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2023240230000000",
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-177.197~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
@@ -69,8 +71,8 @@
 						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
-						"comment": "linux-aws-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2023240230000010",
+						"comment": "linux-aws-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1123.133~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -85,8 +87,8 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2023240230000020",
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1128.135~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000300",
@@ -105,8 +107,8 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2023240230000030",
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1127.136~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -129,8 +131,8 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2023240230000040",
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1070.75~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000110",
@@ -145,8 +147,8 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2023240230000050",
+						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1122.131~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -165,8 +167,8 @@
 						"comment": "linux-raspi2-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
-						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2023240230000060",
+						"comment": "linux-raspi-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1107.119~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000020",
