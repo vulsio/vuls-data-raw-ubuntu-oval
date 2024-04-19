@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2024269090000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26909 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:soc: qcom: pmic_glink_altmode: fix drm bridge use-after-freeA recent DRM series purporting to simplify support for \"transparentbridges\" and handling of probe deferrals ironically exposed ause-after-free issue on pmic_glink_altmode probe deferral.This has manifested itself as the display subsystem occasionally failingto initialise and NULL-pointer dereferences during boot of machines likethe Lenovo ThinkPad X13s.Specifically, the dp-hpd bridge is currently registered before allresources have been acquired which means that it can also bederegistered on probe deferrals.In the meantime there is a race window where the new aux bridge driver(or PHY driver previously) may have looked up the dp-hpd bridge andstored a (non-reference-counted) pointer to the bridge which is about tobe deallocated.When the display controller is later initialised, this triggers ause-after-free when attaching the bridges:\tdp -> aux -> dp-hpd (freed)which may, for example, result in the freed bridge failing to attach:\t[drm:drm_bridge_attach [drm]] *ERROR* failed to attach bridge/soc@0/phy@88eb000 to encoder TMDS-31: -16or a NULL-pointer dereference:\tUnable to handle kernel NULL pointer dereference at virtual address0000000000000000\t...\tCall trace:\t  drm_bridge_attach+0x70/0x1a8 [drm]\t  drm_aux_bridge_attach+0x24/0x38 [aux_bridge]\t  drm_bridge_attach+0x80/0x1a8 [drm]\t  dp_bridge_init+0xa8/0x15c [msm]\t  msm_dp_modeset_init+0x28/0xc4 [msm]The DRM bridge implementation is clearly fragile and implicitly built onthe assumption that bridges may never go away. In this case, the fix isto move the bridge registration in the pmic_glink_altmode driver toafter all resources have been looked up.Incidentally, with the new dp-hpd bridge implementation, which registerschild devices, this is also a requirement due to a long-standing issuein driver core that can otherwise lead to a probe deferral loop (seecommit fbc35b45f9f6 (\"Add documentation on meaning of -EPROBE_DEFER\")).[DB: slightly fixed commit message by adding the word 'commit']",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26909",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26909"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-17 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26909",
+				"href": "https://ubuntu.com/security/CVE-2024-26909",
+				"public": "20240417"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

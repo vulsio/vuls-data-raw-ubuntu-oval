@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2024268990000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26899 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:block: fix deadlock between bd_link_disk_holder and partition scan'open_mutex' of gendisk is used to protect open/close block devices. Butin bd_link_disk_holder(), it is used to protect the creation of symlinkbetween holding disk and slave bdev, which introduces some issues.When bd_link_disk_holder() is called, the driver is usually in the processof initialization/modification and may suspend submitting io. At thistime, any io hold 'open_mutex', such as scanning partitions, can causedeadlocks. For example, in raid:T1                              T2bdev_open_by_dev lock open_mutex [1] ...  efi_partition  ...   md_submit_bio\t\t\t\tmd_ioctl mddev_syspend\t\t\t\t  -> suspend all io\t\t\t\t md_add_new_disk\t\t\t\t  bind_rdev_to_array\t\t\t\t   bd_link_disk_holder\t\t\t\t    try lock open_mutex [2]    md_handle_request     -> wait mddev_resumeT1 scan partition, T2 add a new device to raid. T1 waits for T2 to resumemddev, but T2 waits for open_mutex held by T1. Deadlock occurs.Fix it by introducing a local mutex 'blk_holder_mutex' to replace'open_mutex'.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26899",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26899"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-17 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26899",
+				"href": "https://ubuntu.com/security/CVE-2024-26899",
+				"public": "20240417"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
