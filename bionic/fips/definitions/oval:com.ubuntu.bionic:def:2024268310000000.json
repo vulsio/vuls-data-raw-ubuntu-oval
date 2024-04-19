@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024268310000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26831 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/handshake: Fix handshake_req_destroy_test1Recently, handshake_req_destroy_test1 started failing:Expected handshake_req_destroy_test == req, but    handshake_req_destroy_test == 0000000000000000    req == 0000000060f99b40not ok 11 req_destroy worksThis is because \"sock_release(sock)\" was replaced with \"fput(filp)\"to address a memory leak. Note that sock_release() is synchronousbut fput() usually delays the final close and clean-up.The delay is not consequential in the other cases that were changedbut handshake_req_destroy_test1 is testing that handshake_req_cancel()followed by closing the file actually does call the ->hp_destroymethod. Thus the PTR_EQ test at the end has to be sure that thefinal close is complete before it checks the pointer.We cannot use a completion here because if ->hp_destroy is nevercalled (ie, there is an API bug) then the test will hang.Reported by: Guenter Roeck <linux@roeck-us.net>",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26831",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26831"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-17 10:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26831",
+				"href": "https://ubuntu.com/security/CVE-2024-26831",
+				"public": "20240417"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

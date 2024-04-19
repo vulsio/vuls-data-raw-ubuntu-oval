@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024268260000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26826 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mptcp: fix data re-injection from stale subflowWhen the MPTCP PM detects that a subflow is stale, all the packetscheduler must re-inject all the mptcp-level unacked data. To avoidacquiring unneeded locks, it first try to check if any unacked datais present at all in the RTX queue, but such check is currentlybroken, as it uses TCP-specific helper on an MPTCP socket.Funnily enough fuzzers and static checkers are happy, as the accessedmemory still belongs to the mptcp_sock struct, and even from afunctional perspective the recovery completed successfully, asthe short-cut test always failed.A recent unrelated TCP change - commit d5fed5addb2b (\"tcp: reorganizetcp_sock fast path variables\") - exposed the issue, as the tcp fieldreorganization makes the mptcp code always skip the re-inection.Fix the issue dropping the bogus call: we are on a slow path, the earlyoptimization proved once again to be evil.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26826",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26826"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-17 10:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26826",
+				"href": "https://ubuntu.com/security/CVE-2024-26826",
+				"public": "20240417"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

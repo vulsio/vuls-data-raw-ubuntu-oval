@@ -1,0 +1,45 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024268210000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26821 on Ubuntu 16.04 FIPS Certified (xenial) - low",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:fs: relax mount_setattr() permission checksWhen we added mount_setattr() I added additional checks compared to thelegacy do_reconfigure_mnt() and do_change_type() helpers used by regularmount(2). If that mount had a parent then verify that the caller and themount namespace the mount is attached to match and if not make sure thatit's an anonymous mount.The real rootfs falls into neither category. It is neither an anoymousmount because it is obviously attached to the initial mount namespacebut it also obviously doesn't have a parent mount. So that means legacymount(2) allows changing mount properties on the real rootfs butmount_setattr(2) blocks this. I never thought much about this but ofcourse someone on this planet of earth changes properties on the realrootfs as can be seen in [1].Since util-linux finally switched to the new mount api in 2.39 not solong ago it also relies on mount_setattr() and that surfaced this issuewhen Fedora 39 finally switched to it. Fix this.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26821",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26821"
+		},
+		"advisory": {
+			"severity": "Low",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-17 10:15:00 UTC",
+			"bug": [
+				"https://bugzilla.redhat.com/show_bug.cgi?id=2256843"
+			],
+			"cve": {
+				"text": "CVE-2024-26821",
+				"href": "https://ubuntu.com/security/CVE-2024-26821",
+				"public": "20240417"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

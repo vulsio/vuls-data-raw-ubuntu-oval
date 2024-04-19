@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024268970000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26897 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: ath9k: delay all of ath9k_wmi_event_tasklet() until init is completeThe ath9k_wmi_event_tasklet() used in ath9k_htc assumes that all the datastructures have been fully initialised by the time it runs. However,because ofthe order in which things are initialised, this is not guaranteed to be thecase, because the device is exposed to the USB subsystem before the ath9kdriverinitialisation is completed.We already committed a partial fix for this in commit:8b3046abc99e (\"ath9k_htc: fix NULL pointer dereference atath9k_htc_tx_get_packet()\")However, that commit only aborted the WMI_TXSTATUS_EVENTID command in theeventtasklet, pairing it with an \"initialisation complete\" bit in the TX struct.Itseems syzbot managed to trigger the race for one of the other commands aswell,so let's just move the existing synchronisation bit to cover the wholetasklet (setting it at the end of ath9k_htc_probe_device() instead ofinsideath9k_tx_init()).",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26897",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26897"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-17 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26897",
+				"href": "https://ubuntu.com/security/CVE-2024-26897",
+				"public": "20240417"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

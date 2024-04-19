@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2024268530000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26853 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:igc: avoid returning frame twice in XDP_REDIRECTWhen a frame can not be transmitted in XDP_REDIRECT(e.g. due to a full queue), it is necessary to freeit by calling xdp_return_frame_rx_napi.However, this is the responsibility of the caller ofthe ndo_xdp_xmit (see for example bq_xmit_all inkernel/bpf/devmap.c) and thus calling it insideigc_xdp_xmit (which is the ndo_xdp_xmit of the igcdriver) as well will lead to memory corruption.In fact, bq_xmit_all expects that it can return allframes after the last successfully transmitted one.Therefore, break for the first not transmitted frame,but do not call xdp_return_frame_rx_napi in igc_xdp_xmit.This is equally implemented in other Intel driverssuch as the igb.There are two alternatives to this that were rejected:1. Return num_frames as all the frames would have been   transmitted and release them inside igc_xdp_xmit.   While it might work technically, it is not what   the return value is meant to represent (i.e. the   number of SUCCESSFULLY transmitted packets).2. Rework kernel/bpf/devmap.c and all drivers to   support non-consecutively dropped packets.   Besides being complex, it likely has a negative   performance impact without a significant gain   since it is anyway unlikely that the next frame   can be transmitted if the previous one was dropped.The memory corruption can be reproduced withthe following script which leads to a kernel panicafter a few seconds.  It basically generates moretraffic than a i225 NIC can transmit and pushes itvia XDP_REDIRECT from a virtual interface to thephysical interface where frames get dropped.   #!/bin/bash   INTERFACE=enp4s0   INTERFACE_IDX=`cat /sys/class/net/$INTERFACE/ifindex`   sudo ip link add dev veth1 type veth peer name veth2   sudo ip link set up $INTERFACE   sudo ip link set up veth1   sudo ip link set up veth2   cat << EOF > redirect.bpf.c   SEC(\"prog\")   int redirect(struct xdp_md *ctx)   {       return bpf_redirect($INTERFACE_IDX, 0);   }   char _license[] SEC(\"license\") = \"GPL\";   EOF   clang -O2 -g -Wall -target bpf -c redirect.bpf.c -o redirect.bpf.o   sudo ip link set veth2 xdp obj redirect.bpf.o   cat << EOF > pass.bpf.c   SEC(\"prog\")   int pass(struct xdp_md *ctx)   {       return XDP_PASS;   }   char _license[] SEC(\"license\") = \"GPL\";   EOF   clang -O2 -g -Wall -target bpf -c pass.bpf.c -o pass.bpf.o   sudo ip link set $INTERFACE xdp obj pass.bpf.o   cat << EOF > trafgen.cfg   {     /* Ethernet Header */     0xe8, 0x6a, 0x64, 0x41, 0xbf, 0x46,     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,     const16(ETH_P_IP),     /* IPv4 Header */     0b01000101, 0,   # IPv4 version, IHL, TOS     const16(1028),   # IPv4 total length (UDP length + 20 bytes (IPheader))     const16(2),      # IPv4 ident     0b01000000, 0,   # IPv4 flags, fragmentation off     64,              # IPv4 TTL     17,              # Protocol UDP     csumip(14, 33),  # IPv4 checksum     /* UDP Header */     10,  0, 1, 1,    # IP Src - adapt as needed     10,  0, 1, 2,    # IP Dest - adapt as needed     const16(6666),   # UDP Src Port     const16(6666),   # UDP Dest Port     const16(1008),   # UDP length (UDP header 8 bytes + payload length)     csumudp(14, 34), # UDP checksum     /* Payload */     fill('W', 1000),   }   EOF   sudo trafgen -i trafgen.cfg -b3000MB -o veth1 --cpp",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26853",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26853"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-17 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26853",
+				"href": "https://ubuntu.com/security/CVE-2024-26853",
+				"public": "20240417"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
