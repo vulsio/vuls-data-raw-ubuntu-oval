@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2023524780000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52478 on Ubuntu 24.04 LTS. (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: HID:logitech-hidpp: Fix kernel crash on receiver USB disconnecthidpp_connect_event() has *four* time-of-check vs time-of-use (TOCTOU)races when it races with itself. hidpp_connect_event() primarily runs froma workqueue but it also runs on probe() and if a \"device-connected\" packetis received by the hw when the thread running hidpp_connect_event() fromprobe() is waiting on the hw, then a second thread runninghidpp_connect_event() will be started from the workqueue. This opens thefollowing races (note the below code is simplified): 1. Retrieving +printing the protocol (harmless race): if (!hidpp->protocol_major) {hidpp_root_get_protocol_version() hidpp->protocol_major =response.rap.params[0]; } We can actually see this race hit in the dmesg inthe abrt output attached to rhbz#2227968: [ 3064.624215]logitech-hidpp-device 0003:046D:4071.0049: HID++ 4.5 device connected. [3064.658184] logitech-hidpp-device 0003:046D:4071.0049: HID++ 4.5 deviceconnected. Testing with extra logging added has shown that after this the 2threads take turn grabbing the hw access mutex (send_mutex) so theyping-pong through all the other TOCTOU cases managing to hit all of them:2. Updating the name to the HIDPP name (harmless race): if (hidpp->name ==hdev->name) { ... hidpp->name = new_name; } 3. Initializing thepower_supply class for the battery (problematic!):hidpp_initialize_battery() { if (hidpp->battery.ps) return 0;probe_battery(); /* Blocks, threads take turns executing this */hidpp->battery.desc.properties = devm_kmemdup(dev, hidpp_battery_props,cnt, GFP_KERNEL); hidpp->battery.ps =devm_power_supply_register(&hidpp->hid_dev->dev, &hidpp->battery.desc,cfg); } 4. Creating delayed input_device (potentially problematic): if(hidpp->delayed_input) return; hidpp->delayed_input =hidpp_allocate_input(hdev); The really big problem here is 3. Hitting therace leads to the following sequence: hidpp->battery.desc.properties =devm_kmemdup(dev, hidpp_battery_props, cnt, GFP_KERNEL); hidpp->battery.ps= devm_power_supply_register(&hidpp->hid_dev->dev, &hidpp->battery.desc,cfg); ... hidpp->battery.desc.properties = devm_kmemdup(dev,hidpp_battery_props, cnt, GFP_KERNEL); hidpp->battery.ps =devm_power_supply_register(&hidpp->hid_dev->dev, &hidpp->battery.desc,cfg); So now we have registered 2 power supplies for the same battery,which looks a bit weird from userspace's pov but this is not even thereally big problem. Notice how: 1. This is all devm-maganaged 2. Thehidpp->battery.desc struct is shared between the 2 power supplies 3.hidpp->battery.desc.properties points to the result from the seconddevm_kmemdup() This causes a use after free scenario on USB disconnect ofthe receiver: 1. The last registered power supply class device getsunregistered 2. The memory from the last devm_kmemdup() call gets freed,hidpp->battery.desc.properties now points to freed memory 3. The firstregistered power supply class device gets unregistered, this involvessending a remove uevent to userspace which invokes power_supply_uevent() tofill the uevent data 4. power_supply_uevent() useshidpp->battery.desc.properties which now points to freed memory leading tobacktraces like this one: Sep 22 20:01:35 eric kernel: BUG: unable tohandle page fault for address: ffffb2140e017f08 ... Sep 22 20:01:35 erickernel: Workqueue: usb_hub_wq hub_event Sep 22 20:01:35 eric kernel: RIP:0010:power_supply_uevent+0xee/0x1d0 ... Sep 22 20:01:35 eric kernel: ?asm_exc_page_fault+0x26/0x30 Sep 22 20:01:35 eric kernel: ?power_supply_uevent+0xee/0x1d0 Sep 22 20:01:35 eric kernel: ?power_supply_uevent+0x10d/0x1d0 Sep 22 20:01:35 eric kernel:dev_uevent+0x10f/0x2d0 Sep 22 20:01:35 eric kernel:kobject_uevent_env+0x291/0x680 Sep 22 20:01:35 eric kernel: ---truncated---",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS."
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52478",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52478"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-29 06:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52478",
+				"href": "https://ubuntu.com/security/CVE-2023-52478",
+				"public": "20240229"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

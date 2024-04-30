@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024266850000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26685 on Ubuntu 24.04 LTS. (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix potential bug in end_buffer_async_writeAccording to a syzbot report, end_buffer_async_write(), which handles thecompletion of block device writes, may detect abnormal condition of thebuffer async_write flag and cause a BUG_ON failure when using nilfs2.Nilfs2 itself does not use end_buffer_async_write().  But, the async_writeflag is now used as a marker by commit 7f42ec394156 (\"nilfs2: fix issuewith race condition of competition between segments for dirty blocks\") asa means of resolving double list insertion of dirty blocks innilfs_lookup_dirty_data_buffers() and nilfs_lookup_node_buffers() and theresulting crash.This modification is safe as long as it is used for file data and b-treenode blocks where the page caches are independent.  However, it wasirrelevant and redundant to also introduce async_write for segment summaryand super root blocks that share buffers with the backing device.  Thisled to the possibility that the BUG_ON check in end_buffer_async_writewould fail as described above, if independent writebacks of the backingdevice occurred in parallel.The use of async_write for segment summary buffers has already beenremoved in a previous change.Fix this issue by removing the manipulation of the async_write flag forthe remaining super root block buffer.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS."
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26685",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26685"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-03 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26685",
+				"href": "https://ubuntu.com/security/CVE-2024-26685",
+				"public": "20240403"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
