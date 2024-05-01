@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.noble:def:2023524990000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2023-52499 on Ubuntu 24.04 LTS. (noble) - medium",
+		"title": "CVE-2023-52499 on Ubuntu 24.04 LTS (noble) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/47x: Fix 47x syscall return crash Eddie reported that newer kernelswere crashing during boot on his 476 FSP2 system: kernel tried to executeuser page (b7ee2000) - exploit attempt? (uid: 0) BUG: Unable to handlekernel instruction fetch Faulting instruction address: 0xb7ee2000 Oops:Kernel access of bad area, sig: 11 [#1] BE PAGE_SIZE=4K FSP-2 Moduleslinked in: CPU: 0 PID: 61 Comm: mount Not tainted 6.1.55-d23900f.ppcnf-fsp2#1 Hardware name: ibm,fsp2 476fpe 0x7ff520c0 FSP-2 NIP: b7ee2000 LR:8c008000 CTR: 00000000 REGS: bffebd83 TRAP: 0400 Not tainted(6.1.55-d23900f.ppcnf-fs p2) MSR: 00000030 <IR,DR> CR: 00001000 XER:20000000 GPR00: c00110ac bffebe63 bffebe7e bffebe88 8c008000 0000100000000d12 b7ee2000 GPR08: 00000033 00000000 00000000 c139df10 482248241016c314 10160000 00000000 GPR16: 10160000 10160000 00000008 0000000010160000 00000000 10160000 1017f5b0 GPR24: 1017fa50 1017f4f0 1017fa501017f740 1017f630 00000000 00000000 1017f4f0 NIP [b7ee2000] 0xb7ee2000 LR[8c008000] 0x8c008000 Call Trace: Instruction dump: XXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX ---[ end trace0000000000000000 ]--- The problem is in ret_from_syscall where the checkfor icache_44x_need_flush is done. When the flush is needed the code jumpsout-of-line to do the flush, and then intends to jump back to continue thesyscall return. However the branch back to label 1b doesn't return to thecorrect location, instead branching back just prior to the return touserspace, causing bogus register values to be used by the rfi. Thebreakage was introduced by commit 6f76a01173cc (\"powerpc/syscall: implementsystem call entry/exit logic in C for PPC32\") which inadvertently removedthe \"1\" label and reused it elsewhere. Fix it by adding named local labelsin the correct locations. Note that the return label needs to be outsidethe ifdef so that CONFIG_PPC_47x=n compiles.",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 24.04 LTS."
+			"platform": "Ubuntu 24.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -40,27 +40,31 @@
 						"comment": "linux-aws package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
 						"comment": "linux-azure package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
 						"comment": "linux-gcp package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
 						"comment": "linux-lowlatency package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
 						"comment": "linux-oracle package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
 						"comment": "linux-raspi package in noble is affected and may need fixing."
 					}
 				]

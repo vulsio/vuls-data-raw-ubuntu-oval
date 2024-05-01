@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.noble:def:2021472090000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2021-47209 on Ubuntu 24.04 LTS. (noble) - medium",
+		"title": "CVE-2021-47209 on Ubuntu 24.04 LTS (noble) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:sched/fair: Prevent dead task groups from regaining cfs_rq'sKevin is reporting crashes which point to a use-after-free of a cfs_rqin update_blocked_averages(). Initial debugging revealed that we'velive cfs_rq's (on_list=1) in an about to be kfree()'d task group infree_fair_sched_group(). However, it was unclear how that can happen.His kernel config happened to lead to a layout of struct sched_entitythat put the 'my_q' member directly into the middle of the objectwhich makes it incidentally overlap with SLUB's freelist pointer.That, in combination with SLAB_FREELIST_HARDENED's freelist pointermangling, leads to a reliable access violation in form of a #GP whichmade the UAF fail fast.Michal seems to have run into the same issue[1]. He already correctlydiagnosed that commit a7b359fc6a37 (\"sched/fair: Correctly insertcfs_rq's to list on unthrottle\") is causing the preconditions for theUAF to happen by re-adding cfs_rq's also to task groups that have nomore running tasks, i.e. also to dead ones. His analysis, however,misses the real root cause and it cannot be seen from the crashbacktrace only, as the real offender is tg_unthrottle_up() gettingcalled via sched_cfs_period_timer() via the timer interrupt at aninconvenient time.When unregister_fair_sched_group() unlinks all cfs_rq's from the dyingtask group, it doesn't protect itself from getting interrupted. If thetimer interrupt triggers while we iterate over all CPUs or afterunregister_fair_sched_group() has finished but prior to unlinking thetask group, sched_cfs_period_timer() will execute and walk the list oftask groups, trying to unthrottle cfs_rq's, i.e. re-add them to thedying task group. These will later -- in free_fair_sched_group() -- bekfree()'ed while still being linked, leading to the fireworks Kevinand Michal are seeing.To fix this race, ensure the dying task group gets unlinked first.However, simply switching the order of unregistering and unlinking thetask group isn't sufficient, as concurrent RCU walkers might still seeit, as can be seen below:    CPU1:                                      CPU2:      :                                        timer IRQ:      :do_sched_cfs_period_timer():      :                                            :      :distribute_cfs_runtime():      :                                              rcu_read_lock();      :                                              :      :                                              unthrottle_cfs_rq():    sched_offline_group():                             :      :walk_tg_tree_from(…,tg_unthrottle_up,…):      list_del_rcu(&tg->list);                           : (1)  :list_for_each_entry_rcu(child, &parent->children, siblings)      :                                                    : (2)  list_del_rcu(&tg->siblings);                         :      :tg_unthrottle_up():      unregister_fair_sched_group():                         struct cfs_rq*cfs_rq = tg->cfs_rq[cpu_of(rq)];        :                                                    :        list_del_leaf_cfs_rq(tg->cfs_rq[cpu]);               :        :                                                    :        :                                                    if(!cfs_rq_is_decayed(cfs_rq) || cfs_rq->nr_running) (3)    :list_add_leaf_cfs_rq(cfs_rq);      :                                                      :      :                                                    :      :                                                  :      :                                                :      :---truncated---",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 24.04 LTS."
+			"platform": "Ubuntu 24.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -40,27 +40,31 @@
 						"comment": "linux-aws package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
 						"comment": "linux-azure package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
 						"comment": "linux-gcp package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
 						"comment": "linux-lowlatency package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
 						"comment": "linux-oracle package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
 						"comment": "linux-raspi package in noble is affected and may need fixing."
 					}
 				]

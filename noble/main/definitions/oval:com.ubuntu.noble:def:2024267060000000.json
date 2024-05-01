@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.noble:def:2024267060000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-26706 on Ubuntu 24.04 LTS. (noble) - medium",
+		"title": "CVE-2024-26706 on Ubuntu 24.04 LTS (noble) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:parisc: Fix random data corruption from exception handlerThe current exception handler implementation, which assists when accessinguser space memory, may exhibit random data corruption if the compilerdecidesto use a different register than the specified register %r29 (defined inASM_EXCEPTIONTABLE_REG) for the error code. If the compiler choose anotherregister, the fault handler will nevertheless store -EFAULT into %r29 andthustrash whatever this register is used for.Looking at the assembly I found that this happens sometimes inemulate_ldd().To solve the issue, the easiest solution would be if it somehow ispossible to tell the fault handler which register is used to hold the errorcode. Using %0 or %1 in the inline assembly is not posssible as it willshowup as e.g. %r29 (with the \"%r\" prefix), which the GNU assembler can notconvert to an integer.This patch takes another, better and more flexible approach:We extend the __ex_table (which is out of the execution path) by one32-word.In this word we tell the compiler to insert the assembler instruction\"or %r0,%r0,%reg\", where %reg references the register which the compilerchoosed for the error return code.In case of an access failure, the fault handler finds the __ex_table entryandcan examine the opcode. The used register is encoded in the lowest 5 bits,andthe fault handler can then store -EFAULT into this register.Since we extend the __ex_table to 3 words we can't use theBUILDTIME_TABLE_SORTconfig option any longer.",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 24.04 LTS."
+			"platform": "Ubuntu 24.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -40,27 +40,31 @@
 						"comment": "linux-aws package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
 						"comment": "linux-azure package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
 						"comment": "linux-gcp package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
 						"comment": "linux-lowlatency package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
 						"comment": "linux-oracle package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
 						"comment": "linux-raspi package in noble is affected and may need fixing."
 					}
 				]

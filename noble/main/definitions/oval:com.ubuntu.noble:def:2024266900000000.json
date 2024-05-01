@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.noble:def:2024266900000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-26690 on Ubuntu 24.04 LTS. (noble) - medium",
+		"title": "CVE-2024-26690 on Ubuntu 24.04 LTS (noble) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:net: stmmac: protect updates of 64-bit statistics countersAs explained by a comment in <linux/u64_stats_sync.h>, write side of structu64_stats_sync must ensure mutual exclusion, or one seqcount update couldbe lost on 32-bit platforms, thus blocking readers forever. Such lockupshave been observed in real world after stmmac_xmit() on one CPU raced withstmmac_napi_poll_tx() on another CPU.To fix the issue without introducing a new lock, split the statics intothree parts:1. fields updated only under the tx queue lock,2. fields updated only during NAPI poll,3. fields updated only from interrupt context,Updates to fields in the first two groups are already serialized throughother locks. It is sufficient to split the existing struct u64_stats_syncso that each group has its own.Note that tx_set_ic_bit is updated from both contexts. Split this counterso that each context gets its own, and calculate their sum to get the totalvalue in stmmac_get_ethtool_stats().For the third group, multiple interrupts may be processed by different CPUsat the same time, but interrupts on the same CPU will not nest. Move fieldsfrom this group to a newly created per-cpu struct stmmac_pcpu_stats.",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 24.04 LTS."
+			"platform": "Ubuntu 24.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -40,27 +40,31 @@
 						"comment": "linux-aws package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
 						"comment": "linux-azure package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
 						"comment": "linux-gcp package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
 						"comment": "linux-lowlatency package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
 						"comment": "linux-oracle package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
 						"comment": "linux-raspi package in noble is affected and may need fixing."
 					}
 				]

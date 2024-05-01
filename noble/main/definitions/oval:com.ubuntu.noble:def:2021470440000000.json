@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.noble:def:2021470440000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2021-47044 on Ubuntu 24.04 LTS. (noble) - medium",
+		"title": "CVE-2021-47044 on Ubuntu 24.04 LTS (noble) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:sched/fair: Fix shift-out-of-bounds in load_balance() Syzbot reported ahandful of occurrences where an sd->nr_balance_failed can grow to muchhigher values than one would expect. A successful load_balance() resets itto 0; a failed one increments it. Once it gets to sd->cache_nice_tries + 3,this *should* trigger an active balance, which will either set it tosd->cache_nice_tries+1 or reset it to 0. However, in case theto-be-active-balanced task is not allowed to run on env->dst_cpu, then theincrement is done without any further modification. This could then berepeated ad nauseam, and would explain the absurdly high values reported bysyzbot (86, 149). VincentG noted there is value in lettingsd->cache_nice_tries grow, so the shift itself should be fixed. That meanspreventing: \"\"\" If the value of the right operand is negative or is greaterthan or equal to the width of the promoted left operand, the behavior isundefined. \"\"\" Thus we need to cap the shift exponent toBITS_PER_TYPE(typeof(lefthand)) - 1. I had a look around for other similarcases via coccinelle: @expr@ position pos; expression E1; expression E2; @@( E1 >> E2@pos | E1 >> E2@pos ) @cst depends on expr@ position pos;expression expr.E1; constant cst; @@ ( E1 >> cst@pos | E1 << cst@pos )@script:python depends on !cst@ pos << expr.pos; exp << expr.E2; @@ # Dirtyhack to ignore constexpr if exp.upper() != exp:coccilib.report.print_report(pos[0], \"Possible UB shift here\") The onlyother match in kernel/sched is rq_clock_thermal() which employssched_thermal_decay_shift, and that exponent is already capped to 10, sothat one is fine.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47044` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 24.04 LTS."
+			"platform": "Ubuntu 24.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -46,6 +46,10 @@
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2019251600000020",
 						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2019251600000030",
