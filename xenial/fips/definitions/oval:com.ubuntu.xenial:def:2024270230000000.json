@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024270230000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-27023 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:md: Fix missing release of 'active_io' for flushsubmit_flushes atomic_set(&mddev->flush_pending, 1); rdev_for_each_rcu(rdev, mddev)  atomic_inc(&mddev->flush_pending);  bi->bi_end_io = md_end_flush  submit_bio(bi);                        /* flush io is done first */                        md_end_flush                         if (atomic_dec_and_test(&mddev->flush_pending))                          percpu_ref_put(&mddev->active_io)                          -> active_io is not released if (atomic_dec_and_test(&mddev->flush_pending))  -> missing release of active_ioFor consequence, mddev_suspend() will wait for 'active_io' to be zeroforever.Fix this problem by releasing 'active_io' in submit_flushes() if'flush_pending' is decreased to zero.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-27023",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-27023"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-27023",
+				"href": "https://ubuntu.com/security/CVE-2024-27023",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

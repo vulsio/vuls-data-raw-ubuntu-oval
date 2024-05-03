@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024269820000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26982 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:Squashfs: check the inode number is not the invalid value of zeroSyskiller has produced an out of bounds access in fill_meta_index().That out of bounds access is ultimately caused because the inodehas an inode number with the invalid value of zero, which was not checked.The reason this causes the out of bounds access is due to followingsequence of events:1. Fill_meta_index() is called to allocate (via empty_meta_index())   and fill a metadata index.  It however suffers a data read error   and aborts, invalidating the newly returned empty metadata index.   It does this by setting the inode number of the index to zero,   which means unused (zero is not a valid inode number).2. When fill_meta_index() is subsequently called again on another   read operation, locate_meta_index() returns the previous index   because it matches the inode number of 0.  Because this index   has been returned it is expected to have been filled, and because   it hasn't been, an out of bounds access is performed.This patch adds a sanity check which checks that the inode numberis not zero when the inode is created and returns -EINVAL if it is.[phillip@squashfs.org.uk: whitespace fix]  Link:https://lkml.kernel.org/r/20240409204723.446925-1-phillip@squashfs.org.uk",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26982",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26982"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-26982",
+				"href": "https://ubuntu.com/security/CVE-2024-26982",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

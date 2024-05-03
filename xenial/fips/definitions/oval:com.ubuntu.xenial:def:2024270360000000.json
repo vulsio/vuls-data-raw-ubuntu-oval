@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024270360000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-27036 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cifs: Fix writeback data corruptioncifs writeback doesn't correctly handle the case wherecifs_extend_writeback() hits a point where it is considering an additionalfolio, but this would overrun the wsize - at which point it drops out ofthe xarray scanning loop and calls xas_pause().  The problem is thatxas_pause() advances the loop counter - thereby skipping that page.What needs to happen is for xas_reset() to be called any time we decide wedon't want to process the page we're looking at, but rather send therequest we are building and start a new one.Fix this by copying and adapting the netfslib writepages code as atemporary measure, with cifs writeback intending to be offloaded tonetfslib in the near future.This also fixes the issue with the use of filemap_get_folios_tag() causingretry of a bunch of pages which the extender already dealt with.This can be tested by creating, say, a 64K file somewhere not on cifs(otherwise copy-offload may get underfoot), mounting a cifs share with awsize of 64000, copying the file to it and then comparing the original fileand the copy:        dd if=/dev/urandom of=/tmp/64K bs=64k count=1        mount //192.168.6.1/test /mnt -o user=...,pass=...,wsize=64000        cp /tmp/64K /mnt/64K        cmp /tmp/64K /mnt/64KWithout the fix, the cmp fails at position 64000 (or shortly thereafter).",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-27036",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-27036"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-27036",
+				"href": "https://ubuntu.com/security/CVE-2024-27036",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

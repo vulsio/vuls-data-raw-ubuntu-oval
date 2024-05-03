@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024269560000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26956 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix failure to detect DAT corruption in btree and direct mappingsPatch series \"nilfs2: fix kernel bug at submit_bh_wbc()\".This resolves a kernel BUG reported by syzbot.  Since there are twoflaws involved, I've made each one a separate patch.The first patch alone resolves the syzbot-reported bug, but I thinkboth fixes should be sent to stable, so I've tagged them as such.This patch (of 2):Syzbot has reported a kernel bug in submit_bh_wbc() when writing file datato a nilfs2 file system whose metadata is corrupted.There are two flaws involved in this issue.The first flaw is that when nilfs_get_block() locates a data block usingbtree or direct mapping, if the disk address translation routinenilfs_dat_translate() fails with internal code -ENOENT due to DAT metadatacorruption, it can be passed back to nilfs_get_block().  This causesnilfs_get_block() to misidentify an existing block as non-existent,causing both data block lookup and insertion to fail inconsistently.The second flaw is that nilfs_get_block() returns a successful status inthis inconsistent state.  This causes the caller __block_write_begin_int()or others to request a read even though the buffer is not mapped,resulting in a BUG_ON check for the BH_Mapped flag in submit_bh_wbc()failing.This fixes the first issue by changing the return value to code -EINVALwhen a conversion using DAT fails with code -ENOENT, avoiding theconflicting condition that leads to the kernel bug described above.  Here,code -EINVAL indicates that metadata corruption was detected during theblock lookup, which will be properly handled as a file system error andconverted to -EIO when passing through the nilfs2 bmap layer.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26956",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26956"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-26956",
+				"href": "https://ubuntu.com/security/CVE-2024-26956",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

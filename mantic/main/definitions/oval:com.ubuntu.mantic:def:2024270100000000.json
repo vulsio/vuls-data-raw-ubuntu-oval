@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2024270100000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-27010 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/sched: Fix mirred deadlock on device recursionWhen the mirred action is used on a classful egress qdisc and a packet ismirrored or redirected to self we hit a qdisc lock deadlock.See trace below.[..... other info removed for brevity....][   82.890906][   82.890906] ============================================[   82.890906] WARNING: possible recursive locking detected[   82.890906] 6.8.0-05205-g77fadd89fe2d-dirty #213 Tainted: G        W[   82.890906] --------------------------------------------[   82.890906] ping/418 is trying to acquire lock:[   82.890906] ffff888006994110 (&sch->q.lock){+.-.}-{3:3}, at:__dev_queue_xmit+0x1778/0x3550[   82.890906][   82.890906] but task is already holding lock:[   82.890906] ffff888006994110 (&sch->q.lock){+.-.}-{3:3}, at:__dev_queue_xmit+0x1778/0x3550[   82.890906][   82.890906] other info that might help us debug this:[   82.890906]  Possible unsafe locking scenario:[   82.890906][   82.890906]        CPU0[   82.890906]        ----[   82.890906]   lock(&sch->q.lock);[   82.890906]   lock(&sch->q.lock);[   82.890906][   82.890906]  *** DEADLOCK ***[   82.890906][..... other info removed for brevity....]Example setup (eth0->eth0) to recreatetc qdisc add dev eth0 root handle 1: htb default 30tc filter add dev eth0 handle 1: protocol ip prio 2 matchall \\     action mirred egress redirect dev eth0Another example(eth0->eth1->eth0) to recreatetc qdisc add dev eth0 root handle 1: htb default 30tc filter add dev eth0 handle 1: protocol ip prio 2 matchall \\     action mirred egress redirect dev eth1tc qdisc add dev eth1 root handle 1: htb default 30tc filter add dev eth1 handle 1: protocol ip prio 2 matchall \\     action mirred egress redirect dev eth0We fix this by adding an owner field (CPU id) to struct Qdisc set afterroot qdisc is entered. When the softirq enters it a second time, if theqdisc owner is the same CPU, the packet is dropped to break the loop.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-27010",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-27010"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-27010",
+				"href": "https://ubuntu.com/security/CVE-2024-27010",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

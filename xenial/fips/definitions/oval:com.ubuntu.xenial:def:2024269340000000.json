@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024269340000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26934 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: core: Fix deadlock in usb_deauthorize_interface()Among the attribute file callback routines indrivers/usb/core/sysfs.c, the interface_authorized_store() function isthe only one which acquires a device lock on an ancestor device: Itcalls usb_deauthorize_interface(), which locks the interface's parentUSB device.The will lead to deadlock if another process already owns that lockand tries to remove the interface, whether through a configurationchange or because the device has been disconnected.  As part of theremoval procedure, device_del() waits for all ongoing sysfs attributecallbacks to complete.  But usb_deauthorize_interface() can't completeuntil the device lock has been released, and the lock won't bereleased until the removal has finished.The mechanism provided by sysfs to prevent this kind of deadlock isto use the sysfs_break_active_protection() function, which tells sysfsnot to wait for the attribute callback.Reported-and-tested by: Yue Sun <samsun1006219@gmail.com>Reported by: xingwei lee <xrivendell7@gmail.com>",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26934",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26934"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-26934",
+				"href": "https://ubuntu.com/security/CVE-2024-26934",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

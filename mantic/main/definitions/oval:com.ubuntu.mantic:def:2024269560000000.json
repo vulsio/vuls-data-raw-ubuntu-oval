@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2024269560000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26956 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix failure to detect DAT corruption in btree and direct mappingsPatch series \"nilfs2: fix kernel bug at submit_bh_wbc()\".This resolves a kernel BUG reported by syzbot.  Since there are twoflaws involved, I've made each one a separate patch.The first patch alone resolves the syzbot-reported bug, but I thinkboth fixes should be sent to stable, so I've tagged them as such.This patch (of 2):Syzbot has reported a kernel bug in submit_bh_wbc() when writing file datato a nilfs2 file system whose metadata is corrupted.There are two flaws involved in this issue.The first flaw is that when nilfs_get_block() locates a data block usingbtree or direct mapping, if the disk address translation routinenilfs_dat_translate() fails with internal code -ENOENT due to DAT metadatacorruption, it can be passed back to nilfs_get_block().  This causesnilfs_get_block() to misidentify an existing block as non-existent,causing both data block lookup and insertion to fail inconsistently.The second flaw is that nilfs_get_block() returns a successful status inthis inconsistent state.  This causes the caller __block_write_begin_int()or others to request a read even though the buffer is not mapped,resulting in a BUG_ON check for the BH_Mapped flag in submit_bh_wbc()failing.This fixes the first issue by changing the return value to code -EINVALwhen a conversion using DAT fails with code -ENOENT, avoiding theconflicting condition that leads to the kernel bug described above.  Here,code -EINVAL indicates that metadata corruption was detected during theblock lookup, which will be properly handled as a file system error andconverted to -EIO when passing through the nilfs2 bmap layer.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26956",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26956"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-26956",
+				"href": "https://ubuntu.com/security/CVE-2024-26956",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

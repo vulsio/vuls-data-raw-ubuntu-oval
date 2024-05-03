@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024269330000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26933 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: core: Fix deadlock in port \"disable\" sysfs attributeThe show and store callback routines for the \"disable\" sysfs attributefile in port.c acquire the device lock for the port's parent hubdevice.  This can cause problems if another process has locked the hubto remove it or change its configuration:\tRemoving the hub or changing its configuration requires the\thub interface to be removed, which requires the port device\tto be removed, and device_del() waits until all outstanding\tsysfs attribute callbacks for the ports have returned.  The\tlock can't be released until then.\tBut the disable_show() or disable_store() routine can't return\tuntil after it has acquired the lock.The resulting deadlock can be avoided by callingsysfs_break_active_protection().  This will cause the sysfs core notto wait for the attribute's callback routine to return, allowing theremoval to proceed.  The disadvantage is that after making this call,there is no guarantee that the hub structure won't be deallocated atany moment.  To prevent this, we have to acquire a reference to itfirst by calling hub_get().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26933",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26933"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-26933",
+				"href": "https://ubuntu.com/security/CVE-2024-26933",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

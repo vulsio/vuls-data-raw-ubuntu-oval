@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024269960000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26996 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: gadget: f_ncm: Fix UAF ncm object at re-bind after usb ep transporterrorWhen ncm function is working and then stop usb0 interface for link down,eth_stop() is called. At this piont, accidentally if usb transport errorshould happen in usb_ep_enable(), 'in_ep' and/or 'out_ep' may not beenabled.After that, ncm_disable() is called to disable for ncm unbindbut gether_disconnect() is never called since 'in_ep' is not enabled.As the result, ncm object is released in ncm unbindbut 'dev->port_usb' associated to 'ncm->port' is not NULL.And when ncm bind again to recover netdev, ncm object is reallocatedbut usb0 interface is already associated to previous released ncm object.Therefore, once usb0 interface is up and eth_start_xmit() is called,released ncm object is dereferrenced and it might cause use-after-freememory.[function unlink via configfs]  usb0: eth_stop dev->port_usb=ffffff9b179c3200  --> error happens in usb_ep_enable().  NCM: ncm_disable: ncm=ffffff9b179c3200  --> no gether_disconnect() since ncm->port.in_ep->enabled is false.  NCM: ncm_unbind: ncm unbind ncm=ffffff9b179c3200  NCM: ncm_free: ncm free ncm=ffffff9b179c3200   <-- released ncm[function link via configfs]  NCM: ncm_alloc: ncm alloc ncm=ffffff9ac4f8a000  NCM: ncm_bind: ncm bind ncm=ffffff9ac4f8a000  NCM: ncm_set_alt: ncm=ffffff9ac4f8a000 alt=0  usb0: eth_open dev->port_usb=ffffff9b179c3200  <-- previous released ncm  usb0: eth_start dev->port_usb=ffffff9b179c3200 <--  eth_start_xmit()  --> dev->wrap()  Unable to handle kernel paging request at virtual addressdead00000000014fThis patch addresses the issue by checking if 'ncm->netdev' is not NULL atncm_disable() to call gether_disconnect() to deassociate 'dev->port_usb'.It's more reasonable to check 'ncm->netdev' to callgether_connect/disconnectrather than check 'ncm->port.in_ep->enabled' since it might not be enabledbut the gether connection might be established.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26996",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26996"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-26996",
+				"href": "https://ubuntu.com/security/CVE-2024-26996",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

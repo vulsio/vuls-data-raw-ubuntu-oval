@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024269990000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26999 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:serial/pmac_zilog: Remove flawed mitigation for rx irq floodThe mitigation was intended to stop the irq completely. That may bebetter than a hard lock-up but it turns out that you get a crash anywayif you're using pmac_zilog as a serial console:ttyPZ0: pmz: rx irq flood !BUG: spinlock recursion on CPU#0, swapper/0That's because the pr_err() call in pmz_receive_chars() results inpmz_console_write() attempting to lock a spinlock already locked inpmz_interrupt(). With CONFIG_DEBUG_SPINLOCK=y, this produces a fatalBUG splat. The spinlock in question is the one in struct uart_port.Even when it's not fatal, the serial port rx function ceases to work.Also, the iteration limit doesn't play nicely with QEMU, as can beseen in the bug report linked below.A web search for other reports of the error message \"pmz: rx irq flood\"didn't produce anything. So I don't think this code is needed any more.Remove it.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26999",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26999"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-26999",
+				"href": "https://ubuntu.com/security/CVE-2024-26999",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

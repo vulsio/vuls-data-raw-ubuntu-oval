@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024269740000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26974 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:crypto: qat - resolve race condition during AER recoveryDuring the PCI AER system's error recovery process, the kernel drivermay encounter a race condition with freeing the reset_data structure'smemory. If the device restart will take more than 10 seconds the functionscheduling that restart will exit due to a timeout, and the reset_datastructure will be freed. However, this data structure is used forcompletion notification after the restart is completed, which leadsto a UAF bug.This results in a KFENCE bug notice.  BUG: KFENCE: use-after-free read in adf_device_reset_worker+0x38/0xa0[intel_qat]  Use-after-free read at 0x00000000bc56fddf (in kfence-#142):  adf_device_reset_worker+0x38/0xa0 [intel_qat]  process_one_work+0x173/0x340To resolve this race condition, the memory associated to the containerof the work_struct is freed on the worker if the timeout expired,otherwise on the function that schedules the worker.The timeout detection can be done by checking if the caller isstill waiting for completion or not by using completion_done() function.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26974",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26974"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-26974",
+				"href": "https://ubuntu.com/security/CVE-2024-26974",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

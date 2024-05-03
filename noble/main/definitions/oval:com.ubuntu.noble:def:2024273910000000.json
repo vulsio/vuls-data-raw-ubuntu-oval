@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024273910000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-27391 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: wilc1000: do not realloc workqueue everytime an interface is addedCommit 09ed8bfc5215 (\"wilc1000: Rename workqueue from \"WILC_wq\" to\"NETDEV-wq\"\") moved workqueue creation in wilc_netdev_ifc_init in order toset the interface name in the workqueue name. However, while the driverneeds only one workqueue, the wilc_netdev_ifc_init is called each time weadd an interface over a phy, which in turns overwrite the workqueue with anew one. This can be observed with the following commands:for i in $(seq 0 10)do  iw phy phy0 interface add wlan1 type managed  iw dev wlan1 deldoneps -eo pid,comm|grep wlan 39 kworker/R-wlan0 98 kworker/R-wlan1102 kworker/R-wlan1105 kworker/R-wlan1108 kworker/R-wlan1111 kworker/R-wlan1114 kworker/R-wlan1117 kworker/R-wlan1120 kworker/R-wlan1123 kworker/R-wlan1126 kworker/R-wlan1129 kworker/R-wlan1Fix this leakage by putting back hif_workqueue allocation inwilc_cfg80211_init. Regarding the workqueue name, it is indeed relevant toset it lowercase, however it is not  attached to a specific netdev, soenforcing netdev name in the name is not so relevant. Still, enrich thename with the wiphy name to make it clear which phy is using the workqueue.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-27391",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-27391"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-02",
+			"cve": {
+				"text": "CVE-2024-27391",
+				"href": "https://ubuntu.com/security/CVE-2024-27391",
+				"public": "20240502"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
