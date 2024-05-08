@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52491 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: media:mtk-jpeg: Fix use after free bug due to error path handling inmtk_jpeg_dec_device_run In mtk_jpeg_probe, &jpeg->job_timeout_work is boundwith mtk_jpeg_job_timeout_work. In mtk_jpeg_dec_device_run, if errorhappens in mtk_jpeg_set_dec_dst, it will finally start the worker whilemark the job as finished by invoking v4l2_m2m_job_finish. There are twomethods to trigger the bug. If we remove the module, it which will callmtk_jpeg_remove to make cleanup. The possible sequence is as follows, whichwill cause a use-after-free bug. CPU0 CPU1 mtk_jpeg_dec_... | start worker| |mtk_jpeg_job_timeout_work mtk_jpeg_remove | v4l2_m2m_release |kfree(m2m_dev); | | | v4l2_m2m_get_curr_priv | m2m_dev->curr_ctx //use Ifwe close the file descriptor, which will call mtk_jpeg_release, it willhave a similar sequence. Fix this bug by starting timeout worker only ifstarted jpegdec worker successfully. Then v4l2_m2m_job_finish will only becalled in either mtk_jpeg_job_timeout_work or mtk_jpeg_dec_device_run.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: media:mtk-jpeg: Fix use after free bug due to error path handling inmtk_jpeg_dec_device_run In mtk_jpeg_probe, &jpeg->job_timeout_work is boundwith mtk_jpeg_job_timeout_work. In mtk_jpeg_dec_device_run, if errorhappens in mtk_jpeg_set_dec_dst, it will finally start the worker whilemark the job as finished by invoking v4l2_m2m_job_finish. There are twomethods to trigger the bug. If we remove the module, it which will callmtk_jpeg_remove to make cleanup. The possible sequence is as follows, whichwill cause a use-after-free bug. CPU0 CPU1 mtk_jpeg_dec_... | start worker| |mtk_jpeg_job_timeout_work mtk_jpeg_remove | v4l2_m2m_release |kfree(m2m_dev); | | | v4l2_m2m_get_curr_priv | m2m_dev->curr_ctx //use Ifwe close the file descriptor, which will call mtk_jpeg_release, it willhave a similar sequence. Fix this bug by starting timeout worker only ifstarted jpegdec worker successfully. Then v4l2_m2m_job_finish will only becalled in either mtk_jpeg_job_timeout_work or mtk_jpeg_dec_device_run.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52491` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1063-azure - 5.15.0-1063.72~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-azure-fde - 5.15.0-1063.72~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-gcp - 5.15.0-1059.67~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1044-gkeop - 5.15.0-1044.51~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1054-ibm - 5.15.0-1054.57~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-106-lowlatency - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-lowlatency-64k - 5.15.0-106.116~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-oracle - 5.15.0-1059.65~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -22,7 +22,12 @@
 				"text": "CVE-2023-52491",
 				"href": "https://ubuntu.com/security/CVE-2023-52491",
 				"public": "20240311"
-			}
+			},
+			"public_date_at_usn": "2024-03-11 18:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6765-1",
+				"https://ubuntu.com/security/notices/USN-6766-1"
+			]
 		}
 	},
 	"notes": {},
@@ -92,16 +97,16 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000040",
+						"comment": "linux-azure-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1063.72~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000050",
+						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1063.72~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
@@ -128,8 +133,8 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023230000000040",
+						"comment": "linux-gcp-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1059.67~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -144,16 +149,16 @@
 						"comment": "linux-gkeop package in focal is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000080",
+						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1044.51~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
 						"comment": "linux-ibm package in focal is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000090",
+						"comment": "linux-ibm-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1054.57~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -168,8 +173,8 @@
 						"comment": "linux-iot package in focal is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000100",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-106.116~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
@@ -188,8 +193,8 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000110",
+						"comment": "linux-oracle-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1059.65~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
