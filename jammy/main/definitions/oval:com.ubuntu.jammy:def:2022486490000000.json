@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48649 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/slab_common: fix possible double free of kmem_cacheWhen doing slub_debug test, kfence's 'test_memcache_typesafe_by_rcu'kunit test case cause a use-after-free error:  BUG: KASAN: use-after-free in kobject_del+0x14/0x30  Read of size 8 at addr ffff888007679090 by task kunit_try_catch/261  CPU: 1 PID: 261 Comm: kunit_try_catch Tainted: G    B            N6.0.0-rc5-next-20220916 #17  Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.15.0-104/01/2014  Call Trace:   <TASK>   dump_stack_lvl+0x34/0x48   print_address_description.constprop.0+0x87/0x2a5   print_report+0x103/0x1ed   kasan_report+0xb7/0x140   kobject_del+0x14/0x30   kmem_cache_destroy+0x130/0x170   test_exit+0x1a/0x30   kunit_try_run_case+0xad/0xc0   kunit_generic_run_threadfn_adapter+0x26/0x50   kthread+0x17b/0x1b0   </TASK>The cause is inside kmem_cache_destroy():kmem_cache_destroy    acquire lock/mutex    shutdown_cache        schedule_work(kmem_cache_release) (if RCU flag set)    release lock/mutex    kmem_cache_release (if RCU flag not set)In some certain timing, the scheduled work could be run beforethe next RCU flag checking, which can then get a wrong valueand lead to double kmem_cache_release().Fix it by caching the RCU flag inside protected area, just like 'refcnt'",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/slab_common: fix possible double free of kmem_cache When doingslub_debug test, kfence's 'test_memcache_typesafe_by_rcu' kunit test casecause a use-after-free error: BUG: KASAN: use-after-free inkobject_del+0x14/0x30 Read of size 8 at addr ffff888007679090 by taskkunit_try_catch/261 CPU: 1 PID: 261 Comm: kunit_try_catch Tainted: G B N6.0.0-rc5-next-20220916 #17 Hardware name: QEMU Standard PC (i440FX + PIIX,1996), BIOS 1.15.0-1 04/01/2014 Call Trace: <TASK> dump_stack_lvl+0x34/0x48print_address_description.constprop.0+0x87/0x2a5 print_report+0x103/0x1edkasan_report+0xb7/0x140 kobject_del+0x14/0x30kmem_cache_destroy+0x130/0x170 test_exit+0x1a/0x30kunit_try_run_case+0xad/0xc0 kunit_generic_run_threadfn_adapter+0x26/0x50kthread+0x17b/0x1b0 </TASK> The cause is inside kmem_cache_destroy():kmem_cache_destroy acquire lock/mutex shutdown_cacheschedule_work(kmem_cache_release) (if RCU flag set) release lock/mutexkmem_cache_release (if RCU flag not set) In some certain timing, thescheduled work could be run before the next RCU flag checking, which canthen get a wrong value and lead to double kmem_cache_release(). Fix it bycaching the RCU flag inside protected area, just like 'refcnt'",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-04-30",
+			"public_date": "2024-04-28 13:15:00 UTC",
 			"cve": {
 				"text": "CVE-2022-48649",
 				"href": "https://ubuntu.com/security/CVE-2022-48649",
-				"public": "20240430"
+				"public": "20240428"
 			}
 		}
 	},
