@@ -3,7 +3,7 @@
 	"id": "oval:com.ubuntu.bionic:def:2024269230000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-26923 on Ubuntu 18.04 LTS (bionic) - medium",
+		"title": "CVE-2024-26923 on Ubuntu 18.04 LTS (bionic) - high",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:af_unix: Fix garbage collector racing against connect() Garbage collectordoes not take into account the risk of embryo getting enqueued during thegarbage collection. If such embryo has a peer that carries SCM_RIGHTS, twoconsecutive passes of scan_children() may see a different set of children.Leading to an incorrectly elevated inflight count, and then a danglingpointer within the gc_inflight_list. sockets are AF_UNIX/SOCK_STREAM S isan unconnected socket L is a listening in-flight socket bound to addr, notin fdtable V's fd will be passed via sendmsg(), gets inflight count bumpedconnect(S, addr) sendmsg(S, [V]); close(V) __unix_gc() ----------------------------------------- ----------- NS = unix_create1() skb1 =sock_wmalloc(NS) L = unix_find_other(addr) unix_state_lock(L) unix_peer(S)= NS // V count=1 inflight=0 NS = unix_peer(S) skb2 = sock_alloc()skb_queue_tail(NS, skb2[V]) // V became in-flight // V count=2 inflight=1close(V) // V count=1 inflight=1 // GC candidate condition met for u ingc_inflight_list: if (total_refs == inflight_refs) add u to gc_candidates// gc_candidates={L, V} for u in gc_candidates: scan_children(u,dec_inflight) // embryo (skb1) was not // reachable from L yet, so V's //inflight remains unchanged __skb_queue_tail(L, skb1) unix_state_unlock(L)for u in gc_candidates: if (u.inflight) scan_children(u,inc_inflight_move_tail) // V count=1 inflight=2 (!) If there is aGC-candidate listening socket, lock/unlock its state. This makes GC waituntil the end of any ongoing connect() to that socket. After flipping thelock, a possibly SCM-laden embryo is already enqueued. And if there isanother embryo coming, it can not possibly carry SCM_RIGHTS. At this point,unix_inflight() can not happen because unix_gc_lock is already taken.Inflight graph remains unaffected.",
 		"affected": {
 			"family": "unix",
@@ -15,7 +15,7 @@
 			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26923"
 		},
 		"advisory": {
-			"severity": "Medium",
+			"severity": "High",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
 			"public_date": "2024-04-25 06:15:00 UTC",
 			"cve": {
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
-						"comment": "linux package in bionic is affected and may need fixing."
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
@@ -41,15 +41,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-hwe-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
-						"comment": "linux-kvm package in bionic is affected and may need fixing."
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
-						"comment": "linux-aws package in bionic is affected and may need fixing."
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -61,7 +61,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
-						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-aws-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -69,7 +69,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
-						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+						"comment": "linux-azure-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
@@ -77,7 +77,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -85,7 +85,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
-						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+						"comment": "linux-gcp-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
@@ -93,7 +93,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -109,11 +109,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
-						"comment": "linux-oracle package in bionic is affected and may need fixing."
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -125,7 +125,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-oracle-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -133,7 +133,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
-						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					}
 				]
 			}

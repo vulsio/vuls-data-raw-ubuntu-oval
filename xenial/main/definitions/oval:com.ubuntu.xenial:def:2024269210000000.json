@@ -3,7 +3,7 @@
 	"id": "oval:com.ubuntu.xenial:def:2024269210000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-26921 on Ubuntu 16.04 LTS (xenial) - medium",
+		"title": "CVE-2024-26921 on Ubuntu 16.04 LTS (xenial) - high",
 		"description": "In the Linux kernel, the following vulnerability has been resolved: inet:inet_defrag: prevent sk release while still in use ip_local_out() and otherfunctions can pass skb->sk as function argument. If the skb is a fragmentand reassembly happens before such function call returns, the sk must notbe released. This affects skb fragments reassembled via netfilter orsimilar modules, e.g. openvswitch or ct_act.c, when run as part of txpipeline. Eric Dumazet made an initial analysis of this bug. Quoting Eric:Calling ip_defrag() in output path is also implying skb_orphan(), which isbuggy because output path relies on sk not disappearing. A relevant oldpatch about the issue was : 8282f27449bf (\"inet: frag: Always orphan skbsinside ip_defrag()\") [..] net/ipv4/ip_output.c depends on skb->sk beingset, and probably to an inet socket, not an arbitrary one. If we orphan thepacket in ipvlan, then downstream things like FQ packet scheduler will notwork properly. We need to change ip_defrag() to only use skb_orphan() whenreally needed, ie whenever frag_list is going to be used. Eric suggested tostash sk in fragment queue and made an initial patch. However there is aproblem with this: If skb is refragmented again right after,ip_do_fragment() will copy head->sk to the new fragments, and sets updestructor to sock_wfree. IOW, we have no choice but to fix up sk_wmemaccouting to reflect the fully reassembled skb, else wmem will underflow.This change moves the orphan down into the core, to last possible moment.As ip_defrag_offset is aliased with sk_buff->sk member, we must move theoffset into the FRAG_CB, else skb->sk gets clobbered. This allows to delaythe orphaning long enough to learn if the skb has to be queued or if theskb is completing the reasm queue. In the former case, things work asbefore, skb is orphaned. This is safe because skb gets queued/stolen andwon't continue past reasm engine. In the latter case, we will steal theskb->sk reference, reattach it to the head skb, and fix up wmem accoutingwhen inet_frag inflates truesize.",
 		"affected": {
 			"family": "unix",
@@ -15,7 +15,7 @@
 			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26921"
 		},
 		"advisory": {
-			"severity": "Medium",
+			"severity": "High",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
 			"public_date": "2024-04-18 10:15:00 UTC",
 			"cve": {

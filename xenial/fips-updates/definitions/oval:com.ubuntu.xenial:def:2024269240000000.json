@@ -3,7 +3,7 @@
 	"id": "oval:com.ubuntu.xenial:def:2024269240000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-26924 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"title": "CVE-2024-26924 on Ubuntu 16.04 FIPS Compliant (xenial) - high",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nft_set_pipapo: do not free live element Pablo reports a crashwith large batches of elements with a back-to-back add/remove pattern.Quoting Pablo: add_elem(\"00000000\") timeout 100 ms ... add_elem(\"0000000X\")timeout 100 ms del_elem(\"0000000X\") <---------------- delete one that wasjust added ... add_elem(\"00005000\") timeout 100 ms 1) nft_pipapo_remove()removes element 0000000X Then, KASAN shows a splat. Looking at the removefunction there is a chance that we will drop a rule that maps to anon-deactivated element. Removal happens in two steps, first we do a lookupfor key k and return the to-be-removed element and mark it as inactive inthe next generation. Then, in a second step, the element gets removed fromthe set/map. The _remove function does not work correctly if we have morethan one element that share the same key. This can happen if we insert anelement into a set when the set already holds an element with same key, butthe element mapping to the existing key has timed out or is not active inthe next generation. In such case its possible that removal will unmap thewrong element. If this happens, we will leak the non-deactivated element,it becomes unreachable. The element that got deactivated (and will be freedlater) will remain reachable in the set data structure, this can result ina crash when such an element is retrieved during lookup (stale pointer).Add a check that the fully matching key does in fact map to the elementthat we have marked as inactive in the deactivation step. If not, we needto continue searching. Add a bug/warn trap at the end of the function aswell, the remove function must not ever be called with aninvisible/unreachable/non-existent element. v2: avoid uneeded temporaryvariable (Stefano)",
 		"affected": {
 			"family": "unix",
@@ -15,7 +15,7 @@
 			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26924"
 		},
 		"advisory": {
-			"severity": "Medium",
+			"severity": "High",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
 			"public_date": "2024-04-25 06:15:00 UTC",
 			"cve": {
