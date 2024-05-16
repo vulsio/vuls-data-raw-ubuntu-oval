@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52604 on Ubuntu 20.04 FIPS Compliant (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:FS:JFS:UBSAN:array-index-out-of-bounds in dbAdjTree Syzkaller reported thefollowing issue: UBSAN: array-index-out-of-bounds infs/jfs/jfs_dmap.c:2867:6 index 196694 is out of range for type 's8[1365]'(aka 'signed char[1365]') CPU: 1 PID: 109 Comm: jfsCommit Not tainted6.6.0-rc3-syzkaller #0 Hardware name: Google Google Compute Engine/GoogleCompute Engine, BIOS Google 08/04/2023 Call Trace: <TASK> __dump_stacklib/dump_stack.c:88 [inline] dump_stack_lvl+0x1e7/0x2d0lib/dump_stack.c:106 ubsan_epilogue lib/ubsan.c:217 [inline]__ubsan_handle_out_of_bounds+0x11c/0x150 lib/ubsan.c:348dbAdjTree+0x474/0x4f0 fs/jfs/jfs_dmap.c:2867 dbJoin+0x210/0x2d0fs/jfs/jfs_dmap.c:2834 dbFreeBits+0x4eb/0xda0 fs/jfs/jfs_dmap.c:2331dbFreeDmap fs/jfs/jfs_dmap.c:2080 [inline] dbFree+0x343/0x650fs/jfs/jfs_dmap.c:402 txFreeMap+0x798/0xd50 fs/jfs/jfs_txnmgr.c:2534txUpdateMap+0x342/0x9e0 txLazyCommit fs/jfs/jfs_txnmgr.c:2664 [inline]jfs_lazycommit+0x47a/0xb70 fs/jfs/jfs_txnmgr.c:2732 kthread+0x2d3/0x370kernel/kthread.c:388 ret_from_fork+0x48/0x80 arch/x86/kernel/process.c:147ret_from_fork_asm+0x11/0x20 arch/x86/entry/entry_64.S:304 </TASK>================================================================================Kernel panic - not syncing: UBSAN: panic_on_warn set ... CPU: 1 PID: 109Comm: jfsCommit Not tainted 6.6.0-rc3-syzkaller #0 Hardware name: GoogleGoogle Compute Engine/Google Compute Engine, BIOS Google 08/04/2023 CallTrace: <TASK> __dump_stack lib/dump_stack.c:88 [inline]dump_stack_lvl+0x1e7/0x2d0 lib/dump_stack.c:106 panic+0x30f/0x770kernel/panic.c:340 check_panic_on_warn+0x82/0xa0 kernel/panic.c:236ubsan_epilogue lib/ubsan.c:223 [inline]__ubsan_handle_out_of_bounds+0x13c/0x150 lib/ubsan.c:348dbAdjTree+0x474/0x4f0 fs/jfs/jfs_dmap.c:2867 dbJoin+0x210/0x2d0fs/jfs/jfs_dmap.c:2834 dbFreeBits+0x4eb/0xda0 fs/jfs/jfs_dmap.c:2331dbFreeDmap fs/jfs/jfs_dmap.c:2080 [inline] dbFree+0x343/0x650fs/jfs/jfs_dmap.c:402 txFreeMap+0x798/0xd50 fs/jfs/jfs_txnmgr.c:2534txUpdateMap+0x342/0x9e0 txLazyCommit fs/jfs/jfs_txnmgr.c:2664 [inline]jfs_lazycommit+0x47a/0xb70 fs/jfs/jfs_txnmgr.c:2732 kthread+0x2d3/0x370kernel/kthread.c:388 ret_from_fork+0x48/0x80 arch/x86/kernel/process.c:147ret_from_fork_asm+0x11/0x20 arch/x86/entry/entry_64.S:304 </TASK> KernelOffset: disabled Rebooting in 86400 seconds.. The issue is caused when thevalue of lp becomes greater than CTLTREESIZE which is the max size ofstree. Adding a simple check solves this issue. Dave: As the functionreturns a void, good error handling would require a more intrusive codereorganization, so I modified Osama's patch at use WARN_ON_ONCE for lack ofa cleaner option. The patch is tested via syzbot.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52604` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-181-generic - 5.4.0-181.201\nlinux-image-5.4.0-181-generic-lpae - 5.4.0-181.201\nlinux-image-unsigned-5.4.0-181-generic - 5.4.0-181.201\nlinux-image-unsigned-5.4.0-181-lowlatency - 5.4.0-181.201\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1112-kvm - 5.4.0-1112.119\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1124-aws - 5.4.0-1124.134\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1129-azure - 5.4.0-1129.136\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-azure - 5.15.0-1063.72~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-azure-fde - 5.15.0-1063.72~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1084-bluefield - 5.4.0-1084.91\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1128-gcp - 5.4.0-1128.137\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-gcp - 5.15.0-1059.67~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1091-gkeop - 5.4.0-1091.95\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1044-gkeop - 5.15.0-1044.51~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1071-ibm - 5.4.0-1071.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1054-ibm - 5.15.0-1054.57~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1036-iot - 5.4.0-1036.37\nlinux-image-unsigned-5.4.0-1036-iot - 5.4.0-1036.37\nNo subscription required\n\nlinux-image-unsigned-5.15.0-106-lowlatency - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-lowlatency-64k - 5.15.0-106.116~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1123-oracle - 5.4.0-1123.132\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-oracle - 5.15.0-1059.65~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1108-raspi - 5.4.0-1108.120\nNo subscription required\n\nlinux-image-5.4.0-1043-xilinx-zynqmp - 5.4.0-1043.47\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:FS:JFS:UBSAN:array-index-out-of-bounds in dbAdjTree Syzkaller reported thefollowing issue: UBSAN: array-index-out-of-bounds infs/jfs/jfs_dmap.c:2867:6 index 196694 is out of range for type 's8[1365]'(aka 'signed char[1365]') CPU: 1 PID: 109 Comm: jfsCommit Not tainted6.6.0-rc3-syzkaller #0 Hardware name: Google Google Compute Engine/GoogleCompute Engine, BIOS Google 08/04/2023 Call Trace: <TASK> __dump_stacklib/dump_stack.c:88 [inline] dump_stack_lvl+0x1e7/0x2d0lib/dump_stack.c:106 ubsan_epilogue lib/ubsan.c:217 [inline]__ubsan_handle_out_of_bounds+0x11c/0x150 lib/ubsan.c:348dbAdjTree+0x474/0x4f0 fs/jfs/jfs_dmap.c:2867 dbJoin+0x210/0x2d0fs/jfs/jfs_dmap.c:2834 dbFreeBits+0x4eb/0xda0 fs/jfs/jfs_dmap.c:2331dbFreeDmap fs/jfs/jfs_dmap.c:2080 [inline] dbFree+0x343/0x650fs/jfs/jfs_dmap.c:402 txFreeMap+0x798/0xd50 fs/jfs/jfs_txnmgr.c:2534txUpdateMap+0x342/0x9e0 txLazyCommit fs/jfs/jfs_txnmgr.c:2664 [inline]jfs_lazycommit+0x47a/0xb70 fs/jfs/jfs_txnmgr.c:2732 kthread+0x2d3/0x370kernel/kthread.c:388 ret_from_fork+0x48/0x80 arch/x86/kernel/process.c:147ret_from_fork_asm+0x11/0x20 arch/x86/entry/entry_64.S:304 </TASK>================================================================================Kernel panic - not syncing: UBSAN: panic_on_warn set ... CPU: 1 PID: 109Comm: jfsCommit Not tainted 6.6.0-rc3-syzkaller #0 Hardware name: GoogleGoogle Compute Engine/Google Compute Engine, BIOS Google 08/04/2023 CallTrace: <TASK> __dump_stack lib/dump_stack.c:88 [inline]dump_stack_lvl+0x1e7/0x2d0 lib/dump_stack.c:106 panic+0x30f/0x770kernel/panic.c:340 check_panic_on_warn+0x82/0xa0 kernel/panic.c:236ubsan_epilogue lib/ubsan.c:223 [inline]__ubsan_handle_out_of_bounds+0x13c/0x150 lib/ubsan.c:348dbAdjTree+0x474/0x4f0 fs/jfs/jfs_dmap.c:2867 dbJoin+0x210/0x2d0fs/jfs/jfs_dmap.c:2834 dbFreeBits+0x4eb/0xda0 fs/jfs/jfs_dmap.c:2331dbFreeDmap fs/jfs/jfs_dmap.c:2080 [inline] dbFree+0x343/0x650fs/jfs/jfs_dmap.c:402 txFreeMap+0x798/0xd50 fs/jfs/jfs_txnmgr.c:2534txUpdateMap+0x342/0x9e0 txLazyCommit fs/jfs/jfs_txnmgr.c:2664 [inline]jfs_lazycommit+0x47a/0xb70 fs/jfs/jfs_txnmgr.c:2732 kthread+0x2d3/0x370kernel/kthread.c:388 ret_from_fork+0x48/0x80 arch/x86/kernel/process.c:147ret_from_fork_asm+0x11/0x20 arch/x86/entry/entry_64.S:304 </TASK> KernelOffset: disabled Rebooting in 86400 seconds.. The issue is caused when thevalue of lp becomes greater than CTLTREESIZE which is the max size ofstree. Adding a simple check solves this issue. Dave: As the functionreturns a void, good error handling would require a more intrusive codereorganization, so I modified Osama's patch at use WARN_ON_ONCE for lack ofa cleaner option. The patch is tested via syzbot.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52604` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-181-generic - 5.4.0-181.201\nlinux-image-5.4.0-181-generic-lpae - 5.4.0-181.201\nlinux-image-unsigned-5.4.0-181-generic - 5.4.0-181.201\nlinux-image-unsigned-5.4.0-181-lowlatency - 5.4.0-181.201\nNo subscription required\n\nlinux-image-5.15.0-106-generic - 5.15.0-106.116~20.04.1\nlinux-image-5.15.0-106-generic-lpae - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-generic - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-generic-64k - 5.15.0-106.116~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1112-kvm - 5.4.0-1112.119\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1124-aws - 5.4.0-1124.134\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1129-azure - 5.4.0-1129.136\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-azure - 5.15.0-1063.72~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-azure-fde - 5.15.0-1063.72~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1084-bluefield - 5.4.0-1084.91\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1128-gcp - 5.4.0-1128.137\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-gcp - 5.15.0-1059.67~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1091-gkeop - 5.4.0-1091.95\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1044-gkeop - 5.15.0-1044.51~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1071-ibm - 5.4.0-1071.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1054-ibm - 5.15.0-1054.57~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1036-iot - 5.4.0-1036.37\nlinux-image-unsigned-5.4.0-1036-iot - 5.4.0-1036.37\nNo subscription required\n\nlinux-image-unsigned-5.15.0-106-lowlatency - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-lowlatency-64k - 5.15.0-106.116~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1123-oracle - 5.4.0-1123.132\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-oracle - 5.15.0-1059.65~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1108-raspi - 5.4.0-1108.120\nNo subscription required\n\nlinux-image-5.4.0-1043-xilinx-zynqmp - 5.4.0-1043.47\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Compliant"
@@ -33,7 +33,8 @@
 				"https://ubuntu.com/security/notices/USN-6765-1",
 				"https://ubuntu.com/security/notices/USN-6766-1",
 				"https://ubuntu.com/security/notices/USN-6767-1",
-				"https://ubuntu.com/security/notices/USN-6767-2"
+				"https://ubuntu.com/security/notices/USN-6767-2",
+				"https://ubuntu.com/security/notices/USN-6766-2"
 			]
 		}
 	},
@@ -60,15 +61,15 @@
 						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and needs fixing."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000010",
-						"comment": "linux-kvm package in focal was vulnerable but has been fixed (note: '5.4.0-1112.119')."
+						"comment": "linux-hwe-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-106.116~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000020",
+						"comment": "linux-kvm package in focal was vulnerable but has been fixed (note: '5.4.0-1112.119')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000030",
 						"comment": "linux-aws package in focal was vulnerable but has been fixed (note: '5.4.0-1124.134')."
 					},
 					{
@@ -88,7 +89,7 @@
 						"comment": "linux-aws-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000030",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000040",
 						"comment": "linux-azure package in focal was vulnerable but has been fixed (note: '5.4.0-1129.136')."
 					},
 					{
@@ -104,7 +105,7 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000040",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000050",
 						"comment": "linux-azure-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1063.72~20.04.1')."
 					},
 					{
@@ -112,7 +113,7 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000050",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000060",
 						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1063.72~20.04.1.1')."
 					},
 					{
@@ -124,7 +125,7 @@
 						"comment": "linux-fips package in fips-updates/focal is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000060",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000070",
 						"comment": "linux-gcp package in focal was vulnerable but has been fixed (note: '5.4.0-1128.137')."
 					},
 					{
@@ -152,11 +153,11 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000070",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000080",
 						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1091.95')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000080",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000090",
 						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1044.51~20.04.1')."
 					},
 					{
@@ -164,7 +165,7 @@
 						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1071.76')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000100",
 						"comment": "linux-ibm-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1054.57~20.04.1')."
 					},
 					{
@@ -180,7 +181,7 @@
 						"comment": "linux-iot package in focal was vulnerable but has been fixed (note: '5.4.0-1036.37')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000010",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-106.116~20.04.1')."
 					},
 					{
@@ -230,6 +231,18 @@
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2021225430000000",
 						"comment": "linux-xilinx-zynqmp package in focal was vulnerable but has been fixed (note: '5.4.0-1043.47')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
+						"comment": "linux-aws-fips package in fips-updates/focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
+						"comment": "linux-azure-fips package in fips-updates/focal is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
+						"comment": "linux-gcp-fips package in fips-updates/focal is affected and may need fixing."
 					}
 				]
 			}
