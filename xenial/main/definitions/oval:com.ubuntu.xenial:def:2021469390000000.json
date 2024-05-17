@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-46939 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:tracing: Restructure trace_clock_global() to never block It was reportedthat a fix to the ring buffer recursion detection would cause a hungmachine when performing suspend / resume testing. The following backtracewas extracted from debugging that case: Call Trace:trace_clock_global+0x91/0xa0 __rb_reserve_next+0x237/0x460ring_buffer_lock_reserve+0x12a/0x3f0 trace_buffer_lock_reserve+0x10/0x50__trace_graph_return+0x1f/0x80 trace_graph_return+0xb7/0xf0 ?trace_clock_global+0x91/0xa0 ftrace_return_to_handler+0x8b/0xf0 ?pv_hash+0xa0/0xa0 return_to_handler+0x15/0x30 ?ftrace_graph_caller+0xa0/0xa0 ? trace_clock_global+0x91/0xa0 ?__rb_reserve_next+0x237/0x460 ? ring_buffer_lock_reserve+0x12a/0x3f0 ?trace_event_buffer_lock_reserve+0x3c/0x120 ?trace_event_buffer_reserve+0x6b/0xc0 ?trace_event_raw_event_device_pm_callback_start+0x125/0x2d0 ?dpm_run_callback+0x3b/0xc0 ? pm_ops_is_empty+0x50/0x50 ?platform_get_irq_byname_optional+0x90/0x90 ?trace_device_pm_callback_start+0x82/0xd0 ? dpm_run_callback+0x49/0xc0 Withthe following RIP: RIP: 0010:native_queued_spin_lock_slowpath+0x69/0x200Since the fix to the recursion detection would allow a single recursion tohappen while tracing, this lead to the trace_clock_global() taking a spinlock and then trying to take it again: ring_buffer_lock_reserve() {trace_clock_global() { arch_spin_lock() { queued_spin_lock_slowpath() { /*lock taken */ (something else gets traced by function graph tracer)ring_buffer_lock_reserve() { trace_clock_global() { arch_spin_lock() {queued_spin_lock_slowpath() { /* DEAD LOCK! */ Tracing should *never*block, as it can lead to strange lockups like the above. Restructure thetrace_clock_global() code to instead of simply taking a lock to update therecorded \"prev_time\" simply use it, as two events happening on twodifferent CPUs that calls this at the same time, really doesn't matterwhich one goes first. Use a trylock to grab the lock for updating theprev_time, and if it fails, simply try again the next time. If it failed tobe taken, that means something else is already updating it. Bugzilla:https://bugzilla.kernel.org/show_bug.cgi?id=212761",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:tracing: Restructure trace_clock_global() to never block It was reportedthat a fix to the ring buffer recursion detection would cause a hungmachine when performing suspend / resume testing. The following backtracewas extracted from debugging that case: Call Trace:trace_clock_global+0x91/0xa0 __rb_reserve_next+0x237/0x460ring_buffer_lock_reserve+0x12a/0x3f0 trace_buffer_lock_reserve+0x10/0x50__trace_graph_return+0x1f/0x80 trace_graph_return+0xb7/0xf0 ?trace_clock_global+0x91/0xa0 ftrace_return_to_handler+0x8b/0xf0 ?pv_hash+0xa0/0xa0 return_to_handler+0x15/0x30 ?ftrace_graph_caller+0xa0/0xa0 ? trace_clock_global+0x91/0xa0 ?__rb_reserve_next+0x237/0x460 ? ring_buffer_lock_reserve+0x12a/0x3f0 ?trace_event_buffer_lock_reserve+0x3c/0x120 ?trace_event_buffer_reserve+0x6b/0xc0 ?trace_event_raw_event_device_pm_callback_start+0x125/0x2d0 ?dpm_run_callback+0x3b/0xc0 ? pm_ops_is_empty+0x50/0x50 ?platform_get_irq_byname_optional+0x90/0x90 ?trace_device_pm_callback_start+0x82/0xd0 ? dpm_run_callback+0x49/0xc0 Withthe following RIP: RIP: 0010:native_queued_spin_lock_slowpath+0x69/0x200Since the fix to the recursion detection would allow a single recursion tohappen while tracing, this lead to the trace_clock_global() taking a spinlock and then trying to take it again: ring_buffer_lock_reserve() {trace_clock_global() { arch_spin_lock() { queued_spin_lock_slowpath() { /*lock taken */ (something else gets traced by function graph tracer)ring_buffer_lock_reserve() { trace_clock_global() { arch_spin_lock() {queued_spin_lock_slowpath() { /* DEAD LOCK! */ Tracing should *never*block, as it can lead to strange lockups like the above. Restructure thetrace_clock_global() code to instead of simply taking a lock to update therecorded \"prev_time\" simply use it, as two events happening on twodifferent CPUs that calls this at the same time, really doesn't matterwhich one goes first. Use a trylock to grab the lock for updating theprev_time, and if it fails, simply try again the next time. If it failed tobe taken, that means something else is already updating it. Bugzilla:https://bugzilla.kernel.org/show_bug.cgi?id=212761\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46939` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-254.288\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-254.288\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-254.288\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1132.142\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1169.184\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -23,8 +23,13 @@
 				"href": "https://ubuntu.com/security/CVE-2021-46939",
 				"public": "20240227",
 				"cvss_score": "5.5",
-				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
-			}
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "6778-1"
+			},
+			"public_date_at_usn": "2024-02-27 19:04:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6778-1"
+			]
 		}
 	},
 	"notes": {},
@@ -34,20 +39,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021469390000000",
+						"comment": "linux package in xenial was vulnerable but has been fixed (note: '4.4.0-254.288')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
 						"comment": "linux-hwe package in xenial is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-151.157~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021469390000010",
+						"comment": "linux-kvm package in xenial was vulnerable but has been fixed (note: '4.4.0-1132.142')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021469390000020",
+						"comment": "linux-aws package in xenial was vulnerable but has been fixed (note: '4.4.0-1169.184')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
