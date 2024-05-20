@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2024358440000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35844 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: compress: fix reserve_cblocks counting error when out of spaceWhen a file only needs one direct_node, performing the followingoperations will cause the file to be unrepairable:unisoc # ./f2fs_io compress test.apkunisoc #df -h | grep dm-48/dev/block/dm-48 112G 112G 1.2M 100% /dataunisoc # ./f2fs_io release_cblocks test.apk924unisoc # df -h | grep dm-48/dev/block/dm-48 112G 112G 4.8M 100% /dataunisoc # dd if=/dev/random of=file4 bs=1M count=33145728 bytes (3.0 M) copied, 0.025 s, 120 M/sunisoc # df -h | grep dm-48/dev/block/dm-48 112G 112G 1.8M 100% /dataunisoc # ./f2fs_io reserve_cblocks test.apkF2FS_IOC_RESERVE_COMPRESS_BLOCKS failed: No space left on deviceadb rebootunisoc # df -h  | grep dm-48/dev/block/dm-48             112G 112G   11M 100% /dataunisoc # ./f2fs_io reserve_cblocks test.apk0This is because the file has only one direct_node. After returningto -ENOSPC, reserved_blocks += ret will not be executed. As a result,the reserved_blocks at this time is still 0, which is not the realnumber of reserved blocks. Therefore, fsck cannot be set to repairthe file.After this patch, the fsck flag will be set to fix this problem.unisoc # df -h | grep dm-48/dev/block/dm-48             112G 112G  1.8M 100% /dataunisoc # ./f2fs_io reserve_cblocks test.apkF2FS_IOC_RESERVE_COMPRESS_BLOCKS failed: No space left on deviceadb reboot then fsck will be executedunisoc # df -h  | grep dm-48/dev/block/dm-48             112G 112G   11M 100% /dataunisoc # ./f2fs_io reserve_cblocks test.apk924",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35844",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35844"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-35844",
+				"href": "https://ubuntu.com/security/CVE-2024-35844",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024357940000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35794 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:dm-raid: really frozen sync_thread during suspend1) commit f52f5c71f3d4 (\"md: fix stopping sync thread\") remove   MD_RECOVERY_FROZEN from __md_stop_writes() and doesn't realize that   dm-raid relies on __md_stop_writes() to frozen sync_thread   indirectly. Fix this problem by adding MD_RECOVERY_FROZEN in   md_stop_writes(), and since stop_sync_thread() is only used for   dm-raid in this case, also move stop_sync_thread() to   md_stop_writes().2) The flag MD_RECOVERY_FROZEN doesn't mean that sync thread is frozen,   it only prevent new sync_thread to start, and it can't stop the   running sync thread; In order to frozen sync_thread, after seting the   flag, stop_sync_thread() should be used.3) The flag MD_RECOVERY_FROZEN doesn't mean that writes are stopped, use   it as condition for md_stop_writes() in raid_postsuspend() doesn't   look correct. Consider that reentrant stop_sync_thread() do nothing,   always call md_stop_writes() in raid_postsuspend().4) raid_message can set/clear the flag MD_RECOVERY_FROZEN at anytime,   and if MD_RECOVERY_FROZEN is cleared while the array is suspended,   new sync_thread can start unexpected. Fix this by disallow   raid_message() to change sync_thread status during suspend.Note that after commit f52f5c71f3d4 (\"md: fix stopping sync thread\"), thetest shell/lvconvert-raid-reshape.sh start to hang in stop_sync_thread(),and with previous fixes, the test won't hang there anymore, however, thetest will still fail and complain that ext4 is corrupted. And with thispatch, the test won't hang due to stop_sync_thread() or fail due to ext4is corrupted anymore. However, there is still a deadlock related todm-raid456 that will be fixed in following patches.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35794",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35794"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-35794",
+				"href": "https://ubuntu.com/security/CVE-2024-35794",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

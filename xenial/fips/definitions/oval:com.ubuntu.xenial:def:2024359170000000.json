@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024359170000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35917 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:s390/bpf: Fix bpf_plt pointer arithmeticKui-Feng Lee reported a crash on s390x triggered by thedummy_st_ops/dummy_init_ptr_arg test [1]:  [<0000000000000002>] 0x2  [<00000000009d5cde>] bpf_struct_ops_test_run+0x156/0x250  [<000000000033145a>] __sys_bpf+0xa1a/0xd00  [<00000000003319dc>] __s390x_sys_bpf+0x44/0x50  [<0000000000c4382c>] __do_syscall+0x244/0x300  [<0000000000c59a40>] system_call+0x70/0x98This is caused by GCC moving memcpy() after assignments inbpf_jit_plt(), resulting in NULL pointers being written instead ofthe return and the target addresses.Looking at the GCC internals, the reordering is allowed because thealias analysis thinks that the memcpy() destination and the assignments'left-hand-sides are based on different objects: new_plt andbpf_plt_ret/bpf_plt_target respectively, and therefore they cannotalias.This is in turn due to a violation of the C standard:  When two pointers are subtracted, both shall point to elements of the  same array object, or one past the last element of the array object  ...From the C's perspective, bpf_plt_ret and bpf_plt are distinct objectsand cannot be subtracted. In the practical terms, doing so confuses theGCC's alias analysis.The code was written this way in order to let the C side know a fewoffsets defined in the assembly. While nice, this is by no meansnecessary. Fix the noncompliance by hardcoding these offsets.[1]https://lore.kernel.org/bpf/c9923c1d-971d-4022-8dc8-1364e929d34c@gmail.com/",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35917",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35917"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-35917",
+				"href": "https://ubuntu.com/security/CVE-2024-35917",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

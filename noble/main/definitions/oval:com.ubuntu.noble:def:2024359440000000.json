@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024359440000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35944 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:VMCI: Fix memcpy() run-time warning in dg_dispatch_as_host()Syzkaller hit 'WARNING in dg_dispatch_as_host' bug.memcpy: detected field-spanning write (size 56) of single field\"&dg_info->msg\"at drivers/misc/vmw_vmci/vmci_datagram.c:237 (size 24)WARNING: CPU: 0 PID: 1555 at drivers/misc/vmw_vmci/vmci_datagram.c:237dg_dispatch_as_host+0x88e/0xa60 drivers/misc/vmw_vmci/vmci_datagram.c:237Some code commentry, based on my understanding:544 #define VMCI_DG_SIZE(_dg) (VMCI_DG_HEADERSIZE +(size_t)(_dg)->payload_size)/// This is 24 + payload_sizememcpy(&dg_info->msg, dg, dg_size);\tDestination = dg_info->msg ---> this is a 24 byte\t\t\t\t\tstructure(struct vmci_datagram)\tSource = dg --> this is a 24 byte structure (struct vmci_datagram)\tSize = dg_size = 24 + payload_size{payload_size = 56-24 =32} -- Syzkaller managed to set payload_size to 32. 35 struct delayed_datagram_info { 36         struct datagram_entry *entry; 37         struct work_struct work; 38         bool in_dg_host_queue; 39         /* msg and msg_payload must be together. */ 40         struct vmci_datagram msg; 41         u8 msg_payload[]; 42 };So those extra bytes of payload are copied into msg_payload[], a run timewarning is seen while fuzzing with Syzkaller.One possible way to fix the warning is to split the memcpy() intotwo parts -- one -- direct assignment of msg and second taking care ofpayload.Gustavo quoted:\"Under FORTIFY_SOURCE we should not copy data across multiple membersin a structure.\"",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35944",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35944"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-35944",
+				"href": "https://ubuntu.com/security/CVE-2024-35944",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

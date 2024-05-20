@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024274050000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-27405 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: gadget: ncm: Avoid dropping datagrams of properly parsed NTBsIt is observed sometimes when tethering is used over NCM with Windows 11as host, at some instances, the gadget_giveback has one byte appended atthe end of a proper NTB. When the NTB is parsed, unwrap call looks forany leftover bytes in SKB provided by u_ether and if there are any pendingbytes, it treats them as a separate NTB and parses it. But in case thesecond NTB (as per unwrap call) is faulty/corrupt, all the datagrams thatwere parsed properly in the first NTB and saved in rx_list are dropped.Adding a few custom traces showed the following:[002] d..1  7828.532866: dwc3_gadget_giveback: ep1out:req 000000003868811a length 1025/16384 zsI ==> 0[002] d..1  7828.532867: ncm_unwrap_ntb: K: ncm_unwrap_ntb toprocess: 1025[002] d..1  7828.532867: ncm_unwrap_ntb: K: ncm_unwrap_ntb nth: 1751999342[002] d..1  7828.532868: ncm_unwrap_ntb: K: ncm_unwrap_ntb seq: 0xce67[002] d..1  7828.532868: ncm_unwrap_ntb: K: ncm_unwrap_ntb blk_len: 0x400[002] d..1  7828.532868: ncm_unwrap_ntb: K: ncm_unwrap_ntb ndp_len: 0x10[002] d..1  7828.532869: ncm_unwrap_ntb: K: Parsed NTB with 1 framesIn this case, the giveback is of 1025 bytes and block length is 1024.The rest 1 byte (which is 0x00) won't be parsed resulting in drop ofall datagrams in rx_list.Same is case with packets of size 2048:[002] d..1  7828.557948: dwc3_gadget_giveback: ep1out:req 0000000011dfd96e length 2049/16384 zsI ==> 0[002] d..1  7828.557949: ncm_unwrap_ntb: K: ncm_unwrap_ntb nth: 1751999342[002] d..1  7828.557950: ncm_unwrap_ntb: K: ncm_unwrap_ntb blk_len: 0x800Lecroy shows one byte coming in extra confirming that the byte is comingin from PC: Transfer 2959 - Bytes Transferred(1025)  Timestamp((18.524 843 590) - Transaction 8391 - Data(1025 bytes) Timestamp(18.524 843 590) --- Packet 4063861       Data(1024 bytes)       Duration(2.117us) Idle(14.700ns) Timestamp(18.524 843 590) --- Packet 4063863       Data(1 byte)       Duration(66.160ns) Time(282.000ns) Timestamp(18.524 845 722)According to Windows driver, no ZLP is needed if wBlockLength is non-zero,because the non-zero wBlockLength has already told the function side thesize of transfer to be expected. However, there are in-market NCM devicesthat rely on ZLP as long as the wBlockLength is multiple of wMaxPacketSize.To deal with such devices, it pads an extra 0 at end so the transfer is nolonger multiple of wMaxPacketSize.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-27405",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-27405"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-27405",
+				"href": "https://ubuntu.com/security/CVE-2024-27405",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

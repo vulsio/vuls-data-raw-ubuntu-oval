@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024359410000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35941 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: skbuff: add overflow debug check to pull/push helperssyzbot managed to trigger following splat:BUG: KASAN: use-after-free in __skb_flow_dissect+0x4a3b/0x5e50Read of size 1 at addr ffff888208a4000e by task a.out/2313[..]  __skb_flow_dissect+0x4a3b/0x5e50  __skb_get_hash+0xb4/0x400  ip_tunnel_xmit+0x77e/0x26f0  ipip_tunnel_xmit+0x298/0x410  ..Analysis shows that the skb has a valid ->head, but bogus ->datapointer.skb->data gets its bogus value via the neigh layer, which does:1556    __skb_pull(skb, skb_network_offset(skb));... and the skb was already dodgy at this point:skb_network_offset(skb) returns a negative value due to anearlier overflow of skb->network_header (u16).  __skb_pull thus\"adjusts\" skb->data by a huge offset, pointing outside skb->headarea.Allow debug builds to splat when we try to pull/push more thanINT_MAX bytes.After this, the syzkaller reproducer yields a more precise splatbefore the flow dissector attempts to read off skb->data memory:WARNING: CPU: 5 PID: 2313 at include/linux/skbuff.h:2653neigh_connected_output+0x28e/0x400  ip_finish_output2+0xb25/0xed0  iptunnel_xmit+0x4ff/0x870  ipgre_xmit+0x78e/0xbb0",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35941",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35941"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-35941",
+				"href": "https://ubuntu.com/security/CVE-2024-35941",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

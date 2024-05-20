@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024358750000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35875 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/coco: Require seeding RNG with RDRAND on CoCo systemsThere are few uses of CoCo that don't rely on working cryptography andhence a working RNG. Unfortunately, the CoCo threat model means that theVM host cannot be trusted and may actively work against guests toextract secrets or manipulate computation. Since a malicious host canmodify or observe nearly all inputs to guests, the only remaining sourceof entropy for CoCo guests is RDRAND.If RDRAND is broken -- due to CPU hardware fault -- the RNG as a wholeis meant to gracefully continue on gathering entropy from other sources,but since there aren't other sources on CoCo, this is catastrophic.This is mostly a concern at boot time when initially seeding the RNG, asafter that the consequences of a broken RDRAND are much moretheoretical.So, try at boot to seed the RNG using 256 bits of RDRAND output. If thisfails, panic(). This will also trigger if the system is booted withoutRDRAND, as RDRAND is essential for a safe CoCo boot.Add this deliberately to be \"just a CoCo x86 driver feature\" and notpart of the RNG itself. Many device drivers and platforms have somedesire to contribute something to the RNG, and add_device_randomness()is specifically meant for this purpose.Any driver can call it with seed data of any quality, or even garbagequality, and it can only possibly make the quality of the RNG better orhave no effect, but can never make it worse.Rather than trying to build something into the core of the RNG, considerthe particular CoCo issue just a CoCo issue, and therefore separate itall out into driver (well, arch/platform) code.  [ bp: Massage commit message. ]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35875",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35875"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-35875",
+				"href": "https://ubuntu.com/security/CVE-2024-35875",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

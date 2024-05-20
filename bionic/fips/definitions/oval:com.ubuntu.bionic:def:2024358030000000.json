@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024358030000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35803 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/efistub: Call mixed mode boot services on the firmware's stackNormally, the EFI stub calls into the EFI boot services using the stackthat was live when the stub was entered. According to the UEFI spec,this stack needs to be at least 128k in size - this might seem large butall asynchronous processing and event handling in EFI runs from the samestack and so quite a lot of space may be used in practice.In mixed mode, the situation is a bit different: the bootloader callsthe 32-bit EFI stub entry point, which calls the decompressor's 32-bitentry point, where the boot stack is set up, using a fixed allocationof 16k. This stack is still in use when the EFI stub is started in64-bit mode, and so all calls back into the EFI firmware will be usingthe decompressor's limited boot stack.Due to the placement of the boot stack right after the boot heap, anystack overruns have gone unnoticed. However, commit  5c4feadb0011983b (\"x86/decompressor: Move global symbol references to Ccode\")moved the definition of the boot heap into C code, and now the bootstack is placed right at the base of BSS, where any overruns willcorrupt the end of the .data section.While it would be possible to work around this by increasing the size ofthe boot stack, doing so would affect all x86 systems, and mixed modesystems are a tiny (and shrinking) fraction of the x86 installed base.So instead, record the firmware stack pointer value when entering fromthe 32-bit firmware, and switch to this stack every time a EFI bootservice call is made.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35803",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35803"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-35803",
+				"href": "https://ubuntu.com/security/CVE-2024-35803",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

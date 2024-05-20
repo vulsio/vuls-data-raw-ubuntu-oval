@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024358720000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35872 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/secretmem: fix GUP-fast succeeding on secretmem foliosfolio_is_secretmem() currently relies on secretmem folios being LRUfolios, to save some cycles.However, folios might reside in a folio batch without the LRU flag set, ortemporarily have their LRU flag cleared.  Consequently, the LRU flag isunreliable for this purpose.In particular, this is the case when secretmem_fault() allocates a freshpage and calls filemap_add_folio()->folio_add_lru().  The folio might beadded to the per-cpu folio batch and won't get the LRU flag set until thebatch was drained using e.g., lru_add_drain().Consequently, folio_is_secretmem() might not detect secretmem folios andGUP-fast can succeed in grabbing a secretmem folio, crashing the kernelwhen we would later try reading/writing to the folio, because the foliohas been unmapped from the directmap.Fix it by removing that unreliable check.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35872",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35872"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-35872",
+				"href": "https://ubuntu.com/security/CVE-2024-35872",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

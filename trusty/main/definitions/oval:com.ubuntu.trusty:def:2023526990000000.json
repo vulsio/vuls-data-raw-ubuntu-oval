@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2023526990000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52699 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:sysv: don't call sb_bread() with pointers_lock heldsyzbot is reporting sleep in atomic context in SysV filesystem [1], forsb_bread() is called with rw_spinlock held.A \"write_lock(&pointers_lock) => read_lock(&pointers_lock) deadlock\" bugand a \"sb_bread() with write_lock(&pointers_lock)\" bug were introduced by\"Replace BKL for chain locking with sysvfs-private rwlock\" in Linux 2.5.12.Then, \"[PATCH] err1-40: sysvfs locking fix\" in Linux 2.6.8 fixed theformer bug by moving pointers_lock lock to the callers, but insteadintroduced a \"sb_bread() with read_lock(&pointers_lock)\" bug (which madethis problem easier to hit).Al Viro suggested that why not to do like get_branch()/get_block()/find_shared() in Minix filesystem does. And doing like that is almost arevert of \"[PATCH] err1-40: sysvfs locking fix\" except that get_branch() from with find_shared() is called without write_lock(&pointers_lock).",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52699",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52699"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2023-52699",
+				"href": "https://ubuntu.com/security/CVE-2023-52699",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024358140000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35814 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:swiotlb: Fix double-allocation of slots due to broken alignment handlingCommit bbb73a103fbb (\"swiotlb: fix a braino in the alignment check fix\"),which was a fix for commit 0eee5ae10256 (\"swiotlb: fix slot alignmentchecks\"), causes a functional regression with vsock in a virtual machineusing bouncing via a restricted DMA SWIOTLB pool.When virtio allocates the virtqueues for the vsock device usingdma_alloc_coherent(), the SWIOTLB search can return page-unalignedallocations if 'area->index' was left unaligned by a previous allocationfrom the buffer: # Final address in brackets is the SWIOTLB address returned to the caller | virtio-pci 0000:00:07.0: orig_addr 0x0 alloc_size 0x2000,iotlb_align_mask 0x800 stride 0x2: got slot 1645-1649/7168 (0x98326800) | virtio-pci 0000:00:07.0: orig_addr 0x0 alloc_size 0x2000,iotlb_align_mask 0x800 stride 0x2: got slot 1649-1653/7168 (0x98328800) | virtio-pci 0000:00:07.0: orig_addr 0x0 alloc_size 0x2000,iotlb_align_mask 0x800 stride 0x2: got slot 1653-1657/7168 (0x9832a800)This ends badly (typically buffer corruption and/or a hang) becauseswiotlb_alloc() is expecting a page-aligned allocation and so blindlyreturns a pointer to the 'struct page' corresponding to the allocation,therefore double-allocating the first half (2KiB slot) of the 4KiB page.Fix the problem by treating the allocation alignment separately to anyadditional alignment requirements from the device, using the maximumof the two as the stride to search the buffer slots and taking careto ensure a minimum of page-alignment for buffers larger than a page.This also resolves swiotlb allocation failures occuring due to theinclusion of ~PAGE_MASK in 'iotlb_align_mask' for large allocations andresulting in alignment requirements exceeding swiotlb_max_mapping_size().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35814",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35814"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20",
+			"cve": {
+				"text": "CVE-2024-35814",
+				"href": "https://ubuntu.com/security/CVE-2024-35814",
+				"public": "20240520"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
