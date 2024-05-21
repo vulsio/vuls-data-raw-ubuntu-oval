@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024359550000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35955 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:kprobes: Fix possible use-after-free issue on kprobe registrationWhen unloading a module, its state is changing MODULE_STATE_LIVE -> MODULE_STATE_GOING -> MODULE_STATE_UNFORMED. Each change will takea time. `is_module_text_address()` and `__module_text_address()`works with MODULE_STATE_LIVE and MODULE_STATE_GOING.If we use `is_module_text_address()` and `__module_text_address()`separately, there is a chance that the first one is succeeded but thenext one is failed because module->state becomes MODULE_STATE_UNFORMEDbetween those operations.In `check_kprobe_address_safe()`, if the second `__module_text_address()`is failed, that is ignored because it expected a kernel_text address.But it may have failed simply because module->state has been changedto MODULE_STATE_UNFORMED. In this case, arm_kprobe() will try to modifynon-exist module text address (use-after-free).To fix this problem, we should not use separated `is_module_text_address()`and `__module_text_address()`, but use only `__module_text_address()`once and do `try_module_get(module)` which is only available withMODULE_STATE_LIVE.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35955",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35955"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21",
+			"cve": {
+				"text": "CVE-2024-35955",
+				"href": "https://ubuntu.com/security/CVE-2024-35955",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

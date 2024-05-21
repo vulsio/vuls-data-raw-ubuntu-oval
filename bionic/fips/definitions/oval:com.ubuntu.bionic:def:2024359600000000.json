@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024359600000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35960 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/mlx5: Properly link new fs rules into the treePreviously, add_rule_fg would only add newly created rules from thehandle into the tree when they had a refcount of 1. On the other hand,create_flow_handle tries hard to find and reference already existingidentical rules instead of creating new ones.These two behaviors can result in a situation where create_flow_handle1) creates a new rule and references it, then2) in a subsequent step during the same handle creation references it   again,resulting in a rule with a refcount of 2 that is not linked into thetree, will have a NULL parent and root and will result in a crash whenthe flow group is deleted because del_sw_hw_rule, invoked on ruledeletion, assumes node->parent is != NULL.This happened in the wild, due to another bug related to incorrecthandling of duplicate pkt_reformat ids, which lead to the code increate_flow_handle incorrectly referencing a just-added rule in the sameflow handle, resulting in the problem described above. Full details areat [1].This patch changes add_rule_fg to add new rules without parents intothe tree, properly initializing them and avoiding the crash. This makesit more consistent with how rules are added to an FTE increate_flow_handle.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35960",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35960"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21",
+			"cve": {
+				"text": "CVE-2024-35960",
+				"href": "https://ubuntu.com/security/CVE-2024-35960",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024359710000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35971 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: ks8851: Handle softirqs at the end of IRQ thread to fix hangThe ks8851_irq() thread may call ks8851_rx_pkts() in case there areany packets in the MAC FIFO, which calls netif_rx(). This netif_rx()implementation is guarded by local_bh_disable() and local_bh_enable().The local_bh_enable() may call do_softirq() to run softirqs in caseany are pending. One of the softirqs is net_rx_action, which ultimatelyreaches the driver .start_xmit callback. If that happens, the systemhangs. The entire call chain is below:ks8851_start_xmit_par from netdev_start_xmitnetdev_start_xmit from dev_hard_start_xmitdev_hard_start_xmit from sch_direct_xmitsch_direct_xmit from __dev_queue_xmit__dev_queue_xmit from __neigh_update__neigh_update from neigh_updateneigh_update from arp_process.constprop.0arp_process.constprop.0 from __netif_receive_skb_one_core__netif_receive_skb_one_core from process_backlogprocess_backlog from __napi_poll.constprop.0__napi_poll.constprop.0 from net_rx_actionnet_rx_action from __do_softirq__do_softirq from call_with_stackcall_with_stack from do_softirqdo_softirq from __local_bh_enable_ip__local_bh_enable_ip from netif_rxnetif_rx from ks8851_irqks8851_irq from irq_thread_fnirq_thread_fn from irq_threadirq_thread from kthreadkthread from ret_from_forkThe hang happens because ks8851_irq() first locks a spinlock inks8851_par.c ks8851_lock_par() spin_lock_irqsave(&ksp->lock, ...)and with that spinlock locked, calls netif_rx(). Once the executionreaches ks8851_start_xmit_par(), it calls ks8851_lock_par() againwhich attempts to claim the already locked spinlock again, and thehang happens.Move the do_softirq() call outside of the spinlock protected sectionof ks8851_irq() by disabling BHs around the entire spinlock protectedsection of ks8851_irq() handler. Place local_bh_enable() outside ofthe spinlock protected section, so that it can trigger do_softirq()without the ks8851_par.c ks8851_lock_par() spinlock being held, andsafely call ks8851_start_xmit_par() without attempting to lock thealready locked spinlock.Since ks8851_irq() is protected by local_bh_disable()/local_bh_enable()now, replace netif_rx() with __netif_rx() which is not duplicating thelocal_bh_disable()/local_bh_enable() calls.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35971",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35971"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21",
+			"cve": {
+				"text": "CVE-2024-35971",
+				"href": "https://ubuntu.com/security/CVE-2024-35971",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
