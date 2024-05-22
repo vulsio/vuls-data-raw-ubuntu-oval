@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023527070000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52707 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:sched/psi: Fix use-after-free in ep_remove_wait_queue()If a non-root cgroup gets removed when there is a thread that registeredtrigger and is polling on a pressure file within the cgroup, the pollingwaitqueue gets freed in the following path: do_rmdir   cgroup_rmdir     kernfs_drain_open_files       cgroup_file_release         cgroup_pressure_release           psi_trigger_destroyHowever, the polling thread still has a reference to the pressure file andwill access the freed waitqueue when the file is closed or upon exit: fput   ep_eventpoll_release     ep_free       ep_remove_wait_queue         remove_wait_queueThis results in use-after-free as pasted below.The fundamental problem here is that cgroup_file_release() (andconsequently waitqueue's lifetime) is not tied to the file's real lifetime.Using wake_up_pollfree() here might be less than ideal, but it is in linewith the comment at commit 42288cb44c4b (\"wait: add wake_up_pollfree()\")since the waitqueue's lifetime is not tied to file's one and can beconsidered as another special case. While this would be fixable by somehowmaking cgroup_file_release() be tied to the fput(), it would requiresizable refactoring at cgroups or higher layer which might be morejustifiable if we identify more cases like this.  BUG: KASAN: use-after-free in _raw_spin_lock_irqsave+0x60/0xc0  Write of size 4 at addr ffff88810e625328 by task a.out/4404\tCPU: 19 PID: 4404 Comm: a.out Not tainted 6.2.0-rc6 #38\tHardware name: Amazon EC2 c5a.8xlarge/, BIOS 1.0 10/16/2017\tCall Trace:\t<TASK>\tdump_stack_lvl+0x73/0xa0\tprint_report+0x16c/0x4e0\tkasan_report+0xc3/0xf0\tkasan_check_range+0x2d2/0x310\t_raw_spin_lock_irqsave+0x60/0xc0\tremove_wait_queue+0x1a/0xa0\tep_free+0x12c/0x170\tep_eventpoll_release+0x26/0x30\t__fput+0x202/0x400\ttask_work_run+0x11d/0x170\tdo_exit+0x495/0x1130\tdo_group_exit+0x100/0x100\tget_signal+0xd67/0xde0\tarch_do_signal_or_restart+0x2a/0x2b0\texit_to_user_mode_prepare+0x94/0x100\tsyscall_exit_to_user_mode+0x20/0x40\tdo_syscall_64+0x52/0x90\tentry_SYSCALL_64_after_hwframe+0x63/0xcd\t</TASK> Allocated by task 4404:\tkasan_set_track+0x3d/0x60\t__kasan_kmalloc+0x85/0x90\tpsi_trigger_create+0x113/0x3e0\tpressure_write+0x146/0x2e0\tcgroup_file_write+0x11c/0x250\tkernfs_fop_write_iter+0x186/0x220\tvfs_write+0x3d8/0x5c0\tksys_write+0x90/0x110\tdo_syscall_64+0x43/0x90\tentry_SYSCALL_64_after_hwframe+0x63/0xcd Freed by task 4407:\tkasan_set_track+0x3d/0x60\tkasan_save_free_info+0x27/0x40\t____kasan_slab_free+0x11d/0x170\tslab_free_freelist_hook+0x87/0x150\t__kmem_cache_free+0xcb/0x180\tpsi_trigger_destroy+0x2e8/0x310\tcgroup_file_release+0x4f/0xb0\tkernfs_drain_open_files+0x165/0x1f0\tkernfs_drain+0x162/0x1a0\t__kernfs_remove+0x1fb/0x310\tkernfs_remove_by_name_ns+0x95/0xe0\tcgroup_addrm_files+0x67f/0x700\tcgroup_destroy_locked+0x283/0x3c0\tcgroup_rmdir+0x29/0x100\tkernfs_iop_rmdir+0xd1/0x140\tvfs_rmdir+0xfe/0x240\tdo_rmdir+0x13d/0x280\t__x64_sys_rmdir+0x2c/0x30\tdo_syscall_64+0x43/0x90\tentry_SYSCALL_64_after_hwframe+0x63/0xcd",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52707",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52707"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52707",
+				"href": "https://ubuntu.com/security/CVE-2023-52707",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2023527380000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52738 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/amdgpu/fence: Fix oops due to non-matching drm_sched init/finiCurrently amdgpu calls drm_sched_fini() from the fence driver sw finiroutine - such function is expected to be called only after therespective init function - drm_sched_init() - was executed successfully.Happens that we faced a driver probe failure in the Steam Deckrecently, and the function drm_sched_fini() was called even withoutits counter-part had been previously called, causing the following oops:amdgpu: probe of 0000:04:00.0 failed with error -110BUG: kernel NULL pointer dereference, address: 0000000000000090PGD 0 P4D 0Oops: 0002 [#1] PREEMPT SMP NOPTICPU: 0 PID: 609 Comm: systemd-udevd Not tainted 6.2.0-rc3-gpiccoli #338Hardware name: Valve Jupiter/Jupiter, BIOS F7A0113 11/04/2022RIP: 0010:drm_sched_fini+0x84/0xa0 [gpu_sched][...]Call Trace: <TASK> amdgpu_fence_driver_sw_fini+0xc8/0xd0 [amdgpu] amdgpu_device_fini_sw+0x2b/0x3b0 [amdgpu] amdgpu_driver_release_kms+0x16/0x30 [amdgpu] devm_drm_dev_init_release+0x49/0x70 [...]To prevent that, check if the drm_sched was properly initialized for agiven ring before calling its fini counter-part.Notice ideally we'd use sched.ready for that; such field is set as thelatestthing on drm_sched_init(). But amdgpu seems to \"override\" the meaning ofsuchfield - in the above oops for example, it was a GFX ring causing the crash,andthe sched.ready field was set to true in the ring init routine, regardlessofthe state of the DRM scheduler. Hence, we ended-up using sched.ops as perChristian's suggestion [0], and also removed the no_scheduler check [1].[0]https://lore.kernel.org/amd-gfx/984ee981-2906-0eaf-ccec-9f80975cb136@amd.com/[1]https://lore.kernel.org/amd-gfx/cd0e2994-f85f-d837-609f-7056d5fb7231@amd.com/",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52738",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52738"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52738",
+				"href": "https://ubuntu.com/security/CVE-2023-52738",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

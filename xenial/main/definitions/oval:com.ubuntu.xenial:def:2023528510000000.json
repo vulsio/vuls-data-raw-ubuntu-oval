@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023528510000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52851 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:IB/mlx5: Fix init stage error handling to avoid double free of same QP andUAFIn the unlikely event that workqueue allocation fails and returns NULL inmlx5_mkey_cache_init(), delete the call tomlx5r_umr_resource_cleanup() (which frees the QP) inmlx5_ib_stage_post_ib_reg_umr_init().  This will avoid attempted doublefree of the same QP when __mlx5_ib_add() does its cleanup.Resolves a splat:   Syzkaller reported a UAF in ib_destroy_qp_user   workqueue: Failed to create a rescuer kthread for wq \"mkey_cache\":-EINTR   infiniband mlx5_0: mlx5_mkey_cache_init:981:(pid 1642):   failed to create work queue   infiniband mlx5_0: mlx5_ib_stage_post_ib_reg_umr_init:4075:(pid 1642):   mr cache init failed -12   ==================================================================   BUG: KASAN: slab-use-after-free in ib_destroy_qp_user(drivers/infiniband/core/verbs.c:2073)   Read of size 8 at addr ffff88810da310a8 by task repro_upstream/1642   Call Trace:   <TASK>   kasan_report (mm/kasan/report.c:590)   ib_destroy_qp_user (drivers/infiniband/core/verbs.c:2073)   mlx5r_umr_resource_cleanup (drivers/infiniband/hw/mlx5/umr.c:198)   __mlx5_ib_add (drivers/infiniband/hw/mlx5/main.c:4178)   mlx5r_probe (drivers/infiniband/hw/mlx5/main.c:4402)   ...   </TASK>   Allocated by task 1642:   __kmalloc (./include/linux/kasan.h:198 mm/slab_common.c:1026   mm/slab_common.c:1039)   create_qp (./include/linux/slab.h:603 ./include/linux/slab.h:720   ./include/rdma/ib_verbs.h:2795 drivers/infiniband/core/verbs.c:1209)   ib_create_qp_kernel (drivers/infiniband/core/verbs.c:1347)   mlx5r_umr_resource_init (drivers/infiniband/hw/mlx5/umr.c:164)   mlx5_ib_stage_post_ib_reg_umr_init(drivers/infiniband/hw/mlx5/main.c:4070)   __mlx5_ib_add (drivers/infiniband/hw/mlx5/main.c:4168)   mlx5r_probe (drivers/infiniband/hw/mlx5/main.c:4402)   ...   Freed by task 1642:   __kmem_cache_free (mm/slub.c:1826 mm/slub.c:3809 mm/slub.c:3822)   ib_destroy_qp_user (drivers/infiniband/core/verbs.c:2112)   mlx5r_umr_resource_cleanup (drivers/infiniband/hw/mlx5/umr.c:198)   mlx5_ib_stage_post_ib_reg_umr_init(drivers/infiniband/hw/mlx5/main.c:4076   drivers/infiniband/hw/mlx5/main.c:4065)   __mlx5_ib_add (drivers/infiniband/hw/mlx5/main.c:4168)   mlx5r_probe (drivers/infiniband/hw/mlx5/main.c:4402)   ...",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52851",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52851"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52851",
+				"href": "https://ubuntu.com/security/CVE-2023-52851",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

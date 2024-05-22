@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2021472260000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47226 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/fpu: Invalidate FPU state after a failed XRSTOR from a user bufferBoth Intel and AMD consider it to be architecturally valid for XRSTOR tofail with #PF but nonetheless change the register state.  The actualconditions under which this might occur are unclear [1], but it seemsplausible that this might be triggered if one sibling thread unmaps a pageand invalidates the shared TLB while another sibling thread is executingXRSTOR on the page in question.__fpu__restore_sig() can execute XRSTOR while the hardware registersare preserved on behalf of a different victim task (using thefpu_fpregs_owner_ctx mechanism), and, in theory, XRSTOR could fail butmodify the registers.If this happens, then there is a window in which __fpu__restore_sig()could schedule out and the victim task could schedule back in withoutreloading its own FPU registers. This would result in part of the FPUstate that __fpu__restore_sig() was attempting to load leaking into thevictim task's user-visible state.Invalidate preserved FPU registers on XRSTOR failure to prevent thissituation from corrupting any state.[1] Frequent readers of the errata lists might imagine \"complex    microarchitectural conditions\".",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47226",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47226"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47226",
+				"href": "https://ubuntu.com/security/CVE-2021-47226",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

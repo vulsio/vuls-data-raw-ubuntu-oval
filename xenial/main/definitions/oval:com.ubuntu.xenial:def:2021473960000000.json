@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021473960000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47396 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mac80211-hwsim: fix late beacon hrtimer handlingThomas explained in https://lore.kernel.org/r/87mtoeb4hb.ffs@tglxthat our handling of the hrtimer here is wrong: If the timer fireslate (e.g. due to vCPU scheduling, as reported by Dmitry/syzbot)then it tries to actually rearm the timer at the next deadline,which might be in the past already: 1          2          3          N          N+1 |          |          |   ...    |          | ^ intended to fire here (1)            ^ next deadline here (2)                                      ^ actually fired hereThe next time it fires, it's later, but will still try to schedulefor the next deadline (now 3), etc. until it catches up with N,but that might take a long time, causing stalls etc.Now, all of this is simulation, so we just have to fix it, butnote that the behaviour is wrong even per spec, since there's novalue then in sending all those beacons unaligned - they should bealigned to the TBTT (1, 2, 3, ... in the picture), and if we're abit (or a lot) late, then just resume at that point.Therefore, change the code to use hrtimer_forward_now() which willensure that the next firing of the timer would be at N+1 (in thepicture), i.e. the next interval point after the current time.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47396",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47396"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47396",
+				"href": "https://ubuntu.com/security/CVE-2021-47396",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

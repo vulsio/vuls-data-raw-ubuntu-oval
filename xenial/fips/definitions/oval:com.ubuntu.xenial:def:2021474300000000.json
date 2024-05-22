@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021474300000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47430 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/entry: Clear X86_FEATURE_SMAP when CONFIG_X86_SMAP=nCommit  3c73b81a9164 (\"x86/entry, selftests: Further improve user entry sanitychecks\")added a warning if AC is set when in the kernel.Commit  662a0221893a3d (\"x86/entry: Fix AC assertion\")changed the warning to only fire if the CPU supports SMAP.However, the warning can still trigger on a machine that supports SMAPbut where it's disabled in the kernel config and when running thesyscall_nt selftest, for example:  ------------[ cut here ]------------  WARNING: CPU: 0 PID: 49 at irqentry_enter_from_user_mode  CPU: 0 PID: 49 Comm: init Tainted: G                T 5.15.0-rc4+ #98e6202628ee053b4f310759978284bd8bb0ce6905  Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.10.2-1ubuntu1 04/01/2014  RIP: 0010:irqentry_enter_from_user_mode  ...  Call Trace:   ? irqentry_enter   ? exc_general_protection   ? asm_exc_general_protection   ? asm_exc_general_protectioIS_ENABLED(CONFIG_X86_SMAP) could be added to the warning condition, buteven this would not be enough in case SMAP is disabled at boot time withthe \"nosmap\" parameter.To be consistent with \"nosmap\" behaviour, clear X86_FEATURE_SMAP when!CONFIG_X86_SMAP.Found using entry-fuzz + satrandconfig. [ bp: Massage commit message. ]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47430",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47430"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47430",
+				"href": "https://ubuntu.com/security/CVE-2021-47430",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

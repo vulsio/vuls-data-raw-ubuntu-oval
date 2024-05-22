@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2021472900000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47290 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:scsi: target: Fix NULL dereference on XCOPY completionCPU affinity control added with commit 39ae3edda325 (\"scsi: target: core:Make completion affinity configurable\") makes target_complete_cmd() queuework on a CPU based on se_tpg->se_tpg_wwn->cmd_compl_affinity state.LIO's EXTENDED COPY worker is a special case in that read/write cmds aredispatched using the global xcopy_pt_tpg, which carries a NULL se_tpg_wwnpointer following initialization in target_xcopy_setup_pt().The NULL xcopy_pt_tpg->se_tpg_wwn pointer is dereferenced on completion ofany EXTENDED COPY initiated read/write cmds. E.g using the libiscsiSCSI.ExtendedCopy.Simple test:  BUG: kernel NULL pointer dereference, address: 00000000000001a8  RIP: 0010:target_complete_cmd+0x9d/0x130 [target_core_mod]  Call Trace:   fd_execute_rw+0x148/0x42a [target_core_file]   ? __dynamic_pr_debug+0xa7/0xe0   ? target_check_reservation+0x5b/0x940 [target_core_mod]   __target_execute_cmd+0x1e/0x90 [target_core_mod]   transport_generic_new_cmd+0x17c/0x330 [target_core_mod]   target_xcopy_issue_pt_cmd+0x9/0x60 [target_core_mod]   target_xcopy_read_source.isra.7+0x10b/0x1b0 [target_core_mod]   ? target_check_fua+0x40/0x40 [target_core_mod]   ? transport_complete_task_attr+0x130/0x130 [target_core_mod]   target_xcopy_do_work+0x61f/0xc00 [target_core_mod]This fix makes target_complete_cmd() queue work on se_cmd->cpuid ifse_tpg_wwn is NULL.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47290",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47290"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47290",
+				"href": "https://ubuntu.com/security/CVE-2021-47290",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2021472670000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47267 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: fix various gadget panics on 10gbps cablingusb_assign_descriptors() is called with 5 parameters,the last 4 of which are the usb_descriptor_header for:  full-speed (USB1.1 - 12Mbps [including USB1.0 low-speed @ 1.5Mbps),  high-speed (USB2.0 - 480Mbps),  super-speed (USB3.0 - 5Gbps),  super-speed-plus (USB3.1 - 10Gbps).The differences between full/high/super-speed descriptors are usuallysubstantial (due to changes in the maximum usb block size from 64 to 512to 1024 bytes and other differences in the specs), while the differencebetween 5 and 10Gbps descriptors may be as little as nothing(in many cases the same tuning is simply good enough).However if a gadget driver calls usb_assign_descriptors() witha NULL descriptor for super-speed-plus and is then used on a max 10gbpsconfiguration, the kernel will crash with a null pointer dereference,when a 10gbps capable device port + cable + host port combination shows up.(This wouldn't happen if the gadget max-speed was set to 5gbps, butit of course defaults to the maximum, and there's no real reason toartificially limit it)The fix is to simply use the 5gbps descriptor as the 10gbps descriptor,if a 10gbps descriptor wasn't provided.Obviously this won't fix the problem if the 5gbps descriptor is alsoNULL, but such cases can't be so trivially solved (and any such gadgetsare unlikely to be used with USB3 ports any way).",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47267",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47267"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47267",
+				"href": "https://ubuntu.com/security/CVE-2021-47267",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

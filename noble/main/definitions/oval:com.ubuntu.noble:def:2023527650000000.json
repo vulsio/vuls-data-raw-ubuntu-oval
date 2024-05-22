@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2023527650000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52765 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mfd: qcom-spmi-pmic: Fix revid implementationThe Qualcomm SPMI PMIC revid implementation is broken in multiple ways.First, it assumes that just because the sibling base device has beenregistered that means that it is also bound to a driver, which may notbe the case (e.g. due to probe deferral or asynchronous probe). Thiscould trigger a NULL-pointer dereference when attempting to access thedriver data of the unbound device.Second, it accesses driver data of a sibling device directly and withoutany locking, which means that the driver data may be freed while it isbeing accessed (e.g. on driver unbind).Third, it leaks a struct device reference to the sibling device which islooked up using the spmi_device_from_of() every time a function (child)device is calling the revid function (e.g. on probe).Fix this mess by reimplementing the revid lookup so that it is done onlyat probe of the PMIC device; the base device fetches the revid info fromthe hardware, while any secondary SPMI device fetches the informationfrom the base device and caches it so that it can be accessed safelyfrom its children. If the base device has not been probed yet then probeof a secondary device is deferred.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52765",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52765"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52765",
+				"href": "https://ubuntu.com/security/CVE-2023-52765",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

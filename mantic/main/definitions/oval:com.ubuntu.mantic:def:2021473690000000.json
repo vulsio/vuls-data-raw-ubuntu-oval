@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2021473690000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47369 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:s390/qeth: fix NULL deref in qeth_clear_working_pool_list()When qeth_set_online() calls qeth_clear_working_pool_list() to rollback after an error exit from qeth_hardsetup_card(), we are at risk ofaccessing card->qdio.in_q before it was allocated byqeth_alloc_qdio_queues() via qeth_mpc_initialize().qeth_clear_working_pool_list() then dereferences NULL, and by writing toqueue->bufs[i].pool_entry scribbles all over the CPU's lowcore.Resulting in a crash when those lowcore areas are used next (eg. onthe next machine-check interrupt).Such a scenario would typically happen when the device is first setonline and its queues aren't allocated yet. An early IO error or certainmisconfigs (eg. mismatched transport mode, bad portno) then cause us toerror out from qeth_hardsetup_card() with card->qdio.in_q still beingNULL.Fix it by checking the pointer for NULL before accessing it.Note that we also have (rare) paths inside qeth_mpc_initialize() wherea configuration change can cause us to free the existing queues,expecting that subsequent code will allocate them again. If we thenerror out before that re-allocation happens, the same bug occurs.Root-caused-by: Heiko Carstens <hca@linux.ibm.com>",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47369",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47369"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47369",
+				"href": "https://ubuntu.com/security/CVE-2021-47369",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

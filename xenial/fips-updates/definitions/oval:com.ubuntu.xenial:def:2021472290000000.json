@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021472290000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47229 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:PCI: aardvark: Fix kernel panic during PIO transferTrying to start a new PIO transfer by writing value 0 in PIO_START registerwhen previous transfer has not yet completed (which is indicated by value 1in PIO_START) causes an External Abort on CPU, which results in kernelpanic:    SError Interrupt on CPU0, code 0xbf000002 -- SError    Kernel panic - not syncing: Asynchronous SError InterruptTo prevent kernel panic, it is required to reject a new PIO transfer whenprevious one has not finished yet.If previous PIO transfer is not finished yet, the kernel may issue a newPIO request only if the previous PIO transfer timed out.In the past the root cause of this issue was incorrectly identified (as itoften happens during link retraining or after link down event) and specialhack was implemented in Trusted Firmware to catch all SError events in EL3,to ignore errors with code 0xbf000002 and not forwarding any other errorsto kernel and instead throw panic from EL3 Trusted Firmware handler.Links to discussion and patches about this issue:https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/commit/?id=3c7dcdac5c50https://lore.kernel.org/linux-pci/20190316161243.29517-1-repk@triplefau.lt/https://lore.kernel.org/linux-pci/971be151d24312cc533989a64bd454b4@www.loen.fr/https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/1541But the real cause was the fact that during link retraining or after linkdown event the PIO transfer may take longer time, up to the 1.44s until ittimes out. This increased probability that a new PIO transfer would beissued by kernel while previous one has not finished yet.After applying this change into the kernel, it is possible to revert thementioned TF-A hack and SError events do not have to be caught in TF-A EL3.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47229",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47229"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47229",
+				"href": "https://ubuntu.com/security/CVE-2021-47229",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

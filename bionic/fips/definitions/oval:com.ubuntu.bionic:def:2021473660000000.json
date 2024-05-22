@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2021473660000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47366 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:afs: Fix corruption in reads at fpos 2G-4G from an OpenAFS serverAFS-3 has two data fetch RPC variants, FS.FetchData and FS.FetchData64, andLinux's afs client switches between them when talking to a non-YFS serverif the read size, the file position or the sum of the two have the upper 32bits set of the 64-bit value.This is a problem, however, since the file position and length fields ofFS.FetchData are *signed* 32-bit values.Fix this by capturing the capability bits obtained from the fileserver whenit's sent an FS.GetCapabilities RPC, rather than just discarding them, andthen picking out the VICED_CAPABILITY_64BITFILES flag.  This can then beused to decide whether to use FS.FetchData or FS.FetchData64 - and alsoFS.StoreData or FS.StoreData64 - rather than using upper_32_bits() toswitch on the parameter values.This capabilities flag could also be used to limit the maximum size of thefile, but all servers must be checked for that.Note that the issue does not exist with FS.StoreData - that uses *unsigned*32-bit values.  It's also not a problem with Auristor servers as itsYFS.FetchData64 op uses unsigned 64-bit values.This can be tested by cloning a git repo through an OpenAFS client to anOpenAFS server and then doing \"git status\" on it from a Linux afsclient[1].  Provided the clone has a pack file that's in the 2G-4G range,the git status will show errors like:\terror: packfile.git/objects/pack/pack-5e813c51d12b6847bbc0fcd97c2bca66da50079c.pack doesnot match index\terror: packfile.git/objects/pack/pack-5e813c51d12b6847bbc0fcd97c2bca66da50079c.pack doesnot match indexThis can be observed in the server's FileLog with something like thefollowing appearing:Sun Aug 29 19:31:39 2021 SRXAFS_FetchData, Fid = 2303380852.491776.3263114,Host 192.168.11.201:7001, Id 1001Sun Aug 29 19:31:39 2021 CheckRights: len=0, for host=192.168.11.201:7001Sun Aug 29 19:31:39 2021 FetchData_RXStyle: Pos 18446744071815340032, Len3154Sun Aug 29 19:31:39 2021 FetchData_RXStyle: file size 2400758866...Sun Aug 29 19:31:40 2021 SRXAFS_FetchData returns 5Note the file position of 18446744071815340032.  This is the requested fileposition sign-extended.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47366",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47366"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47366",
+				"href": "https://ubuntu.com/security/CVE-2021-47366",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

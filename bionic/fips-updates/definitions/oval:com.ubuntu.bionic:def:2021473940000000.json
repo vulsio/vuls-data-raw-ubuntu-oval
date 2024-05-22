@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2021473940000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47394 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: unlink table before deleting itsyzbot reports following UAF:BUG: KASAN: use-after-free in memcmp+0x18f/0x1c0 lib/string.c:955 nla_strcmp+0xf2/0x130 lib/nlattr.c:836 nft_table_lookup.part.0+0x1a2/0x460 net/netfilter/nf_tables_api.c:570 nft_table_lookup net/netfilter/nf_tables_api.c:4064 [inline] nf_tables_getset+0x1b3/0x860 net/netfilter/nf_tables_api.c:4064 nfnetlink_rcv_msg+0x659/0x13f0 net/netfilter/nfnetlink.c:285 netlink_rcv_skb+0x153/0x420 net/netlink/af_netlink.c:2504Problem is that all get operations are lockless, so the commit_mutexheld by nft_rcv_nl_event() isn't enough to stop a parallel GET requestfrom doing read-accesses to the table object even after synchronize_rcu().To avoid this, unlink the table first and store the table objects inon-stack scratch space.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47394",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47394"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47394",
+				"href": "https://ubuntu.com/security/CVE-2021-47394",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

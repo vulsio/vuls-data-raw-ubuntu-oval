@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2021473030000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47303 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Track subprog poke descriptors correctly and fix use-after-freeSubprograms are calling map_poke_track(), but on program release there isnohook to call map_poke_untrack(). However, on program release, the auxmemory(and poke descriptor table) is freed even though we still have a referencetoit in the element list of the map aux data. When we run map_poke_run(), wethenend up accessing free'd memory, triggering KASAN inprog_array_map_poke_run():  [...]  [  402.824689] BUG: KASAN: use-after-free inprog_array_map_poke_run+0xc2/0x34e  [  402.824698] Read of size 4 at addr ffff8881905a7940 by taskhubble-fgs/4337  [  402.824705] CPU: 1 PID: 4337 Comm: hubble-fgs Tainted: G          I   5.12.0+ #399  [  402.824715] Call Trace:  [  402.824719]  dump_stack+0x93/0xc2  [  402.824727]  print_address_description.constprop.0+0x1a/0x140  [  402.824736]  ? prog_array_map_poke_run+0xc2/0x34e  [  402.824740]  ? prog_array_map_poke_run+0xc2/0x34e  [  402.824744]  kasan_report.cold+0x7c/0xd8  [  402.824752]  ? prog_array_map_poke_run+0xc2/0x34e  [  402.824757]  prog_array_map_poke_run+0xc2/0x34e  [  402.824765]  bpf_fd_array_map_update_elem+0x124/0x1a0  [...]The elements concerned are walked as follows:    for (i = 0; i < elem->aux->size_poke_tab; i++) {           poke = &elem->aux->poke_tab[i];    [...]The access to size_poke_tab is a 4 byte read, verified by checking offsetsin the KASAN dump:  [  402.825004] The buggy address belongs to the object atffff8881905a7800                 which belongs to the cache kmalloc-1k of size 1024  [  402.825008] The buggy address is located 320 bytes inside of                 1024-byte region [ffff8881905a7800, ffff8881905a7c00)The pahole output of bpf_prog_aux:  struct bpf_prog_aux {    [...]    /* --- cacheline 5 boundary (320 bytes) --- */    u32                        size_poke_tab;        /*   320     4 */    [...]In general, subprograms do not necessarily manage their own datastructures.For example, BTF func_info and linfo are just pointers to the main programstructure. This allows reference counting and cleanup to be done on thelatterwhich simplifies their management a bit. The aux->poke_tab struct, however,did not follow this logic. The initial proposed fix for this use-after-freebug further embedded poke data tracking into the subprogram with properreference counting. However, Daniel and Alexei questioned why we weretreatingthese objects special; I agree, its unnecessary. The fix here removes thepersubprogram poke table allocation and map tracking and instead simply pointsthe aux->poke_tab pointer at the main programs poke table. This way, maptracking is simplified to the main program and we do not need to managethemper subprogram.This also means, bpf_prog_free_deferred(), which unwinds the programreferencecounting and kfrees objects, needs to ensure that we don't try to doublefreethe poke_tab when free'ing the subprog structures. This is easily solved byNULL'ing the poke_tab pointer. The second detail is to ensure that persubprogram JIT logic only does fixups on poke_tab[] entries it owns. To dothis, we add a pointer in the poke structure to point at the subprogramvalueso JITs can easily check while walking the poke_tab structure if thecurrententry belongs to the current program. The aux pointer is stable andthereforesuitable for such comparison. On the jit_subprogs() error path, we omitcleaning up the poke->aux field because these are only ever referenced fromthe JIT side, but on error we will never make it to the JIT, so its fine toleave them dangling. Removing these pointers would complicate the errorpathfor no reason. However, we do need to untrack all poke descriptors from themain program as otherwise they could race with the freeing of JIT memoryfromthe subprograms. Lastly, a748c6975dea3 (\"bpf: propagate poke des---truncated---",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47303",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47303"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47303",
+				"href": "https://ubuntu.com/security/CVE-2021-47303",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

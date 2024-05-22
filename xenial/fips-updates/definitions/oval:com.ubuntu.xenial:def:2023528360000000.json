@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023528360000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52836 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:locking/ww_mutex/test: Fix potential workqueue corruptionIn some cases running with the test-ww_mutex code, I was seeingodd behavior where sometimes it seemed flush_workqueue wasreturning before all the work threads were finished.Often this would cause strange crashes as the mutexes would befreed while they were being used.Looking at the code, there is a lifetime problem as thecontrolling thread that spawns the work allocates the\"struct stress\" structures that are passed to the workqueuethreads. Then when the workqueue threads are finished,they free the stress struct that was passed to them.Unfortunately the workqueue work_struct node is in the stressstruct. Which means the work_struct is freed before the workthread returns and while flush_workqueue is waiting.It seems like a better idea to have the controlling threadboth allocate and free the stress structures, so that we canbe sure we don't corrupt the workqueue by freeing the structureprematurely.So this patch reworks the test to do so, and with this changeI no longer see the early flush_workqueue returns.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52836",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52836"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52836",
+				"href": "https://ubuntu.com/security/CVE-2023-52836",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

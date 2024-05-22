@@ -1,0 +1,210 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.jammy:def:2021473370000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47337 on Ubuntu 22.04 LTS (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:scsi: core: Fix bad pointer dereference when ehandler kthread is invalidCommit 66a834d09293 (\"scsi: core: Fix error handling of scsi_host_alloc()\")changed the allocation logic to call put_device() to perform host cleanupwith the assumption that IDA removal and stopping the kthread wouldproperly be performed in scsi_host_dev_release(). However, in the unlikelycase that the error handler thread fails to spawn, shost->ehandler is setto ERR_PTR(-ENOMEM).The error handler cleanup code in scsi_host_dev_release() will callkthread_stop() if shost->ehandler != NULL which will always be the casewhether the kthread was successfully spawned or not. In the case that itfailed to spawn this has the nasty side effect of trying to dereference aninvalid pointer when kthread_stop() is called. The following splat providesan example of this behavior in the wild:scsi host11: error handler thread failed to spawn, error = -4Kernel attempted to read user page (10c) - exploit attempt? (uid: 0)BUG: Kernel NULL pointer dereference on read at 0x0000010cFaulting instruction address: 0xc00000000818e9a8Oops: Kernel access of bad area, sig: 11 [#1]LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeriesModules linked in: ibmvscsi(+) scsi_transport_srp dm_multipath dm_mirrordm_region hash dm_log dm_mod fuse overlay squashfs loopCPU: 12 PID: 274 Comm: systemd-udevd Not tainted 5.13.0-rc7 #1NIP:  c00000000818e9a8 LR: c0000000089846e8 CTR: 0000000000007ee8REGS: c000000037d12ea0 TRAP: 0300   Not tainted  (5.13.0-rc7)MSR:  800000000280b033 &lt;SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE&gt;  CR:28228228XER: 20040001CFAR: c0000000089846e4 DAR: 000000000000010c DSISR: 40000000 IRQMASK: 0GPR00: c0000000089846e8 c000000037d13140 c000000009cc1100 fffffffffffffffcGPR04: 0000000000000001 0000000000000000 0000000000000000 c000000037dc0000GPR08: 0000000000000000 c000000037dc0000 0000000000000001 00000000fffff7ffGPR12: 0000000000008000 c00000000a049000 c000000037d13d00 000000011134d5a0GPR16: 0000000000001740 c0080000190d0000 c0080000190d1740 c000000009129288GPR20: c000000037d13bc0 0000000000000001 c000000037d13bc0 c0080000190b7898GPR24: c0080000190b7708 0000000000000000 c000000033bb2c48 0000000000000000GPR28: c000000046b28280 0000000000000000 000000000000010c fffffffffffffffcNIP [c00000000818e9a8] kthread_stop+0x38/0x230LR [c0000000089846e8] scsi_host_dev_release+0x98/0x160Call Trace:[c000000033bb2c48] 0xc000000033bb2c48 (unreliable)[c0000000089846e8] scsi_host_dev_release+0x98/0x160[c00000000891e960] device_release+0x60/0x100[c0000000087e55c4] kobject_release+0x84/0x210[c00000000891ec78] put_device+0x28/0x40[c000000008984ea4] scsi_host_alloc+0x314/0x430[c0080000190b38bc] ibmvscsi_probe+0x54/0xad0 [ibmvscsi][c000000008110104] vio_bus_probe+0xa4/0x4b0[c00000000892a860] really_probe+0x140/0x680[c00000000892aefc] driver_probe_device+0x15c/0x200[c00000000892b63c] device_driver_attach+0xcc/0xe0[c00000000892b740] __driver_attach+0xf0/0x200[c000000008926f28] bus_for_each_dev+0xa8/0x130[c000000008929ce4] driver_attach+0x34/0x50[c000000008928fc0] bus_add_driver+0x1b0/0x300[c00000000892c798] driver_register+0x98/0x1a0[c00000000810eb60] __vio_register_driver+0x80/0xe0[c0080000190b4a30] ibmvscsi_module_init+0x9c/0xdc [ibmvscsi][c0000000080121d0] do_one_initcall+0x60/0x2d0[c000000008261abc] do_init_module+0x7c/0x320[c000000008265700] load_module+0x2350/0x25b0[c000000008265cb4] __do_sys_finit_module+0xd4/0x160[c000000008031110] system_call_exception+0x150/0x2d0[c00000000800d35c] system_call_common+0xec/0x278Fix this be nulling shost->ehandler when the kthread fails to spawn.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 22.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47337",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47337"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47337",
+				"href": "https://ubuntu.com/security/CVE-2021-47337",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000000",
+						"comment": "linux package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"comment": "linux-hwe-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
+						"comment": "linux-kvm package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000010",
+						"comment": "linux-aws package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
+						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"comment": "linux-aws-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
+						"comment": "linux-azure package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"comment": "linux-azure-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
+						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
+						"comment": "linux-gcp package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"comment": "linux-gcp-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
+						"comment": "linux-gke package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000080",
+						"comment": "linux-gkeop package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
+						"comment": "linux-ibm package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"comment": "linux-intel-iotg package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
+						"comment": "linux-lowlatency package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
+						"comment": "linux-nvidia package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"comment": "linux-nvidia-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000060",
+						"comment": "linux-oracle package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"comment": "linux-oracle-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
+						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
+						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"comment": "linux-oem-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
+						"comment": "linux-raspi package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"comment": "linux-starfive-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"comment": "linux-xilinx-zynqmp package in jammy is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
