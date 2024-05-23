@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2021474590000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47459 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:can: j1939: j1939_netdev_start(): fix UAF for rx_kref of j1939_privIt will trigger UAF for rx_kref of j1939_priv as following.        cpu0                                    cpu1j1939_sk_bind(socket0, ndev0, ...)j1939_netdev_start                                        j1939_sk_bind(socket1, ndev0, ...)                                        j1939_netdev_startj1939_priv_set                                        j1939_priv_get_by_ndev_lockedj1939_jsk_add.....j1939_netdev_stopkref_put_lock(&priv->rx_kref, ...)                                        kref_get(&priv->rx_kref, ...)                                        REFCOUNT_WARN(\"addition on 0;...\")====================================================refcount_t: addition on 0; use-after-free.WARNING: CPU: 1 PID: 20874 at lib/refcount.c:25refcount_warn_saturate+0x169/0x1e0RIP: 0010:refcount_warn_saturate+0x169/0x1e0Call Trace: j1939_netdev_start+0x68b/0x920 j1939_sk_bind+0x426/0xeb0 ? security_socket_bind+0x83/0xb0The rx_kref's kref_get() and kref_put() should use j1939_netdev_lock toprotect.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47459",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47459"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-23",
+			"cve": {
+				"text": "CVE-2021-47459",
+				"href": "https://ubuntu.com/security/CVE-2021-47459",
+				"public": "20240523"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
