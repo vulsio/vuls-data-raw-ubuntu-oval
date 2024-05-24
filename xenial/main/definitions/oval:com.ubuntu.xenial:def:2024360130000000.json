@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024360130000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36013 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:Bluetooth: L2CAP: Fix slab-use-after-free in l2cap_connect()Extend a critical section to prevent chan from early freeing.Also make the l2cap_connect() return type void. Nothing is using thereturned value but it is ugly to return a potentially freed pointer.Making it void will help with backports because earlier kernels did usethe return value. Now the compile will break for kernels where thispatch is not a complete fix.Call stack summary:[use]l2cap_bredr_sig_cmd  l2cap_connect  ? mutex_lock(&conn->chan_lock);  ? chan = pchan->ops->new_connection(pchan); <- alloc chan  ? __l2cap_chan_add(conn, chan);  ?   l2cap_chan_hold(chan);  ?   list_add(&chan->list, &conn->chan_l);   ... (1)  ? mutex_unlock(&conn->chan_lock);    chan->conf_state              ... (4) <- use after free[free]l2cap_conn_del? mutex_lock(&conn->chan_lock);? foreach chan in conn->chan_l:            ... (2)?   l2cap_chan_put(chan);?     l2cap_chan_destroy?       kfree(chan)               ... (3) <- chan freed? mutex_unlock(&conn->chan_lock);==================================================================BUG: KASAN: slab-use-after-free in instrument_atomic_readinclude/linux/instrumented.h:68 [inline]BUG: KASAN: slab-use-after-free in _test_bitinclude/asm-generic/bitops/instrumented-non-atomic.h:141 [inline]BUG: KASAN: slab-use-after-free in l2cap_connect+0xa67/0x11a0net/bluetooth/l2cap_core.c:4260Read of size 8 at addr ffff88810bf040a0 by task kworker/u3:1/311",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36013",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36013"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-24",
+			"cve": {
+				"text": "CVE-2024-36013",
+				"href": "https://ubuntu.com/security/CVE-2024-36013",
+				"public": "20240524"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
