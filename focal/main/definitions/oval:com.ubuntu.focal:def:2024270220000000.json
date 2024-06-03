@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27022 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:fork: defer linking file vma until vma is fully initializedThorvald reported a WARNING [1]. And the root cause is below race: CPU 1\t\t\t\t\tCPU 2 fork\t\t\t\t\thugetlbfs_fallocate  dup_mmap\t\t\t\t hugetlbfs_punch_hole   i_mmap_lock_write(mapping);   vma_interval_tree_insert_after -- Child vma is visible through i_mmaptree.   i_mmap_unlock_write(mapping);   hugetlb_dup_vma_private -- Clear vma_lock outside i_mmap_rwsem!\t\t\t\t\t i_mmap_lock_write(mapping);   \t\t\t\t\t hugetlb_vmdelete_list\t\t\t\t\t  vma_interval_tree_foreach\t\t\t\t\t   hugetlb_vma_trylock_write -- Vma_lock is cleared.   tmp->vm_ops->open -- Alloc new vma_lock outside i_mmap_rwsem!\t\t\t\t\t   hugetlb_vma_unlock_write -- Vma_lock is assigned!!!\t\t\t\t\t i_mmap_unlock_write(mapping);hugetlb_dup_vma_private() and hugetlb_vm_op_open() are called outsidei_mmap_rwsem lock while vma lock can be used in the same time.  Fix thisby deferring linking file vma until vma is fully initialized.  Those vmasshould be initialized first before they can be used.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: fork:defer linking file vma until vma is fully initialized Thorvald reported aWARNING [1]. And the root cause is below race: CPU 1 CPU 2 forkhugetlbfs_fallocate dup_mmap hugetlbfs_punch_holei_mmap_lock_write(mapping); vma_interval_tree_insert_after -- Child vma isvisible through i_mmap tree. i_mmap_unlock_write(mapping);hugetlb_dup_vma_private -- Clear vma_lock outside i_mmap_rwsem!i_mmap_lock_write(mapping); hugetlb_vmdelete_list vma_interval_tree_foreachhugetlb_vma_trylock_write -- Vma_lock is cleared. tmp->vm_ops->open --Alloc new vma_lock outside i_mmap_rwsem! hugetlb_vma_unlock_write --Vma_lock is assigned!!! i_mmap_unlock_write(mapping);hugetlb_dup_vma_private() and hugetlb_vm_op_open() are called outsidei_mmap_rwsem lock while vma lock can be used in the same time. Fix this bydeferring linking file vma until vma is fully initialized. Those vmasshould be initialized first before they can be used.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -21,7 +21,9 @@
 			"cve": {
 				"text": "CVE-2024-27022",
 				"href": "https://ubuntu.com/security/CVE-2024-27022",
-				"public": "20240501"
+				"public": "20240501",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
 			}
 		}
 	},
