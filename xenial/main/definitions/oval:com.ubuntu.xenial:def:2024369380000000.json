@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024369380000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36938 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf, skmsg: Fix NULL pointer dereference in sk_psock_skb_ingress_enqueueFix NULL pointer data-races in sk_psock_skb_ingress_enqueue() whichsyzbot reported [1].[1]BUG: KCSAN: data-race in sk_psock_drop / sk_psock_skb_ingress_enqueuewrite to 0xffff88814b3278b8 of 8 bytes by task 10724 on cpu 1: sk_psock_stop_verdict net/core/skmsg.c:1257 [inline] sk_psock_drop+0x13e/0x1f0 net/core/skmsg.c:843 sk_psock_put include/linux/skmsg.h:459 [inline] sock_map_close+0x1a7/0x260 net/core/sock_map.c:1648 unix_release+0x4b/0x80 net/unix/af_unix.c:1048 __sock_release net/socket.c:659 [inline] sock_close+0x68/0x150 net/socket.c:1421 __fput+0x2c1/0x660 fs/file_table.c:422 __fput_sync+0x44/0x60 fs/file_table.c:507 __do_sys_close fs/open.c:1556 [inline] __se_sys_close+0x101/0x1b0 fs/open.c:1541 __x64_sys_close+0x1f/0x30 fs/open.c:1541 do_syscall_64+0xd3/0x1d0 entry_SYSCALL_64_after_hwframe+0x6d/0x75read to 0xffff88814b3278b8 of 8 bytes by task 10713 on cpu 0: sk_psock_data_ready include/linux/skmsg.h:464 [inline] sk_psock_skb_ingress_enqueue+0x32d/0x390 net/core/skmsg.c:555 sk_psock_skb_ingress_self+0x185/0x1e0 net/core/skmsg.c:606 sk_psock_verdict_apply net/core/skmsg.c:1008 [inline] sk_psock_verdict_recv+0x3e4/0x4a0 net/core/skmsg.c:1202 unix_read_skb net/unix/af_unix.c:2546 [inline] unix_stream_read_skb+0x9e/0xf0 net/unix/af_unix.c:2682 sk_psock_verdict_data_ready+0x77/0x220 net/core/skmsg.c:1223 unix_stream_sendmsg+0x527/0x860 net/unix/af_unix.c:2339 sock_sendmsg_nosec net/socket.c:730 [inline] __sock_sendmsg+0x140/0x180 net/socket.c:745 ____sys_sendmsg+0x312/0x410 net/socket.c:2584 ___sys_sendmsg net/socket.c:2638 [inline] __sys_sendmsg+0x1e9/0x280 net/socket.c:2667 __do_sys_sendmsg net/socket.c:2676 [inline] __se_sys_sendmsg net/socket.c:2674 [inline] __x64_sys_sendmsg+0x46/0x50 net/socket.c:2674 do_syscall_64+0xd3/0x1d0 entry_SYSCALL_64_after_hwframe+0x6d/0x75value changed: 0xffffffff83d7feb0 -> 0x0000000000000000Reported by Kernel Concurrency Sanitizer on:CPU: 0 PID: 10713 Comm: syz-executor.4 Tainted: G        W6.8.0-syzkaller-08951-gfe46a7dd189e #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 02/29/2024Prior to this, commit 4cd12c6065df (\"bpf, sockmap: Fix NULL pointerdereference in sk_psock_verdict_data_ready()\") fixed one NULL pointersimilarly due to no protection of saved_data_ready. Here is anotherdifferent caller causing the same issue because of the same reason. Sowe should protect it with sk_callback_lock read lock because the writerside in the sk_psock_drop() uses \"write_lock_bh(&sk->sk_callback_lock);\".To avoid errors that could happen in future, I move those two pairs oflock into the sk_psock_data_ready(), which is suggested by John Fastabend.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36938",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36938"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-30 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36938",
+				"href": "https://ubuntu.com/security/CVE-2024-36938",
+				"public": "20240530"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

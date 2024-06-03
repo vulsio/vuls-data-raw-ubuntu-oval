@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024369250000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36925 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:swiotlb: initialise restricted pool list_head when SWIOTLB_DYNAMIC=yUsing restricted DMA pools (CONFIG_DMA_RESTRICTED_POOL=y) in conjunctionwith dynamic SWIOTLB (CONFIG_SWIOTLB_DYNAMIC=y) leads to the followingcrash when initialising the restricted pools at boot-time:  | Unable to handle kernel NULL pointer dereference at virtual address0000000000000008  | Internal error: Oops: 0000000096000005 [#1] PREEMPT SMP  | pc : rmem_swiotlb_device_init+0xfc/0x1ec  | lr : rmem_swiotlb_device_init+0xf0/0x1ec  | Call trace:  |  rmem_swiotlb_device_init+0xfc/0x1ec  |  of_reserved_mem_device_init_by_idx+0x18c/0x238  |  of_dma_configure_id+0x31c/0x33c  |  platform_dma_configure+0x34/0x80faddr2line reveals that the crash is in the list validation code:  include/linux/list.h:83  include/linux/rculist.h:79  include/linux/rculist.h:106  kernel/dma/swiotlb.c:306  kernel/dma/swiotlb.c:1695because add_mem_pool() is trying to list_add_rcu() to a NULL'mem->pools'.Fix the crash by initialising the 'mem->pools' list_head inrmem_swiotlb_device_init() before calling add_mem_pool().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36925",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36925"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-30 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36925",
+				"href": "https://ubuntu.com/security/CVE-2024-36925",
+				"public": "20240530"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024368920000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36892 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/slub: avoid zeroing outside-object freepointer for single freeCommit 284f17ac13fe (\"mm/slub: handle bulk and single object freeingseparately\") splits single and bulk object freeing in two functionsslab_free() and slab_free_bulk() which leads slab_free() to callslab_free_hook() directly instead of slab_free_freelist_hook().If `init_on_free` is set, slab_free_hook() zeroes the object.Afterward, if `slub_debug=F` and `CONFIG_SLAB_FREELIST_HARDENED` areset, the do_slab_free() slowpath executes freelist consistencychecks and try to decode a zeroed freepointer which leads to a\"Freepointer corrupt\" detection in check_object().During bulk free, slab_free_freelist_hook() isn't affected as it alwayssets it objects freepointer using set_freepointer() to maintain itsreconstructed freelist after `init_on_free`.For single free, object's freepointer thus needs to be avoided whenstored outside the object if `init_on_free` is set. The freepointer leftas is, check_object() may later detect an invalid pointer value due toobjects overflow.To reproduce, set `slub_debug=FU init_on_free=1 log_level=7` on thecommand line of a kernel build with `CONFIG_SLAB_FREELIST_HARDENED=y`.dmesg sample log:[   10.708715]=============================================================================[   10.710323] BUG kmalloc-rnd-05-32 (Tainted: G    B           T ):Freepointer corrupt[   10.712695]-----------------------------------------------------------------------------[   10.712695][   10.712695] Slab 0xffffd8bdc400d580 objects=32 used=4fp=0xffff9d9a80356f80flags=0x200000000000a00(workingset|slab|node=0|zone=2)[   10.716698] Object 0xffff9d9a80356600 @offset=1536 fp=0x7ee4f480ce0ecd7c[   10.716698][   10.716698] Bytes b4 ffff9d9a803565f0: 00 00 00 00 00 00 00 00 00 00 0000 00 00 00 00  ................[   10.720703] Object   ffff9d9a80356600: 00 00 00 00 00 00 00 00 00 00 0000 00 00 00 00  ................[   10.720703] Object   ffff9d9a80356610: 00 00 00 00 00 00 00 00 00 00 0000 00 00 00 00  ................[   10.724696] Padding  ffff9d9a8035666c: 00 00 00 00 00 00 00 00 00 00 0000 00 00 00 00  ................[   10.724696] Padding  ffff9d9a8035667c: 00 00 00 00               ....[   10.724696] FIX kmalloc-rnd-05-32: Object at 0xffff9d9a80356600 notfreed",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36892",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36892"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-30 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36892",
+				"href": "https://ubuntu.com/security/CVE-2024-36892",
+				"public": "20240530"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

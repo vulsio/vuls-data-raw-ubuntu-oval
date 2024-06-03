@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024369360000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36936 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:efi/unaccepted: touch soft lockup during memory acceptCommit 50e782a86c98 (\"efi/unaccepted: Fix soft lockups caused byparallel memory acceptance\") has released the spinlock so other CPUs cando memory acceptance in parallel and not triggers softlockup on otherCPUs.However the softlock up was intermittent shown up if the memory of theTD guest is large, and the timeout of softlockup is set to 1 second: RIP: 0010:_raw_spin_unlock_irqrestore Call Trace: ? __hrtimer_run_queues <IRQ> ? hrtimer_interrupt ? watchdog_timer_fn ? __sysvec_apic_timer_interrupt ? __pfx_watchdog_timer_fn ? sysvec_apic_timer_interrupt </IRQ> ? __hrtimer_run_queues <TASK> ? hrtimer_interrupt ? asm_sysvec_apic_timer_interrupt ? _raw_spin_unlock_irqrestore ? __sysvec_apic_timer_interrupt ? sysvec_apic_timer_interrupt accept_memory try_to_accept_memory do_huge_pmd_anonymous_page get_page_from_freelist __handle_mm_fault __alloc_pages __folio_alloc ? __tdx_hypercall handle_mm_fault vma_alloc_folio do_user_addr_fault do_huge_pmd_anonymous_page exc_page_fault ? __do_huge_pmd_anonymous_page asm_exc_page_fault __handle_mm_faultWhen the local irq is enabled at the end of accept_memory(), thesoftlockup detects that the watchdog on single CPU has not been fed fora while. That is to say, even other CPUs will not be blocked byspinlock, the current CPU might be stunk with local irq disabled for awhile, which hurts not only nmi watchdog but also softlockup.Chao Gao pointed out that the memory accept could be time costly andthere was similar report before. Thus to avoid any softlocup detectionduring this stage, give the softlockup a flag to skip the timeout checkat the end of accept_memory(), by invoking touch_softlockup_watchdog().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36936",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36936"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-30 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36936",
+				"href": "https://ubuntu.com/security/CVE-2024-36936",
+				"public": "20240530"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

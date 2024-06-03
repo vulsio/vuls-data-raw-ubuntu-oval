@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021475310000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47531 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/msm: Fix mmap to include VM_IO and VM_DONTDUMP In commit 510410bfc034(\"drm/msm: Implement mmap as GEM object function\") we switched to anew/cleaner method of doing things. That's good, but we missed a littlebit. Before that commit, we used to _first_ run through thedrm_gem_mmap_obj() case where `obj->funcs->mmap()` was NULL. That meantthat we ran: vma->vm_flags |= VM_IO | VM_PFNMAP | VM_DONTEXPAND |VM_DONTDUMP; vma->vm_page_prot =pgprot_writecombine(vm_get_page_prot(vma->vm_flags)); vma->vm_page_prot =pgprot_decrypted(vma->vm_page_prot); ...and _then_ we modified thosemappings with our own. Now that `obj->funcs->mmap()` is no longer NULL wedon't run the default code. It looks like the fact that the vm_flags gotVM_IO / VM_DONTDUMP was important because we're now getting crashes onChromebooks that use ARC++ while logging out. Specifically a crash thatlooks like this (this is on a 5.10 kernel w/ relevant backports but alsoseen on a 5.15 kernel): Unable to handle kernel paging request at virtualaddress ffffffc008000000 Mem abort info: ESR = 0x96000006 EC = 0x25: DABT(current EL), IL = 32 bits SET = 0, FnV = 0 EA = 0, S1PTW = 0 Data abortinfo: ISV = 0, ISS = 0x00000006 CM = 0, WnR = 0 swapper pgtable: 4k pages,39-bit VAs, pgdp=000000008293d000 [ffffffc008000000] pgd=00000001002b3003,p4d=00000001002b3003, pud=00000001002b3003, pmd=0000000000000000 Internalerror: Oops: 96000006 [#1] PREEMPT SMP [...] CPU: 7 PID: 15734 Comm:crash_dump64 Tainted: G W 5.10.67 #1 [...] Hardware name: QualcommTechnologies, Inc. sc7280 IDP SKU2 platform (DT) pstate: 80400009 (Nzcvdaif +PAN -UAO -TCO BTYPE=--) pc : __arch_copy_to_user+0xc0/0x30c lr :copyout+0xac/0x14c [...] Call trace: __arch_copy_to_user+0xc0/0x30ccopy_page_to_iter+0x1a0/0x294 process_vm_rw_core+0x240/0x408process_vm_rw+0x110/0x16c __arm64_sys_process_vm_readv+0x30/0x3cel0_svc_common+0xf8/0x250 do_el0_svc+0x30/0x80 el0_svc+0x10/0x1cel0_sync_handler+0x78/0x108 el0_sync+0x184/0x1c0 Code: f8408423 f80008c3910020c6 36100082 (b8404423) Let's add the two flags back in. While we'reat it, the fact that we aren't running the default means that we _don't_need to clear out VM_PFNMAP, so remove that and save an instruction. NOTE:it was confirmed that VM_IO was the important flag to fix the problem I wasseeing, but adding back VM_DONTDUMP seems like a sane thing to do so I'mdoing that too.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47531",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47531"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-24 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47531",
+				"href": "https://ubuntu.com/security/CVE-2021-47531",
+				"public": "20240524"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021475550000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47555 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:vlan: fix underflow for the real_dev refcnt Inject error beforedev_hold(real_dev) in register_vlan_dev(), and execute the followingtestcase: ip link add dev dummy1 type dummy ip link add name dummy1.100link dummy1 type vlan id 100 ip link del dev dummy1 When the dummynetdevice is removed, we will get a WARNING as following:=======================================================================refcount_t: decrement hit 0; leaking memory. WARNING: CPU: 2 PID: 0 atlib/refcount.c:31 refcount_warn_saturate+0xbf/0x1e0 and an endless loop of:=======================================================================unregister_netdevice: waiting for dummy1 to become free. Usage count =-1073741824 That is because dev_put(real_dev) in vlan_dev_free() be calledwithout dev_hold(real_dev) in register_vlan_dev(). It makes the refcnt ofreal_dev underflow. Move the dev_hold(real_dev) to vlan_dev_init() which isthe call-back of ndo_init(). That makes dev_hold() and dev_put() for vlan'sreal_dev symmetrical.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47555",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47555"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-24 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47555",
+				"href": "https://ubuntu.com/security/CVE-2021-47555",
+				"public": "20240524"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024368990000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36899 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:gpiolib: cdev: Fix use after free in lineinfo_changed_notifyThe use-after-free issue occurs as follows: when the GPIO chip device fileis being closed by invoking gpio_chrdev_release(), watched_lines is freedby bitmap_free(), but the unregistration of lineinfo_changed_nb notifierchain failed due to waiting write rwsem. Additionally, one of the GPIOchip's lines is also in the release process and holds the notifier chain'sread rwsem. Consequently, a race condition leads to the use-after-free ofwatched_lines.Here is the typical stack when issue happened:[free]gpio_chrdev_release()  --> bitmap_free(cdev->watched_lines)                  <-- freed  --> blocking_notifier_chain_unregister()    --> down_write(&nh->rwsem)                          <-- waiting rwsem          --> __down_write_common()            --> rwsem_down_write_slowpath()                  --> schedule_preempt_disabled()                    --> schedule()[use]st54spi_gpio_dev_release()  --> gpio_free()    --> gpiod_free()      --> gpiod_free_commit()        --> gpiod_line_state_notify()          --> blocking_notifier_call_chain()            --> down_read(&nh->rwsem);                  <-- held rwsem            --> notifier_call_chain()              --> lineinfo_changed_notify()                --> test_bit(xxxx, cdev->watched_lines) <-- use after freeThe side effect of the use-after-free issue is that a GPIO line event isbeing generated for userspace where it shouldn't. However, since the chrdevis being closed, userspace won't have the chance to read that event anyway.To fix the issue, call the bitmap_free() function after the unregistrationof lineinfo_changed_nb notifier chain.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36899",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36899"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-30 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36899",
+				"href": "https://ubuntu.com/security/CVE-2024-36899",
+				"public": "20240530"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

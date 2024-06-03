@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47482 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: batman-adv: fix error handlingSyzbot reported ODEBUG warning in batadv_nc_mesh_free(). The problem wasin wrong error handling in batadv_mesh_init().Before this patch batadv_mesh_init() was calling batadv_mesh_free() in caseof any batadv_*_init() calls failure. This approach may work well, whenthere is some kind of indicator, which can tell which parts of batadv areinitialized; but there isn't any.All written above lead to cleaning up uninitialized fields. Even if we hideODEBUG warning by initializing bat_priv->nc.work, syzbot was able to hitGPF in batadv_nc_purge_paths(), because hash pointer in still NULL. [1]To fix these bugs we can unwind batadv_*_init() calls one by one.It is good approach for 2 reasons: 1) It fixes bugs on error handlingpath 2) It improves the performance, since we won't call unneededbatadv_*_free() functions.So, this patch makes all batadv_*_init() clean up all allocated memorybefore returning with an error to no call correspoing batadv_*_free()and open-codes batadv_mesh_free() with proper order to avoid touchinguninitialized fields.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:batman-adv: fix error handling Syzbot reported ODEBUG warning inbatadv_nc_mesh_free(). The problem was in wrong error handling inbatadv_mesh_init(). Before this patch batadv_mesh_init() was callingbatadv_mesh_free() in case of any batadv_*_init() calls failure. Thisapproach may work well, when there is some kind of indicator, which cantell which parts of batadv are initialized; but there isn't any. Allwritten above lead to cleaning up uninitialized fields. Even if we hideODEBUG warning by initializing bat_priv->nc.work, syzbot was able to hitGPF in batadv_nc_purge_paths(), because hash pointer in still NULL. [1] Tofix these bugs we can unwind batadv_*_init() calls one by one. It is goodapproach for 2 reasons: 1) It fixes bugs on error handling path 2) Itimproves the performance, since we won't call unneeded batadv_*_free()functions. So, this patch makes all batadv_*_init() clean up all allocatedmemory before returning with an error to no call correspoingbatadv_*_free() and open-codes batadv_mesh_free() with proper order toavoid touching uninitialized fields.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-05-23",
+			"public_date": "2024-05-22 09:15:00 UTC",
 			"cve": {
 				"text": "CVE-2021-47482",
 				"href": "https://ubuntu.com/security/CVE-2021-47482",
-				"public": "20240523"
+				"public": "20240522"
 			}
 		}
 	},

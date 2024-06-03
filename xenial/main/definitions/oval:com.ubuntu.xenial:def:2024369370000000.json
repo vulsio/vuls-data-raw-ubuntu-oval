@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024369370000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36937 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:xdp: use flags field to disambiguate broadcast redirectWhen redirecting a packet using XDP, the bpf_redirect_map() helper will setup the redirect destination information in struct bpf_redirect_info (usingthe __bpf_xdp_redirect_map() helper function), and the xdp_do_redirect()function will read this information after the XDP program returns and passthe frame on to the right redirect destination.When using the BPF_F_BROADCAST flag to do multicast redirect to a wholemap, __bpf_xdp_redirect_map() sets the 'map' pointer in structbpf_redirect_info to point to the destination map to be broadcast. Andxdp_do_redirect() reacts to the value of this map pointer to decide whetherit's dealing with a broadcast or a single-value redirect. However, if thedestination map is being destroyed before xdp_do_redirect() is called, themap pointer will be cleared out (by bpf_clear_redirect_map()) withoutwaiting for any XDP programs to stop running. This causes xdp_do_redirect()to think that the redirect was to a single target, but the target pointeris also NULL (since broadcast redirects don't have a single target), sothis causes a crash when a NULL pointer is passed to dev_map_enqueue().To fix this, change xdp_do_redirect() to react directly to the presence ofthe BPF_F_BROADCAST flag in the 'flags' value in struct bpf_redirect_infoto disambiguate between a single-target and a broadcast redirect. And onlyread the 'map' pointer if the broadcast flag is set, aborting if that hasbeen cleared out in the meantime. This prevents the crash, while keepingthe atomic (cmpxchg-based) clearing of the map pointer itself, and withoutadding any more checks in the non-broadcast fast path.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36937",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36937"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-30 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36937",
+				"href": "https://ubuntu.com/security/CVE-2024-36937",
+				"public": "20240530"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

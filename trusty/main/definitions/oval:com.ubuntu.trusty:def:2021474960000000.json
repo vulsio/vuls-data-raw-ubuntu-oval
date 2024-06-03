@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47496 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net/tls: Fix flipped sign in tls_err_abort() callssk->sk_err appears to expect a positive value, a convention that ktlsdoesn't always follow and that leads to memory corruption in other code.For instance,    [kworker]    tls_encrypt_done(..., err=<negative error from crypto request>)      tls_err_abort(.., err)        sk->sk_err = err;    [task]    splice_from_pipe_feed      ...        tls_sw_do_sendpage          if (sk->sk_err) {            ret = -sk->sk_err;  // ret is positive    splice_from_pipe_feed (continued)      ret = actor(...)  // ret is still positive and interpreted as bytes                        // written, resulting in underflow of buf->len and                        // sd->len, leading to huge buf->offset and bogus                        // addresses computed in later calls to actor()Fix all tls_err_abort() callers to pass a negative error codeconsistently and centralize the error-prone sign flip there, throwing ina warning to catch future misuse and uninlining the function so itreally does only warn once.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/tls: Fix flipped sign in tls_err_abort() calls sk->sk_err appears toexpect a positive value, a convention that ktls doesn't always follow andthat leads to memory corruption in other code. For instance, [kworker]tls_encrypt_done(..., err=<negative error from crypto request>)tls_err_abort(.., err) sk->sk_err = err; [task] splice_from_pipe_feed ...tls_sw_do_sendpage if (sk->sk_err) { ret = -sk->sk_err; // ret is positivesplice_from_pipe_feed (continued) ret = actor(...) // ret is still positiveand interpreted as bytes // written, resulting in underflow of buf->len and// sd->len, leading to huge buf->offset and bogus // addresses computed inlater calls to actor() Fix all tls_err_abort() callers to pass a negativeerror code consistently and centralize the error-prone sign flip there,throwing in a warning to catch future misuse and uninlining the function soit really does only warn once.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-05-23",
+			"public_date": "2024-05-22 09:15:00 UTC",
 			"cve": {
 				"text": "CVE-2021-47496",
 				"href": "https://ubuntu.com/security/CVE-2021-47496",
-				"public": "20240523"
+				"public": "20240522"
 			}
 		}
 	},

@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021475440000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47544 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: tcp:fix page frag corruption on page fault Steffen reported a TCP streamcorruption for HTTP requests served by the apache web-server using a cifsmount-point and memory mapping the relevant file. The root cause is quitesimilar to the one addressed by commit 20eb4f29b602 (\"net: fixsk_page_frag() recursion from memory reclaim\"). Here the nested access tothe task page frag is caused by a page fault on the (mmapped) user-spacememory buffer coming from the cifs file. The page fault handler performs ansmb transaction on a different socket, inside the same process context.Since sk->sk_allaction for such socket does not prevent the usage for thetask_frag, the nested allocation modify \"under the hood\" the page frag inuse by the outer sendmsg call, corrupting the stream. The overall relevantstack trace looks like the following: httpd 78268 [001] 3461630.850950:probe:tcp_sendmsg_locked: ffffffff91461d91 tcp_sendmsg_locked+0x1ffffffff91462b57 tcp_sendmsg+0x27 ffffffff9139814e sock_sendmsg+0x3effffffffc06dfe1d smb_send_kvec+0x28 [...] ffffffffc06cfaf8cifs_readpages+0x213 ffffffff90e83c4b read_pages+0x6b ffffffff90e83f31__do_page_cache_readahead+0x1c1 ffffffff90e79e98 filemap_fault+0x788ffffffff90eb0458 __do_fault+0x38 ffffffff90eb5280 do_fault+0x1a0ffffffff90eb7c84 __handle_mm_fault+0x4d4 ffffffff90eb8093handle_mm_fault+0xc3 ffffffff90c74f6d __do_page_fault+0x1edffffffff90c75277 do_page_fault+0x37 ffffffff9160111e page_fault+0x1effffffff9109e7b5 copyin+0x25 ffffffff9109eb40 _copy_from_iter_full+0xe0ffffffff91462370 tcp_sendmsg_locked+0x5e0 ffffffff91462370tcp_sendmsg_locked+0x5e0 ffffffff91462b57 tcp_sendmsg+0x27 ffffffff9139815csock_sendmsg+0x4c ffffffff913981f7 sock_write_iter+0x97 ffffffff90f2cc56do_iter_readv_writev+0x156 ffffffff90f2dff0 do_iter_write+0x80ffffffff90f2e1c3 vfs_writev+0xa3 ffffffff90f2e27c do_writev+0x5cffffffff90c042bb do_syscall_64+0x5b ffffffff916000adentry_SYSCALL_64_after_hwframe+0x65 The cifs filesystem rightfully setssk_allocations to GFP_NOFS, we can avoid the nesting using the sk page fragfor allocation lacking the __GFP_FS flag. Do not define an additionalmm-helper for that, as this is strictly tied to the sk page frag usage. v1-> v2: - use a stricted sk_page_frag() check instead of reordering the code(Eric)",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47544",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47544"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-24 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47544",
+				"href": "https://ubuntu.com/security/CVE-2021-47544",
+				"public": "20240524"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

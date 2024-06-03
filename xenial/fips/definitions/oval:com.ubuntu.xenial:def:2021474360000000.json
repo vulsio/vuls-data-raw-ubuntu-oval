@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47436 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: musb: dsps: Fix the probe error pathCommit 7c75bde329d7 (\"usb: musb: musb_dsps: request_irq() afterinitializing musb\") has inverted the calls todsps_setup_optional_vbus_irq() and dsps_create_musb_pdev() withoutupdating correctly the error path. dsps_create_musb_pdev() allocates andregisters a new platform device which must be unregistered and freedwith platform_device_unregister(), and this is missing upondsps_setup_optional_vbus_irq() error.While on the master branch it seems not to trigger any issue, I observeda kernel crash because of a NULL pointer dereference with a v5.10.70stable kernel where the patch mentioned above was backported. With thiskernel version, -EPROBE_DEFER is returned the first timedsps_setup_optional_vbus_irq() is called which triggers the probe toerror out without unregistering the platform device. Unfortunately, onthe Beagle Bone Black Wireless, the platform device still living in thesystem is being used by the USB Ethernet gadget driver, which during theboot phase triggers the crash.My limited knowledge of the musb world prevents me to revert this commitwhich was sent to silence a robot warning which, as far as I understand,does not make sense. The goal of this patch was to prevent an IRQ tofire before the platform device being registered. I think this cannotever happen due to the fact that enabling the interrupts is done by the->enable() callback of the platform musb device, and this platformdevice must be already registered in order for the core or any otheruser to use this callback.Hence, I decided to fix the error path, which might prevent futureerrors on mainline kernels while also fixing older ones.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: usb:musb: dsps: Fix the probe error path Commit 7c75bde329d7 (\"usb: musb:musb_dsps: request_irq() after initializing musb\") has inverted the callsto dsps_setup_optional_vbus_irq() and dsps_create_musb_pdev() withoutupdating correctly the error path. dsps_create_musb_pdev() allocates andregisters a new platform device which must be unregistered and freed withplatform_device_unregister(), and this is missing upondsps_setup_optional_vbus_irq() error. While on the master branch it seemsnot to trigger any issue, I observed a kernel crash because of a NULLpointer dereference with a v5.10.70 stable kernel where the patch mentionedabove was backported. With this kernel version, -EPROBE_DEFER is returnedthe first time dsps_setup_optional_vbus_irq() is called which triggers theprobe to error out without unregistering the platform device.Unfortunately, on the Beagle Bone Black Wireless, the platform device stillliving in the system is being used by the USB Ethernet gadget driver, whichduring the boot phase triggers the crash. My limited knowledge of the musbworld prevents me to revert this commit which was sent to silence a robotwarning which, as far as I understand, does not make sense. The goal ofthis patch was to prevent an IRQ to fire before the platform device beingregistered. I think this cannot ever happen due to the fact that enablingthe interrupts is done by the ->enable() callback of the platform musbdevice, and this platform device must be already registered in order forthe core or any other user to use this callback. Hence, I decided to fixthe error path, which might prevent future errors on mainline kernels whilealso fixing older ones.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Certified"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-05-23",
+			"public_date": "2024-05-22 07:15:00 UTC",
 			"cve": {
 				"text": "CVE-2021-47436",
 				"href": "https://ubuntu.com/security/CVE-2021-47436",
-				"public": "20240523"
+				"public": "20240522"
 			}
 		}
 	},

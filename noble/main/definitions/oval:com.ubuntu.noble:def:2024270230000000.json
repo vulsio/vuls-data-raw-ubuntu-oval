@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27023 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:md: Fix missing release of 'active_io' for flushsubmit_flushes atomic_set(&mddev->flush_pending, 1); rdev_for_each_rcu(rdev, mddev)  atomic_inc(&mddev->flush_pending);  bi->bi_end_io = md_end_flush  submit_bio(bi);                        /* flush io is done first */                        md_end_flush                         if (atomic_dec_and_test(&mddev->flush_pending))                          percpu_ref_put(&mddev->active_io)                          -> active_io is not released if (atomic_dec_and_test(&mddev->flush_pending))  -> missing release of active_ioFor consequence, mddev_suspend() will wait for 'active_io' to be zeroforever.Fix this problem by releasing 'active_io' in submit_flushes() if'flush_pending' is decreased to zero.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: md: Fixmissing release of 'active_io' for flush submit_flushesatomic_set(&mddev->flush_pending, 1); rdev_for_each_rcu(rdev, mddev)atomic_inc(&mddev->flush_pending); bi->bi_end_io = md_end_flushsubmit_bio(bi); /* flush io is done first */ md_end_flush if(atomic_dec_and_test(&mddev->flush_pending))percpu_ref_put(&mddev->active_io) -> active_io is not released if(atomic_dec_and_test(&mddev->flush_pending)) -> missing release ofactive_io For consequence, mddev_suspend() will wait for 'active_io' to bezero forever. Fix this problem by releasing 'active_io' in submit_flushes()if 'flush_pending' is decreased to zero.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"

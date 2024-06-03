@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47452 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: skip netdev events generated on netns removalsyzbot reported following (harmless) WARN: WARNING: CPU: 1 PID: 2648 at net/netfilter/core.c:468  nft_netdev_unregister_hooks net/netfilter/nf_tables_api.c:230 [inline]  nf_tables_unregister_hook include/net/netfilter/nf_tables.h:1090 [inline]  __nft_release_basechain+0x138/0x640 net/netfilter/nf_tables_api.c:9524  nft_netdev_event net/netfilter/nft_chain_filter.c:351 [inline]  nf_tables_netdev_event+0x521/0x8a0 net/netfilter/nft_chain_filter.c:382reproducer:unshare -n bash -c 'ip link add br0 type bridge; nft add table netdev t ; \\ nft add chain netdev t ingress \\{ type filter hook ingress device \"br0\" \\ priority 0\\; policy drop\\; \\}'Problem is that when netns device exit hooks create the UNREGISTERevent, the .pre_exit hook for nf_tables core has already removed thebase hook.  Notifier attempts to do this again.The need to do base hook unregister unconditionally was needed in the past,because notifier was last stage where reg->dev dereference was safe.Now that nf_tables does the hook removal in .pre_exit, this isn'tneeded anymore.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: skip netdev events generated on netns removal syzbotreported following (harmless) WARN: WARNING: CPU: 1 PID: 2648 atnet/netfilter/core.c:468 nft_netdev_unregister_hooksnet/netfilter/nf_tables_api.c:230 [inline] nf_tables_unregister_hookinclude/net/netfilter/nf_tables.h:1090 [inline]__nft_release_basechain+0x138/0x640 net/netfilter/nf_tables_api.c:9524nft_netdev_event net/netfilter/nft_chain_filter.c:351 [inline]nf_tables_netdev_event+0x521/0x8a0 net/netfilter/nft_chain_filter.c:382reproducer: unshare -n bash -c 'ip link add br0 type bridge; nft add tablenetdev t ; \\ nft add chain netdev t ingress \\{ type filter hook ingressdevice \"br0\" \\ priority 0\\; policy drop\\; \\}' Problem is that when netnsdevice exit hooks create the UNREGISTER event, the .pre_exit hook fornf_tables core has already removed the base hook. Notifier attempts to dothis again. The need to do base hook unregister unconditionally was neededin the past, because notifier was last stage where reg->dev dereference wassafe. Now that nf_tables does the hook removal in .pre_exit, this isn'tneeded anymore.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Compliant"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-05-23",
+			"public_date": "2024-05-22 07:15:00 UTC",
 			"cve": {
 				"text": "CVE-2021-47452",
 				"href": "https://ubuntu.com/security/CVE-2021-47452",
-				"public": "20240523"
+				"public": "20240522"
 			}
 		}
 	},

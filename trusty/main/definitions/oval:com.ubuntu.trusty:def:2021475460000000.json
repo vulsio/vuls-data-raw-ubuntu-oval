@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2021475460000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47546 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ipv6:fix memory leak in fib6_rule_suppress The kernel leaks memory when a `fib`rule is present in IPv6 nftables firewall rules and a suppress_prefix ruleis present in the IPv6 routing rules (used by certain tools such aswg-quick). In such scenarios, every incoming packet will leak an allocationin `ip6_dst_cache` slab cache. After some hours of `bpftrace`-ing andsource code reading, I tracked down the issue to ca7a03c41753 (\"ipv6: donot free rt if FIB_LOOKUP_NOREF is set on suppress rule\"). The problem withthat change is that the generic `args->flags` always have`FIB_LOOKUP_NOREF` set[1][2] but the IPv6-specific flag`RT6_LOOKUP_F_DST_NOREF` might not be, leading to `fib6_rule_suppress` notdecreasing the refcount when needed. How to reproduce: - Add the followingnftables rule to a prerouting chain: meta nfproto ipv6 fib saddr . mark .iif oif missing drop This can be done with: sudo nft create table inet testsudo nft create chain inet test test_chain '{ type filter hook preroutingpriority filter + 10; policy accept; }' sudo nft add rule inet testtest_chain meta nfproto ipv6 fib saddr . mark . iif oif missing drop - Run:sudo ip -6 rule add table main suppress_prefixlength 0 - Watch `sudoslabtop -o | grep ip6_dst_cache` to see memory usage increase with everyincoming ipv6 packet. This patch exposes the protocol-specific flags to theprotocol specific `suppress` function, and check the protocol-specific`flags` argument for RT6_LOOKUP_F_DST_NOREF instead of the genericFIB_LOOKUP_NOREF when decreasing the refcount, like this. [1]:https://github.com/torvalds/linux/blob/ca7a03c4175366a92cee0ccc4fec0038c3266e26/net/ipv6/fib6_rules.c#L71[2]:https://github.com/torvalds/linux/blob/ca7a03c4175366a92cee0ccc4fec0038c3266e26/net/ipv6/fib6_rules.c#L99",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47546",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47546"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-24 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47546",
+				"href": "https://ubuntu.com/security/CVE-2021-47546",
+				"public": "20240524"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

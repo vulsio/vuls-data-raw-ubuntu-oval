@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2021475540000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47554 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:vdpa_sim: avoid putting an uninitialized iova_domain The system will crashif we put an uninitialized iova_domain, this could happen when an erroroccurs before initializing the iova_domain in vdpasim_create(). BUG: kernelNULL pointer dereference, address: 0000000000000000 ... RIP:0010:__cpuhp_state_remove_instance+0x96/0x1c0 ... Call Trace: <TASK>put_iova_domain+0x29/0x220 vdpasim_free+0xd1/0x120 [vdpa_sim]vdpa_release_dev+0x21/0x40 [vdpa] device_release+0x33/0x90kobject_release+0x63/0x160 vdpasim_create+0x127/0x2a0 [vdpa_sim]vdpasim_net_dev_add+0x7d/0xfe [vdpa_sim_net]vdpa_nl_cmd_dev_add_set_doit+0xe1/0x1a0 [vdpa]genl_family_rcv_msg_doit+0x112/0x140 genl_rcv_msg+0xdf/0x1d0 ... So we mustmake sure the iova_domain is already initialized before put it. Inaddition, we may get the following warning in this case: WARNING: ...drivers/iommu/iova.c:344 iova_cache_put+0x58/0x70 So we must make sure theiova_cache_put() is invoked only if the iova_cache_get() is alreadyinvoked. Let's fix it together.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47554",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47554"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-24 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47554",
+				"href": "https://ubuntu.com/security/CVE-2021-47554",
+				"public": "20240524"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

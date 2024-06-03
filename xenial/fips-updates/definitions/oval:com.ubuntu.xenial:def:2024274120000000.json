@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27412 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:power: supply: bq27xxx-i2c: Do not free non existing IRQThe bq27xxx i2c-client may not have an IRQ, in which caseclient->irq will be 0. bq27xxx_battery_i2c_probe() already hasan if (client->irq) check wrapping the request_threaded_irq().But bq27xxx_battery_i2c_remove() unconditionally callsfree_irq(client->irq) leading to:[  190.310742] ------------[ cut here ]------------[  190.310843] Trying to free already-free IRQ 0[  190.310861] WARNING: CPU: 2 PID: 1304 at kernel/irq/manage.c:1893free_irq+0x1b8/0x310Followed by a backtrace when unbinding the driver. Addan if (client->irq) to bq27xxx_battery_i2c_remove() mirroringprobe() to fix this.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: power:supply: bq27xxx-i2c: Do not free non existing IRQ The bq27xxx i2c-clientmay not have an IRQ, in which case client->irq will be 0.bq27xxx_battery_i2c_probe() already has an if (client->irq) check wrappingthe request_threaded_irq(). But bq27xxx_battery_i2c_remove()unconditionally calls free_irq(client->irq) leading to: [ 190.310742]------------[ cut here ]------------ [ 190.310843] Trying to freealready-free IRQ 0 [ 190.310861] WARNING: CPU: 2 PID: 1304 atkernel/irq/manage.c:1893 free_irq+0x1b8/0x310 Followed by a backtrace whenunbinding the driver. Add an if (client->irq) tobq27xxx_battery_i2c_remove() mirroring probe() to fix this.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"

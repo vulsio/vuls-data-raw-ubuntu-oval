@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024368880000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36888 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:workqueue: Fix selection of wake_cpu in kick_pool()With cpu_possible_mask=0-63 and cpu_online_mask=0-7 the followingkernel oops was observed:smp: Bringing up secondary CPUs ...smp: Brought up 1 node, 8 CPUsUnable to handle kernel pointer dereference in virtual kernel address spaceFailing address: 0000000000000000 TEID: 0000000000000803[..] Call Trace:arch_vcpu_is_preempted+0x12/0x80select_idle_sibling+0x42/0x560select_task_rq_fair+0x29a/0x3b0try_to_wake_up+0x38e/0x6e0kick_pool+0xa4/0x198__queue_work.part.0+0x2bc/0x3a8call_timer_fn+0x36/0x160__run_timers+0x1e2/0x328__run_timer_base+0x5a/0x88run_timer_softirq+0x40/0x78__do_softirq+0x118/0x388irq_exit_rcu+0xc0/0xd8do_ext_irq+0xae/0x168ext_int_handler+0xbe/0xf0psw_idle_exit+0x0/0xcdefault_idle_call+0x3c/0x110do_idle+0xd4/0x158cpu_startup_entry+0x40/0x48rest_init+0xc6/0xc8start_kernel+0x3c4/0x5e0startup_continue+0x3c/0x50The crash is caused by calling arch_vcpu_is_preempted() for an offlineCPU. To avoid this, select the cpu with cpumask_any_and_distribute()to mask __pod_cpumask with cpu_online_mask. In case no cpu is left inthe pool, skip the assignment.tj: This doesn't fully fix the bug as CPUs can still go down betweenpickingthe target CPU and the wake call. Fixing that likely requires addingcpu_online() test to either the sched or s390 arch code. However,regardlessof how that is fixed, workqueue shouldn't be picking a CPU which isn'tonline as that would result in unpredictable and worse behavior.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36888",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36888"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-30 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36888",
+				"href": "https://ubuntu.com/security/CVE-2024-36888",
+				"public": "20240530"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
