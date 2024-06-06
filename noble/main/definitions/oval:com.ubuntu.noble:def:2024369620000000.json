@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024369620000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36962 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: ks8851: Queue RX packets in IRQ handler instead of disabling BHsCurrently the driver uses local_bh_disable()/local_bh_enable() in itsIRQ handler to avoid triggering net_rx_action() softirq on exit fromnetif_rx(). The net_rx_action() could trigger this driver .start_xmitcallback, which is protected by the same lock as the IRQ handler, socalling the .start_xmit from netif_rx() from the IRQ handler criticalsection protected by the lock could lead to an attempt to claim thealready claimed lock, and a hang.The local_bh_disable()/local_bh_enable() approach works only in casethe IRQ handler is protected by a spinlock, but does not work if theIRQ handler is protected by mutex, i.e. this works for KS8851 withParallel bus interface, but not for KS8851 with SPI bus interface.Remove the BH manipulation and instead of calling netif_rx() insidethe IRQ handler code protected by the lock, queue all the receivedSKBs in the IRQ handler into a queue first, and once the IRQ handlerexits the critical section protected by the lock, dequeue all thequeued SKBs and push them all into netif_rx(). At this point, it issafe to trigger the net_rx_action() softirq, since the netif_rx()call is outside of the lock that protects the IRQ handler.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36962",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36962"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-03 08:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36962",
+				"href": "https://ubuntu.com/security/CVE-2024-36962",
+				"public": "20240603"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024369610000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36961 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:thermal/debugfs: Fix two locking issues with thermal zone debugWith the current thermal zone locking arrangement in the debugfs code,user space can open the \"mitigations\" file for a thermal zone beforethe zone's debugfs pointer is set which will result in a NULL pointerdereference in tze_seq_start().Moreover, thermal_debug_tz_remove() is not called under the thermalzone lock, so it can run in parallel with the other functions accessingthe thermal zone's struct thermal_debugfs object.  Then, it may cleartz->debugfs after one of those functions has checked it and thestruct thermal_debugfs object may be freed prematurely.To address the first problem, pass a pointer to the thermal zone'sstruct thermal_debugfs object to debugfs_create_file() inthermal_debug_tz_add() and make tze_seq_start(), tze_seq_next(),tze_seq_stop(), and tze_seq_show() retrieve it from s->privateinstead of a pointer to the thermal zone object.  This will ensurethat tz_debugfs will be valid across the \"mitigations\" file accessesuntil thermal_debugfs_remove_id() called by thermal_debug_tz_remove()removes that file.To address the second problem, use tz->lock in thermal_debug_tz_remove()around the tz->debugfs value check (in case the same thermal zone isremoved at the same time in two different threads) and its reset to NULL.Cc :6.8+ <stable@vger.kernel.org> # 6.8+",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36961",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36961"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-03 08:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36961",
+				"href": "https://ubuntu.com/security/CVE-2024-36961",
+				"public": "20240603"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
