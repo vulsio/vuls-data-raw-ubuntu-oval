@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26620 on Ubuntu 23.10 (mantic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:s390/vfio-ap: always filter entire AP matrix The vfio_ap_mdev_filter_matrixfunction is called whenever a new adapter or domain is assigned to themdev. The purpose of the function is to update the guest's AP configurationby filtering the matrix of adapters and domains assigned to the mdev. Whenan adapter or domain is assigned, only the APQNs associated with the APIDof the new adapter or APQI of the new domain are inspected. If an APQN doesnot reference a queue device bound to the vfio_ap device driver, then it'sAPID will be filtered from the mdev's matrix when updating the guest's APconfiguration. Inspecting only the APID of the new adapter or APQI of thenew domain will result in passing AP queues through to a guest that are notbound to the vfio_ap device driver under certain circumstances. Considerthe following: guest's AP configuration (all also assigned to the mdev'smatrix): 14.0004 14.0005 14.0006 16.0004 16.0005 16.0006 unassign domain 4unbind queue 16.0005 assign domain 4 When domain 4 is re-assigned, sinceonly domain 4 will be inspected, the APQNs that will be examined will be:14.0004 16.0004 Since both of those APQNs reference queue devices that arebound to the vfio_ap device driver, nothing will get filtered from themdev's matrix when updating the guest's AP configuration. Consequently,queue 16.0005 will get passed through despite not being bound to thedriver. This violates the linux device model requirement that a guest shallonly be given access to devices bound to the device driver facilitatingtheir pass-through. To resolve this problem, every adapter and domainassigned to the mdev will be inspected when filtering the mdev's matrix.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:s390/vfio-ap: always filter entire AP matrix The vfio_ap_mdev_filter_matrixfunction is called whenever a new adapter or domain is assigned to themdev. The purpose of the function is to update the guest's AP configurationby filtering the matrix of adapters and domains assigned to the mdev. Whenan adapter or domain is assigned, only the APQNs associated with the APIDof the new adapter or APQI of the new domain are inspected. If an APQN doesnot reference a queue device bound to the vfio_ap device driver, then it'sAPID will be filtered from the mdev's matrix when updating the guest's APconfiguration. Inspecting only the APID of the new adapter or APQI of thenew domain will result in passing AP queues through to a guest that are notbound to the vfio_ap device driver under certain circumstances. Considerthe following: guest's AP configuration (all also assigned to the mdev'smatrix): 14.0004 14.0005 14.0006 16.0004 16.0005 16.0006 unassign domain 4unbind queue 16.0005 assign domain 4 When domain 4 is re-assigned, sinceonly domain 4 will be inspected, the APQNs that will be examined will be:14.0004 16.0004 Since both of those APQNs reference queue devices that arebound to the vfio_ap device driver, nothing will get filtered from themdev's matrix when updating the guest's AP configuration. Consequently,queue 16.0005 will get passed through despite not being bound to thedriver. This violates the linux device model requirement that a guest shallonly be given access to devices bound to the device driver facilitatingtheir pass-through. To resolve this problem, every adapter and domainassigned to the mdev will be inspected when filtering the mdev's matrix.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26620` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic-64k - 6.5.0-41.41\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-azure - 6.5.0-1022.23\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-gcp - 6.5.0-1022.24\nNo subscription required\n\nlinux-image-unsigned-6.5.0-41-lowlatency - 6.5.0-41.41.1\nlinux-image-unsigned-6.5.0-41-lowlatency-64k - 6.5.0-41.41.1\nNo subscription required\n\nlinux-image-6.5.0-1018-raspi - 6.5.0-1018.21\nNo subscription required\n\nlinux-image-6.5.0-1015-starfive - 6.5.0-1015.16\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -23,7 +23,11 @@
 				"href": "https://ubuntu.com/security/CVE-2024-26620",
 				"public": "20240311"
 			},
-			"public_date_at_usn": "2024-03-11 18:15:00 UTC"
+			"public_date_at_usn": "2024-03-11 18:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6818-1",
+				"https://ubuntu.com/security/notices/USN-6819-1"
+			]
 		}
 	},
 	"notes": {},
@@ -33,20 +37,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
-						"comment": "linux package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000000",
+						"comment": "linux package in mantic was vulnerable but has been fixed (note: '6.5.0-41.41')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
 						"comment": "linux-aws package in mantic is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
-						"comment": "linux-azure package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000010",
+						"comment": "linux-azure package in mantic was vulnerable but has been fixed (note: '6.5.0-1022.23')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
-						"comment": "linux-gcp package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000020",
+						"comment": "linux-gcp package in mantic was vulnerable but has been fixed (note: '6.5.0-1022.24')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
@@ -57,20 +61,20 @@
 						"comment": "linux-laptop package in mantic is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
-						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000030",
+						"comment": "linux-lowlatency package in mantic was vulnerable but has been fixed (note: '6.5.0-41.41.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
 						"comment": "linux-oracle package in mantic is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
-						"comment": "linux-raspi package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000040",
+						"comment": "linux-raspi package in mantic was vulnerable but has been fixed (note: '6.5.0-1018.21')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
-						"comment": "linux-starfive package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000050",
+						"comment": "linux-starfive package in mantic was vulnerable but has been fixed (note: '6.5.0-1015.16')."
 					}
 				]
 			}

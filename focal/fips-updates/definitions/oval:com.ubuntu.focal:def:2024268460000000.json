@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26846 on Ubuntu 20.04 FIPS Compliant (focal) - low",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:nvme-fc: do not wait in vain when unloading module The module exit path hasrace between deleting all controllers and freeing 'left over IDs'. Toprevent double free a synchronization between nvme_delete_ctrl andida_destroy has been added by the initial commit. There is some logicaround trying to prevent from hanging forever in wait_for_completion,though it does not handling all cases. E.g. blktests is able to reproducethe situation where the module unload hangs forever. If we completely relyon the cleanup code executed from the nvme_delete_ctrl path, all IDs willbe freed eventually. This makes calling ida_destroy unnecessary. We onlyhave to ensure that all nvme_delete_ctrl code has been executed before weleave nvme_fc_exit_module. This is done by flushing the nvme_delete_wqworkqueue. While at it, remove the unused nvme_fc_wq workqueue too.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nvme-fc: do not wait in vain when unloading module The module exit path hasrace between deleting all controllers and freeing 'left over IDs'. Toprevent double free a synchronization between nvme_delete_ctrl andida_destroy has been added by the initial commit. There is some logicaround trying to prevent from hanging forever in wait_for_completion,though it does not handling all cases. E.g. blktests is able to reproducethe situation where the module unload hangs forever. If we completely relyon the cleanup code executed from the nvme_delete_ctrl path, all IDs willbe freed eventually. This makes calling ida_destroy unnecessary. We onlyhave to ensure that all nvme_delete_ctrl code has been executed before weleave nvme_fc_exit_module. This is done by flushing the nvme_delete_wqworkqueue. While at it, remove the unused nvme_fc_wq workqueue too.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26846` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120~20.04.1\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Compliant"
@@ -22,7 +22,12 @@
 				"text": "CVE-2024-26846",
 				"href": "https://ubuntu.com/security/CVE-2024-26846",
 				"public": "20240417"
-			}
+			},
+			"public_date_at_usn": "2024-04-17 10:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6820-1",
+				"https://ubuntu.com/security/notices/USN-6821-1"
+			]
 		}
 	},
 	"notes": {},
@@ -128,8 +133,8 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524340000000",
+						"comment": "linux-gcp-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1062.70~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -168,8 +173,8 @@
 						"comment": "linux-iot package in focal is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524340000010",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-110.120~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35803 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/efistub: Call mixed mode boot services on the firmware's stackNormally, the EFI stub calls into the EFI boot services using the stackthat was live when the stub was entered. According to the UEFI spec, thisstack needs to be at least 128k in size - this might seem large but allasynchronous processing and event handling in EFI runs from the same stackand so quite a lot of space may be used in practice. In mixed mode, thesituation is a bit different: the bootloader calls the 32-bit EFI stubentry point, which calls the decompressor's 32-bit entry point, where theboot stack is set up, using a fixed allocation of 16k. This stack is stillin use when the EFI stub is started in 64-bit mode, and so all calls backinto the EFI firmware will be using the decompressor's limited boot stack.Due to the placement of the boot stack right after the boot heap, any stackoverruns have gone unnoticed. However, commit 5c4feadb0011983b(\"x86/decompressor: Move global symbol references to C code\") moved thedefinition of the boot heap into C code, and now the boot stack is placedright at the base of BSS, where any overruns will corrupt the end of the.data section. While it would be possible to work around this by increasingthe size of the boot stack, doing so would affect all x86 systems, andmixed mode systems are a tiny (and shrinking) fraction of the x86 installedbase. So instead, record the firmware stack pointer value when enteringfrom the 32-bit firmware, and switch to this stack every time a EFI bootservice call is made.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/efistub: Call mixed mode boot services on the firmware's stackNormally, the EFI stub calls into the EFI boot services using the stackthat was live when the stub was entered. According to the UEFI spec, thisstack needs to be at least 128k in size - this might seem large but allasynchronous processing and event handling in EFI runs from the same stackand so quite a lot of space may be used in practice. In mixed mode, thesituation is a bit different: the bootloader calls the 32-bit EFI stubentry point, which calls the decompressor's 32-bit entry point, where theboot stack is set up, using a fixed allocation of 16k. This stack is stillin use when the EFI stub is started in 64-bit mode, and so all calls backinto the EFI firmware will be using the decompressor's limited boot stack.Due to the placement of the boot stack right after the boot heap, any stackoverruns have gone unnoticed. However, commit 5c4feadb0011983b(\"x86/decompressor: Move global symbol references to C code\") moved thedefinition of the boot heap into C code, and now the boot stack is placedright at the base of BSS, where any overruns will corrupt the end of the.data section. While it would be possible to work around this by increasingthe size of the boot stack, doing so would affect all x86 systems, andmixed mode systems are a tiny (and shrinking) fraction of the x86 installedbase. So instead, record the firmware stack pointer value when enteringfrom the 32-bit firmware, and switch to this stack every time a EFI bootservice call is made.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35803` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic-64k - 6.8.0-35.35\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-aws - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gcp - 6.8.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-ibm - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-35-lowlatency - 6.8.0-35.35.1\nlinux-image-unsigned-6.8.0-35-lowlatency-64k - 6.8.0-35.35.1\nNo subscription required\n\nlinux-image-6.8.0-1005-raspi - 6.8.0-1005.5\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -22,7 +22,12 @@
 				"text": "CVE-2024-35803",
 				"href": "https://ubuntu.com/security/CVE-2024-35803",
 				"public": "20240517"
-			}
+			},
+			"public_date_at_usn": "2024-05-17 14:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6816-1",
+				"https://ubuntu.com/security/notices/USN-6817-1"
+			]
 		}
 	},
 	"notes": {},
@@ -32,40 +37,40 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000000",
+						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-35.35')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000010",
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1009.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
 						"comment": "linux-azure package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1008.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
 						"comment": "linux-gke package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000030",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
+						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-35.35.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
 						"comment": "linux-oracle package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000050",
+						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1005.5')."
 					}
 				]
 			}

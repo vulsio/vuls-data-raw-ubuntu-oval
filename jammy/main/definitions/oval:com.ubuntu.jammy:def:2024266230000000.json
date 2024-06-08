@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26623 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:pds_core: Prevent race issues involving the adminq There are multiple pathsthat can result in using the pdsc's adminq. [1] pdsc_adminq_isr and theresulting work from queue_work(), i.e.pdsc_work_thread()->pdsc_process_adminq() [2] pdsc_adminq_post() When thedevice goes through reset via PCIe reset and/or a fw_down/fw_up cycle dueto bad PCIe state or bad device state the adminq is destroyed andrecreated. A NULL pointer dereference can happen if [1] or [2] happensafter the adminq is already destroyed. In order to fix this, add somefurther state checks and implement reference counting for adminq uses.Reference counting was used because multiple threads can attempt to accessthe adminq at the same time via [1] or [2]. Additionally, multiple clients(i.e. pds-vfio-pci) can be using [2] at the same time. The adminq_refcnt isinitialized to 1 when the adminq has been allocated and is ready to use.Users/clients of the adminq (i.e. [1] and [2]) will increment the refcntwhen they are using the adminq. When the driver goes into a fw_down cycleit will set the PDSC_S_FW_DEAD bit and then wait for the adminq_refcnt tohit 1. Setting the PDSC_S_FW_DEAD before waiting will prevent any furtheradminq_refcnt increments. Waiting for the adminq_refcnt to hit 1 allows forany current users of the adminq to finish before the driver frees theadminq. Once the adminq_refcnt hits 1 the driver clears the refcnt tosignify that the adminq is deleted and cannot be used. On the fw_up cyclethe driver will once again initialize the adminq_refcnt to 1 allowing theadminq to be used again.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:pds_core: Prevent race issues involving the adminq There are multiple pathsthat can result in using the pdsc's adminq. [1] pdsc_adminq_isr and theresulting work from queue_work(), i.e.pdsc_work_thread()->pdsc_process_adminq() [2] pdsc_adminq_post() When thedevice goes through reset via PCIe reset and/or a fw_down/fw_up cycle dueto bad PCIe state or bad device state the adminq is destroyed andrecreated. A NULL pointer dereference can happen if [1] or [2] happensafter the adminq is already destroyed. In order to fix this, add somefurther state checks and implement reference counting for adminq uses.Reference counting was used because multiple threads can attempt to accessthe adminq at the same time via [1] or [2]. Additionally, multiple clients(i.e. pds-vfio-pci) can be using [2] at the same time. The adminq_refcnt isinitialized to 1 when the adminq has been allocated and is ready to use.Users/clients of the adminq (i.e. [1] and [2]) will increment the refcntwhen they are using the adminq. When the driver goes into a fw_down cycleit will set the PDSC_S_FW_DEAD bit and then wait for the adminq_refcnt tohit 1. Setting the PDSC_S_FW_DEAD before waiting will prevent any furtheradminq_refcnt increments. Waiting for the adminq_refcnt to hit 1 allows forany current users of the adminq to finish before the driver frees theadminq. Once the adminq_refcnt hits 1 the driver clears the refcnt tosignify that the adminq is deleted and cannot be used. On the fw_up cyclethe driver will once again initialize the adminq_refcnt to 1 allowing theadminq to be used again.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26623` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-6.5.0-1022-azure - 6.5.0-1022.23~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-gcp - 6.5.0-1022.24~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-41-lowlatency - 6.5.0-41.41.1~22.04.1\nlinux-image-unsigned-6.5.0-41-lowlatency-64k - 6.5.0-41.41.1~22.04.1\nNo subscription required\n\nlinux-image-6.5.0-1015-starfive - 6.5.0-1015.16~22.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -27,7 +27,11 @@
 				"href": "https://ubuntu.com/security/CVE-2024-26623",
 				"public": "20240306"
 			},
-			"public_date_at_usn": "2024-03-06 07:15:00 UTC"
+			"public_date_at_usn": "2024-03-06 07:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6818-1",
+				"https://ubuntu.com/security/notices/USN-6819-1"
+			]
 		}
 	},
 	"notes": {},
@@ -89,8 +93,8 @@
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
-						"comment": "linux-azure-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000020",
+						"comment": "linux-azure-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-1022.23~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
@@ -117,8 +121,8 @@
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
-						"comment": "linux-gcp-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000030",
+						"comment": "linux-gcp-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-1022.24~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
@@ -149,8 +153,8 @@
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
-						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000000",
+						"comment": "linux-lowlatency-hwe-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-41.41.1~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
@@ -193,8 +197,8 @@
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
-						"comment": "linux-starfive-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000010",
+						"comment": "linux-starfive-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-1015.16~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
