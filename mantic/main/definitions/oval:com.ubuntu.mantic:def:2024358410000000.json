@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35841 on Ubuntu 23.10 (mantic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: net:tls, fix WARNIING in __sk_msg_free A splice with MSG_SPLICE_PAGES willcause tls code to use the tls_sw_sendmsg_splice path in the TLS sendmsgcode to move the user provided pages from the msg into the msg_pl. Thiswill loop over the msg until msg_pl is full, checked bysk_msg_full(msg_pl). The user can also set the MORE flag to hint stack todelay sending until receiving more pages and ideally a full buffer. If theuser adds more pages to the msg than can fit in the msg_pl scatterlist(MAX_MSG_FRAGS) we should ignore the MORE flag and send the buffer anyways.What actually happens though is we abort the msg to msg_pl scatterlistsetup and then because we forget to set 'full record' indicating we can nolonger consume data without a send we fallthrough to the 'continue' pathwhich will check if msg_data_left(msg) has more bytes to send and thenattempts to fit them in the already full msg_pl. Then next iteration ofsender doing send will encounter a full msg_pl and throw the warning in thesyzbot report. To fix simply check if we have a full_record in splice codepath and if not send the msg regardless of MORE flag.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35841` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic-64k - 6.5.0-41.41\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-azure - 6.5.0-1022.23\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-gcp - 6.5.0-1022.24\nNo subscription required\n\nlinux-image-unsigned-6.5.0-41-lowlatency - 6.5.0-41.41.1\nlinux-image-unsigned-6.5.0-41-lowlatency-64k - 6.5.0-41.41.1\nNo subscription required\n\nlinux-image-6.5.0-1018-raspi - 6.5.0-1018.21\nNo subscription required\n\nlinux-image-6.5.0-1015-starfive - 6.5.0-1015.16\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:tls, fix WARNIING in __sk_msg_free A splice with MSG_SPLICE_PAGES willcause tls code to use the tls_sw_sendmsg_splice path in the TLS sendmsgcode to move the user provided pages from the msg into the msg_pl. Thiswill loop over the msg until msg_pl is full, checked bysk_msg_full(msg_pl). The user can also set the MORE flag to hint stack todelay sending until receiving more pages and ideally a full buffer. If theuser adds more pages to the msg than can fit in the msg_pl scatterlist(MAX_MSG_FRAGS) we should ignore the MORE flag and send the buffer anyways.What actually happens though is we abort the msg to msg_pl scatterlistsetup and then because we forget to set 'full record' indicating we can nolonger consume data without a send we fallthrough to the 'continue' pathwhich will check if msg_data_left(msg) has more bytes to send and thenattempts to fit them in the already full msg_pl. Then next iteration ofsender doing send will encounter a full msg_pl and throw the warning in thesyzbot report. To fix simply check if we have a full_record in splice codepath and if not send the msg regardless of MORE flag.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35841` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic-64k - 6.5.0-41.41\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-azure - 6.5.0-1022.23\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-gcp - 6.5.0-1022.24\nNo subscription required\n\nlinux-image-6.5.0-1017-laptop - 6.5.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.5.0-41-lowlatency - 6.5.0-41.41.1\nlinux-image-unsigned-6.5.0-41-lowlatency-64k - 6.5.0-41.41.1\nNo subscription required\n\nlinux-image-6.5.0-1018-raspi - 6.5.0-1018.21\nNo subscription required\n\nlinux-image-6.5.0-1015-starfive - 6.5.0-1015.16\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -26,7 +26,8 @@
 			"public_date_at_usn": "2024-05-17 15:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-6818-1",
-				"https://ubuntu.com/security/notices/USN-6819-1"
+				"https://ubuntu.com/security/notices/USN-6819-1",
+				"https://ubuntu.com/security/notices/USN-6818-2"
 			]
 		}
 	},
@@ -57,8 +58,8 @@
 						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
-						"comment": "linux-laptop package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023472330000050",
+						"comment": "linux-laptop package in mantic was vulnerable but has been fixed (note: '6.5.0-1017.20')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000030",

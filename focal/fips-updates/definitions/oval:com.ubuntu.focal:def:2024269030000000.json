@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26903 on Ubuntu 20.04 FIPS Compliant (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:Bluetooth: rfcomm: Fix null-ptr-deref in rfcomm_check_security During ourfuzz testing of the connection and disconnection process at the RFCOMMlayer, we discovered this bug. By comparing the packets from a normalconnection and disconnection process with the testcase that triggered aKASAN report. We analyzed the cause of this bug as follows: 1. In thepackets captured during a normal connection, the host sends a `ReadEncryption Key Size` type of `HCI_CMD` packet (Command Opcode: 0x1408) tothe controller to inquire the length of encryption key.After receiving thispacket, the controller immediately replies with a Command Completepacket(Event Code: 0x0e) to return the Encryption Key Size. 2. In our fuzz testcase, the timing of the controller's response to this packet was delayed toan unexpected point: after the RFCOMM and L2CAP layers had disconnected butbefore the HCI layer had disconnected. 3. After receiving the EncryptionKey Size Response at the time described in point 2, the host still calledthe rfcomm_check_security function. However, by this time `structl2cap_conn *conn = l2cap_pi(sk)->chan->conn;` had already been released,and when the function executed `return hci_conn_security(conn->hcon,d->sec_level, auth_type, d->out);`, specifically when accessing`conn->hcon`, a null-ptr-deref error occurred. To fix this bug, check if`sk->sk_state` is BT_CLOSED before calling rfcomm_recv_frame inrfcomm_process_rx.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26903` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120~20.04.1\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120~20.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:Bluetooth: rfcomm: Fix null-ptr-deref in rfcomm_check_security During ourfuzz testing of the connection and disconnection process at the RFCOMMlayer, we discovered this bug. By comparing the packets from a normalconnection and disconnection process with the testcase that triggered aKASAN report. We analyzed the cause of this bug as follows: 1. In thepackets captured during a normal connection, the host sends a `ReadEncryption Key Size` type of `HCI_CMD` packet (Command Opcode: 0x1408) tothe controller to inquire the length of encryption key.After receiving thispacket, the controller immediately replies with a Command Completepacket(Event Code: 0x0e) to return the Encryption Key Size. 2. In our fuzz testcase, the timing of the controller's response to this packet was delayed toan unexpected point: after the RFCOMM and L2CAP layers had disconnected butbefore the HCI layer had disconnected. 3. After receiving the EncryptionKey Size Response at the time described in point 2, the host still calledthe rfcomm_check_security function. However, by this time `structl2cap_conn *conn = l2cap_pi(sk)->chan->conn;` had already been released,and when the function executed `return hci_conn_security(conn->hcon,d->sec_level, auth_type, d->out);`, specifically when accessing`conn->hcon`, a null-ptr-deref error occurred. To fix this bug, check if`sk->sk_state` is BT_CLOSED before calling rfcomm_recv_frame inrfcomm_process_rx.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26903` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120~20.04.1\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Compliant"
@@ -24,12 +24,13 @@
 				"public": "20240417",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "6820-1,6821-1"
+				"usns": "6820-1,6821-1,6821-2"
 			},
 			"public_date_at_usn": "2024-04-17 11:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-6820-1",
-				"https://ubuntu.com/security/notices/USN-6821-1"
+				"https://ubuntu.com/security/notices/USN-6821-1",
+				"https://ubuntu.com/security/notices/USN-6821-2"
 			]
 		}
 	},
@@ -152,8 +153,8 @@
 						"comment": "linux-gkeop package in focal is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022458860000050",
+						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1046.53~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
