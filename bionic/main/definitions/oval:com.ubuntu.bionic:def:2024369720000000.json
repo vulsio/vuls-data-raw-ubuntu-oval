@@ -1,0 +1,142 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024369720000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36972 on Ubuntu 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:af_unix: Update unix_sk(sk)->oob_skb under sk_receive_queue lock.Billy Jheng Bing-Jhong reported a race between __unix_gc() andqueue_oob().__unix_gc() tries to garbage-collect close()d inflight sockets,and then if the socket has MSG_OOB in unix_sk(sk)->oob_skb, GCwill drop the reference and set NULL to it locklessly.However, the peer socket still can send MSG_OOB message andqueue_oob() can update unix_sk(sk)->oob_skb concurrently, leadingNULL pointer dereference. [0]To fix the issue, let's update unix_sk(sk)->oob_skb under thesk_receive_queue's lock and take it everywhere we touch oob_skb.Note that we defer kfree_skb() in manage_oob() to silence lockdepfalse-positive (See [1]).[0]:BUG: kernel NULL pointer dereference, address: 0000000000000008 PF: supervisor write access in kernel mode PF: error_code(0x0002) - not-present pagePGD 8000000009f5e067 P4D 8000000009f5e067 PUD 9f5d067 PMD 0Oops: 0002 [#1] PREEMPT SMP PTICPU: 3 PID: 50 Comm: kworker/3:1 Not tainted 6.9.0-rc5-00191-gd091e579b864#110Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.16.0-0-gd239552ce722-prebuilt.qemu.org 04/01/2014Workqueue: events delayed_fputRIP: 0010:skb_dequeue (./include/linux/skbuff.h:2386./include/linux/skbuff.h:2402 net/core/skbuff.c:3847)Code: 39 e3 74 3e 8b 43 10 48 89 ef 83 e8 01 89 43 10 49 8b 44 24 08 49 c744 24 08 00 00 00 00 49 8b 14 24 49 c7 04 24 00 00 00 00 <48> 89 42 08 4889 10 e8 e7 c5 42 00 4c 89 e0 5b 5d 41 5c c3 cc ccRSP: 0018:ffffc900001bfd48 EFLAGS: 00000002RAX: 0000000000000000 RBX: ffff8880088f5ae8 RCX: 00000000361289f9RDX: 0000000000000000 RSI: 0000000000000206 RDI: ffff8880088f5b00RBP: ffff8880088f5b00 R08: 0000000000080000 R09: 0000000000000001R10: 0000000000000003 R11: 0000000000000001 R12: ffff8880056b6a00R13: ffff8880088f5280 R14: 0000000000000001 R15: ffff8880088f5a80FS:  0000000000000000(0000) GS:ffff88807dd80000(0000)knlGS:0000000000000000CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033CR2: 0000000000000008 CR3: 0000000006314000 CR4: 00000000007506f0PKRU: 55555554Call Trace: <TASK> unix_release_sock (net/unix/af_unix.c:654) unix_release (net/unix/af_unix.c:1050) __sock_release (net/socket.c:660) sock_close (net/socket.c:1423) __fput (fs/file_table.c:423) delayed_fput (fs/file_table.c:444 (discriminator 3)) process_one_work (kernel/workqueue.c:3259) worker_thread (kernel/workqueue.c:3329 kernel/workqueue.c:3416) kthread (kernel/kthread.c:388) ret_from_fork (arch/x86/kernel/process.c:153) ret_from_fork_asm (arch/x86/entry/entry_64.S:257) </TASK>Modules linked in:CR2: 0000000000000008",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36972",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36972"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-11",
+			"cve": {
+				"text": "CVE-2024-36972",
+				"href": "https://ubuntu.com/security/CVE-2024-36972",
+				"public": "20240611"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
