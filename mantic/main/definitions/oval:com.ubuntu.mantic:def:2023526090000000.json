@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52609 on Ubuntu 23.10 (mantic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: binder:fix race between mmput() and do_exit() Task A callsbinder_update_page_range() to allocate and insert pages on a remote addressspace from Task B. For this, Task A pins the remote mm via mmget_not_zero()first. This can race with Task B do_exit() and the final mmput() refcountdecrement will come from Task A. Task A | Task B------------------+------------------ mmget_not_zero() | | do_exit() |exit_mm() | mmput() mmput() | exit_mmap() | remove_vma() | fput() | In thiscase, the work of ____fput() from Task B is queued up in Task A asTWA_RESUME. So in theory, Task A returns to userspace and the cleanup workgets executed. However, Task A instead sleep, waiting for a reply from TaskB that never comes (it's dead). This means the binder_deferred_release() isblocked until an unrelated binder event forces Task A to go back touserspace. All the associated death notifications will also be delayeduntil then. In order to fix this use mmput_async() that will schedule thework in the corresponding mm->async_put_work WQ instead of Task A.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52609` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic-64k - 6.5.0-41.41\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-azure - 6.5.0-1022.23\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-gcp - 6.5.0-1022.24\nNo subscription required\n\nlinux-image-6.5.0-1017-laptop - 6.5.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.5.0-41-lowlatency - 6.5.0-41.41.1\nlinux-image-unsigned-6.5.0-41-lowlatency-64k - 6.5.0-41.41.1\nNo subscription required\n\nlinux-image-6.5.0-1018-raspi - 6.5.0-1018.21\nNo subscription required\n\nlinux-image-6.5.0-1015-starfive - 6.5.0-1015.16\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: binder:fix race between mmput() and do_exit() Task A callsbinder_update_page_range() to allocate and insert pages on a remote addressspace from Task B. For this, Task A pins the remote mm via mmget_not_zero()first. This can race with Task B do_exit() and the final mmput() refcountdecrement will come from Task A. Task A | Task B------------------+------------------ mmget_not_zero() | | do_exit() |exit_mm() | mmput() mmput() | exit_mmap() | remove_vma() | fput() | In thiscase, the work of ____fput() from Task B is queued up in Task A asTWA_RESUME. So in theory, Task A returns to userspace and the cleanup workgets executed. However, Task A instead sleep, waiting for a reply from TaskB that never comes (it's dead). This means the binder_deferred_release() isblocked until an unrelated binder event forces Task A to go back touserspace. All the associated death notifications will also be delayeduntil then. In order to fix this use mmput_async() that will schedule thework in the corresponding mm->async_put_work WQ instead of Task A.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52609` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic - 6.5.0-41.41\nlinux-image-unsigned-6.5.0-41-generic-64k - 6.5.0-41.41\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1021-aws - 6.5.0-1021.21\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-azure - 6.5.0-1022.23\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-gcp - 6.5.0-1022.24\nNo subscription required\n\nlinux-image-6.5.0-1017-laptop - 6.5.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.5.0-41-lowlatency - 6.5.0-41.41.1\nlinux-image-unsigned-6.5.0-41-lowlatency-64k - 6.5.0-41.41.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1024-oracle - 6.5.0-1024.24\nlinux-image-unsigned-6.5.0-1024-oracle-64k - 6.5.0-1024.24\nNo subscription required\n\nlinux-image-6.5.0-1018-raspi - 6.5.0-1018.21\nNo subscription required\n\nlinux-image-6.5.0-1015-starfive - 6.5.0-1015.16\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -32,7 +32,8 @@
 				"https://ubuntu.com/security/notices/USN-6726-3",
 				"https://ubuntu.com/security/notices/USN-6818-1",
 				"https://ubuntu.com/security/notices/USN-6819-1",
-				"https://ubuntu.com/security/notices/USN-6818-2"
+				"https://ubuntu.com/security/notices/USN-6818-2",
+				"https://ubuntu.com/security/notices/USN-6819-2"
 			]
 		}
 	},
@@ -47,15 +48,15 @@
 						"comment": "linux package in mantic was vulnerable but has been fixed (note: '6.5.0-41.41')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
-						"comment": "linux-aws package in mantic is affected and needs fixing."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000010",
-						"comment": "linux-azure package in mantic was vulnerable but has been fixed (note: '6.5.0-1022.23')."
+						"comment": "linux-aws package in mantic was vulnerable but has been fixed (note: '6.5.0-1021.21')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000020",
+						"comment": "linux-azure package in mantic was vulnerable but has been fixed (note: '6.5.0-1022.23')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000030",
 						"comment": "linux-gcp package in mantic was vulnerable but has been fixed (note: '6.5.0-1022.24')."
 					},
 					{
@@ -67,19 +68,19 @@
 						"comment": "linux-laptop package in mantic was vulnerable but has been fixed (note: '6.5.0-1017.20')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000030",
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000040",
 						"comment": "linux-lowlatency package in mantic was vulnerable but has been fixed (note: '6.5.0-41.41.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
-						"comment": "linux-oracle package in mantic is affected and needs fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000050",
+						"comment": "linux-oracle package in mantic was vulnerable but has been fixed (note: '6.5.0-1024.24')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000040",
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000060",
 						"comment": "linux-raspi package in mantic was vulnerable but has been fixed (note: '6.5.0-1018.21')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000050",
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023524430000070",
 						"comment": "linux-starfive package in mantic was vulnerable but has been fixed (note: '6.5.0-1015.16')."
 					}
 				]
