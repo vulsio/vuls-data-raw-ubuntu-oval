@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26951 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:wireguard: netlink: check for dangling peer via is_dead instead of emptylist If all peers are removed via wg_peer_remove_all(), rather than settingpeer_list to empty, the peer is added to a temporary list with a head onthe stack of wg_peer_remove_all(). If a netlink dump is resumed and thecursored peer is one that has been removed via wg_peer_remove_all(), itwill iterate from that peer and then attempt to dump freed peers. Fix thisby instead checking peer->is_dead, which was explictly created for thispurpose. Also move up the device_update_lock lockdep assertion, sincereading is_dead relies on that. It can be reproduced by a small scriptlike: echo \"Setting config...\" ip link add dev wg0 type wireguard wgsetconf wg0 /big-config ( while true; do echo \"Showing config...\" wgshowconf wg0 > /dev/null done ) & sleep 4 wg setconf wg0 <(printf\"[Peer]\\nPublicKey=$(wg genkey)\\n\") Resulting in: BUG: KASAN:slab-use-after-free in __lock_acquire+0x182a/0x1b20 Read of size 8 at addrffff88811956ec70 by task wg/59 CPU: 2 PID: 59 Comm: wg Not tainted6.8.0-rc2-debug+ #5 Call Trace: <TASK> dump_stack_lvl+0x47/0x70print_address_description.constprop.0+0x2c/0x380 print_report+0xab/0x250kasan_report+0xba/0xf0 __lock_acquire+0x182a/0x1b20lock_acquire+0x191/0x4b0 down_read+0x80/0x440 get_peer+0x140/0xcb0wg_get_device_dump+0x471/0x1130\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26951` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic-64k - 6.8.0-35.35\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-aws - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gcp - 6.8.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-ibm - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-35-lowlatency - 6.8.0-35.35.1\nlinux-image-unsigned-6.8.0-35-lowlatency-64k - 6.8.0-35.35.1\nNo subscription required\n\nlinux-image-6.8.0-1005-raspi - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-oem - 6.8.0-1006.6\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wireguard: netlink: check for dangling peer via is_dead instead of emptylist If all peers are removed via wg_peer_remove_all(), rather than settingpeer_list to empty, the peer is added to a temporary list with a head onthe stack of wg_peer_remove_all(). If a netlink dump is resumed and thecursored peer is one that has been removed via wg_peer_remove_all(), itwill iterate from that peer and then attempt to dump freed peers. Fix thisby instead checking peer->is_dead, which was explictly created for thispurpose. Also move up the device_update_lock lockdep assertion, sincereading is_dead relies on that. It can be reproduced by a small scriptlike: echo \"Setting config...\" ip link add dev wg0 type wireguard wgsetconf wg0 /big-config ( while true; do echo \"Showing config...\" wgshowconf wg0 > /dev/null done ) & sleep 4 wg setconf wg0 <(printf\"[Peer]\\nPublicKey=$(wg genkey)\\n\") Resulting in: BUG: KASAN:slab-use-after-free in __lock_acquire+0x182a/0x1b20 Read of size 8 at addrffff88811956ec70 by task wg/59 CPU: 2 PID: 59 Comm: wg Not tainted6.8.0-rc2-debug+ #5 Call Trace: <TASK> dump_stack_lvl+0x47/0x70print_address_description.constprop.0+0x2c/0x380 print_report+0xab/0x250kasan_report+0xba/0xf0 __lock_acquire+0x182a/0x1b20lock_acquire+0x191/0x4b0 down_read+0x80/0x440 get_peer+0x140/0xcb0wg_get_device_dump+0x471/0x1130\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26951` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic-64k - 6.8.0-35.35\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-aws - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-azure - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gcp - 6.8.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1004-gke - 6.8.0-1004.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-ibm - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-35-lowlatency - 6.8.0-35.35.1\nlinux-image-unsigned-6.8.0-35-lowlatency-64k - 6.8.0-35.35.1\nNo subscription required\n\nlinux-image-6.8.0-1005-raspi - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-oem - 6.8.0-1006.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -27,7 +27,8 @@
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-6816-1",
 				"https://ubuntu.com/security/notices/USN-6817-1",
-				"https://ubuntu.com/security/notices/USN-6817-2"
+				"https://ubuntu.com/security/notices/USN-6817-2",
+				"https://ubuntu.com/security/notices/USN-6817-3"
 			]
 		}
 	},
@@ -46,23 +47,23 @@
 						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
-						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1008.9')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000030",
-						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1008.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022486690000000",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1004.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000050",
 						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-35.35.1')."
 					},
 					{
@@ -70,11 +71,11 @@
 						"comment": "linux-oracle package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000060",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
 					}
 				]

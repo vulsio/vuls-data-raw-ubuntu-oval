@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27036 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: cifs:Fix writeback data corruption cifs writeback doesn't correctly handle thecase where cifs_extend_writeback() hits a point where it is considering anadditional folio, but this would overrun the wsize - at which point itdrops out of the xarray scanning loop and calls xas_pause(). The problem isthat xas_pause() advances the loop counter - thereby skipping that page.What needs to happen is for xas_reset() to be called any time we decide wedon't want to process the page we're looking at, but rather send therequest we are building and start a new one. Fix this by copying andadapting the netfslib writepages code as a temporary measure, with cifswriteback intending to be offloaded to netfslib in the near future. Thisalso fixes the issue with the use of filemap_get_folios_tag() causing retryof a bunch of pages which the extender already dealt with. This can betested by creating, say, a 64K file somewhere not on cifs (otherwisecopy-offload may get underfoot), mounting a cifs share with a wsize of64000, copying the file to it and then comparing the original file and thecopy: dd if=/dev/urandom of=/tmp/64K bs=64k count=1 mount//192.168.6.1/test /mnt -o user=...,pass=...,wsize=64000 cp /tmp/64K/mnt/64K cmp /tmp/64K /mnt/64K Without the fix, the cmp fails at position64000 (or shortly thereafter).\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27036` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic-64k - 6.8.0-35.35\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-aws - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gcp - 6.8.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-ibm - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-35-lowlatency - 6.8.0-35.35.1\nlinux-image-unsigned-6.8.0-35-lowlatency-64k - 6.8.0-35.35.1\nNo subscription required\n\nlinux-image-6.8.0-1005-raspi - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-oem - 6.8.0-1006.6\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: cifs:Fix writeback data corruption cifs writeback doesn't correctly handle thecase where cifs_extend_writeback() hits a point where it is considering anadditional folio, but this would overrun the wsize - at which point itdrops out of the xarray scanning loop and calls xas_pause(). The problem isthat xas_pause() advances the loop counter - thereby skipping that page.What needs to happen is for xas_reset() to be called any time we decide wedon't want to process the page we're looking at, but rather send therequest we are building and start a new one. Fix this by copying andadapting the netfslib writepages code as a temporary measure, with cifswriteback intending to be offloaded to netfslib in the near future. Thisalso fixes the issue with the use of filemap_get_folios_tag() causing retryof a bunch of pages which the extender already dealt with. This can betested by creating, say, a 64K file somewhere not on cifs (otherwisecopy-offload may get underfoot), mounting a cifs share with a wsize of64000, copying the file to it and then comparing the original file and thecopy: dd if=/dev/urandom of=/tmp/64K bs=64k count=1 mount//192.168.6.1/test /mnt -o user=...,pass=...,wsize=64000 cp /tmp/64K/mnt/64K cmp /tmp/64K /mnt/64K Without the fix, the cmp fails at position64000 (or shortly thereafter).\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27036` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic-64k - 6.8.0-35.35\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-aws - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-azure - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gcp - 6.8.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1004-gke - 6.8.0-1004.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-ibm - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-35-lowlatency - 6.8.0-35.35.1\nlinux-image-unsigned-6.8.0-35-lowlatency-64k - 6.8.0-35.35.1\nNo subscription required\n\nlinux-image-6.8.0-1005-raspi - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-oem - 6.8.0-1006.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -27,7 +27,8 @@
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-6816-1",
 				"https://ubuntu.com/security/notices/USN-6817-1",
-				"https://ubuntu.com/security/notices/USN-6817-2"
+				"https://ubuntu.com/security/notices/USN-6817-2",
+				"https://ubuntu.com/security/notices/USN-6817-3"
 			]
 		}
 	},
@@ -46,23 +47,23 @@
 						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
-						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1008.9')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000030",
-						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1008.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022486690000000",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1004.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000050",
 						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-35.35.1')."
 					},
 					{
@@ -70,11 +71,11 @@
 						"comment": "linux-oracle package in noble is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000060",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
 					}
 				]

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26859 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net/bnx2x: Prevent access to a freed page in page_pool Fix race conditionleading to system crash during EEH error handling During EEH errorrecovery, the bnx2x driver's transmit timeout logic could cause a racecondition when handling reset tasks. The bnx2x_tx_timeout() schedules resettasks via bnx2x_sp_rtnl_task(), which ultimately leads tobnx2x_nic_unload(). In bnx2x_nic_unload() SGEs are freed usingbnx2x_free_rx_sge_range(). However, this could overlap with the EEHdriver's attempt to reset the device using bnx2x_io_slot_reset(), whichalso tries to free SGEs. This race condition can result in system crashesdue to accessing freed memory locations in bnx2x_free_rx_sge() 799 staticinline void bnx2x_free_rx_sge(struct bnx2x *bp, 800 struct bnx2x_fastpath*fp, u16 index) 801 { 802 struct sw_rx_page *sw_buf =&fp->rx_page_ring[index]; 803 struct page *page = sw_buf->page; .... wheresw_buf was set to NULL after the call to dma_unmap_page() by the precedingthread. EEH: Beginning: 'slot_reset' PCI 0011:01:00.0#10000: EEH: Invokingbnx2x->slot_reset() bnx2x: [bnx2x_io_slot_reset:14228(eth1)]IO slot resetinitializing... bnx2x 0011:01:00.0: enabling device (0140 -> 0142) bnx2x:[bnx2x_io_slot_reset:14244(eth1)]IO slot reset --> driver unload Kernelattempted to read user page (0) - exploit attempt? (uid: 0) BUG: KernelNULL pointer dereference on read at 0x00000000 Faulting instructionaddress: 0xc0080000025065fc Oops: Kernel access of bad area, sig: 11 [#1]..... Call Trace: [c000000003c67a20] [c00800000250658c]bnx2x_io_slot_reset+0x204/0x610 [bnx2x] (unreliable) [c000000003c67af0][c0000000000518a8] eeh_report_reset+0xb8/0xf0 [c000000003c67b60][c000000000052130] eeh_pe_report+0x180/0x550 [c000000003c67c70][c00000000005318c] eeh_handle_normal_event+0x84c/0xa60 [c000000003c67d50][c000000000053a84] eeh_event_handler+0xf4/0x170 [c000000003c67da0][c000000000194c58] kthread+0x1c8/0x1d0 [c000000003c67e10][c00000000000cf64] ret_from_kernel_thread+0x5c/0x64 To solve this issue, weneed to verify page pool allocations before freeing.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26859` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-5.15.0-112-generic-lpae - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic-64k - 5.15.0-112.122\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-kvm - 5.15.0-1060.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-gke - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-ibm - 5.15.0-1056.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-nvidia - 5.15.0-1058.59\nlinux-image-unsigned-5.15.0-1058-nvidia-lowlatency - 5.15.0-1058.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-oracle - 5.15.0-1061.67\nNo subscription required\n\nlinux-image-5.15.0-1030-xilinx-zynqmp - 5.15.0-1030.34\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/bnx2x: Prevent access to a freed page in page_pool Fix race conditionleading to system crash during EEH error handling During EEH errorrecovery, the bnx2x driver's transmit timeout logic could cause a racecondition when handling reset tasks. The bnx2x_tx_timeout() schedules resettasks via bnx2x_sp_rtnl_task(), which ultimately leads tobnx2x_nic_unload(). In bnx2x_nic_unload() SGEs are freed usingbnx2x_free_rx_sge_range(). However, this could overlap with the EEHdriver's attempt to reset the device using bnx2x_io_slot_reset(), whichalso tries to free SGEs. This race condition can result in system crashesdue to accessing freed memory locations in bnx2x_free_rx_sge() 799 staticinline void bnx2x_free_rx_sge(struct bnx2x *bp, 800 struct bnx2x_fastpath*fp, u16 index) 801 { 802 struct sw_rx_page *sw_buf =&fp->rx_page_ring[index]; 803 struct page *page = sw_buf->page; .... wheresw_buf was set to NULL after the call to dma_unmap_page() by the precedingthread. EEH: Beginning: 'slot_reset' PCI 0011:01:00.0#10000: EEH: Invokingbnx2x->slot_reset() bnx2x: [bnx2x_io_slot_reset:14228(eth1)]IO slot resetinitializing... bnx2x 0011:01:00.0: enabling device (0140 -> 0142) bnx2x:[bnx2x_io_slot_reset:14244(eth1)]IO slot reset --> driver unload Kernelattempted to read user page (0) - exploit attempt? (uid: 0) BUG: KernelNULL pointer dereference on read at 0x00000000 Faulting instructionaddress: 0xc0080000025065fc Oops: Kernel access of bad area, sig: 11 [#1]..... Call Trace: [c000000003c67a20] [c00800000250658c]bnx2x_io_slot_reset+0x204/0x610 [bnx2x] (unreliable) [c000000003c67af0][c0000000000518a8] eeh_report_reset+0xb8/0xf0 [c000000003c67b60][c000000000052130] eeh_pe_report+0x180/0x550 [c000000003c67c70][c00000000005318c] eeh_handle_normal_event+0x84c/0xa60 [c000000003c67d50][c000000000053a84] eeh_event_handler+0xf4/0x170 [c000000003c67da0][c000000000194c58] kthread+0x1c8/0x1d0 [c000000003c67e10][c00000000000cf64] ret_from_kernel_thread+0x5c/0x64 To solve this issue, weneed to verify page pool allocations before freeing.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26859` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-5.15.0-112-generic-lpae - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic-64k - 5.15.0-112.122\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-kvm - 5.15.0-1060.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-azure - 5.15.0-1066.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-azure-fde - 5.15.0-1065.74.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-gke - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-ibm - 5.15.0-1056.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-nvidia - 5.15.0-1058.59\nlinux-image-unsigned-5.15.0-1058-nvidia-lowlatency - 5.15.0-1058.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-oracle - 5.15.0-1061.67\nNo subscription required\n\nlinux-image-5.15.0-1030-xilinx-zynqmp - 5.15.0-1030.34\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -33,7 +33,9 @@
 				"https://ubuntu.com/security/notices/USN-6817-2",
 				"https://ubuntu.com/security/notices/USN-6828-1",
 				"https://ubuntu.com/security/notices/USN-6820-2",
-				"https://ubuntu.com/security/notices/USN-6821-3"
+				"https://ubuntu.com/security/notices/USN-6821-3",
+				"https://ubuntu.com/security/notices/USN-6817-3",
+				"https://ubuntu.com/security/notices/USN-6821-4"
 			]
 		}
 	},
@@ -84,8 +86,8 @@
 						"comment": "linux-aws-6.5 package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
-						"comment": "linux-azure package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000030",
+						"comment": "linux-azure package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.75')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
@@ -100,8 +102,8 @@
 						"comment": "linux-azure-6.5 package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000040",
+						"comment": "linux-azure-fde package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.74.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -112,7 +114,7 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000030",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000050",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.70')."
 					},
 					{
@@ -136,7 +138,7 @@
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1046.53')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000040",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000060",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1056.59')."
 					},
 					{
@@ -144,7 +146,7 @@
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.64')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000070",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-110.120')."
 					},
 					{
@@ -160,7 +162,7 @@
 						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000080",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.59')."
 					},
 					{
@@ -172,7 +174,7 @@
 						"comment": "linux-nvidia-6.5 package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000090",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1061.67')."
 					},
 					{

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27405 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: usb:gadget: ncm: Avoid dropping datagrams of properly parsed NTBs It isobserved sometimes when tethering is used over NCM with Windows 11 as host,at some instances, the gadget_giveback has one byte appended at the end ofa proper NTB. When the NTB is parsed, unwrap call looks for any leftoverbytes in SKB provided by u_ether and if there are any pending bytes, ittreats them as a separate NTB and parses it. But in case the second NTB (asper unwrap call) is faulty/corrupt, all the datagrams that were parsedproperly in the first NTB and saved in rx_list are dropped. Adding a fewcustom traces showed the following: [002] d..1 7828.532866:dwc3_gadget_giveback: ep1out: req 000000003868811a length 1025/16384 zsI==> 0 [002] d..1 7828.532867: ncm_unwrap_ntb: K: ncm_unwrap_ntb toprocess:1025 [002] d..1 7828.532867: ncm_unwrap_ntb: K: ncm_unwrap_ntb nth:1751999342 [002] d..1 7828.532868: ncm_unwrap_ntb: K: ncm_unwrap_ntb seq:0xce67 [002] d..1 7828.532868: ncm_unwrap_ntb: K: ncm_unwrap_ntb blk_len:0x400 [002] d..1 7828.532868: ncm_unwrap_ntb: K: ncm_unwrap_ntb ndp_len:0x10 [002] d..1 7828.532869: ncm_unwrap_ntb: K: Parsed NTB with 1 frames Inthis case, the giveback is of 1025 bytes and block length is 1024. The rest1 byte (which is 0x00) won't be parsed resulting in drop of all datagramsin rx_list. Same is case with packets of size 2048: [002] d..1 7828.557948:dwc3_gadget_giveback: ep1out: req 0000000011dfd96e length 2049/16384 zsI==> 0 [002] d..1 7828.557949: ncm_unwrap_ntb: K: ncm_unwrap_ntb nth:1751999342 [002] d..1 7828.557950: ncm_unwrap_ntb: K: ncm_unwrap_ntbblk_len: 0x800 Lecroy shows one byte coming in extra confirming that thebyte is coming in from PC: Transfer 2959 - Bytes Transferred(1025)Timestamp((18.524 843 590) - Transaction 8391 - Data(1025 bytes)Timestamp(18.524 843 590) --- Packet 4063861 Data(1024 bytes)Duration(2.117us) Idle(14.700ns) Timestamp(18.524 843 590) --- Packet4063863 Data(1 byte) Duration(66.160ns) Time(282.000ns) Timestamp(18.524845 722) According to Windows driver, no ZLP is needed if wBlockLength isnon-zero, because the non-zero wBlockLength has already told the functionside the size of transfer to be expected. However, there are in-market NCMdevices that rely on ZLP as long as the wBlockLength is multiple ofwMaxPacketSize. To deal with such devices, it pads an extra 0 at end so thetransfer is no longer multiple of wMaxPacketSize.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27405` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-5.15.0-112-generic-lpae - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic-64k - 5.15.0-112.122\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-kvm - 5.15.0-1060.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-gke - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-ibm - 5.15.0-1056.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-nvidia - 5.15.0-1058.59\nlinux-image-unsigned-5.15.0-1058-nvidia-lowlatency - 5.15.0-1058.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-oracle - 5.15.0-1061.67\nNo subscription required\n\nlinux-image-5.15.0-1030-xilinx-zynqmp - 5.15.0-1030.34\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: usb:gadget: ncm: Avoid dropping datagrams of properly parsed NTBs It isobserved sometimes when tethering is used over NCM with Windows 11 as host,at some instances, the gadget_giveback has one byte appended at the end ofa proper NTB. When the NTB is parsed, unwrap call looks for any leftoverbytes in SKB provided by u_ether and if there are any pending bytes, ittreats them as a separate NTB and parses it. But in case the second NTB (asper unwrap call) is faulty/corrupt, all the datagrams that were parsedproperly in the first NTB and saved in rx_list are dropped. Adding a fewcustom traces showed the following: [002] d..1 7828.532866:dwc3_gadget_giveback: ep1out: req 000000003868811a length 1025/16384 zsI==> 0 [002] d..1 7828.532867: ncm_unwrap_ntb: K: ncm_unwrap_ntb toprocess:1025 [002] d..1 7828.532867: ncm_unwrap_ntb: K: ncm_unwrap_ntb nth:1751999342 [002] d..1 7828.532868: ncm_unwrap_ntb: K: ncm_unwrap_ntb seq:0xce67 [002] d..1 7828.532868: ncm_unwrap_ntb: K: ncm_unwrap_ntb blk_len:0x400 [002] d..1 7828.532868: ncm_unwrap_ntb: K: ncm_unwrap_ntb ndp_len:0x10 [002] d..1 7828.532869: ncm_unwrap_ntb: K: Parsed NTB with 1 frames Inthis case, the giveback is of 1025 bytes and block length is 1024. The rest1 byte (which is 0x00) won't be parsed resulting in drop of all datagramsin rx_list. Same is case with packets of size 2048: [002] d..1 7828.557948:dwc3_gadget_giveback: ep1out: req 0000000011dfd96e length 2049/16384 zsI==> 0 [002] d..1 7828.557949: ncm_unwrap_ntb: K: ncm_unwrap_ntb nth:1751999342 [002] d..1 7828.557950: ncm_unwrap_ntb: K: ncm_unwrap_ntbblk_len: 0x800 Lecroy shows one byte coming in extra confirming that thebyte is coming in from PC: Transfer 2959 - Bytes Transferred(1025)Timestamp((18.524 843 590) - Transaction 8391 - Data(1025 bytes)Timestamp(18.524 843 590) --- Packet 4063861 Data(1024 bytes)Duration(2.117us) Idle(14.700ns) Timestamp(18.524 843 590) --- Packet4063863 Data(1 byte) Duration(66.160ns) Time(282.000ns) Timestamp(18.524845 722) According to Windows driver, no ZLP is needed if wBlockLength isnon-zero, because the non-zero wBlockLength has already told the functionside the size of transfer to be expected. However, there are in-market NCMdevices that rely on ZLP as long as the wBlockLength is multiple ofwMaxPacketSize. To deal with such devices, it pads an extra 0 at end so thetransfer is no longer multiple of wMaxPacketSize.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27405` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-5.15.0-112-generic-lpae - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic-64k - 5.15.0-112.122\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-kvm - 5.15.0-1060.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-azure - 5.15.0-1066.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-azure-fde - 5.15.0-1065.74.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-gke - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-ibm - 5.15.0-1056.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-nvidia - 5.15.0-1058.59\nlinux-image-unsigned-5.15.0-1058-nvidia-lowlatency - 5.15.0-1058.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-oracle - 5.15.0-1061.67\nNo subscription required\n\nlinux-image-5.15.0-1030-xilinx-zynqmp - 5.15.0-1030.34\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -31,7 +31,8 @@
 				"https://ubuntu.com/security/notices/USN-6828-1",
 				"https://ubuntu.com/security/notices/USN-6820-2",
 				"https://ubuntu.com/security/notices/USN-6821-3",
-				"https://ubuntu.com/security/notices/USN-6831-1"
+				"https://ubuntu.com/security/notices/USN-6831-1",
+				"https://ubuntu.com/security/notices/USN-6821-4"
 			]
 		}
 	},
@@ -82,8 +83,8 @@
 						"comment": "linux-aws-6.5 package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
-						"comment": "linux-azure package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000030",
+						"comment": "linux-azure package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.75')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
@@ -98,8 +99,8 @@
 						"comment": "linux-azure-6.5 package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000040",
+						"comment": "linux-azure-fde package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.74.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -110,7 +111,7 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000030",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000050",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.70')."
 					},
 					{
@@ -134,7 +135,7 @@
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1046.53')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000040",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000060",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1056.59')."
 					},
 					{
@@ -142,7 +143,7 @@
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.64')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000070",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-110.120')."
 					},
 					{
@@ -158,7 +159,7 @@
 						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000080",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.59')."
 					},
 					{
@@ -170,7 +171,7 @@
 						"comment": "linux-nvidia-6.5 package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000090",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1061.67')."
 					},
 					{

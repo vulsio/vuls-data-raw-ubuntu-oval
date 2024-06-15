@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26882 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: net:ip_tunnel: make sure to pull inner header in ip_tunnel_rcv() Apply the samefix than ones found in : 8d975c15c0cd (\"ip6_tunnel: make sure to pull innerheader in __ip6_tnl_rcv()\") 1ca1ba465e55 (\"geneve: make sure to pull innerheader in geneve_rx()\") We have to save skb->network_header in a temporaryvariable in order to be able to recompute the network_header pointer aftera pskb_inet_may_pull() call. pskb_inet_may_pull() makes sure the neededheaders are in skb->head. syzbot reported: BUG: KMSAN: uninit-value in__INET_ECN_decapsulate include/net/inet_ecn.h:253 [inline] BUG: KMSAN:uninit-value in INET_ECN_decapsulate include/net/inet_ecn.h:275 [inline]BUG: KMSAN: uninit-value in IP_ECN_decapsulate include/net/inet_ecn.h:302[inline] BUG: KMSAN: uninit-value in ip_tunnel_rcv+0xed9/0x2ed0net/ipv4/ip_tunnel.c:409 __INET_ECN_decapsulate include/net/inet_ecn.h:253[inline] INET_ECN_decapsulate include/net/inet_ecn.h:275 [inline]IP_ECN_decapsulate include/net/inet_ecn.h:302 [inline]ip_tunnel_rcv+0xed9/0x2ed0 net/ipv4/ip_tunnel.c:409 __ipgre_rcv+0x9bc/0xbc0net/ipv4/ip_gre.c:389 ipgre_rcv net/ipv4/ip_gre.c:411 [inline]gre_rcv+0x423/0x19f0 net/ipv4/ip_gre.c:447 gre_rcv+0x2a4/0x390net/ipv4/gre_demux.c:163 ip_protocol_deliver_rcu+0x264/0x1300net/ipv4/ip_input.c:205 ip_local_deliver_finish+0x2b8/0x440net/ipv4/ip_input.c:233 NF_HOOK include/linux/netfilter.h:314 [inline]ip_local_deliver+0x21f/0x490 net/ipv4/ip_input.c:254 dst_inputinclude/net/dst.h:461 [inline] ip_rcv_finish net/ipv4/ip_input.c:449[inline] NF_HOOK include/linux/netfilter.h:314 [inline] ip_rcv+0x46f/0x760net/ipv4/ip_input.c:569 __netif_receive_skb_one_core net/core/dev.c:5534[inline] __netif_receive_skb+0x1a6/0x5a0 net/core/dev.c:5648netif_receive_skb_internal net/core/dev.c:5734 [inline]netif_receive_skb+0x58/0x660 net/core/dev.c:5793 tun_rx_batched+0x3ee/0x980drivers/net/tun.c:1556 tun_get_user+0x53b9/0x66e0 drivers/net/tun.c:2009tun_chr_write_iter+0x3af/0x5d0 drivers/net/tun.c:2055 call_write_iterinclude/linux/fs.h:2087 [inline] new_sync_write fs/read_write.c:497[inline] vfs_write+0xb6b/0x1520 fs/read_write.c:590 ksys_write+0x20f/0x4c0fs/read_write.c:643 __do_sys_write fs/read_write.c:655 [inline]__se_sys_write fs/read_write.c:652 [inline] __x64_sys_write+0x93/0xd0fs/read_write.c:652 do_syscall_x64 arch/x86/entry/common.c:52 [inline]do_syscall_64+0xcf/0x1e0 arch/x86/entry/common.c:83entry_SYSCALL_64_after_hwframe+0x63/0x6b Uninit was created at:__alloc_pages+0x9a6/0xe00 mm/page_alloc.c:4590 alloc_pages_mpol+0x62b/0x9d0mm/mempolicy.c:2133 alloc_pages+0x1be/0x1e0 mm/mempolicy.c:2204skb_page_frag_refill+0x2bf/0x7c0 net/core/sock.c:2909 tun_build_skbdrivers/net/tun.c:1686 [inline] tun_get_user+0xe0a/0x66e0drivers/net/tun.c:1826 tun_chr_write_iter+0x3af/0x5d0drivers/net/tun.c:2055 call_write_iter include/linux/fs.h:2087 [inline]new_sync_write fs/read_write.c:497 [inline] vfs_write+0xb6b/0x1520fs/read_write.c:590 ksys_write+0x20f/0x4c0 fs/read_write.c:643__do_sys_write fs/read_write.c:655 [inline] __se_sys_writefs/read_write.c:652 [inline] __x64_sys_write+0x93/0xd0 fs/read_write.c:652do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0xcf/0x1e0arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x63/0x6b\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26882` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic-64k - 6.8.0-35.35\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-aws - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gcp - 6.8.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-ibm - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-35-lowlatency - 6.8.0-35.35.1\nlinux-image-unsigned-6.8.0-35-lowlatency-64k - 6.8.0-35.35.1\nNo subscription required\n\nlinux-image-6.8.0-1005-raspi - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-oem - 6.8.0-1006.6\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:ip_tunnel: make sure to pull inner header in ip_tunnel_rcv() Apply the samefix than ones found in : 8d975c15c0cd (\"ip6_tunnel: make sure to pull innerheader in __ip6_tnl_rcv()\") 1ca1ba465e55 (\"geneve: make sure to pull innerheader in geneve_rx()\") We have to save skb->network_header in a temporaryvariable in order to be able to recompute the network_header pointer aftera pskb_inet_may_pull() call. pskb_inet_may_pull() makes sure the neededheaders are in skb->head. syzbot reported: BUG: KMSAN: uninit-value in__INET_ECN_decapsulate include/net/inet_ecn.h:253 [inline] BUG: KMSAN:uninit-value in INET_ECN_decapsulate include/net/inet_ecn.h:275 [inline]BUG: KMSAN: uninit-value in IP_ECN_decapsulate include/net/inet_ecn.h:302[inline] BUG: KMSAN: uninit-value in ip_tunnel_rcv+0xed9/0x2ed0net/ipv4/ip_tunnel.c:409 __INET_ECN_decapsulate include/net/inet_ecn.h:253[inline] INET_ECN_decapsulate include/net/inet_ecn.h:275 [inline]IP_ECN_decapsulate include/net/inet_ecn.h:302 [inline]ip_tunnel_rcv+0xed9/0x2ed0 net/ipv4/ip_tunnel.c:409 __ipgre_rcv+0x9bc/0xbc0net/ipv4/ip_gre.c:389 ipgre_rcv net/ipv4/ip_gre.c:411 [inline]gre_rcv+0x423/0x19f0 net/ipv4/ip_gre.c:447 gre_rcv+0x2a4/0x390net/ipv4/gre_demux.c:163 ip_protocol_deliver_rcu+0x264/0x1300net/ipv4/ip_input.c:205 ip_local_deliver_finish+0x2b8/0x440net/ipv4/ip_input.c:233 NF_HOOK include/linux/netfilter.h:314 [inline]ip_local_deliver+0x21f/0x490 net/ipv4/ip_input.c:254 dst_inputinclude/net/dst.h:461 [inline] ip_rcv_finish net/ipv4/ip_input.c:449[inline] NF_HOOK include/linux/netfilter.h:314 [inline] ip_rcv+0x46f/0x760net/ipv4/ip_input.c:569 __netif_receive_skb_one_core net/core/dev.c:5534[inline] __netif_receive_skb+0x1a6/0x5a0 net/core/dev.c:5648netif_receive_skb_internal net/core/dev.c:5734 [inline]netif_receive_skb+0x58/0x660 net/core/dev.c:5793 tun_rx_batched+0x3ee/0x980drivers/net/tun.c:1556 tun_get_user+0x53b9/0x66e0 drivers/net/tun.c:2009tun_chr_write_iter+0x3af/0x5d0 drivers/net/tun.c:2055 call_write_iterinclude/linux/fs.h:2087 [inline] new_sync_write fs/read_write.c:497[inline] vfs_write+0xb6b/0x1520 fs/read_write.c:590 ksys_write+0x20f/0x4c0fs/read_write.c:643 __do_sys_write fs/read_write.c:655 [inline]__se_sys_write fs/read_write.c:652 [inline] __x64_sys_write+0x93/0xd0fs/read_write.c:652 do_syscall_x64 arch/x86/entry/common.c:52 [inline]do_syscall_64+0xcf/0x1e0 arch/x86/entry/common.c:83entry_SYSCALL_64_after_hwframe+0x63/0x6b Uninit was created at:__alloc_pages+0x9a6/0xe00 mm/page_alloc.c:4590 alloc_pages_mpol+0x62b/0x9d0mm/mempolicy.c:2133 alloc_pages+0x1be/0x1e0 mm/mempolicy.c:2204skb_page_frag_refill+0x2bf/0x7c0 net/core/sock.c:2909 tun_build_skbdrivers/net/tun.c:1686 [inline] tun_get_user+0xe0a/0x66e0drivers/net/tun.c:1826 tun_chr_write_iter+0x3af/0x5d0drivers/net/tun.c:2055 call_write_iter include/linux/fs.h:2087 [inline]new_sync_write fs/read_write.c:497 [inline] vfs_write+0xb6b/0x1520fs/read_write.c:590 ksys_write+0x20f/0x4c0 fs/read_write.c:643__do_sys_write fs/read_write.c:655 [inline] __se_sys_writefs/read_write.c:652 [inline] __x64_sys_write+0x93/0xd0 fs/read_write.c:652do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0xcf/0x1e0arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x63/0x6b\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26882` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic-64k - 6.8.0-35.35\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-aws - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-azure - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gcp - 6.8.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-ibm - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-35-lowlatency - 6.8.0-35.35.1\nlinux-image-unsigned-6.8.0-35-lowlatency-64k - 6.8.0-35.35.1\nNo subscription required\n\nlinux-image-6.8.0-1005-raspi - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-oem - 6.8.0-1006.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240417",
 				"cvss_score": "7.8",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
-				"usns": "6816-1,6817-1,6820-1,6821-1,6821-2,6817-2,6828-1,6820-2,6821-3"
+				"usns": "6816-1,6817-1,6820-1,6821-1,6821-2,6817-2,6828-1,6820-2,6821-3,6817-3,6821-4"
 			},
 			"public_date_at_usn": "2024-04-17 11:15:00 UTC",
 			"ref": [
@@ -36,7 +36,9 @@
 				"https://ubuntu.com/security/notices/USN-6817-2",
 				"https://ubuntu.com/security/notices/USN-6828-1",
 				"https://ubuntu.com/security/notices/USN-6820-2",
-				"https://ubuntu.com/security/notices/USN-6821-3"
+				"https://ubuntu.com/security/notices/USN-6821-3",
+				"https://ubuntu.com/security/notices/USN-6817-3",
+				"https://ubuntu.com/security/notices/USN-6821-4"
 			]
 		}
 	},
@@ -55,19 +57,19 @@
 						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected. An update containing the fix has been completed and is pending publication."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
-						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1008.9')."
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000030",
-						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1008.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000050",
 						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-35.35.1')."
 					},
 					{
@@ -75,11 +77,11 @@
 						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000060",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
 					}
 				]
