@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52474 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:IB/hfi1: Fix bugs with non-PAGE_SIZE-end multi-iovec user SDMA requestshfi1 user SDMA request processing has two bugs that can cause datacorruption for user SDMA requests that have multiple payload iovecs wherean iovec other than the tail iovec does not run up to the page boundary forthe buffer pointed to by that iovec.a Here are the specific bugs: 1.user_sdma_txadd() does not use struct user_sdma_iovec->iov.iov_len. Rather,user_sdma_txadd() will add up to PAGE_SIZE bytes from iovec to the packet,even if some of those bytes are past iovec->iov.iov_len and are thus notintended to be in the packet. 2. user_sdma_txadd() anduser_sdma_send_pkts() fail to advance to the next iovec inuser_sdma_request->iovs when the current iovec is not PAGE_SIZE and doesnot contain enough data to complete the packet. The transmitted packet willcontain the wrong data from the iovec pages. This has not been an issuewith SDMA packets from hfi1 Verbs or PSM2 because they only produce iovecsthat end short of PAGE_SIZE as the tail iovec of an SDMA request. Fixingthese bugs exposes other bugs with the SDMA pin cache (structmmu_rb_handler) that get in way of supporting user SDMA requests withmultiple payload iovecs whose buffers do not end at PAGE_SIZE. So thiscommit fixes those issues as well. Here are the mmu_rb_handler bugs thatnon-PAGE_SIZE-end multi-iovec payload user SDMA requests can hit: 1.Overlapping memory ranges in mmu_rb_handler will result in duplicatepinnings. 2. When extending an existing mmu_rb_handler entry (structmmu_rb_node), the mmu_rb code (1) removes the existing entry under a lock,(2) releases that lock, pins the new pages, (3) then reacquires the lock toinsert the extended mmu_rb_node. If someone else comes in and inserts anoverlapping entry between (2) and (3), insert in (3) will fail. The failurepath code in this case unpins _all_ pages in either the originalmmu_rb_node or the new mmu_rb_node that was inserted between (2) and (3).3. In hfi1_mmu_rb_remove_unless_exact(), mmu_rb_node->refcount isincremented outside of mmu_rb_handler->lock. As a result, mmu_rb_node couldbe evicted by another thread that gets mmu_rb_handler->lock and checksmmu_rb_node->refcount before mmu_rb_node->refcount is incremented. 4.Related to #2 above, SDMA request submission failure path does not checkmmu_rb_node->refcount before freeing mmu_rb_node object. If there are otherSDMA requests in progress whose iovecs have pointers to the now-freedmmu_rb_node(s), those pointers to the now-freed mmu_rb nodes will bedereferenced when those SDMA requests complete.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:IB/hfi1: Fix bugs with non-PAGE_SIZE-end multi-iovec user SDMA requestshfi1 user SDMA request processing has two bugs that can cause datacorruption for user SDMA requests that have multiple payload iovecs wherean iovec other than the tail iovec does not run up to the page boundary forthe buffer pointed to by that iovec.a Here are the specific bugs: 1.user_sdma_txadd() does not use struct user_sdma_iovec->iov.iov_len. Rather,user_sdma_txadd() will add up to PAGE_SIZE bytes from iovec to the packet,even if some of those bytes are past iovec->iov.iov_len and are thus notintended to be in the packet. 2. user_sdma_txadd() anduser_sdma_send_pkts() fail to advance to the next iovec inuser_sdma_request->iovs when the current iovec is not PAGE_SIZE and doesnot contain enough data to complete the packet. The transmitted packet willcontain the wrong data from the iovec pages. This has not been an issuewith SDMA packets from hfi1 Verbs or PSM2 because they only produce iovecsthat end short of PAGE_SIZE as the tail iovec of an SDMA request. Fixingthese bugs exposes other bugs with the SDMA pin cache (structmmu_rb_handler) that get in way of supporting user SDMA requests withmultiple payload iovecs whose buffers do not end at PAGE_SIZE. So thiscommit fixes those issues as well. Here are the mmu_rb_handler bugs thatnon-PAGE_SIZE-end multi-iovec payload user SDMA requests can hit: 1.Overlapping memory ranges in mmu_rb_handler will result in duplicatepinnings. 2. When extending an existing mmu_rb_handler entry (structmmu_rb_node), the mmu_rb code (1) removes the existing entry under a lock,(2) releases that lock, pins the new pages, (3) then reacquires the lock toinsert the extended mmu_rb_node. If someone else comes in and inserts anoverlapping entry between (2) and (3), insert in (3) will fail. The failurepath code in this case unpins _all_ pages in either the originalmmu_rb_node or the new mmu_rb_node that was inserted between (2) and (3).3. In hfi1_mmu_rb_remove_unless_exact(), mmu_rb_node->refcount isincremented outside of mmu_rb_handler->lock. As a result, mmu_rb_node couldbe evicted by another thread that gets mmu_rb_handler->lock and checksmmu_rb_node->refcount before mmu_rb_node->refcount is incremented. 4.Related to #2 above, SDMA request submission failure path does not checkmmu_rb_node->refcount before freeing mmu_rb_node object. If there are otherSDMA requests in progress whose iovecs have pointers to the now-freedmmu_rb_node(s), those pointers to the now-freed mmu_rb nodes will bedereferenced when those SDMA requests complete.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52474` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic-64k - 6.5.0-14.14~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-14-lowlatency - 6.5.0-14.14.1~22.04.1\nlinux-image-unsigned-6.5.0-14-lowlatency-64k - 6.5.0-14.14.1~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1003-oem - 6.5.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1007-starfive - 6.5.0-1007.8~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-gcp - 6.5.0-1010.10~22.04.3\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1013-oracle - 6.5.0-1013.13~22.04.4\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -35,7 +35,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000000",
-						"comment": "linux package in jammy is affected and may need fixing."
+						"comment": "linux package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-79.86')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
@@ -46,12 +46,12 @@
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
-						"comment": "linux-hwe-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2019251600000000",
+						"comment": "linux-hwe-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-14.14~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
-						"comment": "linux-kvm package in jammy is affected and may need fixing."
+						"comment": "linux-kvm package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1039.44')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
@@ -59,7 +59,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000010",
-						"comment": "linux-aws package in jammy is affected and may need fixing."
+						"comment": "linux-aws package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1042.47')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
@@ -71,7 +71,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
-						"comment": "linux-azure package in jammy is affected and may need fixing."
+						"comment": "linux-azure package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1044.51')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
@@ -83,7 +83,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"comment": "linux-azure-fde package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1044.51')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -95,7 +95,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
-						"comment": "linux-gcp package in jammy is affected and may need fixing."
+						"comment": "linux-gcp package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1039.47')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
@@ -107,23 +107,23 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
-						"comment": "linux-gke package in jammy is affected and may need fixing."
+						"comment": "linux-gke package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1039.44')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000080",
-						"comment": "linux-gkeop package in jammy is affected and may need fixing."
+						"comment": "linux-gkeop package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1025.30')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-ibm package in jammy is affected and may need fixing."
+						"comment": "linux-ibm package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1035.38')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
-						"comment": "linux-intel-iotg package in jammy is affected and may need fixing."
+						"comment": "linux-intel-iotg package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1037.42')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
-						"comment": "linux-lowlatency package in jammy is affected and may need fixing."
+						"comment": "linux-lowlatency package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-79.88')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
@@ -134,12 +134,12 @@
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
-						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2019251600000010",
+						"comment": "linux-lowlatency-hwe-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-14.14.1~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
-						"comment": "linux-nvidia package in jammy is affected and may need fixing."
+						"comment": "linux-nvidia package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1030.30')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
@@ -147,7 +147,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000060",
-						"comment": "linux-oracle package in jammy is affected and may need fixing."
+						"comment": "linux-oracle package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1040.46')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
@@ -162,12 +162,12 @@
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5, was needs-triage')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
-						"comment": "linux-oem-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2019251600000030",
+						"comment": "linux-oem-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1003.3')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
-						"comment": "linux-raspi package in jammy is affected and may need fixing."
+						"comment": "linux-raspi package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1035.38')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
@@ -178,32 +178,32 @@
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
-						"comment": "linux-starfive-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2019251600000040",
+						"comment": "linux-starfive-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.8~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
-						"comment": "linux-xilinx-zynqmp package in jammy is affected and may need fixing."
+						"comment": "linux-xilinx-zynqmp package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1025.29')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
-						"comment": "linux-aws-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2019251600000050",
+						"comment": "linux-aws-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8~22.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
-						"comment": "linux-azure-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2019251600000060",
+						"comment": "linux-azure-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7~22.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
-						"comment": "linux-gcp-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2019251600000070",
+						"comment": "linux-gcp-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10~22.04.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
-						"comment": "linux-oracle-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2019251600000080",
+						"comment": "linux-oracle-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1013.13~22.04.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
-						"comment": "linux-nvidia-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2021471940000000",
+						"comment": "linux-nvidia-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1004.4')."
 					}
 				]
 			}

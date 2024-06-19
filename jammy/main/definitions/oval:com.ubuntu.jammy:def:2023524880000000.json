@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52488 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: serial:sc16is7xx: convert from _raw_ to _noinc_ regmap functions for FIFO TheSC16IS7XX IC supports a burst mode to access the FIFOs where the initialregister address is sent ($00), followed by all the FIFO data withouthaving to resend the register address each time. In this mode, the ICdoesn't increment the register address for each R/W byte. Theregmap_raw_read() and regmap_raw_write() are functions which can perform IOover multiple registers. They are currently used to read/write from/to theFIFO, and although they operate correctly in this burst mode on the SPIbus, they would corrupt the regmap cache if it was not disabled manually.The reason is that when the R/W size is more than 1 byte, these functionsassume that the register address is incremented and handle the cacheaccordingly. Convert FIFO R/W functions to use the regmap _noinc_ versionsin order to remove the manual cache control which was a workaround whenusing the _raw_ versions. FIFO registers are properly declared as volatileso cache will not be used/updated for FIFO accesses.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52488` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-6.5.0-1022-azure - 6.5.0-1022.23~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-gcp - 6.5.0-1022.24~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-41-lowlatency - 6.5.0-41.41.1~22.04.1\nlinux-image-unsigned-6.5.0-41-lowlatency-64k - 6.5.0-41.41.1~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1024-oem - 6.5.0-1024.25\nNo subscription required\n\nlinux-image-6.5.0-1015-starfive - 6.5.0-1015.16~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1021-nvidia - 6.5.0-1021.22\nlinux-image-unsigned-6.5.0-1021-nvidia-64k - 6.5.0-1021.22\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: serial:sc16is7xx: convert from _raw_ to _noinc_ regmap functions for FIFO TheSC16IS7XX IC supports a burst mode to access the FIFOs where the initialregister address is sent ($00), followed by all the FIFO data withouthaving to resend the register address each time. In this mode, the ICdoesn't increment the register address for each R/W byte. Theregmap_raw_read() and regmap_raw_write() are functions which can perform IOover multiple registers. They are currently used to read/write from/to theFIFO, and although they operate correctly in this burst mode on the SPIbus, they would corrupt the regmap cache if it was not disabled manually.The reason is that when the R/W size is more than 1 byte, these functionsassume that the register address is incremented and handle the cacheaccordingly. Convert FIFO R/W functions to use the regmap _noinc_ versionsin order to remove the manual cache control which was a workaround whenusing the _raw_ versions. FIFO registers are properly declared as volatileso cache will not be used/updated for FIFO accesses.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52488` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-41-generic - 6.5.0-41.41~22.04.2\nlinux-image-unsigned-6.5.0-41-generic - 6.5.0-41.41~22.04.2\nlinux-image-unsigned-6.5.0-41-generic-64k - 6.5.0-41.41~22.04.2\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-azure - 6.5.0-1022.23~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1022-gcp - 6.5.0-1022.24~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-41-lowlatency - 6.5.0-41.41.1~22.04.1\nlinux-image-unsigned-6.5.0-41-lowlatency-64k - 6.5.0-41.41.1~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1024-oem - 6.5.0-1024.25\nNo subscription required\n\nlinux-image-6.5.0-1015-starfive - 6.5.0-1015.16~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1021-nvidia - 6.5.0-1021.22\nlinux-image-unsigned-6.5.0-1021-nvidia-64k - 6.5.0-1021.22\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -30,7 +30,8 @@
 				"https://ubuntu.com/security/notices/USN-6818-2",
 				"https://ubuntu.com/security/notices/USN-6819-2",
 				"https://ubuntu.com/security/notices/USN-6819-3",
-				"https://ubuntu.com/security/notices/USN-6818-3"
+				"https://ubuntu.com/security/notices/USN-6818-3",
+				"https://ubuntu.com/security/notices/USN-6818-4"
 			]
 		}
 	},
@@ -53,8 +54,8 @@
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
-						"comment": "linux-hwe-6.5 package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000000",
+						"comment": "linux-hwe-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-41.41~22.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
@@ -93,7 +94,7 @@
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000030",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000040",
 						"comment": "linux-azure-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-1022.23~22.04.1')."
 					},
 					{
@@ -121,7 +122,7 @@
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000040",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000050",
 						"comment": "linux-gcp-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-1022.24~22.04.1')."
 					},
 					{
@@ -153,7 +154,7 @@
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000000",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000010",
 						"comment": "linux-lowlatency-hwe-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-41.41.1~22.04.1')."
 					},
 					{
@@ -185,7 +186,7 @@
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5, was needs-triage')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000010",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000020",
 						"comment": "linux-oem-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-1024.25')."
 					},
 					{
@@ -201,7 +202,7 @@
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000020",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000030",
 						"comment": "linux-starfive-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-1015.16~22.04.1')."
 					},
 					{
@@ -209,7 +210,7 @@
 						"comment": "linux-xilinx-zynqmp package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524430000060",
 						"comment": "linux-nvidia-6.5 package in jammy was vulnerable but has been fixed (note: '6.5.0-1021.22')."
 					}
 				]
