@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52562 on Ubuntu 23.10 (mantic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/slab_common: fix slab_caches list corruption after kmem_cache_destroy()After the commit in Fixes:, if a module that created a slab cache does notrelease all of its allocated objects before destroying the cache (at rmmodtime), we might end up releasing the kmem_cache object without removing itfrom the slab_caches list thus corrupting the list as kmem_cache_destroy()ignores the return value from shutdown_cache(), which in turn never removesthe kmem_cache object from slabs_list in case __kmem_cache_shutdown() failsto release all of the cache's slabs. This is easily observable on a kernelbuilt with CONFIG_DEBUG_LIST=y as after that ill release the system willimmediately trip on list_add, or list_del, assertions similar to the oneshown below as soon as another kmem_cache gets created, or destroyed: [1041.213632] list_del corruption. next->prev should be ffff89f596fb5768,but was 52f1e5016aeee75d. (next=ffff89f595a1b268) [ 1041.219165]------------[ cut here ]------------ [ 1041.221517] kernel BUG atlib/list_debug.c:62! [ 1041.223452] invalid opcode: 0000 [#1] PREEMPT SMPPTI [ 1041.225408] CPU: 2 PID: 1852 Comm: rmmod Kdump: loaded Tainted: G BW OE 6.5.0 #15 [ 1041.228244] Hardware name: QEMU Standard PC (Q35 + ICH9,2009), BIOS edk2-20230524-3.fc37 05/24/2023 [ 1041.231212] RIP:0010:__list_del_entry_valid+0xae/0xb0 Another quick way to trigger thisissue, in a kernel with CONFIG_SLUB=y, is to set slub_debug to poison thereleased objects and then just run cat /proc/slabinfo after removing themodule that leaks slab objects, in which case the kernel will panic: [50.954843] general protection fault, probably for non-canonical address0xa56b6b6b6b6b6b8b: 0000 [#1] PREEMPT SMP PTI [ 50.961545] CPU: 2 PID: 1495Comm: cat Kdump: loaded Tainted: G B W OE 6.5.0 #15 [ 50.966808] Hardwarename: QEMU Standard PC (Q35 + ICH9, 2009), BIOS edk2-20230524-3.fc3705/24/2023 [ 50.972663] RIP: 0010:get_slabinfo+0x42/0xf0 This patch fixesthis issue by properly checking shutdown_cache()'s return value beforetaking the kmem_cache_release() branch.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/slab_common: fix slab_caches list corruption after kmem_cache_destroy()After the commit in Fixes:, if a module that created a slab cache does notrelease all of its allocated objects before destroying the cache (at rmmodtime), we might end up releasing the kmem_cache object without removing itfrom the slab_caches list thus corrupting the list as kmem_cache_destroy()ignores the return value from shutdown_cache(), which in turn never removesthe kmem_cache object from slabs_list in case __kmem_cache_shutdown() failsto release all of the cache's slabs. This is easily observable on a kernelbuilt with CONFIG_DEBUG_LIST=y as after that ill release the system willimmediately trip on list_add, or list_del, assertions similar to the oneshown below as soon as another kmem_cache gets created, or destroyed: [1041.213632] list_del corruption. next->prev should be ffff89f596fb5768,but was 52f1e5016aeee75d. (next=ffff89f595a1b268) [ 1041.219165]------------[ cut here ]------------ [ 1041.221517] kernel BUG atlib/list_debug.c:62! [ 1041.223452] invalid opcode: 0000 [#1] PREEMPT SMPPTI [ 1041.225408] CPU: 2 PID: 1852 Comm: rmmod Kdump: loaded Tainted: G BW OE 6.5.0 #15 [ 1041.228244] Hardware name: QEMU Standard PC (Q35 + ICH9,2009), BIOS edk2-20230524-3.fc37 05/24/2023 [ 1041.231212] RIP:0010:__list_del_entry_valid+0xae/0xb0 Another quick way to trigger thisissue, in a kernel with CONFIG_SLUB=y, is to set slub_debug to poison thereleased objects and then just run cat /proc/slabinfo after removing themodule that leaks slab objects, in which case the kernel will panic: [50.954843] general protection fault, probably for non-canonical address0xa56b6b6b6b6b6b8b: 0000 [#1] PREEMPT SMP PTI [ 50.961545] CPU: 2 PID: 1495Comm: cat Kdump: loaded Tainted: G B W OE 6.5.0 #15 [ 50.966808] Hardwarename: QEMU Standard PC (Q35 + ICH9, 2009), BIOS edk2-20230524-3.fc3705/24/2023 [ 50.972663] RIP: 0010:get_slabinfo+0x42/0xf0 This patch fixesthis issue by properly checking shutdown_cache()'s return value beforetaking the kmem_cache_release() branch.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52562` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-17-generic - 6.5.0-17.17\nlinux-image-unsigned-6.5.0-17-generic - 6.5.0-17.17\nlinux-image-unsigned-6.5.0-17-generic-64k - 6.5.0-17.17\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1013-aws - 6.5.0-1013.13\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-azure - 6.5.0-1013.13\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1013-gcp - 6.5.0-1013.13\nNo subscription required\n\nlinux-image-6.5.0-1009-laptop - 6.5.0-1009.12\nNo subscription required\n\nlinux-image-unsigned-6.5.0-17-lowlatency - 6.5.0-17.17.1\nlinux-image-unsigned-6.5.0-17-lowlatency-64k - 6.5.0-17.17.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1015-oracle - 6.5.0-1015.15\nNo subscription required\n\nlinux-image-6.5.0-1010-raspi - 6.5.0-1010.13\nNo subscription required\n\nlinux-image-6.5.0-1007-starfive - 6.5.0-1007.8\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
-						"comment": "linux package in mantic is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-17.17')."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023343240000000",
+						"comment": "linux package in mantic was vulnerable but has been fixed (note: '6.5.0-17.17')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
-						"comment": "linux-aws package in mantic is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1013.13')."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023343240000010",
+						"comment": "linux-aws package in mantic was vulnerable but has been fixed (note: '6.5.0-1013.13')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
-						"comment": "linux-azure package in mantic is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1013.13')."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023343240000010",
+						"comment": "linux-azure package in mantic was vulnerable but has been fixed (note: '6.5.0-1013.13')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
-						"comment": "linux-gcp package in mantic is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1013.13')."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023343240000010",
+						"comment": "linux-gcp package in mantic was vulnerable but has been fixed (note: '6.5.0-1013.13')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
 						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
-						"comment": "linux-laptop package in mantic is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1009.12')."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023343240000060",
+						"comment": "linux-laptop package in mantic was vulnerable but has been fixed (note: '6.5.0-1009.12')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
-						"comment": "linux-lowlatency package in mantic is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-17.17.1')."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023343240000030",
+						"comment": "linux-lowlatency package in mantic was vulnerable but has been fixed (note: '6.5.0-17.17.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
-						"comment": "linux-oracle package in mantic is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1015.15')."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023343240000020",
+						"comment": "linux-oracle package in mantic was vulnerable but has been fixed (note: '6.5.0-1015.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
-						"comment": "linux-raspi package in mantic is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1010.13')."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023343240000040",
+						"comment": "linux-raspi package in mantic was vulnerable but has been fixed (note: '6.5.0-1010.13')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
-						"comment": "linux-starfive package in mantic is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1007.8')."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2023343240000050",
+						"comment": "linux-starfive package in mantic was vulnerable but has been fixed (note: '6.5.0-1007.8')."
 					}
 				]
 			}
