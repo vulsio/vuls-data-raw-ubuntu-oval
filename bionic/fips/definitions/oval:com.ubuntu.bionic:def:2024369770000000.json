@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024369770000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36977 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: dwc3: Wait unconditionally after issuing EndXfer commandCurrently all controller IP/revisions except DWC3_usb3 >= 310await 1ms unconditionally for ENDXFER completion when IOC is notset. This is because DWC_usb3 controller revisions >= 3.10asupports GUCTL2[14: Rst_actbitlater] bit which allows pollingCMDACT bit to know whether ENDXFER command is completed.Consider a case where an IN request was queued, and parallellysoft_disconnect was called (due to ffs_epfile_release). Thiseventually calls stop_active_transfer with IOC cleared, hencesend_gadget_ep_cmd() skips waiting for CMDACT cleared duringEndXfer. For DWC3 controllers with revisions >= 310a, we don'tforcefully wait for 1ms either, and we proceed by unmapping therequests. If ENDXFER didn't complete by this time, it leads toSMMU faults since the controller would still be accessing thoserequests.Fix this by ensuring ENDXFER completion by adding 1ms delay in__dwc3_stop_active_transfer() unconditionally.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36977",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36977"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-18 20:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36977",
+				"href": "https://ubuntu.com/security/CVE-2024-36977",
+				"public": "20240618"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
