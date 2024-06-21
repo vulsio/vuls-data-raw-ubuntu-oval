@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024386020000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-38602 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ax25: Fix reference count leak issues of ax25_devThe ax25_addr_ax25dev() and ax25_dev_device_down() exist a referencecount leak issue of the object \"ax25_dev\".Memory leak issue in ax25_addr_ax25dev():The reference count of the object \"ax25_dev\" can be increased multipletimes in ax25_addr_ax25dev(). This will cause a memory leak.Memory leak issues in ax25_dev_device_down():The reference count of ax25_dev is set to 1 in ax25_dev_device_up() andthen increase the reference count when ax25_dev is added to ax25_dev_list.As a result, the reference count of ax25_dev is 2. But when the device isshutting down. The ax25_dev_device_down() drops the reference count onceor twice depending on if we goto unlock_put or not, which will causememory leak.As for the issue of ax25_addr_ax25dev(), it is impossible for one pointerto be on a list twice. So add a break in ax25_addr_ax25dev(). As for theissue of ax25_dev_device_down(), increase the reference count of ax25_devonce in ax25_dev_device_up() and decrease the reference count of ax25_devafter it is removed from the ax25_dev_list.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-38602",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-38602"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2024-38602",
+				"href": "https://ubuntu.com/security/CVE-2024-38602",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

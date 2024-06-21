@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2021476030000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47603 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:audit: improve robustness of the audit queue handlingIf the audit daemon were ever to get stuck in a stopped state thekernel's kauditd_thread() could get blocked attempting to send auditrecords to the userspace audit daemon.  With the kernel threadblocked it is possible that the audit queue could grow unbounded ascertain audit record generating events must be exempt from the queuelimits else the system enter a deadlock state.This patch resolves this problem by lowering the kernel thread'ssocket sending timeout from MAX_SCHEDULE_TIMEOUT to HZ/10 and tweaksthe kauditd_send_queue() function to better manage the various auditqueues when connection problems occur between the kernel and theaudit daemon.  With this patch, the backlog may temporarily growbeyond the defined limits when the audit daemon is stopped and thesystem is under heavy audit pressure, but kauditd_thread() willcontinue to make progress and drain the queues as it would for otherconnection problems.  For example, with the audit daemon put into astopped state and the system configured to audit every syscall itwas still possible to shutdown the system without a kernel panic,deadlock, etc.; granted, the system was slow to shutdown but that isto be expected given the extreme pressure of recording every syscall.The timeout value of HZ/10 was chosen primarily throughexperimentation and this developer's \"gut feeling\".  There is likelyno one perfect value, but as this scenario is limited in scope (rootprivileges would be needed to send SIGSTOP to the audit daemon), itis likely not worth exposing this as a tunable at present.  This canalways be done at a later date if it proves necessary.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47603",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47603"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2021-47603",
+				"href": "https://ubuntu.com/security/CVE-2021-47603",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

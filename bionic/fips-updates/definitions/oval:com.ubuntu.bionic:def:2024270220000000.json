@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27022 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: fork:defer linking file vma until vma is fully initialized Thorvald reported aWARNING [1]. And the root cause is below race: CPU 1 CPU 2 forkhugetlbfs_fallocate dup_mmap hugetlbfs_punch_holei_mmap_lock_write(mapping); vma_interval_tree_insert_after -- Child vma isvisible through i_mmap tree. i_mmap_unlock_write(mapping);hugetlb_dup_vma_private -- Clear vma_lock outside i_mmap_rwsem!i_mmap_lock_write(mapping); hugetlb_vmdelete_list vma_interval_tree_foreachhugetlb_vma_trylock_write -- Vma_lock is cleared. tmp->vm_ops->open --Alloc new vma_lock outside i_mmap_rwsem! hugetlb_vma_unlock_write --Vma_lock is assigned!!! i_mmap_unlock_write(mapping);hugetlb_dup_vma_private() and hugetlb_vm_op_open() are called outsidei_mmap_rwsem lock while vma lock can be used in the same time. Fix this bydeferring linking file vma until vma is fully initialized. Those vmasshould be initialized first before they can be used.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: fork:defer linking file vma until vma is fully initialized Thorvald reported aWARNING [1]. And the root cause is below race: CPU 1 CPU 2 forkhugetlbfs_fallocate dup_mmap hugetlbfs_punch_holei_mmap_lock_write(mapping); vma_interval_tree_insert_after -- Child vma isvisible through i_mmap tree. i_mmap_unlock_write(mapping);hugetlb_dup_vma_private -- Clear vma_lock outside i_mmap_rwsem!i_mmap_lock_write(mapping); hugetlb_vmdelete_list vma_interval_tree_foreachhugetlb_vma_trylock_write -- Vma_lock is cleared. tmp->vm_ops->open --Alloc new vma_lock outside i_mmap_rwsem! hugetlb_vma_unlock_write --Vma_lock is assigned!!! i_mmap_unlock_write(mapping);hugetlb_dup_vma_private() and hugetlb_vm_op_open() are called outsidei_mmap_rwsem lock while vma lock can be used in the same time. Fix this bydeferring linking file vma until vma is fully initialized. Those vmasshould be initialized first before they can be used.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27022` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2103-aws-fips - 4.15.0-2103.109\nlinux-image-unsigned-hmac-4.15.0-2103-aws-fips - 4.15.0-2103.109\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2082-azure-fips - 4.15.0-2082.88\nlinux-image-unsigned-hmac-4.15.0-2082-azure-fips - 4.15.0-2082.88\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nlinux-image-unsigned-hmac-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Compliant"
@@ -34,20 +34,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2020363860000000",
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1119.130')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2020363860000010",
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2103.109')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2020363860000020",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2082.88')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2020363860000030",
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2066.71')."
 					}
 				]
 			}

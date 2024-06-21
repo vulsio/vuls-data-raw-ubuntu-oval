@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024386050000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-38605 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ALSA: core: Fix NULL module pointer assignment at card initThe commit 81033c6b584b (\"ALSA: core: Warn on empty module\")introduced a WARN_ON() for a NULL module pointer passed at snd_cardobject creation, and it also wraps the code around it with '#ifdefMODULE'.  This works in most cases, but the devils are always indetails.  \"MODULE\" is defined when the target code (i.e. the soundcore) is built as a module; but this doesn't mean that the caller isalso built-in or not.  Namely, when only the sound core is built-in(CONFIG_SND=y) while the driver is a module (CONFIG_SND_USB_AUDIO=m),the passed module pointer is ignored even if it's non-NULL, andcard->module remains as NULL.  This would result in the missing modulereference up/down at the device open/close, leading to a race with thecode execution after the module removal.For addressing the bug, move the assignment of card->module again outof ifdef.  The WARN_ON() is still wrapped with ifdef because themodule can be really NULL when all sound drivers are built-in.Note that we keep 'ifdef MODULE' for WARN_ON(), otherwise it wouldlead to a false-positive NULL module check.  Admittedly it won't catchperfectly, i.e. no check is performed when CONFIG_SND=y.  But, it's noreal problem as it's only for debugging, and the condition is prettyrare.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-38605",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-38605"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2024-38605",
+				"href": "https://ubuntu.com/security/CVE-2024-38605",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

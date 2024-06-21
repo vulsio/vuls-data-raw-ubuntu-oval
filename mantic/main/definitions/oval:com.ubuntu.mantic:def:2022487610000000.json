@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2022487610000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48761 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: xhci-plat: fix crash when suspend if remote wake enableCrashed at i.mx8qm platform when suspend if enable remote wakeupInternal error: synchronous external abort: 96000210 [#1] PREEMPT SMPModules linked in:CPU: 2 PID: 244 Comm: kworker/u12:6 Not tainted 5.15.5-dirty #12Hardware name: Freescale i.MX8QM MEK (DT)Workqueue: events_unbound async_run_entry_fnpstate: 600000c5 (nZCv daIF -PAN -UAO -TCO -DIT -SSBS BTYPE=--)pc : xhci_disable_hub_port_wake.isra.62+0x60/0xf8lr : xhci_disable_hub_port_wake.isra.62+0x34/0xf8sp : ffff80001394bbf0x29: ffff80001394bbf0 x28: 0000000000000000 x27: ffff00081193b578x26: ffff00081193b570 x25: 0000000000000000 x24: 0000000000000000x23: ffff00081193a29c x22: 0000000000020001 x21: 0000000000000001x20: 0000000000000000 x19: ffff800014e90490 x18: 0000000000000000x17: 0000000000000000 x16: 0000000000000000 x15: 0000000000000000x14: 0000000000000000 x13: 0000000000000002 x12: 0000000000000000x11: 0000000000000000 x10: 0000000000000960 x9 : ffff80001394baa0x8 : ffff0008145d1780 x7 : ffff0008f95b8e80 x6 : 000000001853b453x5 : 0000000000000496 x4 : 0000000000000000 x3 : ffff00081193a29cx2 : 0000000000000001 x1 : 0000000000000000 x0 : ffff000814591620Call trace: xhci_disable_hub_port_wake.isra.62+0x60/0xf8 xhci_suspend+0x58/0x510 xhci_plat_suspend+0x50/0x78 platform_pm_suspend+0x2c/0x78 dpm_run_callback.isra.25+0x50/0xe8 __device_suspend+0x108/0x3c0The basic flow:\t1. run time suspend call xhci_suspend, xhci parent devices gate the clock.        2. echo mem >/sys/power/state, system _device_suspend callxhci_suspend        3. xhci_suspend call xhci_disable_hub_port_wake, which accessregister,\t   but clock already gated by run time suspend.This problem was hidden by power domain driver, which call run time resumebefore it.But the below commit remove it and make this issue happen.\tcommit c1df456d0f06e (\"PM: domains: Don't runtime resume devices atgenpd_prepare()\")This patch call run time resume before suspend to make sure clock is onbefore access register.Testeb-by: Abel Vesa <abel.vesa@nxp.com>",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48761",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48761"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2022-48761",
+				"href": "https://ubuntu.com/security/CVE-2022-48761",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

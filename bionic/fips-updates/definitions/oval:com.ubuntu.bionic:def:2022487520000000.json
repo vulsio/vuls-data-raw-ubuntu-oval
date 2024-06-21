@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2022487520000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48752 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/perf: Fix power_pmu_disable to call clear_pmi_irq_pending only ifPMI is pendingRunning selftest with CONFIG_PPC_IRQ_SOFT_MASK_DEBUG enabled in kerneltriggered below warning:[  172.851380] ------------[ cut here ]------------[  172.851391] WARNING: CPU: 8 PID: 2901 atarch/powerpc/include/asm/hw_irq.h:246 power_pmu_disable+0x270/0x280[  172.851402] Modules linked in: dm_mod bonding nft_ct nf_conntracknf_defrag_ipv6 nf_defrag_ipv4 ip_set nf_tables rfkill nfnetlink sunrpc xfslibcrc32c pseries_rng xts vmx_crypto uio_pdrv_genirq uio sch_fq_codelip_tables ext4 mbcache jbd2 sd_mod t10_pi sg ibmvscsi ibmvethscsi_transport_srp fuse[  172.851442] CPU: 8 PID: 2901 Comm: lost_exception_ Not tainted5.16.0-rc5-03218-g798527287598 #2[  172.851451] NIP:  c00000000013d600 LR: c00000000013d5a4 CTR:c00000000013b180[  172.851458] REGS: c000000017687860 TRAP: 0700   Not tainted(5.16.0-rc5-03218-g798527287598)[  172.851465] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 48004884XER: 20040000[  172.851482] CFAR: c00000000013d5b4 IRQMASK: 1[  172.851482] GPR00: c00000000013d5a4 c000000017687b00 c000000002a106000000000000000004[  172.851482] GPR04: 0000000082004000 c0000008ba08f0a8 000000000000000000000008b7ed0000[  172.851482] GPR08: 00000000446194f6 0000000000008000 c00000000013b118c000000000d58e68[  172.851482] GPR12: c00000000013d390 c00000001ec54a80 00000000000000000000000000000000[  172.851482] GPR16: 0000000000000000 0000000000000000 c000000015d5c708c0000000025396d0[  172.851482] GPR20: 0000000000000000 0000000000000000 c00000000a3bbf400000000000000003[  172.851482] GPR24: 0000000000000000 c0000008ba097400 c0000000161e0d00c00000000a3bb600[  172.851482] GPR28: c000000015d5c700 0000000000000001 0000000082384090c0000008ba0020d8[  172.851549] NIP [c00000000013d600] power_pmu_disable+0x270/0x280[  172.851557] LR [c00000000013d5a4] power_pmu_disable+0x214/0x280[  172.851565] Call Trace:[  172.851568] [c000000017687b00] [c00000000013d5a4]power_pmu_disable+0x214/0x280 (unreliable)[  172.851579] [c000000017687b40] [c0000000003403ac]perf_pmu_disable+0x4c/0x60[  172.851588] [c000000017687b60] [c0000000003445e4]__perf_event_task_sched_out+0x1d4/0x660[  172.851596] [c000000017687c50] [c000000000d1175c]__schedule+0xbcc/0x12a0[  172.851602] [c000000017687d60] [c000000000d11ea8] schedule+0x78/0x140[  172.851608] [c000000017687d90] [c0000000001a8080]sys_sched_yield+0x20/0x40[  172.851615] [c000000017687db0] [c0000000000334dc]system_call_exception+0x18c/0x380[  172.851622] [c000000017687e10] [c00000000000c74c]system_call_common+0xec/0x268The warning indicates that MSR_EE being set(interrupt enabled) whenthere was an overflown PMC detected. This could happen inpower_pmu_disable since it runs under interrupt soft disablecondition ( local_irq_save ) and not with interrupts hard disabled.commit 2c9ac51b850d (\"powerpc/perf: Fix PMU callbacks to clearpending PMI before resetting an overflown PMC\") intended to clearPMI pending bit in Paca when disabling the PMU. It could happenthat PMC gets overflown while code is in power_pmu_disablecallback function. Hence add a check to see if PMI pending bitis set in Paca before clearing it via clear_pmi_pending.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48752",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48752"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2022-48752",
+				"href": "https://ubuntu.com/security/CVE-2022-48752",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

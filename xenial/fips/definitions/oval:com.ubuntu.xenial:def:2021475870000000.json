@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021475870000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47587 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: systemport: Add global locking for descriptor lifecycleThe descriptor list is a shared resource across all of the transmit queues,andthe locking mechanism used today only protects concurrency across a giventransmit queue between the transmit and reclaiming. This creates anopportunityfor the SYSTEMPORT hardware to work on corrupted descriptors if we havemultiple producers at once which is the case when using multiple transmitqueues.This was particularly noticeable when using multiple flows/transmit queuesandit showed up in interesting ways in that UDP packets would get a correctUDPheader checksum being calculated over an incorrect packet length. SimilarlyTCPpackets would get an equally correct checksum computed by the hardware overanincorrect packet length.The SYSTEMPORT hardware maintains an internal descriptor list that itre-arrangeswhen the driver produces a new descriptor anytime it writes to theWRITE_PORT_{HI,LO} registers, there is however some delay in the hardwaretore-organize its descriptors and it is possible that concurrent TX queueseventually break this internal allocation scheme to the point where thelength/status part of the descriptor gets used for an incorrect databuffer.The fix is to impose a global serialization for all TX queues in the shortsection where we are writing to the WRITE_PORT_{HI,LO} registers whichsolvesthe corruption even with multiple concurrent TX queues being used.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47587",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47587"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2021-47587",
+				"href": "https://ubuntu.com/security/CVE-2021-47587",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

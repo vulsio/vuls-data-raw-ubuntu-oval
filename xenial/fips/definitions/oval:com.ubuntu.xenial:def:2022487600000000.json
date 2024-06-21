@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2022487600000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48760 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: core: Fix hang in usb_kill_urb by adding memory barriersThe syzbot fuzzer has identified a bug in which processes hang waitingfor usb_kill_urb() to return.  It turns out the issue is not unlinkingthe URB; that works just fine.  Rather, the problem arises when thewakeup notification that the URB has completed is not received.The reason is memory-access ordering on SMP systems.  In outline form,usb_kill_urb() and __usb_hcd_giveback_urb() operating concurrently ondifferent CPUs perform the following actions:CPU 0\t\t\t\t\tCPU 1----------------------------\t\t---------------------------------usb_kill_urb():\t\t\t\t__usb_hcd_giveback_urb():  ...\t\t\t\t\t  ...  atomic_inc(&urb->reject);\t\t  atomic_dec(&urb->use_count);  ...\t\t\t\t\t  ...  wait_event(usb_kill_urb_queue,\tatomic_read(&urb->use_count) == 0);\t\t\t\t\t  if (atomic_read(&urb->reject))\t\t\t\t\t\twake_up(&usb_kill_urb_queue);Confining your attention to urb->reject and urb->use_count, you cansee that the overall pattern of accesses on CPU 0 is:\twrite urb->reject, then read urb->use_count;whereas the overall pattern of accesses on CPU 1 is:\twrite urb->use_count, then read urb->reject.This pattern is referred to in memory-model circles as SB (for \"StoreBuffering\"), and it is well known that without suitable enforcement ofthe desired order of accesses -- in the form of memory barriers -- itis entirely possible for one or both CPUs to execute their reads aheadof their writes.  The end result will be that sometimes CPU 0 sees theold un-decremented value of urb->use_count while CPU 1 sees the oldun-incremented value of urb->reject.  Consequently CPU 0 ends up onthe wait queue and never gets woken up, leading to the observed hangin usb_kill_urb().The same pattern of accesses occurs in usb_poison_urb() and thefailure pathway of usb_hcd_submit_urb().The problem is fixed by adding suitable memory barriers.  To provideproper memory-access ordering in the SB pattern, a full barrier isrequired on both CPUs.  The atomic_inc() and atomic_dec() accessesthemselves don't provide any memory ordering, but since they arepresent, we can use the optimized smp_mb__after_atomic() memorybarrier in the various routines to obtain the desired effect.This patch adds the necessary memory barriers.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48760",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48760"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2022-48760",
+				"href": "https://ubuntu.com/security/CVE-2022-48760",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

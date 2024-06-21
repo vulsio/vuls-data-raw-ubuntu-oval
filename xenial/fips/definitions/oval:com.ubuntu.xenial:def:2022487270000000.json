@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2022487270000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48727 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: arm64: Avoid consuming a stale esr value when SError occurWhen any exception other than an IRQ occurs, the CPU updates the ESR_EL2register with the exception syndrome. An SError may also become pending,and will be synchronised by KVM. KVM notes the exception type, and whetheran SError was synchronised in exit_code.When an exception other than an IRQ occurs, fixup_guest_exit() updatesvcpu->arch.fault.esr_el2 from the hardware register. When an SError wassynchronised, the vcpu esr value is used to determine if the exceptionwas due to an HVC. If so, ELR_EL2 is moved back one instruction. Thisis so that KVM can process the SError first, and re-execute the HVC ifthe guest survives the SError.But if an IRQ synchronises an SError, the vcpu's esr value is stale.If the previous non-IRQ exception was an HVC, KVM will corrupt ELR_EL2,causing an unrelated guest instruction to be executed twice.Check ARM_EXCEPTION_CODE() before messing with ELR_EL2, IRQs don'tupdate this register so don't need to check.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48727",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48727"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2022-48727",
+				"href": "https://ubuntu.com/security/CVE-2022-48727",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021475840000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47584 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:iocost: Fix divide-by-zero on donation from low hweight cgroupThe donation calculation logic assumes that the donor has non-zeroafter-donation hweight, so the lowest active hweight a donating cgroup canhave is 2 so that it can donate 1 while keeping the other 1 for itself.Earlier, we only donated from cgroups with sizable surpluses so thiscondition was always true. However, with the precise donation algorithmimplemented, f1de2439ec43 (\"blk-iocost: revamp donation amountdetermination\") made the donation amount calculation exact enabling evenlowhweight cgroups to donate.This means that in rare occasions, a cgroup with active hweight of 1 canenter donation calculation triggering the following warning and then adivide-by-zero oops. WARNING: CPU: 4 PID: 0 at block/blk-iocost.c:1928transfer_surpluses.cold+0x0/0x53 [884/94867] ... RIP: 0010:transfer_surpluses.cold+0x0/0x53 Code: 92 ff 48 c7 c7 28 d1 ab b5 65 48 8b 34 25 00 ae 01 00 48 81 c6 90 0600 00 e8 8b 3f fe ff 48 c7 c0 ea ff ff ff e9 95 ff 92 ff <0f> 0b 48 c7 c730 da ab b5 e8 71 3f fe ff 4c 89 e8 4d 85 ed 74 04 ... Call Trace:  <IRQ>  ioc_timer_fn+0x1043/0x1390  call_timer_fn+0xa1/0x2c0  __run_timers.part.0+0x1ec/0x2e0  run_timer_softirq+0x35/0x70 ... iocg: invalid donation weights in /a/b: active=1 donating=1 after=0Fix it by excluding cgroups w/ active hweight < 2 from donating. Excludingthese extreme low hweight donations shouldn't affect work conservation inany meaningful way.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47584",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47584"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2021-47584",
+				"href": "https://ubuntu.com/security/CVE-2021-47584",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

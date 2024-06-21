@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.mantic:def:2021476080000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47608 on Ubuntu 23.10 (mantic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Fix kernel address leakage in atomic fetchThe change in commit 37086bfdc737 (\"bpf: Propagate stack bounds toregistersin atomics w/ BPF_FETCH\") around check_mem_access() handling is buggy sincethis would allow for unprivileged users to leak kernel pointers. Forexample,an atomic fetch/and with -1 on a stack destination which holds a spilledpointer will migrate the spilled register type into a scalar, which canthenbe exported out of the program (since scalar != pointer) by dumping it intoa map value.The original implementation of XADD was preventing this situation by usinga double call to check_mem_access() one with BPF_READ and a subsequent onewith BPF_WRITE, in both cases passing -1 as a placeholder value instead ofregister as per XADD semantics since it didn't contain a value fetch. TheBPF_READ also included a check in check_stack_read_fixed_off() whichrejectsthe program if the stack slot is of __is_pointer_value() if dst_regno < 0.The latter is to distinguish whether we're dealing with a regular stackspill/fill or some arithmetical operation which is disallowed on non-scalars, seealso 6e7e63cbb023 (\"bpf: Forbid XADD on spilled pointers for unprivilegedusers\") for more context on check_mem_access() and its handling ofplaceholdervalue -1.One minimally intrusive option to fix the leak is for the BPF_FETCH case toinitially check the BPF_READ case via check_mem_access() with -1 asregister,followed by the actual load case with non-negative load_reg to propagatestack bounds to registers.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 23.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47608",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47608"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2021-47608",
+				"href": "https://ubuntu.com/security/CVE-2021-47608",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
+						"comment": "linux package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
+						"comment": "linux-aws package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
+						"comment": "linux-azure package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
+						"comment": "linux-gcp package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
+						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
+						"comment": "linux-laptop package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
+						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
+						"comment": "linux-oracle package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
+						"comment": "linux-raspi package in mantic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
+						"comment": "linux-starfive package in mantic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

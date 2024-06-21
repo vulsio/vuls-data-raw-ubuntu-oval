@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2021476130000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47613 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:i2c: virtio: fix completion handlingThe driver currently assumes that the notify callback is only receivedwhen the device is done with all the queued buffers.However, this is not true, since the notify callback could be calledwithout any of the queued buffers being completed (for example, withvirtio-pci and shared interrupts) or with only some of the buffers beingcompleted (since the driver makes them available to the device inmultiple separate virtqueue_add_sgs() calls).This can lead to incorrect data on the I2C bus or memory corruption inthe guest if the device operates on buffers which are have been freed bythe driver.  (The WARN_ON in the driver is also triggered.) BUG kmalloc-128 (Tainted: G        W        ): Poison overwritten First byte 0x0 instead of 0x6b Allocated in i2cdev_ioctl_rdwr+0x9d/0x1de age=243 cpu=0 pid=28 \tmemdup_user+0x2e/0xbd \ti2cdev_ioctl_rdwr+0x9d/0x1de \ti2cdev_ioctl+0x247/0x2ed \tvfs_ioctl+0x21/0x30 \tsys_ioctl+0xb18/0xb41 Freed in i2cdev_ioctl_rdwr+0x1bb/0x1de age=68 cpu=0 pid=28 \tkfree+0x1bd/0x1cc \ti2cdev_ioctl_rdwr+0x1bb/0x1de \ti2cdev_ioctl+0x247/0x2ed \tvfs_ioctl+0x21/0x30 \tsys_ioctl+0xb18/0xb41Fix this by calling virtio_get_buf() from the notify handler like othervirtio drivers and by actually waiting for all the buffers to becompleted.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47613",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47613"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2021-47613",
+				"href": "https://ubuntu.com/security/CVE-2021-47613",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

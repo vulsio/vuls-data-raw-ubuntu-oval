@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2022487690000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48769 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:efi: runtime: avoid EFIv2 runtime services on Apple x86 machinesAditya reports [0] that his recent MacbookPro crashes in the firmwarewhen using the variable services at runtime. The culprit appears to be acall to QueryVariableInfo(), which we did not use to call on Apple x86machines in the past as they only upgraded from EFI v1.10 to EFI v2.40firmware fairly recently, and QueryVariableInfo() (along withUpdateCapsule() et al) was added in EFI v2.00.The only runtime service introduced in EFI v2.00 that we actually use inLinux is QueryVariableInfo(), as the capsule based ones are optional,generally not used at runtime (all the LVFS/fwupd firmware updateinfrastructure uses helper EFI programs that invoke capsule update atboot time, not runtime), and not implemented by Apple machines in thefirst place. QueryVariableInfo() is used to 'safely' set variables,i.e., only when there is enough space. This prevents machines with buggyfirmwares from corrupting their NVRAMs when they run out of space.Given that Apple machines have been using EFI v1.10 services only forthe longest time (the EFI v2.0 spec was released in 2006, and Linuxsupport for the newly introduced runtime services was added in 2011, butthe MacbookPro12,1 released in 2015 still claims to be EFI v1.10 only),let's avoid the EFI v2.0 ones on all Apple x86 machines.[0]https://lore.kernel.org/all/6D757C75-65B1-468B-842D-10410081A8E4@live.com/",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48769",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48769"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2022-48769",
+				"href": "https://ubuntu.com/security/CVE-2022-48769",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

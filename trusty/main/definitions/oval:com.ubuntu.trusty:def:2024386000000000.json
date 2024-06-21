@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024386000000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-38600 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ALSA: Fix deadlocks with kctl removals at disconnectionIn snd_card_disconnect(), we set card->shutdown flag at the beginning,call callbacks and do sync for card->power_ref_sleep waiters at theend.  The callback may delete a kctl element, and this can lead to adeadlock when the device was in the suspended state.  Namely:* A process waits for the power up at snd_power_ref_and_wait() in  snd_ctl_info() or read/write() inside card->controls_rwsem.* The system gets disconnected meanwhile, and the driver tries to  delete a kctl via snd_ctl_remove*(); it tries to take  card->controls_rwsem again, but this is already locked by the  above.  Since the sleeper isn't woken up, this deadlocks.An easy fix is to wake up sleepers before processing the driverdisconnect callbacks but right after setting the card->shutdown flag.Then all sleepers will abort immediately, and the code flows again.So, basically this patch moves the wait_event() call at the righttiming.  While we're at it, just to be sure, call wait_event_all()instead of wait_event(), although we don't use exclusive events onthis queue for now.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-38600",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-38600"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-20",
+			"cve": {
+				"text": "CVE-2024-38600",
+				"href": "https://ubuntu.com/security/CVE-2024-38600",
+				"public": "20240620"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
