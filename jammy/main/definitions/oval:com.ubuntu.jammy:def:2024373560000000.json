@@ -1,0 +1,210 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.jammy:def:2024373560000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-37356 on Ubuntu 22.04 LTS (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:tcp: Fix shift-out-of-bounds in dctcp_update_alpha().In dctcp_update_alpha(), we use a module parameter dctcp_shift_gas follows:  alpha -= min_not_zero(alpha, alpha >> dctcp_shift_g);  ...  delivered_ce <<= (10 - dctcp_shift_g);It seems syzkaller started fuzzing module parameters and triggeredshift-out-of-bounds [0] by setting 100 to dctcp_shift_g:  memcpy((void*)0x20000080,         \"/sys/module/tcp_dctcp/parameters/dctcp_shift_g\\000\", 47);  res = syscall(__NR_openat, /*fd=*/0xffffffffffffff9cul,/*file=*/0x20000080ul,                /*flags=*/2ul, /*mode=*/0ul);  memcpy((void*)0x20000000, \"100\\000\", 4);  syscall(__NR_write, /*fd=*/r[0], /*val=*/0x20000000ul, /*len=*/4ul);Let's limit the max value of dctcp_shift_g by param_set_uint_minmax().With this patch:  # echo 10 > /sys/module/tcp_dctcp/parameters/dctcp_shift_g  # cat /sys/module/tcp_dctcp/parameters/dctcp_shift_g  10  # echo 11 > /sys/module/tcp_dctcp/parameters/dctcp_shift_g  -bash: echo: write error: Invalid argument[0]:UBSAN: shift-out-of-bounds in net/ipv4/tcp_dctcp.c:143:12shift exponent 100 is too large for 32-bit type 'u32' (aka 'unsigned int')CPU: 0 PID: 8083 Comm: syz-executor345 Not tainted6.9.0-05151-g1b294a1f3561 #2Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.13.0-1ubuntu1.1 04/01/2014Call Trace: <TASK> __dump_stack lib/dump_stack.c:88 [inline] dump_stack_lvl+0x201/0x300 lib/dump_stack.c:114 ubsan_epilogue lib/ubsan.c:231 [inline] __ubsan_handle_shift_out_of_bounds+0x346/0x3a0 lib/ubsan.c:468 dctcp_update_alpha+0x540/0x570 net/ipv4/tcp_dctcp.c:143 tcp_in_ack_event net/ipv4/tcp_input.c:3802 [inline] tcp_ack+0x17b1/0x3bc0 net/ipv4/tcp_input.c:3948 tcp_rcv_state_process+0x57a/0x2290 net/ipv4/tcp_input.c:6711 tcp_v4_do_rcv+0x764/0xc40 net/ipv4/tcp_ipv4.c:1937 sk_backlog_rcv include/net/sock.h:1106 [inline] __release_sock+0x20f/0x350 net/core/sock.c:2983 release_sock+0x61/0x1f0 net/core/sock.c:3549 mptcp_subflow_shutdown+0x3d0/0x620 net/mptcp/protocol.c:2907 mptcp_check_send_data_fin+0x225/0x410 net/mptcp/protocol.c:2976 __mptcp_close+0x238/0xad0 net/mptcp/protocol.c:3072 mptcp_close+0x2a/0x1a0 net/mptcp/protocol.c:3127 inet_release+0x190/0x1f0 net/ipv4/af_inet.c:437 __sock_release net/socket.c:659 [inline] sock_close+0xc0/0x240 net/socket.c:1421 __fput+0x41b/0x890 fs/file_table.c:422 task_work_run+0x23b/0x300 kernel/task_work.c:180 exit_task_work include/linux/task_work.h:38 [inline] do_exit+0x9c8/0x2540 kernel/exit.c:878 do_group_exit+0x201/0x2b0 kernel/exit.c:1027 __do_sys_exit_group kernel/exit.c:1038 [inline] __se_sys_exit_group kernel/exit.c:1036 [inline] __x64_sys_exit_group+0x3f/0x40 kernel/exit.c:1036 do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0xe4/0x240 arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x67/0x6fRIP: 0033:0x7f6c2b5005b6Code: Unable to access opcode bytes at 0x7f6c2b50058c.RSP: 002b:00007ffe883eb948 EFLAGS: 00000246 ORIG_RAX: 00000000000000e7RAX: ffffffffffffffda RBX: 00007f6c2b5862f0 RCX: 00007f6c2b5005b6RDX: 0000000000000001 RSI: 000000000000003c RDI: 0000000000000001RBP: 0000000000000001 R08: 00000000000000e7 R09: ffffffffffffffc0R10: 0000000000000006 R11: 0000000000000246 R12: 00007f6c2b5862f0R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000001 </TASK>",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 22.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-37356",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-37356"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-25",
+			"cve": {
+				"text": "CVE-2024-37356",
+				"href": "https://ubuntu.com/security/CVE-2024-37356",
+				"public": "20240625"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000000",
+						"comment": "linux package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"comment": "linux-hwe-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
+						"comment": "linux-kvm package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000010",
+						"comment": "linux-aws package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
+						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"comment": "linux-aws-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
+						"comment": "linux-azure package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"comment": "linux-azure-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
+						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
+						"comment": "linux-gcp package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"comment": "linux-gcp-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
+						"comment": "linux-gke package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000080",
+						"comment": "linux-gkeop package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
+						"comment": "linux-ibm package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"comment": "linux-intel-iotg package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
+						"comment": "linux-lowlatency package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
+						"comment": "linux-nvidia package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"comment": "linux-nvidia-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000060",
+						"comment": "linux-oracle package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"comment": "linux-oracle-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
+						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
+						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"comment": "linux-oem-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
+						"comment": "linux-raspi package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"comment": "linux-starfive-6.5 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"comment": "linux-xilinx-zynqmp package in jammy is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

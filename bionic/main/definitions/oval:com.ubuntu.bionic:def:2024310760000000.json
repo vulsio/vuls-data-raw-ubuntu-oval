@@ -1,0 +1,142 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024310760000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-31076 on Ubuntu 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:genirq/cpuhotplug, x86/vector: Prevent vector leak during CPU offlineThe absence of IRQD_MOVE_PCNTXT prevents immediate effectiveness ofinterrupt affinity reconfiguration via procfs. Instead, the change isdeferred until the next instance of the interrupt being triggered on theoriginal CPU.When the interrupt next triggers on the original CPU, the new affinity isenforced within __irq_move_irq(). A vector is allocated from the new CPU,but the old vector on the original CPU remains and is not immediatelyreclaimed. Instead, apicd->move_in_progress is flagged, and the reclaimingprocess is delayed until the next trigger of the interrupt on the new CPU.Upon the subsequent triggering of the interrupt on the new CPU,irq_complete_move() adds a task to the old CPU's vector_cleanup list if itremains online. Subsequently, the timer on the old CPU iterates over itsvector_cleanup list, reclaiming old vectors.However, a rare scenario arises if the old CPU is outgoing before theinterrupt triggers again on the new CPU.In that case irq_force_complete_move() is not invoked on the outgoing CPUto reclaim the old apicd->prev_vector because the interrupt isn't currentlyaffine to the outgoing CPU, and irq_needs_fixup() returns false. Eventhough __vector_schedule_cleanup() is later called on the new CPU, itdoesn't reclaim apicd->prev_vector; instead, it simply resets bothapicd->move_in_progress and apicd->prev_vector to 0.As a result, the vector remains unreclaimed in vector_matrix, leading to aCPU vector leak.To address this issue, move the invocation of irq_force_complete_move()before the irq_needs_fixup() call to reclaim apicd->prev_vector, if theinterrupt is currently or used to be affine to the outgoing CPU.Additionally, reclaim the vector in __vector_schedule_cleanup() as well,following a warning message, although theoretically it should never seeapicd->move_in_progress with apicd->prev_cpu pointing to an offline CPU.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-31076",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-31076"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-25",
+			"cve": {
+				"text": "CVE-2024-31076",
+				"href": "https://ubuntu.com/security/CVE-2024-31076",
+				"public": "20240625"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
