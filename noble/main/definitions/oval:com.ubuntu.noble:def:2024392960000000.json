@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024392960000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-39296 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bonding: fix oops during rmmod\"rmmod bonding\" causes an oops ever since commit cc317ea3d927 (\"bonding:remove redundant NULL check in debugfs function\").  Here are the relevantfunctions being called:bonding_exit()  bond_destroy_debugfs()    debugfs_remove_recursive(bonding_debug_root);    bonding_debug_root = NULL; <--------- SET TO NULL HERE  bond_netlink_fini()    rtnl_link_unregister()      __rtnl_link_unregister()        unregister_netdevice_many_notify()          bond_uninit()            bond_debug_unregister()              (commit removed check for bonding_debug_root == NULL)              debugfs_remove()              simple_recursive_removal()                down_write() -> OOPSHowever, reverting the bad commit does not solve the problem completelybecause the original code contains a race that could cause the sameoops, although it was much less likely to be triggered unintentionally:CPU1  rmmod bonding    bonding_exit()      bond_destroy_debugfs()        debugfs_remove_recursive(bonding_debug_root);CPU2  echo -bond0 > /sys/class/net/bonding_masters    bond_uninit()      bond_debug_unregister()        if (!bonding_debug_root)CPU1        bonding_debug_root = NULL;So do NOT revert the bad commit (since the removed checks were racyanyway), and instead change the order of actions taken during moduleremoval.  The same oops can also happen if there is an error duringmodule init, so apply the same fix there.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-39296",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-39296"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-01",
+			"cve": {
+				"text": "CVE-2024-39296",
+				"href": "https://ubuntu.com/security/CVE-2024-39296",
+				"public": "20240701"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

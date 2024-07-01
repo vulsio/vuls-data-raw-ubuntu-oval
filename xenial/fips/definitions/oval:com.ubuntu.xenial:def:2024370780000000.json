@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024370780000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-37078 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix potential kernel bug due to lack of writeback flag waitingDestructive writes to a block device on which nilfs2 is mounted can causea kernel bug in the folio/page writeback start routine or writeback endroutine (__folio_start_writeback in the log below): kernel BUG at mm/page-writeback.c:3070! Oops: invalid opcode: 0000 [#1] PREEMPT SMP KASAN PTI ... RIP: 0010:__folio_start_writeback+0xbaa/0x10e0 Code: 25 ff 0f 00 00 0f 84 18 01 00 00 e8 40 ca c6 ff e9 17 f6 ff ff  e8 36 ca c6 ff 4c 89 f7 48 c7 c6 80 c0 12 84 e8 e7 b3 0f 00 90 <0f>  0b e8 1f ca c6 ff 4c 89 f7 48 c7 c6 a0 c6 12 84 e8 d0 b3 0f 00 ... Call Trace:  <TASK>  nilfs_segctor_do_construct+0x4654/0x69d0 [nilfs2]  nilfs_segctor_construct+0x181/0x6b0 [nilfs2]  nilfs_segctor_thread+0x548/0x11c0 [nilfs2]  kthread+0x2f0/0x390  ret_from_fork+0x4b/0x80  ret_from_fork_asm+0x1a/0x30  </TASK>This is because when the log writer starts a writeback for segment summaryblocks or a super root block that use the backing device's page cache, itdoes not wait for the ongoing folio/page writeback, resulting in aninconsistent writeback state.Fix this issue by waiting for ongoing writebacks when puttingfolios/pages on the backing device into writeback state.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-37078",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-37078"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-01",
+			"cve": {
+				"text": "CVE-2024-37078",
+				"href": "https://ubuntu.com/security/CVE-2024-37078",
+				"public": "20240701"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
