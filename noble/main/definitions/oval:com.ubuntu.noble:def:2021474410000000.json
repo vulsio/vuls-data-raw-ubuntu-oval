@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47441 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: mlxsw:thermal: Fix out-of-bounds memory accesses Currently, mlxsw allows coolingstates to be set above the maximum cooling state supported by the driver: #cat /sys/class/thermal/thermal_zone2/cdev0/type mlxsw_fan # cat/sys/class/thermal/thermal_zone2/cdev0/max_state 10 # echo 18 >/sys/class/thermal/thermal_zone2/cdev0/cur_state # echo $? 0 This resultsin out-of-bounds memory accesses when thermal state transition statisticsare enabled (CONFIG_THERMAL_STATISTICS=y), as the transition table isaccessed with a too large index (state) [1]. According to the thermalmaintainer, it is the responsibility of the driver to reject suchoperations [2]. Therefore, return an error when the state to be set exceedsthe maximum cooling state supported by the driver. To avoid dead code, assuggested by the thermal maintainer [3], partially revert commita421ce088ac8 (\"mlxsw: core: Extend cooling device with cooling levels\")that tried to interpret these invalid cooling states (above the maximum) ina special way. The cooling levels array is not removed in order to preventthe fans going below 20% PWM, which would cause them to get stuck at 0%PWM. [1] BUG: KASAN: slab-out-of-bounds inthermal_cooling_device_stats_update+0x271/0x290 Read of size 4 at addrffff8881052f7bf8 by task kworker/0:0/5 CPU: 0 PID: 5 Comm: kworker/0:0 Nottainted 5.15.0-rc3-custom-45935-gce1adf704b14 #122 Hardware name: MellanoxTechnologies Ltd. \"MSN2410-CB2FO\"/\"SA000874\", BIOS 4.6.5 03/08/2016Workqueue: events_freezable_power_ thermal_zone_device_check Call Trace:dump_stack_lvl+0x8b/0xb3 print_address_description.constprop.0+0x1f/0x140kasan_report.cold+0x7f/0x11bthermal_cooling_device_stats_update+0x271/0x290__thermal_cdev_update+0x15e/0x4e0 thermal_cdev_update+0x9f/0xe0step_wise_throttle+0x770/0xee0 thermal_zone_device_update+0x3f6/0xdf0process_one_work+0xa42/0x1770 worker_thread+0x62f/0x13e0kthread+0x3ee/0x4e0 ret_from_fork+0x1f/0x30 Allocated by task 1:kasan_save_stack+0x1b/0x40 __kasan_kmalloc+0x7c/0x90thermal_cooling_device_setup_sysfs+0x153/0x2c0__thermal_cooling_device_register.part.0+0x25b/0x9c0thermal_cooling_device_register+0xb3/0x100 mlxsw_thermal_init+0x5c5/0x7e0__mlxsw_core_bus_device_register+0xcb3/0x19c0mlxsw_core_bus_device_register+0x56/0xb0 mlxsw_pci_probe+0x54f/0x710local_pci_probe+0xc6/0x170 pci_device_probe+0x2b2/0x4d0really_probe+0x293/0xd10 __driver_probe_device+0x2af/0x440driver_probe_device+0x51/0x1e0 __driver_attach+0x21b/0x530bus_for_each_dev+0x14c/0x1d0 bus_add_driver+0x3ac/0x650driver_register+0x241/0x3d0 mlxsw_sp_module_init+0xa2/0x174do_one_initcall+0xee/0x5f0 kernel_init_freeable+0x45a/0x4dekernel_init+0x1f/0x210 ret_from_fork+0x1f/0x30 The buggy address belongs tothe object at ffff8881052f7800 which belongs to the cache kmalloc-1k ofsize 1024 The buggy address is located 1016 bytes inside of 1024-byteregion [ffff8881052f7800, ffff8881052f7c00) The buggy address belongs tothe page: page:0000000052355272 refcount:1 mapcount:0mapping:0000000000000000 index:0x0 pfn:0x1052f0 head:0000000052355272order:3 compound_mapcount:0 compound_pincount:0 flags:0x200000000010200(slab|head|node=0|zone=2) raw: 0200000000010200ffffea0005034800 0000000300000003 ffff888100041dc0 raw: 00000000000000000000000000100010 00000001ffffffff 0000000000000000 page dumped because:kasan: bad access detected Memory state around the buggy address:ffff8881052f7a80: 00 00 00 00 00 00 04 fc fc fc fc fc fc fc fc fcffff8881052f7b00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc>ffff8881052f7b80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc ^ffff8881052f7c00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fcffff8881052f7c80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc [2]https://lore.kernel.org/linux-pm/9aca37cb-1629-5c67- ---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mlxsw:thermal: Fix out-of-bounds memory accesses Currently, mlxsw allows coolingstates to be set above the maximum cooling state supported by the driver: #cat /sys/class/thermal/thermal_zone2/cdev0/type mlxsw_fan # cat/sys/class/thermal/thermal_zone2/cdev0/max_state 10 # echo 18 >/sys/class/thermal/thermal_zone2/cdev0/cur_state # echo $? 0 This resultsin out-of-bounds memory accesses when thermal state transition statisticsare enabled (CONFIG_THERMAL_STATISTICS=y), as the transition table isaccessed with a too large index (state) [1]. According to the thermalmaintainer, it is the responsibility of the driver to reject suchoperations [2]. Therefore, return an error when the state to be set exceedsthe maximum cooling state supported by the driver. To avoid dead code, assuggested by the thermal maintainer [3], partially revert commita421ce088ac8 (\"mlxsw: core: Extend cooling device with cooling levels\")that tried to interpret these invalid cooling states (above the maximum) ina special way. The cooling levels array is not removed in order to preventthe fans going below 20% PWM, which would cause them to get stuck at 0%PWM. [1] BUG: KASAN: slab-out-of-bounds inthermal_cooling_device_stats_update+0x271/0x290 Read of size 4 at addrffff8881052f7bf8 by task kworker/0:0/5 CPU: 0 PID: 5 Comm: kworker/0:0 Nottainted 5.15.0-rc3-custom-45935-gce1adf704b14 #122 Hardware name: MellanoxTechnologies Ltd. \"MSN2410-CB2FO\"/\"SA000874\", BIOS 4.6.5 03/08/2016Workqueue: events_freezable_power_ thermal_zone_device_check Call Trace:dump_stack_lvl+0x8b/0xb3 print_address_description.constprop.0+0x1f/0x140kasan_report.cold+0x7f/0x11bthermal_cooling_device_stats_update+0x271/0x290__thermal_cdev_update+0x15e/0x4e0 thermal_cdev_update+0x9f/0xe0step_wise_throttle+0x770/0xee0 thermal_zone_device_update+0x3f6/0xdf0process_one_work+0xa42/0x1770 worker_thread+0x62f/0x13e0kthread+0x3ee/0x4e0 ret_from_fork+0x1f/0x30 Allocated by task 1:kasan_save_stack+0x1b/0x40 __kasan_kmalloc+0x7c/0x90thermal_cooling_device_setup_sysfs+0x153/0x2c0__thermal_cooling_device_register.part.0+0x25b/0x9c0thermal_cooling_device_register+0xb3/0x100 mlxsw_thermal_init+0x5c5/0x7e0__mlxsw_core_bus_device_register+0xcb3/0x19c0mlxsw_core_bus_device_register+0x56/0xb0 mlxsw_pci_probe+0x54f/0x710local_pci_probe+0xc6/0x170 pci_device_probe+0x2b2/0x4d0really_probe+0x293/0xd10 __driver_probe_device+0x2af/0x440driver_probe_device+0x51/0x1e0 __driver_attach+0x21b/0x530bus_for_each_dev+0x14c/0x1d0 bus_add_driver+0x3ac/0x650driver_register+0x241/0x3d0 mlxsw_sp_module_init+0xa2/0x174do_one_initcall+0xee/0x5f0 kernel_init_freeable+0x45a/0x4dekernel_init+0x1f/0x210 ret_from_fork+0x1f/0x30 The buggy address belongs tothe object at ffff8881052f7800 which belongs to the cache kmalloc-1k ofsize 1024 The buggy address is located 1016 bytes inside of 1024-byteregion [ffff8881052f7800, ffff8881052f7c00) The buggy address belongs tothe page: page:0000000052355272 refcount:1 mapcount:0mapping:0000000000000000 index:0x0 pfn:0x1052f0 head:0000000052355272order:3 compound_mapcount:0 compound_pincount:0 flags:0x200000000010200(slab|head|node=0|zone=2) raw: 0200000000010200ffffea0005034800 0000000300000003 ffff888100041dc0 raw: 00000000000000000000000000100010 00000001ffffffff 0000000000000000 page dumped because:kasan: bad access detected Memory state around the buggy address:ffff8881052f7a80: 00 00 00 00 00 00 04 fc fc fc fc fc fc fc fc fcffff8881052f7b00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc>ffff8881052f7b80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc ^ffff8881052f7c00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fcffff8881052f7c80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc [2]https://lore.kernel.org/linux-pm/9aca37cb-1629-5c67- ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47441` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

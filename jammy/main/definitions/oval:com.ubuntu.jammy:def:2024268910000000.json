@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26891 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:iommu/vt-d: Don't issue ATS Invalidation request when device isdisconnected For those endpoint devices connect to system via hotplugcapable ports, users could request a hot reset to the device by flappingdevice's link through setting the slot's link control register, aspciehp_ist() DLLSC interrupt sequence response, pciehp will unload thedevice driver and then power it off. thus cause an IOMMU device-TLBinvalidation (Intel VT-d spec, or ATS Invalidation in PCIe spec r6.1)request for non-existence target device to be sent and deadly loop to retrythat request after ITE fault triggered in interrupt context. That wouldcause following continuous hard lockup warning and system hang [4211.433662] pcieport 0000:17:01.0: pciehp: Slot(108): Link Down [4211.433664] pcieport 0000:17:01.0: pciehp: Slot(108): Card not present [4223.822591] NMI watchdog: Watchdog detected hard LOCKUP on cpu 144 [4223.822622] CPU: 144 PID: 1422 Comm: irq/57-pciehp Kdump: loaded Tainted:G S OE kernel version xxxx [ 4223.822623] Hardware name: vendorname xxxx666-106, BIOS 01.01.02.03.01 05/15/2023 [ 4223.822623] RIP:0010:qi_submit_sync+0x2c0/0x490 [ 4223.822624] Code: 48 be 00 00 00 00 0008 00 00 49 85 74 24 20 0f 95 c1 48 8b 57 10 83 c1 04 83 3c 1a 03 0f 84 a201 00 00 49 8b 04 24 8b 70 34 <40> f6 c6 1 0 74 17 49 8b 04 24 8b 80 80 0000 00 89 c2 d3 fa 41 39 [ 4223.822624] RSP: 0018:ffffc4f074f0bbb8 EFLAGS:00000093 [ 4223.822625] RAX: ffffc4f040059000 RBX: 0000000000000014 RCX:0000000000000005 [ 4223.822625] RDX: ffff9f3841315800 RSI: 0000000000000000RDI: ffff9f38401a8340 [ 4223.822625] RBP: ffff9f38401a8340 R08:ffffc4f074f0bc00 R09: 0000000000000000 [ 4223.822626] R10: 0000000000000010R11: 0000000000000018 R12: ffff9f384005e200 [ 4223.822626] R13:0000000000000004 R14: 0000000000000046 R15: 0000000000000004 [ 4223.822626]FS: 0000000000000000(0000) GS:ffffa237ae400000(0000) knlGS:0000000000000000[ 4223.822627] CS: 0010 DS: 0000 ES: 0000 CR0: 0000000080050033 [4223.822627] CR2: 00007ffe86515d80 CR3: 000002fd3000a001 CR4:0000000000770ee0 [ 4223.822627] DR0: 0000000000000000 DR1: 0000000000000000DR2: 0000000000000000 [ 4223.822628] DR3: 0000000000000000 DR6:00000000fffe07f0 DR7: 0000000000000400 [ 4223.822628] PKRU: 55555554 [4223.822628] Call Trace: [ 4223.822628] qi_flush_dev_iotlb+0xb1/0xd0 [4223.822628] __dmar_remove_one_dev_info+0x224/0x250 [ 4223.822629]dmar_remove_one_dev_info+0x3e/0x50 [ 4223.822629]intel_iommu_release_device+0x1f/0x30 [ 4223.822629]iommu_release_device+0x33/0x60 [ 4223.822629] iommu_bus_notifier+0x7f/0x90[ 4223.822630] blocking_notifier_call_chain+0x60/0x90 [ 4223.822630]device_del+0x2e5/0x420 [ 4223.822630] pci_remove_bus_device+0x70/0x110 [4223.822630] pciehp_unconfigure_device+0x7c/0x130 [ 4223.822631]pciehp_disable_slot+0x6b/0x100 [ 4223.822631]pciehp_handle_presence_or_link_change+0xd8/0x320 [ 4223.822631]pciehp_ist+0x176/0x180 [ 4223.822631] ?irq_finalize_oneshot.part.50+0x110/0x110 [ 4223.822632]irq_thread_fn+0x19/0x50 [ 4223.822632] irq_thread+0x104/0x190 [4223.822632] ? irq_forced_thread_fn+0x90/0x90 [ 4223.822632] ?irq_thread_check_affinity+0xe0/0xe0 [ 4223.822633] kthread+0x114/0x130 [4223.822633] ? __kthread_cancel_work+0x40/0x40 [ 4223.822633]ret_from_fork+0x1f/0x30 [ 4223.822633] Kernel panic - not syncing: HardLOCKUP [ 4223.822634] CPU: 144 PID: 1422 Comm: irq/57-pciehp Kdump: loadedTainted: G S OE kernel version xxxx [ 4223.822634] Hardware name:vendorname xxxx 666-106, BIOS 01.01.02.03.01 05/15/2023 [ 4223.822634] CallTrace: [ 4223.822634] <NMI> [ 4223.822635] dump_stack+0x6d/0x88 [4223.822635] panic+0x101/0x2d0 [ 4223.822635] ? ret_from_fork+0x11/0x30 [4223.822635] nmi_panic.cold.14+0xc/0xc [ 4223.822636]watchdog_overflow_callback.cold.8+0x6d/0x81 [ 4223.822636]__perf_event_overflow+0x4f/0xf0 [ 4223.822636] handle_pmi_common---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26891` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-5.15.0-112-generic-lpae - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic-64k - 5.15.0-112.122\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-kvm - 5.15.0-1060.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-azure - 5.15.0-1066.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-azure-fde - 5.15.0-1065.74.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-gke - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-ibm - 5.15.0-1056.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-nvidia - 5.15.0-1058.59\nlinux-image-unsigned-5.15.0-1058-nvidia-lowlatency - 5.15.0-1058.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-oracle - 5.15.0-1061.67\nNo subscription required\n\nlinux-image-5.15.0-1030-xilinx-zynqmp - 5.15.0-1030.34\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:iommu/vt-d: Don't issue ATS Invalidation request when device isdisconnected For those endpoint devices connect to system via hotplugcapable ports, users could request a hot reset to the device by flappingdevice's link through setting the slot's link control register, aspciehp_ist() DLLSC interrupt sequence response, pciehp will unload thedevice driver and then power it off. thus cause an IOMMU device-TLBinvalidation (Intel VT-d spec, or ATS Invalidation in PCIe spec r6.1)request for non-existence target device to be sent and deadly loop to retrythat request after ITE fault triggered in interrupt context. That wouldcause following continuous hard lockup warning and system hang [4211.433662] pcieport 0000:17:01.0: pciehp: Slot(108): Link Down [4211.433664] pcieport 0000:17:01.0: pciehp: Slot(108): Card not present [4223.822591] NMI watchdog: Watchdog detected hard LOCKUP on cpu 144 [4223.822622] CPU: 144 PID: 1422 Comm: irq/57-pciehp Kdump: loaded Tainted:G S OE kernel version xxxx [ 4223.822623] Hardware name: vendorname xxxx666-106, BIOS 01.01.02.03.01 05/15/2023 [ 4223.822623] RIP:0010:qi_submit_sync+0x2c0/0x490 [ 4223.822624] Code: 48 be 00 00 00 00 0008 00 00 49 85 74 24 20 0f 95 c1 48 8b 57 10 83 c1 04 83 3c 1a 03 0f 84 a201 00 00 49 8b 04 24 8b 70 34 <40> f6 c6 1 0 74 17 49 8b 04 24 8b 80 80 0000 00 89 c2 d3 fa 41 39 [ 4223.822624] RSP: 0018:ffffc4f074f0bbb8 EFLAGS:00000093 [ 4223.822625] RAX: ffffc4f040059000 RBX: 0000000000000014 RCX:0000000000000005 [ 4223.822625] RDX: ffff9f3841315800 RSI: 0000000000000000RDI: ffff9f38401a8340 [ 4223.822625] RBP: ffff9f38401a8340 R08:ffffc4f074f0bc00 R09: 0000000000000000 [ 4223.822626] R10: 0000000000000010R11: 0000000000000018 R12: ffff9f384005e200 [ 4223.822626] R13:0000000000000004 R14: 0000000000000046 R15: 0000000000000004 [ 4223.822626]FS: 0000000000000000(0000) GS:ffffa237ae400000(0000) knlGS:0000000000000000[ 4223.822627] CS: 0010 DS: 0000 ES: 0000 CR0: 0000000080050033 [4223.822627] CR2: 00007ffe86515d80 CR3: 000002fd3000a001 CR4:0000000000770ee0 [ 4223.822627] DR0: 0000000000000000 DR1: 0000000000000000DR2: 0000000000000000 [ 4223.822628] DR3: 0000000000000000 DR6:00000000fffe07f0 DR7: 0000000000000400 [ 4223.822628] PKRU: 55555554 [4223.822628] Call Trace: [ 4223.822628] qi_flush_dev_iotlb+0xb1/0xd0 [4223.822628] __dmar_remove_one_dev_info+0x224/0x250 [ 4223.822629]dmar_remove_one_dev_info+0x3e/0x50 [ 4223.822629]intel_iommu_release_device+0x1f/0x30 [ 4223.822629]iommu_release_device+0x33/0x60 [ 4223.822629] iommu_bus_notifier+0x7f/0x90[ 4223.822630] blocking_notifier_call_chain+0x60/0x90 [ 4223.822630]device_del+0x2e5/0x420 [ 4223.822630] pci_remove_bus_device+0x70/0x110 [4223.822630] pciehp_unconfigure_device+0x7c/0x130 [ 4223.822631]pciehp_disable_slot+0x6b/0x100 [ 4223.822631]pciehp_handle_presence_or_link_change+0xd8/0x320 [ 4223.822631]pciehp_ist+0x176/0x180 [ 4223.822631] ?irq_finalize_oneshot.part.50+0x110/0x110 [ 4223.822632]irq_thread_fn+0x19/0x50 [ 4223.822632] irq_thread+0x104/0x190 [4223.822632] ? irq_forced_thread_fn+0x90/0x90 [ 4223.822632] ?irq_thread_check_affinity+0xe0/0xe0 [ 4223.822633] kthread+0x114/0x130 [4223.822633] ? __kthread_cancel_work+0x40/0x40 [ 4223.822633]ret_from_fork+0x1f/0x30 [ 4223.822633] Kernel panic - not syncing: HardLOCKUP [ 4223.822634] CPU: 144 PID: 1422 Comm: irq/57-pciehp Kdump: loadedTainted: G S OE kernel version xxxx [ 4223.822634] Hardware name:vendorname xxxx 666-106, BIOS 01.01.02.03.01 05/15/2023 [ 4223.822634] CallTrace: [ 4223.822634] <NMI> [ 4223.822635] dump_stack+0x6d/0x88 [4223.822635] panic+0x101/0x2d0 [ 4223.822635] ? ret_from_fork+0x11/0x30 [4223.822635] nmi_panic.cold.14+0xc/0xc [ 4223.822636]watchdog_overflow_callback.cold.8+0x6d/0x81 [ 4223.822636]__perf_event_overflow+0x4f/0xf0 [ 4223.822636] handle_pmi_common---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26891` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-5.15.0-112-generic-lpae - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic-64k - 5.15.0-112.122\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-kvm - 5.15.0-1060.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-azure - 5.15.0-1066.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-azure-fde - 5.15.0-1067.76.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-gke - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-ibm - 5.15.0-1056.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-nvidia - 5.15.0-1058.59\nlinux-image-unsigned-5.15.0-1058-nvidia-lowlatency - 5.15.0-1058.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-oracle - 5.15.0-1061.67\nNo subscription required\n\nlinux-image-5.15.0-1030-xilinx-zynqmp - 5.15.0-1030.34\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -59,7 +59,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
-						"comment": "linux-hwe-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-hwe-6.5 package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000010",
@@ -83,7 +83,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
-						"comment": "linux-aws-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-aws-6.5 package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000030",
@@ -99,11 +99,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
-						"comment": "linux-azure-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-azure-6.5 package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000040",
-						"comment": "linux-azure-fde package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.74.1')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524470000000",
+						"comment": "linux-azure-fde package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.76.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -114,7 +114,7 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000040",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.70')."
 					},
 					{
@@ -127,7 +127,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
-						"comment": "linux-gcp-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-gcp-6.5 package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2023240230000020",
@@ -138,7 +138,7 @@
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1046.53')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000050",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1056.59')."
 					},
 					{
@@ -146,7 +146,7 @@
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.64')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000060",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-110.120')."
 					},
 					{
@@ -159,10 +159,10 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
-						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000070",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.59')."
 					},
 					{
@@ -171,15 +171,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
-						"comment": "linux-nvidia-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-nvidia-6.5 package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000080",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1061.67')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
-						"comment": "linux-oracle-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-oracle-6.5 package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
@@ -195,11 +195,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
-						"comment": "linux-oem-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-oem-6.5 package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
-						"comment": "linux-raspi package in jammy is affected and may need fixing."
+						"comment": "linux-raspi package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1056.59')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
@@ -211,7 +211,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
-						"comment": "linux-starfive-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-starfive-6.5 package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:202211840000020",

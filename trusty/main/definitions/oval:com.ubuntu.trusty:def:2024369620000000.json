@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36962 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: ks8851: Queue RX packets in IRQ handler instead of disabling BHsCurrently the driver uses local_bh_disable()/local_bh_enable() in itsIRQ handler to avoid triggering net_rx_action() softirq on exit fromnetif_rx(). The net_rx_action() could trigger this driver .start_xmitcallback, which is protected by the same lock as the IRQ handler, socalling the .start_xmit from netif_rx() from the IRQ handler criticalsection protected by the lock could lead to an attempt to claim thealready claimed lock, and a hang.The local_bh_disable()/local_bh_enable() approach works only in casethe IRQ handler is protected by a spinlock, but does not work if theIRQ handler is protected by mutex, i.e. this works for KS8851 withParallel bus interface, but not for KS8851 with SPI bus interface.Remove the BH manipulation and instead of calling netif_rx() insidethe IRQ handler code protected by the lock, queue all the receivedSKBs in the IRQ handler into a queue first, and once the IRQ handlerexits the critical section protected by the lock, dequeue all thequeued SKBs and push them all into netif_rx(). At this point, it issafe to trigger the net_rx_action() softirq, since the netif_rx()call is outside of the lock that protects the IRQ handler.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: ks8851: Queue RX packets in IRQ handler instead of disabling BHsCurrently the driver uses local_bh_disable()/local_bh_enable() in itsIRQ handler to avoid triggering net_rx_action() softirq on exit fromnetif_rx(). The net_rx_action() could trigger this driver .start_xmitcallback, which is protected by the same lock as the IRQ handler, socalling the .start_xmit from netif_rx() from the IRQ handler criticalsection protected by the lock could lead to an attempt to claim thealready claimed lock, and a hang.The local_bh_disable()/local_bh_enable() approach works only in casethe IRQ handler is protected by a spinlock, but does not work if theIRQ handler is protected by mutex, i.e. this works for KS8851 withParallel bus interface, but not for KS8851 with SPI bus interface.Remove the BH manipulation and instead of calling netif_rx() insidethe IRQ handler code protected by the lock, queue all the receivedSKBs in the IRQ handler into a queue first, and once the IRQ handlerexits the critical section protected by the lock, dequeue all thequeued SKBs and push them all into netif_rx(). At this point, it issafe to trigger the net_rx_action() softirq, since the netif_rx()call is outside of the lock that protects the IRQ handler.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36962` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-3.13.0-173-generic-lpae - 3.11.0-12.19\nlinux-image-3.13.0-173-lowlatency - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500 - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500mc - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-smp - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-emb - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-smp - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-lowlatency - 3.11.0-12.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-164-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-unsigned-4.4.0-164-generic - 4.4.0-13.29~14.04.1\nlinux-image-unsigned-4.4.0-164-lowlatency - 4.4.0-13.29~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1054-aws - 4.4.0-1002.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1059-azure - 4.15.0-1023.24~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52775 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net/smc: avoid data corruption caused by decline We found a data corruptionissue during testing of SMC-R on Redis applications. The benchmark has alow probability of reporting a strange error as shown below. \"Error:Protocol error, got \"\\xe2\" as reply type byte\" Finally, we found that theretrieved error data was as follows: 0xE2 0xD4 0xC3 0xD9 0x04 0x00 0x2C0x20 0xA6 0x56 0x00 0x16 0x3E 0x0C 0xCB 0x04 0x02 0x01 0x00 0x00 0x20 0x000x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x000x00 0xE2 It is quite obvious that this is a SMC DECLINE message, whichmeans that the applications received SMC protocol message. We found thatthis was caused by the following situations: client server ¦ clc proposal-------------> ¦ clc accept <------------- ¦ clc confirm ------------->wait llc confirm send llc confirm ¦failed llc confirm ¦ x------ (after2s)timeout wait llc confirm rsp wait decline (after 1s) timeout (after 2s)timeout ¦ decline --------------> ¦ decline <-------------- As a result, adecline message was sent in the implementation, and this message was readfrom TCP by the already-fallback connection. This patch double the clienttimeout as 2x of the server value, With this simple change, the Declinemessages should never cross or collide (during Confirm link timeout). Thisissue requires an immediate solution, since the protocol updates involve amore long-term solution.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/smc: avoid data corruption caused by decline We found a data corruptionissue during testing of SMC-R on Redis applications. The benchmark has alow probability of reporting a strange error as shown below. \"Error:Protocol error, got \"\\xe2\" as reply type byte\" Finally, we found that theretrieved error data was as follows: 0xE2 0xD4 0xC3 0xD9 0x04 0x00 0x2C0x20 0xA6 0x56 0x00 0x16 0x3E 0x0C 0xCB 0x04 0x02 0x01 0x00 0x00 0x20 0x000x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x000x00 0xE2 It is quite obvious that this is a SMC DECLINE message, whichmeans that the applications received SMC protocol message. We found thatthis was caused by the following situations: client server ¦ clc proposal-------------> ¦ clc accept <------------- ¦ clc confirm ------------->wait llc confirm send llc confirm ¦failed llc confirm ¦ x------ (after2s)timeout wait llc confirm rsp wait decline (after 1s) timeout (after 2s)timeout ¦ decline --------------> ¦ decline <-------------- As a result, adecline message was sent in the implementation, and this message was readfrom TCP by the already-fallback connection. This patch double the clienttimeout as 2x of the server value, With this simple change, the Declinemessages should never cross or collide (during Confirm link timeout). Thisissue requires an immediate solution, since the protocol updates involve amore long-term solution.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52775` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-11-generic - 6.8.0-11.11\nlinux-image-unsigned-6.8.0-11-generic - 6.8.0-11.11\nlinux-image-unsigned-6.8.0-11-generic-64k - 6.8.0-11.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-aws - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-azure - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1002-gcp - 6.8.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-7-lowlatency - 6.8.0-7.7.1\nlinux-image-unsigned-6.8.0-7-lowlatency-64k - 6.8.0-7.7.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-oracle - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-6.7.0-1001-raspi - 6.7.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023240230000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-11.11')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023240230000010",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023240230000020",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-7.7.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000040",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

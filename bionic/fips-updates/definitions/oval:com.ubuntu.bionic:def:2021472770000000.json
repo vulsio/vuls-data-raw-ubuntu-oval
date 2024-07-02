@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47277 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: kvm:avoid speculation-based attacks from out-of-range memslot accesses KVM'smechanism for accessing guest memory translates a guest physical address(gpa) to a host virtual address using the right-shifted gpa (also known asgfn) and a struct kvm_memory_slot. The translation is performed in__gfn_to_hva_memslot using the following formula: hva =slot->userspace_addr + (gfn - slot->base_gfn) * PAGE_SIZE It is expectedthat gfn falls within the boundaries of the guest's physical memory.However, a guest can access invalid physical addresses in such a way thatthe gfn is invalid. __gfn_to_hva_memslot is called fromkvm_vcpu_gfn_to_hva_prot, which first retrieves a memslot through__gfn_to_memslot. While __gfn_to_memslot does check that the gfn fallswithin the boundaries of the guest's physical memory or not, a CPU canspeculate the result of the check and continue execution speculativelyusing an illegal gfn. The speculation can result in calculating anout-of-bounds hva. If the resulting host virtual address is used to loadanother guest physical address, this is effectively a Spectre gadgetconsisting of two consecutive reads, the second of which is data dependenton the first. Right now it's not clear if there are any cases in which thisis exploitable. One interesting case was reported by the original author ofthis patch, and involves visiting guest page tables on x86. Right now theseare not vulnerable because the hva read goes through get_user(), whichcontains an LFENCE speculation barrier. However, there are patches inprogress for x86 uaccess.h to mask kernel addresses instead of usingLFENCE; once these land, a guest could use speculation to read from theVMM's ring 3 address space. Other architectures such as ARM already use theaddress masking method, and would be susceptible to this same kind ofdata-dependent access gadgets. Therefore, this patch proactively protectsfrom these attacks by masking out-of-bounds gfns in __gfn_to_hva_memslot,which blocks speculation of invalid hvas. Sean Christopherson noted thatthis patch does not cover kvm_read_guest_offset_cached. This however islimited to a few bytes past the end of the cache, and therefore it isunlikely to be useful in the context of building a chain of data dependentaccesses.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: kvm:avoid speculation-based attacks from out-of-range memslot accesses KVM'smechanism for accessing guest memory translates a guest physical address(gpa) to a host virtual address using the right-shifted gpa (also known asgfn) and a struct kvm_memory_slot. The translation is performed in__gfn_to_hva_memslot using the following formula: hva =slot->userspace_addr + (gfn - slot->base_gfn) * PAGE_SIZE It is expectedthat gfn falls within the boundaries of the guest's physical memory.However, a guest can access invalid physical addresses in such a way thatthe gfn is invalid. __gfn_to_hva_memslot is called fromkvm_vcpu_gfn_to_hva_prot, which first retrieves a memslot through__gfn_to_memslot. While __gfn_to_memslot does check that the gfn fallswithin the boundaries of the guest's physical memory or not, a CPU canspeculate the result of the check and continue execution speculativelyusing an illegal gfn. The speculation can result in calculating anout-of-bounds hva. If the resulting host virtual address is used to loadanother guest physical address, this is effectively a Spectre gadgetconsisting of two consecutive reads, the second of which is data dependenton the first. Right now it's not clear if there are any cases in which thisis exploitable. One interesting case was reported by the original author ofthis patch, and involves visiting guest page tables on x86. Right now theseare not vulnerable because the hva read goes through get_user(), whichcontains an LFENCE speculation barrier. However, there are patches inprogress for x86 uaccess.h to mask kernel addresses instead of usingLFENCE; once these land, a guest could use speculation to read from theVMM's ring 3 address space. Other architectures such as ARM already use theaddress masking method, and would be susceptible to this same kind ofdata-dependent access gadgets. Therefore, this patch proactively protectsfrom these attacks by masking out-of-bounds gfns in __gfn_to_hva_memslot,which blocks speculation of invalid hvas. Sean Christopherson noted thatthis patch does not cover kvm_read_guest_offset_cached. This however islimited to a few bytes past the end of the cache, and therefore it isunlikely to be useful in the context of building a chain of data dependentaccesses.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47277` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2103-aws-fips - 4.15.0-2103.109\nlinux-image-unsigned-hmac-4.15.0-2103-aws-fips - 4.15.0-2103.109\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2082-azure-fips - 4.15.0-2082.88\nlinux-image-unsigned-hmac-4.15.0-2082-azure-fips - 4.15.0-2082.88\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nlinux-image-unsigned-hmac-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Compliant"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000010",
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1119.130')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000020",
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2103.109')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000030",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2082.88')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000040",
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2066.71')."
 					}
 				]
 			}

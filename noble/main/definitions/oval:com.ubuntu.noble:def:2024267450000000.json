@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26745 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/pseries/iommu: IOMMU table is not initialized for kdump over SR-IOVWhen kdump kernel tries to copy dump data over SR-IOV, LPAR panics due toNULL pointer exception: Kernel attempted to read user page (0) - exploitattempt? (uid: 0) BUG: Kernel NULL pointer dereference on read at0x00000000 Faulting instruction address: 0xc000000020847ad4 Oops: Kernelaccess of bad area, sig: 11 [#1] LE PAGE_SIZE=64K MMU=Radix SMPNR_CPUS=2048 NUMA pSeries Modules linked in: mlx5_core(+) vmx_cryptopseries_wdt papr_scm libnvdimm mlxfw tls psample sunrpc fuse overlaysquashfs loop CPU: 12 PID: 315 Comm: systemd-udevd Not tainted6.4.0-Test102+ #12 Hardware name: IBM,9080-HEX POWER10 (raw) 0x8002000xf000006 of:IBM,FW1060.00 (NH1060_008) hv:phyp pSeries NIP:c000000020847ad4 LR: c00000002083b2dc CTR: 00000000006cd18c REGS:c000000029162ca0 TRAP: 0300 Not tainted (6.4.0-Test102+) MSR:800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE> CR: 48288244 XER:00000008 CFAR: c00000002083b2d8 DAR: 0000000000000000 DSISR: 40000000IRQMASK: 1 ... NIP _find_next_zero_bit+0x24/0x110 LRbitmap_find_next_zero_area_off+0x5c/0xe0 Call Trace:dev_printk_emit+0x38/0x48 (unreliable) iommu_area_alloc+0xc4/0x180iommu_range_alloc+0x1e8/0x580 iommu_alloc+0x60/0x130iommu_alloc_coherent+0x158/0x2b0 dma_iommu_alloc_coherent+0x3c/0x50dma_alloc_attrs+0x170/0x1f0 mlx5_cmd_init+0xc0/0x760 [mlx5_core]mlx5_function_setup+0xf0/0x510 [mlx5_core] mlx5_init_one+0x84/0x210[mlx5_core] probe_one+0x118/0x2c0 [mlx5_core] local_pci_probe+0x68/0x110pci_call_probe+0x68/0x200 pci_device_probe+0xbc/0x1a0really_probe+0x104/0x540 __driver_probe_device+0xb4/0x230driver_probe_device+0x54/0x130 __driver_attach+0x158/0x2b0bus_for_each_dev+0xa8/0x130 driver_attach+0x34/0x50bus_add_driver+0x16c/0x300 driver_register+0xa4/0x1b0__pci_register_driver+0x68/0x80 mlx5_init+0xb8/0x100 [mlx5_core]do_one_initcall+0x60/0x300 do_init_module+0x7c/0x2b0 At the time of LPARdump, before kexec hands over control to kdump kernel, DDWs (Dynamic DMAWindows) are scanned and added to the FDT. For the SR-IOV case, default DMAwindow \"ibm,dma-window\" is removed from the FDT and DDW added, for thedevice. Now, kexec hands over control to the kdump kernel. When the kdumpkernel initializes, PCI busses are scanned and IOMMU group/tables created,in pci_dma_bus_setup_pSeriesLP(). For the SR-IOV case, there is no\"ibm,dma-window\". The original commit: b1fc44eaa9ba, fixes the path wherememory is pre-mapped (direct mapped) to the DDW. When TCEs are directmapped, there is no need to initialize IOMMU tables.iommu_table_setparms_lpar() only considers \"ibm,dma-window\" property wheninitiallizing IOMMU table. In the scenario where TCEs are dynamicallyallocated for SR-IOV, newly created IOMMU table is not initialized. Later,when the device driver tries to enter TCEs for the SR-IOV device, NULLpointer execption is thrown from iommu_area_alloc(). The fix is toinitialize the IOMMU table with DDW property stored in the FDT. There are 2points to remember: 1. For the dedicated adapter, kdump kernel wouldencounter both default and DDW in FDT. In this case, DDW property is usedto initialize the IOMMU table. 2. A DDW could be direct or dynamic mapped.kdump kernel would initialize IOMMU table and mark the existing DDW as\"dynamic\". This works fine since, at the time of table initialization,iommu_table_clear() makes some space in the DDW, for some predefined numberof TCEs which are needed for kdump to succeed.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/pseries/iommu: IOMMU table is not initialized for kdump over SR-IOVWhen kdump kernel tries to copy dump data over SR-IOV, LPAR panics due toNULL pointer exception: Kernel attempted to read user page (0) - exploitattempt? (uid: 0) BUG: Kernel NULL pointer dereference on read at0x00000000 Faulting instruction address: 0xc000000020847ad4 Oops: Kernelaccess of bad area, sig: 11 [#1] LE PAGE_SIZE=64K MMU=Radix SMPNR_CPUS=2048 NUMA pSeries Modules linked in: mlx5_core(+) vmx_cryptopseries_wdt papr_scm libnvdimm mlxfw tls psample sunrpc fuse overlaysquashfs loop CPU: 12 PID: 315 Comm: systemd-udevd Not tainted6.4.0-Test102+ #12 Hardware name: IBM,9080-HEX POWER10 (raw) 0x8002000xf000006 of:IBM,FW1060.00 (NH1060_008) hv:phyp pSeries NIP:c000000020847ad4 LR: c00000002083b2dc CTR: 00000000006cd18c REGS:c000000029162ca0 TRAP: 0300 Not tainted (6.4.0-Test102+) MSR:800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE> CR: 48288244 XER:00000008 CFAR: c00000002083b2d8 DAR: 0000000000000000 DSISR: 40000000IRQMASK: 1 ... NIP _find_next_zero_bit+0x24/0x110 LRbitmap_find_next_zero_area_off+0x5c/0xe0 Call Trace:dev_printk_emit+0x38/0x48 (unreliable) iommu_area_alloc+0xc4/0x180iommu_range_alloc+0x1e8/0x580 iommu_alloc+0x60/0x130iommu_alloc_coherent+0x158/0x2b0 dma_iommu_alloc_coherent+0x3c/0x50dma_alloc_attrs+0x170/0x1f0 mlx5_cmd_init+0xc0/0x760 [mlx5_core]mlx5_function_setup+0xf0/0x510 [mlx5_core] mlx5_init_one+0x84/0x210[mlx5_core] probe_one+0x118/0x2c0 [mlx5_core] local_pci_probe+0x68/0x110pci_call_probe+0x68/0x200 pci_device_probe+0xbc/0x1a0really_probe+0x104/0x540 __driver_probe_device+0xb4/0x230driver_probe_device+0x54/0x130 __driver_attach+0x158/0x2b0bus_for_each_dev+0xa8/0x130 driver_attach+0x34/0x50bus_add_driver+0x16c/0x300 driver_register+0xa4/0x1b0__pci_register_driver+0x68/0x80 mlx5_init+0xb8/0x100 [mlx5_core]do_one_initcall+0x60/0x300 do_init_module+0x7c/0x2b0 At the time of LPARdump, before kexec hands over control to kdump kernel, DDWs (Dynamic DMAWindows) are scanned and added to the FDT. For the SR-IOV case, default DMAwindow \"ibm,dma-window\" is removed from the FDT and DDW added, for thedevice. Now, kexec hands over control to the kdump kernel. When the kdumpkernel initializes, PCI busses are scanned and IOMMU group/tables created,in pci_dma_bus_setup_pSeriesLP(). For the SR-IOV case, there is no\"ibm,dma-window\". The original commit: b1fc44eaa9ba, fixes the path wherememory is pre-mapped (direct mapped) to the DDW. When TCEs are directmapped, there is no need to initialize IOMMU tables.iommu_table_setparms_lpar() only considers \"ibm,dma-window\" property wheninitiallizing IOMMU table. In the scenario where TCEs are dynamicallyallocated for SR-IOV, newly created IOMMU table is not initialized. Later,when the device driver tries to enter TCEs for the SR-IOV device, NULLpointer execption is thrown from iommu_area_alloc(). The fix is toinitialize the IOMMU table with DDW property stored in the FDT. There are 2points to remember: 1. For the dedicated adapter, kdump kernel wouldencounter both default and DDW in FDT. In this case, DDW property is usedto initialize the IOMMU table. 2. A DDW could be direct or dynamic mapped.kdump kernel would initialize IOMMU table and mark the existing DDW as\"dynamic\". This works fine since, at the time of table initialization,iommu_table_clear() makes some space in the DDW, for some predefined numberof TCEs which are needed for kdump to succeed.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26745` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-20-generic - 6.8.0-20.20\nlinux-image-unsigned-6.8.0-20-generic - 6.8.0-20.20\nlinux-image-unsigned-6.8.0-20-generic-64k - 6.8.0-20.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-aws - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-azure - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-gcp - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-ibm - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-25-lowlatency - 6.8.0-25.25.3\nlinux-image-unsigned-6.8.0-25-lowlatency-64k - 6.8.0-25.25.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1004-oracle - 6.8.0-1004.4\nlinux-image-unsigned-6.8.0-1004-oracle-64k - 6.8.0-1004.4\nNo subscription required\n\nlinux-image-6.8.0-1002-raspi - 6.8.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526370000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-20.20')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1006.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000060",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000060",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526310000000",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-25.25.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526310000010",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023240230000010",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48744 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net/mlx5e: Avoid field-overflowing memcpy()In preparation for FORTIFY_SOURCE performing compile-time and run-timefield bounds checking for memcpy(), memmove(), and memset(), avoidintentionally writing across neighboring fields.Use flexible arrays instead of zero-element arrays (which look like theyare always overflowing) and split the cross-field memcpy() into two halvesthat can be appropriately bounds-checked by the compiler.We were doing:\t#define ETH_HLEN  14\t#define VLAN_HLEN  4\t...\t#define MLX5E_XDP_MIN_INLINE (ETH_HLEN + VLAN_HLEN)\t...        struct mlx5e_tx_wqe      *wqe  = mlx5_wq_cyc_get_wqe(wq, pi);\t...        struct mlx5_wqe_eth_seg  *eseg = &wqe->eth;        struct mlx5_wqe_data_seg *dseg = wqe->data;\t...\tmemcpy(eseg->inline_hdr.start, xdptxd->data, MLX5E_XDP_MIN_INLINE);target is wqe->eth.inline_hdr.start (which the compiler sees as being2 bytes in size), but copying 18, intending to write across start(really vlan_tci, 2 bytes). The remaining 16 bytes get written intowqe->data[0], covering byte_count (4 bytes), lkey (4 bytes), and addr(8 bytes).struct mlx5e_tx_wqe {        struct mlx5_wqe_ctrl_seg   ctrl;                 /*     0    16 */        struct mlx5_wqe_eth_seg    eth;                  /*    16    16 */        struct mlx5_wqe_data_seg   data[];               /*    32     0 */        /* size: 32, cachelines: 1, members: 3 */        /* last cacheline: 32 bytes */};struct mlx5_wqe_eth_seg {        u8                         swp_outer_l4_offset;  /*     0     1 */        u8                         swp_outer_l3_offset;  /*     1     1 */        u8                         swp_inner_l4_offset;  /*     2     1 */        u8                         swp_inner_l3_offset;  /*     3     1 */        u8                         cs_flags;             /*     4     1 */        u8                         swp_flags;            /*     5     1 */        __be16                     mss;                  /*     6     2 */        __be32                     flow_table_metadata;  /*     8     4 */        union {                struct {                        __be16     sz;                   /*    12     2 */                        u8         start[2];             /*    14     2 */                } inline_hdr;                            /*    12     4 */                struct {                        __be16     type;                 /*    12     2 */                        __be16     vlan_tci;             /*    14     2 */                } insert;                                /*    12     4 */                __be32             trailer;              /*    12     4 */        };                                               /*    12     4 */        /* size: 16, cachelines: 1, members: 9 */        /* last cacheline: 16 bytes */};struct mlx5_wqe_data_seg {        __be32                     byte_count;           /*     0     4 */        __be32                     lkey;                 /*     4     4 */        __be64                     addr;                 /*     8     8 */        /* size: 16, cachelines: 1, members: 3 */        /* last cacheline: 16 bytes */};So, split the memcpy() so the compiler can reason about the buffersizes.\"pahole\" shows no size nor member offset changes to struct mlx5e_tx_wqenor struct mlx5e_umr_wqe. \"objdump -d\" shows no meaningful objectcode changes (i.e. only source line number induced differences andoptimizations).",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/mlx5e: Avoid field-overflowing memcpy()In preparation for FORTIFY_SOURCE performing compile-time and run-timefield bounds checking for memcpy(), memmove(), and memset(), avoidintentionally writing across neighboring fields.Use flexible arrays instead of zero-element arrays (which look like theyare always overflowing) and split the cross-field memcpy() into two halvesthat can be appropriately bounds-checked by the compiler.We were doing:\t#define ETH_HLEN  14\t#define VLAN_HLEN  4\t...\t#define MLX5E_XDP_MIN_INLINE (ETH_HLEN + VLAN_HLEN)\t...        struct mlx5e_tx_wqe      *wqe  = mlx5_wq_cyc_get_wqe(wq, pi);\t...        struct mlx5_wqe_eth_seg  *eseg = &wqe->eth;        struct mlx5_wqe_data_seg *dseg = wqe->data;\t...\tmemcpy(eseg->inline_hdr.start, xdptxd->data, MLX5E_XDP_MIN_INLINE);target is wqe->eth.inline_hdr.start (which the compiler sees as being2 bytes in size), but copying 18, intending to write across start(really vlan_tci, 2 bytes). The remaining 16 bytes get written intowqe->data[0], covering byte_count (4 bytes), lkey (4 bytes), and addr(8 bytes).struct mlx5e_tx_wqe {        struct mlx5_wqe_ctrl_seg   ctrl;                 /*     0    16 */        struct mlx5_wqe_eth_seg    eth;                  /*    16    16 */        struct mlx5_wqe_data_seg   data[];               /*    32     0 */        /* size: 32, cachelines: 1, members: 3 */        /* last cacheline: 32 bytes */};struct mlx5_wqe_eth_seg {        u8                         swp_outer_l4_offset;  /*     0     1 */        u8                         swp_outer_l3_offset;  /*     1     1 */        u8                         swp_inner_l4_offset;  /*     2     1 */        u8                         swp_inner_l3_offset;  /*     3     1 */        u8                         cs_flags;             /*     4     1 */        u8                         swp_flags;            /*     5     1 */        __be16                     mss;                  /*     6     2 */        __be32                     flow_table_metadata;  /*     8     4 */        union {                struct {                        __be16     sz;                   /*    12     2 */                        u8         start[2];             /*    14     2 */                } inline_hdr;                            /*    12     4 */                struct {                        __be16     type;                 /*    12     2 */                        __be16     vlan_tci;             /*    14     2 */                } insert;                                /*    12     4 */                __be32             trailer;              /*    12     4 */        };                                               /*    12     4 */        /* size: 16, cachelines: 1, members: 9 */        /* last cacheline: 16 bytes */};struct mlx5_wqe_data_seg {        __be32                     byte_count;           /*     0     4 */        __be32                     lkey;                 /*     4     4 */        __be64                     addr;                 /*     8     8 */        /* size: 16, cachelines: 1, members: 3 */        /* last cacheline: 16 bytes */};So, split the memcpy() so the compiler can reason about the buffersizes.\"pahole\" shows no size nor member offset changes to struct mlx5e_tx_wqenor struct mlx5e_umr_wqe. \"objdump -d\" shows no meaningful objectcode changes (i.e. only source line number induced differences andoptimizations).\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48744` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26794 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:fix race between ordered extent completion and fiemap For fiemap werecently stopped locking the target extent range for the whole duration ofthe fiemap call, in order to avoid a deadlock in a scenario where thefiemap buffer happens to be a memory mapped range of the same file. Thisuse case is very unlikely to be useful in practice but it may be triggeredby fuzz testing (syzbot, etc). However by not locking the target extentrange for the whole duration of the fiemap call we can race with an orderedextent. This happens like this: 1) The fiemap task finishes processing afile extent item that covers the file range [512K, 1M[, and that fileextent item is the last item in the leaf currently being processed; 2) Andordered extent for the file range [768K, 2M[, in COW mode, completes(btrfs_finish_one_ordered()) and the file extent item covering the range[512K, 1M[ is trimmed to cover the range [512K, 768K[ and then a new fileextent item for the range [768K, 2M[ is inserted in the inode's subvolumetree; 3) The fiemap task calls fiemap_next_leaf_item(), which then callsbtrfs_next_leaf() to find the next leaf / item. This finds that the thenext key following the one we previously processed (its type isBTRFS_EXTENT_DATA_KEY and its offset is 512K), is the key corresponding tothe new file extent item inserted by the ordered extent, which has a typeof BTRFS_EXTENT_DATA_KEY and an offset of 768K; 4) Later the fiemap codeends up at emit_fiemap_extent() and triggers the warning: if (cache->offset+ cache->len > offset) { WARN_ON(1); return -EINVAL; } Since we get 1M >768K, because the previously emitted entry for the old extent covering thefile range [512K, 1M[ ends at an offset that is greater than the newextent's start offset (768K). This makes fiemap fail with -EINVAL besidestriggering the warning that produces a stack trace like the following:[1621.677651] ------------[ cut here ]------------ [1621.677656] WARNING:CPU: 1 PID: 204366 at fs/btrfs/extent_io.c:2492emit_fiemap_extent+0x84/0x90 [btrfs] [1621.677899] Modules linked in: btrfsblake2b_generic (...) [1621.677951] CPU: 1 PID: 204366 Comm: pool Nottainted 6.8.0-rc5-btrfs-next-151+ #1 [1621.677954] Hardware name: QEMUStandard PC (i440FX + PIIX, 1996), BIOSrel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org 04/01/2014 [1621.677956] RIP:0010:emit_fiemap_extent+0x84/0x90 [btrfs] [1621.678033] Code: 2b 4c 89 63(...) [1621.678035] RSP: 0018:ffffab16089ffd20 EFLAGS: 00010206[1621.678037] RAX: 00000000004fa000 RBX: ffffab16089ffe08 RCX:0000000000009000 [1621.678039] RDX: 00000000004f9000 RSI: 00000000004f1000RDI: ffffab16089ffe90 [1621.678040] RBP: 00000000004f9000 R08:0000000000001000 R09: 0000000000000000 [1621.678041] R10: 0000000000000000R11: 0000000000001000 R12: 0000000041d78000 [1621.678043] R13:0000000000001000 R14: 0000000000000000 R15: ffff9434f0b17850 [1621.678044]FS: 00007fa6e20006c0(0000) GS:ffff943bdfa40000(0000) knlGS:0000000000000000[1621.678046] CS: 0010 DS: 0000 ES: 0000 CR0: 0000000080050033[1621.678048] CR2: 00007fa6b0801000 CR3: 000000012d404002 CR4:0000000000370ef0 [1621.678053] DR0: 0000000000000000 DR1: 0000000000000000DR2: 0000000000000000 [1621.678055] DR3: 0000000000000000 DR6:00000000fffe0ff0 DR7: 0000000000000400 [1621.678056] Call Trace:[1621.678074] <TASK> [1621.678076] ? __warn+0x80/0x130 [1621.678082] ?emit_fiemap_extent+0x84/0x90 [btrfs] [1621.678159] ? report_bug+0x1f4/0x200[1621.678164] ? handle_bug+0x42/0x70 [1621.678167] ?exc_invalid_op+0x14/0x70 [1621.678170] ? asm_exc_invalid_op+0x16/0x20[1621.678178] ? emit_fiemap_extent+0x84/0x90 [btrfs] [1621.678253]extent_fiemap+0x766 ---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:fix race between ordered extent completion and fiemap For fiemap werecently stopped locking the target extent range for the whole duration ofthe fiemap call, in order to avoid a deadlock in a scenario where thefiemap buffer happens to be a memory mapped range of the same file. Thisuse case is very unlikely to be useful in practice but it may be triggeredby fuzz testing (syzbot, etc). However by not locking the target extentrange for the whole duration of the fiemap call we can race with an orderedextent. This happens like this: 1) The fiemap task finishes processing afile extent item that covers the file range [512K, 1M[, and that fileextent item is the last item in the leaf currently being processed; 2) Andordered extent for the file range [768K, 2M[, in COW mode, completes(btrfs_finish_one_ordered()) and the file extent item covering the range[512K, 1M[ is trimmed to cover the range [512K, 768K[ and then a new fileextent item for the range [768K, 2M[ is inserted in the inode's subvolumetree; 3) The fiemap task calls fiemap_next_leaf_item(), which then callsbtrfs_next_leaf() to find the next leaf / item. This finds that the thenext key following the one we previously processed (its type isBTRFS_EXTENT_DATA_KEY and its offset is 512K), is the key corresponding tothe new file extent item inserted by the ordered extent, which has a typeof BTRFS_EXTENT_DATA_KEY and an offset of 768K; 4) Later the fiemap codeends up at emit_fiemap_extent() and triggers the warning: if (cache->offset+ cache->len > offset) { WARN_ON(1); return -EINVAL; } Since we get 1M >768K, because the previously emitted entry for the old extent covering thefile range [512K, 1M[ ends at an offset that is greater than the newextent's start offset (768K). This makes fiemap fail with -EINVAL besidestriggering the warning that produces a stack trace like the following:[1621.677651] ------------[ cut here ]------------ [1621.677656] WARNING:CPU: 1 PID: 204366 at fs/btrfs/extent_io.c:2492emit_fiemap_extent+0x84/0x90 [btrfs] [1621.677899] Modules linked in: btrfsblake2b_generic (...) [1621.677951] CPU: 1 PID: 204366 Comm: pool Nottainted 6.8.0-rc5-btrfs-next-151+ #1 [1621.677954] Hardware name: QEMUStandard PC (i440FX + PIIX, 1996), BIOSrel-1.16.2-0-gea1b7a073390-prebuilt.qemu.org 04/01/2014 [1621.677956] RIP:0010:emit_fiemap_extent+0x84/0x90 [btrfs] [1621.678033] Code: 2b 4c 89 63(...) [1621.678035] RSP: 0018:ffffab16089ffd20 EFLAGS: 00010206[1621.678037] RAX: 00000000004fa000 RBX: ffffab16089ffe08 RCX:0000000000009000 [1621.678039] RDX: 00000000004f9000 RSI: 00000000004f1000RDI: ffffab16089ffe90 [1621.678040] RBP: 00000000004f9000 R08:0000000000001000 R09: 0000000000000000 [1621.678041] R10: 0000000000000000R11: 0000000000001000 R12: 0000000041d78000 [1621.678043] R13:0000000000001000 R14: 0000000000000000 R15: ffff9434f0b17850 [1621.678044]FS: 00007fa6e20006c0(0000) GS:ffff943bdfa40000(0000) knlGS:0000000000000000[1621.678046] CS: 0010 DS: 0000 ES: 0000 CR0: 0000000080050033[1621.678048] CR2: 00007fa6b0801000 CR3: 000000012d404002 CR4:0000000000370ef0 [1621.678053] DR0: 0000000000000000 DR1: 0000000000000000DR2: 0000000000000000 [1621.678055] DR3: 0000000000000000 DR6:00000000fffe0ff0 DR7: 0000000000000400 [1621.678056] Call Trace:[1621.678074] <TASK> [1621.678076] ? __warn+0x80/0x130 [1621.678082] ?emit_fiemap_extent+0x84/0x90 [btrfs] [1621.678159] ? report_bug+0x1f4/0x200[1621.678164] ? handle_bug+0x42/0x70 [1621.678167] ?exc_invalid_op+0x14/0x70 [1621.678170] ? asm_exc_invalid_op+0x16/0x20[1621.678178] ? emit_fiemap_extent+0x84/0x90 [btrfs] [1621.678253]extent_fiemap+0x766 ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26794` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

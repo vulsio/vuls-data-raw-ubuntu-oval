@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-46910 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: ARM:9063/1: mm: reduce maximum number of CPUs if DEBUG_KMAP_LOCAL is enabledThe debugging code for kmap_local() doubles the number of per-CPU fixmapslots allocated for kmap_local(), in order to use half of them as guardregions. This causes the fixmap region to grow downwards beyond the startof its reserved window if the supported number of CPUs is large, andcollide with the newly added virtual DT mapping right below it, which isobviously not good. One manifestation of this is EFI boot on a kernel builtwith NR_CPUS=32 and CONFIG_DEBUG_KMAP_LOCAL=y, which may pass the FDT inhighmem, resulting in block entries below the fixmap region that the fixmapcode misidentifies as fixmap table entries, and subsequently tries todereference using a phys-to-virt translation that is only valid for lowmem.This results in a cryptic splat such as the one below. ftrace: allocating45548 entries in 89 pages 8<--- cut here --- Unable to handle kernel pagingrequest at virtual address fc6006f0 pgd = (ptrval) [fc6006f0]*pgd=80000040207003, *pmd=00000000 Internal error: Oops: a06 [#1] SMP ARMModules linked in: CPU: 0 PID: 0 Comm: swapper Not tainted 5.11.0+ #382Hardware name: Generic DT based system PC is atcpu_ca15_set_pte_ext+0x24/0x30 LR is at __set_fixmap+0xe4/0x118 pc :[<c041ac9c>] lr : [<c04189d8>] psr: 400000d3 sp : c1601ed8 ip : 00400000 fp: 00800000 r10: 0000071f r9 : 00421000 r8 : 00c00000 r7 : 00c00000 r6 :0000071f r5 : ffade000 r4 : 4040171f r3 : 00c00000 r2 : 4040171f r1 :c041ac78 r0 : fc6006f0 Flags: nZcv IRQs off FIQs off Mode SVC_32 ISA ARMSegment none Control: 30c5387d Table: 40203000 DAC: 00000001 Processswapper (pid: 0, stack limit = 0x(ptrval)) So let's limit CONFIG_NR_CPUS to16 when CONFIG_DEBUG_KMAP_LOCAL=y. Also, fix the BUILD_BUG_ON() check thatwas supposed to catch this, by checking whether the region grows below thestart address rather than above the end address.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ARM:9063/1: mm: reduce maximum number of CPUs if DEBUG_KMAP_LOCAL is enabledThe debugging code for kmap_local() doubles the number of per-CPU fixmapslots allocated for kmap_local(), in order to use half of them as guardregions. This causes the fixmap region to grow downwards beyond the startof its reserved window if the supported number of CPUs is large, andcollide with the newly added virtual DT mapping right below it, which isobviously not good. One manifestation of this is EFI boot on a kernel builtwith NR_CPUS=32 and CONFIG_DEBUG_KMAP_LOCAL=y, which may pass the FDT inhighmem, resulting in block entries below the fixmap region that the fixmapcode misidentifies as fixmap table entries, and subsequently tries todereference using a phys-to-virt translation that is only valid for lowmem.This results in a cryptic splat such as the one below. ftrace: allocating45548 entries in 89 pages 8<--- cut here --- Unable to handle kernel pagingrequest at virtual address fc6006f0 pgd = (ptrval) [fc6006f0]*pgd=80000040207003, *pmd=00000000 Internal error: Oops: a06 [#1] SMP ARMModules linked in: CPU: 0 PID: 0 Comm: swapper Not tainted 5.11.0+ #382Hardware name: Generic DT based system PC is atcpu_ca15_set_pte_ext+0x24/0x30 LR is at __set_fixmap+0xe4/0x118 pc :[<c041ac9c>] lr : [<c04189d8>] psr: 400000d3 sp : c1601ed8 ip : 00400000 fp: 00800000 r10: 0000071f r9 : 00421000 r8 : 00c00000 r7 : 00c00000 r6 :0000071f r5 : ffade000 r4 : 4040171f r3 : 00c00000 r2 : 4040171f r1 :c041ac78 r0 : fc6006f0 Flags: nZcv IRQs off FIQs off Mode SVC_32 ISA ARMSegment none Control: 30c5387d Table: 40203000 DAC: 00000001 Processswapper (pid: 0, stack limit = 0x(ptrval)) So let's limit CONFIG_NR_CPUS to16 when CONFIG_DEBUG_KMAP_LOCAL=y. Also, fix the BUILD_BUG_ON() check thatwas supposed to catch this, by checking whether the region grows below thestart address rather than above the end address.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46910` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -34,44 +34,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

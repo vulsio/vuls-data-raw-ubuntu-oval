@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26906 on Ubuntu 24.04 LTS (noble) - low",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: x86/mm:Disallow vsyscall page read for copy_from_kernel_nofault() When trying touse copy_from_kernel_nofault() to read vsyscall page through a bpf program,the following oops was reported: BUG: unable to handle page fault foraddress: ffffffffff600000 #PF: supervisor read access in kernel mode #PF:error_code(0x0000) - not-present page PGD 3231067 P4D 3231067 PUD 3233067PMD 3235067 PTE 0 Oops: 0000 [#1] PREEMPT SMP PTI CPU: 1 PID: 20390 Comm:test_progs ...... 6.7.0+ #58 Hardware name: QEMU Standard PC (i440FX +PIIX, 1996) ...... RIP: 0010:copy_from_kernel_nofault+0x6f/0x110 ......Call Trace: <TASK> ? copy_from_kernel_nofault+0x6f/0x110bpf_probe_read_kernel+0x1d/0x50bpf_prog_2061065e56845f08_do_probe_read+0x51/0x8d trace_call_bpf+0xc5/0x1c0perf_call_bpf_enter.isra.0+0x69/0xb0 perf_syscall_enter+0x13e/0x200syscall_trace_enter+0x188/0x1c0 do_syscall_64+0xb5/0xe0entry_SYSCALL_64_after_hwframe+0x6e/0x76 </TASK> ...... ---[ end trace0000000000000000 ]--- The oops is triggered when: 1) A bpf program usesbpf_probe_read_kernel() to read from the vsyscall page and invokescopy_from_kernel_nofault() which in turn calls __get_user_asm(). 2) Becausethe vsyscall page address is not readable from kernel space, a page faultexception is triggered accordingly. 3) handle_page_fault() considers thevsyscall page address as a user space address instead of a kernel spaceaddress. This results in the fix-up setup by bpf not being applied and apage_fault_oops() is invoked due to SMAP. Considering handle_page_fault()has already considered the vsyscall page address as a userspace address,fix the problem by disallowing vsyscall page read forcopy_from_kernel_nofault().",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: x86/mm:Disallow vsyscall page read for copy_from_kernel_nofault() When trying touse copy_from_kernel_nofault() to read vsyscall page through a bpf program,the following oops was reported: BUG: unable to handle page fault foraddress: ffffffffff600000 #PF: supervisor read access in kernel mode #PF:error_code(0x0000) - not-present page PGD 3231067 P4D 3231067 PUD 3233067PMD 3235067 PTE 0 Oops: 0000 [#1] PREEMPT SMP PTI CPU: 1 PID: 20390 Comm:test_progs ...... 6.7.0+ #58 Hardware name: QEMU Standard PC (i440FX +PIIX, 1996) ...... RIP: 0010:copy_from_kernel_nofault+0x6f/0x110 ......Call Trace: <TASK> ? copy_from_kernel_nofault+0x6f/0x110bpf_probe_read_kernel+0x1d/0x50bpf_prog_2061065e56845f08_do_probe_read+0x51/0x8d trace_call_bpf+0xc5/0x1c0perf_call_bpf_enter.isra.0+0x69/0xb0 perf_syscall_enter+0x13e/0x200syscall_trace_enter+0x188/0x1c0 do_syscall_64+0xb5/0xe0entry_SYSCALL_64_after_hwframe+0x6e/0x76 </TASK> ...... ---[ end trace0000000000000000 ]--- The oops is triggered when: 1) A bpf program usesbpf_probe_read_kernel() to read from the vsyscall page and invokescopy_from_kernel_nofault() which in turn calls __get_user_asm(). 2) Becausethe vsyscall page address is not readable from kernel space, a page faultexception is triggered accordingly. 3) handle_page_fault() considers thevsyscall page address as a user space address instead of a kernel spaceaddress. This results in the fix-up setup by bpf not being applied and apage_fault_oops() is invoked due to SMAP. Considering handle_page_fault()has already considered the vsyscall page address as a userspace address,fix the problem by disallowing vsyscall page read forcopy_from_kernel_nofault().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26906` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-20-generic - 6.8.0-20.20\nlinux-image-unsigned-6.8.0-20-generic - 6.8.0-20.20\nlinux-image-unsigned-6.8.0-20-generic-64k - 6.8.0-20.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-aws - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-azure - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-gcp - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-ibm - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-25-lowlatency - 6.8.0-25.25.3\nlinux-image-unsigned-6.8.0-25-lowlatency-64k - 6.8.0-25.25.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1004-oracle - 6.8.0-1004.4\nlinux-image-unsigned-6.8.0-1004-oracle-64k - 6.8.0-1004.4\nNo subscription required\n\nlinux-image-6.8.0-1002-raspi - 6.8.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -42,44 +42,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526370000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-20.20')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1006.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000060",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000060",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526310000000",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-25.25.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526310000010",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023240230000010",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48704 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/radeon: add a force flush to delay work when radeon Although radeoncard fence and wait for gpu to finish processing current batch rings, thereis still a corner case that radeon lockup work queue may not be fullyflushed, and meanwhile the radeon_suspend_kms() function has calledpci_set_power_state() to put device in D3hot state. Per PCI spec rev 4.0 on5.3.1.4.1 D3hot State. > Configuration and Message requests are the onlyTLPs accepted by a Function in > the D3hot state. All other receivedRequests must be handled as Unsupported Requests, > and all receivedCompletions may optionally be handled as Unexpected Completions. This issuewill happen in following logs: Unable to handle kernel paging request atvirtual address 00008800e0008010 CPU 0 kworker/0:3(131): Oops 0 pc =[<ffffffff811bea5c>] ra = [<ffffffff81240844>] ps = 0000 Tainted: G W pc isat si_gpu_check_soft_reset+0x3c/0x240 ra is at si_dma_is_lockup+0x34/0xd0v0 = 0000000000000000 t0 = fff08800e0008010 t1 = 0000000000010000 t2 =0000000000008010 t3 = fff00007e3c00000 t4 = fff00007e3c00258 t5 =000000000000ffff t6 = 0000000000000001 t7 = fff00007ef078000 s0 =fff00007e3c016e8 s1 = fff00007e3c00000 s2 = fff00007e3c00018 s3 =fff00007e3c00000 s4 = fff00007fff59d80 s5 = 0000000000000000 s6 =fff00007ef07bd98 a0 = fff00007e3c00000 a1 = fff00007e3c016e8 a2 =0000000000000008 a3 = 0000000000000001 a4 = 8f5c28f5c28f5c29 a5 =ffffffff810f4338 t8 = 0000000000000275 t9 = ffffffff809b66f8 t10 =ff6769c5d964b800 t11= 000000000000b886 pv = ffffffff811bea20 at =0000000000000000 gp = ffffffff81d89690 sp = 00000000aa814126 Disabling lockdebugging due to kernel taint Trace: [<ffffffff81240844>]si_dma_is_lockup+0x34/0xd0 [<ffffffff81119610>]radeon_fence_check_lockup+0xd0/0x290 [<ffffffff80977010>]process_one_work+0x280/0x550 [<ffffffff80977350>] worker_thread+0x70/0x7c0[<ffffffff80977410>] worker_thread+0x130/0x7c0 [<ffffffff80982040>]kthread+0x200/0x210 [<ffffffff809772e0>] worker_thread+0x0/0x7c0[<ffffffff80981f8c>] kthread+0x14c/0x210 [<ffffffff80911658>]ret_from_kernel_thread+0x18/0x20 [<ffffffff80981e40>] kthread+0x0/0x210Code: ad3e0008 43f0074a ad7e0018 ad9e0020 8c3001e8 40230101 <88210000>4821ed21 So force lockup work queue flush to fix this problem.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/radeon: add a force flush to delay work when radeon Although radeoncard fence and wait for gpu to finish processing current batch rings, thereis still a corner case that radeon lockup work queue may not be fullyflushed, and meanwhile the radeon_suspend_kms() function has calledpci_set_power_state() to put device in D3hot state. Per PCI spec rev 4.0 on5.3.1.4.1 D3hot State. > Configuration and Message requests are the onlyTLPs accepted by a Function in > the D3hot state. All other receivedRequests must be handled as Unsupported Requests, > and all receivedCompletions may optionally be handled as Unexpected Completions. This issuewill happen in following logs: Unable to handle kernel paging request atvirtual address 00008800e0008010 CPU 0 kworker/0:3(131): Oops 0 pc =[<ffffffff811bea5c>] ra = [<ffffffff81240844>] ps = 0000 Tainted: G W pc isat si_gpu_check_soft_reset+0x3c/0x240 ra is at si_dma_is_lockup+0x34/0xd0v0 = 0000000000000000 t0 = fff08800e0008010 t1 = 0000000000010000 t2 =0000000000008010 t3 = fff00007e3c00000 t4 = fff00007e3c00258 t5 =000000000000ffff t6 = 0000000000000001 t7 = fff00007ef078000 s0 =fff00007e3c016e8 s1 = fff00007e3c00000 s2 = fff00007e3c00018 s3 =fff00007e3c00000 s4 = fff00007fff59d80 s5 = 0000000000000000 s6 =fff00007ef07bd98 a0 = fff00007e3c00000 a1 = fff00007e3c016e8 a2 =0000000000000008 a3 = 0000000000000001 a4 = 8f5c28f5c28f5c29 a5 =ffffffff810f4338 t8 = 0000000000000275 t9 = ffffffff809b66f8 t10 =ff6769c5d964b800 t11= 000000000000b886 pv = ffffffff811bea20 at =0000000000000000 gp = ffffffff81d89690 sp = 00000000aa814126 Disabling lockdebugging due to kernel taint Trace: [<ffffffff81240844>]si_dma_is_lockup+0x34/0xd0 [<ffffffff81119610>]radeon_fence_check_lockup+0xd0/0x290 [<ffffffff80977010>]process_one_work+0x280/0x550 [<ffffffff80977350>] worker_thread+0x70/0x7c0[<ffffffff80977410>] worker_thread+0x130/0x7c0 [<ffffffff80982040>]kthread+0x200/0x210 [<ffffffff809772e0>] worker_thread+0x0/0x7c0[<ffffffff80981f8c>] kthread+0x14c/0x210 [<ffffffff80911658>]ret_from_kernel_thread+0x18/0x20 [<ffffffff80981e40>] kthread+0x0/0x210Code: ad3e0008 43f0074a ad7e0018 ad9e0020 8c3001e8 40230101 <88210000>4821ed21 So force lockup work queue flush to fix this problem.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48704` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1030-azure-fde - 5.15.0-1030.37~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-136.153')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -49,15 +49,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-57.63~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1083.89')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1093.101')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -73,11 +73,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-aws-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1027.31~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1100.106')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -93,23 +93,23 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1030.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:202201710000070",
+						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1030.37~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1054.60')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1097.106')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -125,7 +125,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gcp-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1026.33~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -137,19 +137,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1061.65')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gkeop-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1012.16~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"comment": "linux-ibm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1041.46')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -157,19 +157,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-intel-iotg-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1023.28~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"comment": "linux-iot package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1010.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-58.64~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1091.100')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -185,7 +185,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-oracle-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1027.33~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -205,15 +205,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1078.89')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
+						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]
 			}

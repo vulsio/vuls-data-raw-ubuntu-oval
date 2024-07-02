@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52705 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: nilfs2:fix underflow in second superblock position calculations MacroNILFS_SB2_OFFSET_BYTES, which computes the position of the secondsuperblock, underflows when the argument device size is less than 4096bytes. Therefore, when using this macro, it is necessary to check inadvance that the device size is not less than a lower limit, or at leastthat underflow does not occur. The current nilfs2 implementation lacks thischeck, causing out-of-bound block access when mounting devices smaller than4096 bytes: I/O error, dev loop0, sector 36028797018963960 op 0x0:(READ)flags 0x0 phys_seg 1 prio class 2 NILFS (loop0): unable to read secondarysuperblock (blocksize = 1024) In addition, when trying to resize thefilesystem to a size below 4096 bytes, this underflow occurs innilfs_resize_fs(), passing a huge number of segments tonilfs_sufile_resize(), corrupting parameters such as the number of segmentsin superblocks. This causes excessive loop iterations innilfs_sufile_resize() during a subsequent resize ioctl, causing semaphorens_segctor_sem to block for a long time and hang the writer thread: INFO:task segctord:5067 blocked for more than 143 seconds. Not tainted6.2.0-rc8-syzkaller-00015-gf6feea56f66d #0 \"echo 0 >/proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:segctord state:D stack:23456 pid:5067 ppid:2 flags:0x00004000 CallTrace: <TASK> context_switch kernel/sched/core.c:5293 [inline]__schedule+0x1409/0x43f0 kernel/sched/core.c:6606 schedule+0xc3/0x190kernel/sched/core.c:6682 rwsem_down_write_slowpath+0xfcf/0x14a0kernel/locking/rwsem.c:1190 nilfs_transaction_lock+0x25c/0x4f0fs/nilfs2/segment.c:357 nilfs_segctor_thread_constructfs/nilfs2/segment.c:2486 [inline] nilfs_segctor_thread+0x52f/0x1140fs/nilfs2/segment.c:2570 kthread+0x270/0x300 kernel/kthread.c:376ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:308 </TASK> ... CallTrace: <TASK> folio_mark_accessed+0x51c/0xf00 mm/swap.c:515__nilfs_get_page_block fs/nilfs2/page.c:42 [inline]nilfs_grab_buffer+0x3d3/0x540 fs/nilfs2/page.c:61nilfs_mdt_submit_block+0xd7/0x8f0 fs/nilfs2/mdt.c:121nilfs_mdt_read_block+0xeb/0x430 fs/nilfs2/mdt.c:176nilfs_mdt_get_block+0x12d/0xbb0 fs/nilfs2/mdt.c:251nilfs_sufile_get_segment_usage_block fs/nilfs2/sufile.c:92 [inline]nilfs_sufile_truncate_range fs/nilfs2/sufile.c:679 [inline]nilfs_sufile_resize+0x7a3/0x12b0 fs/nilfs2/sufile.c:777nilfs_resize_fs+0x20c/0xed0 fs/nilfs2/super.c:422 nilfs_ioctl_resizefs/nilfs2/ioctl.c:1033 [inline] nilfs_ioctl+0x137c/0x2440fs/nilfs2/ioctl.c:1301 ... This fixes these issues by inserting appropriateminimum device size checks or anti-underflow checks, depending on where themacro is used.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: nilfs2:fix underflow in second superblock position calculations MacroNILFS_SB2_OFFSET_BYTES, which computes the position of the secondsuperblock, underflows when the argument device size is less than 4096bytes. Therefore, when using this macro, it is necessary to check inadvance that the device size is not less than a lower limit, or at leastthat underflow does not occur. The current nilfs2 implementation lacks thischeck, causing out-of-bound block access when mounting devices smaller than4096 bytes: I/O error, dev loop0, sector 36028797018963960 op 0x0:(READ)flags 0x0 phys_seg 1 prio class 2 NILFS (loop0): unable to read secondarysuperblock (blocksize = 1024) In addition, when trying to resize thefilesystem to a size below 4096 bytes, this underflow occurs innilfs_resize_fs(), passing a huge number of segments tonilfs_sufile_resize(), corrupting parameters such as the number of segmentsin superblocks. This causes excessive loop iterations innilfs_sufile_resize() during a subsequent resize ioctl, causing semaphorens_segctor_sem to block for a long time and hang the writer thread: INFO:task segctord:5067 blocked for more than 143 seconds. Not tainted6.2.0-rc8-syzkaller-00015-gf6feea56f66d #0 \"echo 0 >/proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:segctord state:D stack:23456 pid:5067 ppid:2 flags:0x00004000 CallTrace: <TASK> context_switch kernel/sched/core.c:5293 [inline]__schedule+0x1409/0x43f0 kernel/sched/core.c:6606 schedule+0xc3/0x190kernel/sched/core.c:6682 rwsem_down_write_slowpath+0xfcf/0x14a0kernel/locking/rwsem.c:1190 nilfs_transaction_lock+0x25c/0x4f0fs/nilfs2/segment.c:357 nilfs_segctor_thread_constructfs/nilfs2/segment.c:2486 [inline] nilfs_segctor_thread+0x52f/0x1140fs/nilfs2/segment.c:2570 kthread+0x270/0x300 kernel/kthread.c:376ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:308 </TASK> ... CallTrace: <TASK> folio_mark_accessed+0x51c/0xf00 mm/swap.c:515__nilfs_get_page_block fs/nilfs2/page.c:42 [inline]nilfs_grab_buffer+0x3d3/0x540 fs/nilfs2/page.c:61nilfs_mdt_submit_block+0xd7/0x8f0 fs/nilfs2/mdt.c:121nilfs_mdt_read_block+0xeb/0x430 fs/nilfs2/mdt.c:176nilfs_mdt_get_block+0x12d/0xbb0 fs/nilfs2/mdt.c:251nilfs_sufile_get_segment_usage_block fs/nilfs2/sufile.c:92 [inline]nilfs_sufile_truncate_range fs/nilfs2/sufile.c:679 [inline]nilfs_sufile_resize+0x7a3/0x12b0 fs/nilfs2/sufile.c:777nilfs_resize_fs+0x20c/0xed0 fs/nilfs2/super.c:422 nilfs_ioctl_resizefs/nilfs2/ioctl.c:1033 [inline] nilfs_ioctl+0x137c/0x2440fs/nilfs2/ioctl.c:1301 ... This fixes these issues by inserting appropriateminimum device size checks or anti-underflow checks, depending on where themacro is used.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52705` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1038-azure-fde - 5.15.0-1038.45~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-149.166')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -49,15 +49,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-72.79~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1091.97')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1102.110')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -73,11 +73,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-aws-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1036.40~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1108.114')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -93,19 +93,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1038.45~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022276720000030",
+						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1038.45~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1064.70')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
@@ -125,7 +125,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1105.114')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -141,7 +141,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gcp-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1034.42~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -153,19 +153,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1069.73')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gkeop-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1020.25~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"comment": "linux-ibm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1049.54')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -173,19 +173,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-intel-iotg-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1030.35~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"comment": "linux-iot package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1017.18')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-72.79~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1101.110')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -201,7 +201,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-oracle-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1035.41~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -221,7 +221,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1085.96')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
@@ -229,7 +229,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"comment": "linux-xilinx-zynqmp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1024.28')."
 					}
 				]
 			}

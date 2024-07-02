@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47546 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: ipv6:fix memory leak in fib6_rule_suppress The kernel leaks memory when a `fib`rule is present in IPv6 nftables firewall rules and a suppress_prefix ruleis present in the IPv6 routing rules (used by certain tools such aswg-quick). In such scenarios, every incoming packet will leak an allocationin `ip6_dst_cache` slab cache. After some hours of `bpftrace`-ing andsource code reading, I tracked down the issue to ca7a03c41753 (\"ipv6: donot free rt if FIB_LOOKUP_NOREF is set on suppress rule\"). The problem withthat change is that the generic `args->flags` always have`FIB_LOOKUP_NOREF` set[1][2] but the IPv6-specific flag`RT6_LOOKUP_F_DST_NOREF` might not be, leading to `fib6_rule_suppress` notdecreasing the refcount when needed. How to reproduce: - Add the followingnftables rule to a prerouting chain: meta nfproto ipv6 fib saddr . mark .iif oif missing drop This can be done with: sudo nft create table inet testsudo nft create chain inet test test_chain '{ type filter hook preroutingpriority filter + 10; policy accept; }' sudo nft add rule inet testtest_chain meta nfproto ipv6 fib saddr . mark . iif oif missing drop - Run:sudo ip -6 rule add table main suppress_prefixlength 0 - Watch `sudoslabtop -o | grep ip6_dst_cache` to see memory usage increase with everyincoming ipv6 packet. This patch exposes the protocol-specific flags to theprotocol specific `suppress` function, and check the protocol-specific`flags` argument for RT6_LOOKUP_F_DST_NOREF instead of the genericFIB_LOOKUP_NOREF when decreasing the refcount, like this. [1]:https://github.com/torvalds/linux/blob/ca7a03c4175366a92cee0ccc4fec0038c3266e26/net/ipv6/fib6_rules.c#L71[2]:https://github.com/torvalds/linux/blob/ca7a03c4175366a92cee0ccc4fec0038c3266e26/net/ipv6/fib6_rules.c#L99",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ipv6:fix memory leak in fib6_rule_suppress The kernel leaks memory when a `fib`rule is present in IPv6 nftables firewall rules and a suppress_prefix ruleis present in the IPv6 routing rules (used by certain tools such aswg-quick). In such scenarios, every incoming packet will leak an allocationin `ip6_dst_cache` slab cache. After some hours of `bpftrace`-ing andsource code reading, I tracked down the issue to ca7a03c41753 (\"ipv6: donot free rt if FIB_LOOKUP_NOREF is set on suppress rule\"). The problem withthat change is that the generic `args->flags` always have`FIB_LOOKUP_NOREF` set[1][2] but the IPv6-specific flag`RT6_LOOKUP_F_DST_NOREF` might not be, leading to `fib6_rule_suppress` notdecreasing the refcount when needed. How to reproduce: - Add the followingnftables rule to a prerouting chain: meta nfproto ipv6 fib saddr . mark .iif oif missing drop This can be done with: sudo nft create table inet testsudo nft create chain inet test test_chain '{ type filter hook preroutingpriority filter + 10; policy accept; }' sudo nft add rule inet testtest_chain meta nfproto ipv6 fib saddr . mark . iif oif missing drop - Run:sudo ip -6 rule add table main suppress_prefixlength 0 - Watch `sudoslabtop -o | grep ip6_dst_cache` to see memory usage increase with everyincoming ipv6 packet. This patch exposes the protocol-specific flags to theprotocol specific `suppress` function, and check the protocol-specific`flags` argument for RT6_LOOKUP_F_DST_NOREF instead of the genericFIB_LOOKUP_NOREF when decreasing the refcount, like this. [1]:https://github.com/torvalds/linux/blob/ca7a03c4175366a92cee0ccc4fec0038c3266e26/net/ipv6/fib6_rules.c#L71[2]:https://github.com/torvalds/linux/blob/ca7a03c4175366a92cee0ccc4fec0038c3266e26/net/ipv6/fib6_rules.c#L99\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47546` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-4.15.0-214-generic-lpae - 4.13.0-16.19\nlinux-image-4.15.0-214-lowlatency - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-lowlatency - 4.13.0-16.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1143-kvm - 4.15.0-1002.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1159-aws - 4.15.0-1001.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1168-azure - 4.15.0-1082.92\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1153-gcp - 4.15.0-1071.81\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1122-oracle - 4.15.0-1007.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -34,8 +34,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
-						"comment": "linux package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000000",
+						"comment": "linux package in bionic, is related to the CVE in some way and has been fixed (note: '4.13.0-16.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
@@ -43,15 +43,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-hwe-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-100.113~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
-						"comment": "linux-kvm package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-kvm package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
-						"comment": "linux-aws package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-aws package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -63,15 +63,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
-						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-aws-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1066.69~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
 						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
-						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000010",
+						"comment": "linux-azure-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1082.92')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
@@ -79,15 +79,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-azure-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1070.73~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
 						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
-						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000040",
+						"comment": "linux-gcp-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1071.81')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
@@ -95,7 +95,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-gcp-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1065.69~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -111,11 +111,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-ibm-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1015.16~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
-						"comment": "linux-oracle package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000110",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -127,7 +127,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-oracle-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1064.68~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -135,7 +135,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
-						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-raspi-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1053.60~18.04.1')."
 					}
 				]
 			}

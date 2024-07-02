@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48763 on Ubuntu 20.04 FIPS Compliant (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: x86: Forcibly leave nested virt when SMM state is toggledForcibly leave nested virtualization operation if userspace toggles SMMstate via KVM_SET_VCPU_EVENTS or KVM_SYNC_X86_EVENTS.  If userspaceforces the vCPU out of SMM while it's post-VMXON and then injects an SMI,vmx_enter_smm() will overwrite vmx->nested.smm.vmxon and end up with bothvmxon=false and smm.vmxon=false, but all other nVMX state allocated.Don't attempt to gracefully handle the transition as (a) most transitionsare nonsencial, e.g. forcing SMM while L2 is running, (b) there isn'tsufficient information to handle all transitions, e.g. SVM wants accessto the SMRAM save state, and (c) KVM_SET_VCPU_EVENTS must precedeKVM_SET_NESTED_STATE during state restore as the latter disallows puttingthe vCPU into L2 if SMM is active, and disallows tagging the vCPU asbeing post-VMXON in SMM if SMM is not active.Abuse of KVM_SET_VCPU_EVENTS manifests as a WARN and memory leak in nVMXdue to failure to free vmcs01's shadow VMCS, but the bug goes far beyondjust a memory leak, e.g. toggling SMM on while L2 is active puts the vCPUin an architecturally impossible state.  WARNING: CPU: 0 PID: 3606 at free_loaded_vmcs arch/x86/kvm/vmx/vmx.c:2665[inline]  WARNING: CPU: 0 PID: 3606 at free_loaded_vmcs+0x158/0x1a0arch/x86/kvm/vmx/vmx.c:2656  Modules linked in:  CPU: 1 PID: 3606 Comm: syz-executor725 Not tainted 5.17.0-rc1-syzkaller#0  Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 01/01/2011  RIP: 0010:free_loaded_vmcs arch/x86/kvm/vmx/vmx.c:2665 [inline]  RIP: 0010:free_loaded_vmcs+0x158/0x1a0 arch/x86/kvm/vmx/vmx.c:2656  Code: <0f> 0b eb b3 e8 8f 4d 9f 00 e9 f7 fe ff ff 48 89 df e8 92 4d 9f 00  Call Trace:   <TASK>   kvm_arch_vcpu_destroy+0x72/0x2f0 arch/x86/kvm/x86.c:11123   kvm_vcpu_destroy arch/x86/kvm/../../../virt/kvm/kvm_main.c:441 [inline]   kvm_destroy_vcpus+0x11f/0x290arch/x86/kvm/../../../virt/kvm/kvm_main.c:460   kvm_free_vcpus arch/x86/kvm/x86.c:11564 [inline]   kvm_arch_destroy_vm+0x2e8/0x470 arch/x86/kvm/x86.c:11676   kvm_destroy_vm arch/x86/kvm/../../../virt/kvm/kvm_main.c:1217 [inline]   kvm_put_kvm+0x4fa/0xb00 arch/x86/kvm/../../../virt/kvm/kvm_main.c:1250   kvm_vm_release+0x3f/0x50 arch/x86/kvm/../../../virt/kvm/kvm_main.c:1273   __fput+0x286/0x9f0 fs/file_table.c:311   task_work_run+0xdd/0x1a0 kernel/task_work.c:164   exit_task_work include/linux/task_work.h:32 [inline]   do_exit+0xb29/0x2a30 kernel/exit.c:806   do_group_exit+0xd2/0x2f0 kernel/exit.c:935   get_signal+0x4b0/0x28c0 kernel/signal.c:2862   arch_do_signal_or_restart+0x2a9/0x1c40 arch/x86/kernel/signal.c:868   handle_signal_work kernel/entry/common.c:148 [inline]   exit_to_user_mode_loop kernel/entry/common.c:172 [inline]   exit_to_user_mode_prepare+0x17d/0x290 kernel/entry/common.c:207   __syscall_exit_to_user_mode_work kernel/entry/common.c:289 [inline]   syscall_exit_to_user_mode+0x19/0x60 kernel/entry/common.c:300   do_syscall_64+0x42/0xb0 arch/x86/entry/common.c:86   entry_SYSCALL_64_after_hwframe+0x44/0xae   </TASK>",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: x86: Forcibly leave nested virt when SMM state is toggledForcibly leave nested virtualization operation if userspace toggles SMMstate via KVM_SET_VCPU_EVENTS or KVM_SYNC_X86_EVENTS.  If userspaceforces the vCPU out of SMM while it's post-VMXON and then injects an SMI,vmx_enter_smm() will overwrite vmx->nested.smm.vmxon and end up with bothvmxon=false and smm.vmxon=false, but all other nVMX state allocated.Don't attempt to gracefully handle the transition as (a) most transitionsare nonsencial, e.g. forcing SMM while L2 is running, (b) there isn'tsufficient information to handle all transitions, e.g. SVM wants accessto the SMRAM save state, and (c) KVM_SET_VCPU_EVENTS must precedeKVM_SET_NESTED_STATE during state restore as the latter disallows puttingthe vCPU into L2 if SMM is active, and disallows tagging the vCPU asbeing post-VMXON in SMM if SMM is not active.Abuse of KVM_SET_VCPU_EVENTS manifests as a WARN and memory leak in nVMXdue to failure to free vmcs01's shadow VMCS, but the bug goes far beyondjust a memory leak, e.g. toggling SMM on while L2 is active puts the vCPUin an architecturally impossible state.  WARNING: CPU: 0 PID: 3606 at free_loaded_vmcs arch/x86/kvm/vmx/vmx.c:2665[inline]  WARNING: CPU: 0 PID: 3606 at free_loaded_vmcs+0x158/0x1a0arch/x86/kvm/vmx/vmx.c:2656  Modules linked in:  CPU: 1 PID: 3606 Comm: syz-executor725 Not tainted 5.17.0-rc1-syzkaller#0  Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 01/01/2011  RIP: 0010:free_loaded_vmcs arch/x86/kvm/vmx/vmx.c:2665 [inline]  RIP: 0010:free_loaded_vmcs+0x158/0x1a0 arch/x86/kvm/vmx/vmx.c:2656  Code: <0f> 0b eb b3 e8 8f 4d 9f 00 e9 f7 fe ff ff 48 89 df e8 92 4d 9f 00  Call Trace:   <TASK>   kvm_arch_vcpu_destroy+0x72/0x2f0 arch/x86/kvm/x86.c:11123   kvm_vcpu_destroy arch/x86/kvm/../../../virt/kvm/kvm_main.c:441 [inline]   kvm_destroy_vcpus+0x11f/0x290arch/x86/kvm/../../../virt/kvm/kvm_main.c:460   kvm_free_vcpus arch/x86/kvm/x86.c:11564 [inline]   kvm_arch_destroy_vm+0x2e8/0x470 arch/x86/kvm/x86.c:11676   kvm_destroy_vm arch/x86/kvm/../../../virt/kvm/kvm_main.c:1217 [inline]   kvm_put_kvm+0x4fa/0xb00 arch/x86/kvm/../../../virt/kvm/kvm_main.c:1250   kvm_vm_release+0x3f/0x50 arch/x86/kvm/../../../virt/kvm/kvm_main.c:1273   __fput+0x286/0x9f0 fs/file_table.c:311   task_work_run+0xdd/0x1a0 kernel/task_work.c:164   exit_task_work include/linux/task_work.h:32 [inline]   do_exit+0xb29/0x2a30 kernel/exit.c:806   do_group_exit+0xd2/0x2f0 kernel/exit.c:935   get_signal+0x4b0/0x28c0 kernel/signal.c:2862   arch_do_signal_or_restart+0x2a9/0x1c40 arch/x86/kernel/signal.c:868   handle_signal_work kernel/entry/common.c:148 [inline]   exit_to_user_mode_loop kernel/entry/common.c:172 [inline]   exit_to_user_mode_prepare+0x17d/0x290 kernel/entry/common.c:207   __syscall_exit_to_user_mode_work kernel/entry/common.c:289 [inline]   syscall_exit_to_user_mode+0x19/0x60 kernel/entry/common.c:300   do_syscall_64+0x42/0xb0 arch/x86/entry/common.c:86   entry_SYSCALL_64_after_hwframe+0x44/0xae   </TASK>\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48763` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Compliant"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -48,16 +48,16 @@
 						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
+						"comment": "linux-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -72,12 +72,12 @@
 						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000120",
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -92,40 +92,40 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000140",
+						"comment": "linux-azure-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000160",
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-fips package in fips-updates/focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-aws-fips package in fips-updates/focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-azure-fips package in fips-updates/focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-gcp-fips package in fips-updates/focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -140,8 +140,8 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000130",
+						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -153,39 +153,39 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
+						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"comment": "linux-ibm package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000200",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"comment": "linux-iot package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -200,8 +200,8 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000150",
+						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -221,7 +221,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
@@ -229,7 +229,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"comment": "linux-xilinx-zynqmp package in focal is affected and needs fixing."
 					}
 				]
 			}

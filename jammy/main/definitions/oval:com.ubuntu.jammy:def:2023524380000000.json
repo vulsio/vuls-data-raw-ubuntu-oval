@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52438 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: binder:fix use-after-free in shinker's callback The mmap read lock is used duringthe shrinker's callback, which means that using alloc->vma pointer isn'tsafe as it can race with munmap(). As of commit dd2283f2605e (\"mm: mmap:zap pages with read mmap_sem in munmap\") the mmap lock is downgraded afterthe vma has been isolated. I was able to reproduce this issue by manuallyadding some delays and triggering page reclaiming through the shrinker'sdebug sysfs. The following KASAN report confirms the UAF:================================================================== BUG:KASAN: slab-use-after-free in zap_page_range_single+0x470/0x4b8 Read ofsize 8 at addr ffff356ed50e50f0 by task bash/478 CPU: 1 PID: 478 Comm: bashNot tainted 6.6.0-rc5-00055-g1c8b86a3799f-dirty #70 Hardware name:linux,dummy-virt (DT) Call trace: zap_page_range_single+0x470/0x4b8binder_alloc_free_page+0x608/0xadc __list_lru_walk_one+0x130/0x3b0list_lru_walk_node+0xc4/0x22c binder_shrink_scan+0x108/0x1dcshrinker_debugfs_scan_write+0x2b4/0x500 full_proxy_write+0xd4/0x140vfs_write+0x1ac/0x758 ksys_write+0xf0/0x1dc __arm64_sys_write+0x6c/0x9cAllocated by task 492: kmem_cache_alloc+0x130/0x368vm_area_alloc+0x2c/0x190 mmap_region+0x258/0x18bc do_mmap+0x694/0xa60vm_mmap_pgoff+0x170/0x29c ksys_mmap_pgoff+0x290/0x3a0__arm64_sys_mmap+0xcc/0x144 Freed by task 491: kmem_cache_free+0x17c/0x3c8vm_area_free_rcu_cb+0x74/0x98 rcu_core+0xa38/0x26d4 rcu_core_si+0x10/0x1c__do_softirq+0x2fc/0xd24 Last potentially related work creation:__call_rcu_common.constprop.0+0x6c/0xba0 call_rcu+0x10/0x1cvm_area_free+0x18/0x24 remove_vma+0xe4/0x118do_vmi_align_munmap.isra.0+0x718/0xb5c do_vmi_munmap+0xdc/0x1fc__vm_munmap+0x10c/0x278 __arm64_sys_munmap+0x58/0x7c Fix this issue byperforming instead a vma_lookup() which will fail to find the vma that wasisolated before the mmap lock downgrade. Note that this option has betterperformance than upgrading to a mmap write lock which would increasecontention. Plus, mmap_write_trylock() has been recently removed anyway.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52438` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-6.1.0-1035-oem - 6.1.0-1035.35\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: binder:fix use-after-free in shinker's callback The mmap read lock is used duringthe shrinker's callback, which means that using alloc->vma pointer isn'tsafe as it can race with munmap(). As of commit dd2283f2605e (\"mm: mmap:zap pages with read mmap_sem in munmap\") the mmap lock is downgraded afterthe vma has been isolated. I was able to reproduce this issue by manuallyadding some delays and triggering page reclaiming through the shrinker'sdebug sysfs. The following KASAN report confirms the UAF:================================================================== BUG:KASAN: slab-use-after-free in zap_page_range_single+0x470/0x4b8 Read ofsize 8 at addr ffff356ed50e50f0 by task bash/478 CPU: 1 PID: 478 Comm: bashNot tainted 6.6.0-rc5-00055-g1c8b86a3799f-dirty #70 Hardware name:linux,dummy-virt (DT) Call trace: zap_page_range_single+0x470/0x4b8binder_alloc_free_page+0x608/0xadc __list_lru_walk_one+0x130/0x3b0list_lru_walk_node+0xc4/0x22c binder_shrink_scan+0x108/0x1dcshrinker_debugfs_scan_write+0x2b4/0x500 full_proxy_write+0xd4/0x140vfs_write+0x1ac/0x758 ksys_write+0xf0/0x1dc __arm64_sys_write+0x6c/0x9cAllocated by task 492: kmem_cache_alloc+0x130/0x368vm_area_alloc+0x2c/0x190 mmap_region+0x258/0x18bc do_mmap+0x694/0xa60vm_mmap_pgoff+0x170/0x29c ksys_mmap_pgoff+0x290/0x3a0__arm64_sys_mmap+0xcc/0x144 Freed by task 491: kmem_cache_free+0x17c/0x3c8vm_area_free_rcu_cb+0x74/0x98 rcu_core+0xa38/0x26d4 rcu_core_si+0x10/0x1c__do_softirq+0x2fc/0xd24 Last potentially related work creation:__call_rcu_common.constprop.0+0x6c/0xba0 call_rcu+0x10/0x1cvm_area_free+0x18/0x24 remove_vma+0xe4/0x118do_vmi_align_munmap.isra.0+0x718/0xb5c do_vmi_munmap+0xdc/0x1fc__vm_munmap+0x10c/0x278 __arm64_sys_munmap+0x58/0x7c Fix this issue byperforming instead a vma_lookup() which will fail to find the vma that wasisolated before the mmap lock downgrade. Note that this option has betterperformance than upgrading to a mmap write lock which would increasecontention. Plus, mmap_write_trylock() has been recently removed anyway.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52438` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1060-azure-fde - 5.15.0-1060.69.1\nNo subscription required\n\nlinux-image-unsigned-6.1.0-1035-oem - 6.1.0-1035.35\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -47,7 +47,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000000",
-						"comment": "linux package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-102.112')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
@@ -59,11 +59,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
-						"comment": "linux-hwe-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-hwe-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-27.28~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
-						"comment": "linux-kvm package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-kvm package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1054.59')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
@@ -71,7 +71,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000010",
-						"comment": "linux-aws package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-aws package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1057.63')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
@@ -83,7 +83,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
-						"comment": "linux-azure package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-azure package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1060.69')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
@@ -94,8 +94,8 @@
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5, was needs-triage')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"test_ref": "oval:com.ubuntu.jammy:tst:202311940000040",
+						"comment": "linux-azure-fde package in jammy was vulnerable but has been fixed (note: '5.15.0-1060.69.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -107,7 +107,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
-						"comment": "linux-gcp package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-gcp package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1055.63')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
@@ -119,23 +119,23 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
-						"comment": "linux-gke package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-gke package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1054.59')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000080",
-						"comment": "linux-gkeop package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-gkeop package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1040.46')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-ibm package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-ibm package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1050.53')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
-						"comment": "linux-intel-iotg package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-intel-iotg package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1052.58')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
-						"comment": "linux-lowlatency package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-lowlatency package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-102.112')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
@@ -147,11 +147,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
-						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-27.28.1~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
-						"comment": "linux-nvidia package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-nvidia package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1048.48')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
@@ -159,7 +159,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000060",
-						"comment": "linux-oracle package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-oracle package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1055.61')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
@@ -175,11 +175,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
-						"comment": "linux-oem-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-oem-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1019.20')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
-						"comment": "linux-raspi package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-raspi package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1050.53')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
@@ -191,23 +191,23 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
-						"comment": "linux-starfive-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-starfive-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1011.12~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
-						"comment": "linux-aws-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-aws-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1017.17~22.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
-						"comment": "linux-azure-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-azure-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1018.19~22.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
-						"comment": "linux-gcp-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-gcp-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1017.17~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
-						"comment": "linux-oracle-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-oracle-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1020.20~22.04.1')."
 					}
 				]
 			}

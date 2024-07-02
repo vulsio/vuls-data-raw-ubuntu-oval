@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52497 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: erofs:fix lz4 inplace decompression Currently EROFS can map another compressedbuffer for inplace decompression, that was used to handle the cases thatsome pages of compressed data are actually not in-place I/O. However, likemost simple LZ77 algorithms, LZ4 expects the compressed data is arranged atthe end of the decompressed buffer and it explicitly uses memmove() tohandle overlapping:__________________________________________________________ |_ direction ofdecompression --> ____ |_ compressed data _| Although EROFS arrangescompressed data like this, it typically maps two individual virtual buffersso the relative order is uncertain. Previously, it was hardly observedsince LZ4 only uses memmove() for short overlapped literals and x86/arm64memmove implementations seem to completely cover it up and they don't havethis issue. Juhyung reported that EROFS data corruption can be found on anew Intel x86 processor. After some analysis, it seems that recent x86processors with the new FSRM feature expose this issue with \"rep movsb\".Let's strictly use the decompressed buffer for lz4 inplace decompressionfor now. Later, as an useful improvement, we could try to tie up these twobuffers together in the correct order.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: erofs:fix lz4 inplace decompression Currently EROFS can map another compressedbuffer for inplace decompression, that was used to handle the cases thatsome pages of compressed data are actually not in-place I/O. However, likemost simple LZ77 algorithms, LZ4 expects the compressed data is arranged atthe end of the decompressed buffer and it explicitly uses memmove() tohandle overlapping:__________________________________________________________ |_ direction ofdecompression --> ____ |_ compressed data _| Although EROFS arrangescompressed data like this, it typically maps two individual virtual buffersso the relative order is uncertain. Previously, it was hardly observedsince LZ4 only uses memmove() for short overlapped literals and x86/arm64memmove implementations seem to completely cover it up and they don't havethis issue. Juhyung reported that EROFS data corruption can be found on anew Intel x86 processor. After some analysis, it seems that recent x86processors with the new FSRM feature expose this issue with \"rep movsb\".Let's strictly use the decompressed buffer for lz4 inplace decompressionfor now. Later, as an useful improvement, we could try to tie up these twobuffers together in the correct order.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52497` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1098.105\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -50,8 +50,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2017109110000000",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1098.105')."
 					}
 				]
 			}

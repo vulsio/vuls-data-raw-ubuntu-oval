@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36028 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/hugetlb: fix DEBUG_LOCKS_WARN_ON(1) when dissolve_free_hugetlb_folio()When I did memory failure tests recently, below warning occurs:DEBUG_LOCKS_WARN_ON(1)WARNING: CPU: 8 PID: 1011 at kernel/locking/lockdep.c:232__lock_acquire+0xccb/0x1ca0Modules linked in: mce_inject hwpoison_injectCPU: 8 PID: 1011 Comm: bash Kdump: loaded Not tainted6.9.0-rc3-next-20240410-00012-gdb69f219f4be #3Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.14.0-0-g155821a1990b-prebuilt.qemu.org 04/01/2014RIP: 0010:__lock_acquire+0xccb/0x1ca0RSP: 0018:ffffa7a1c7fe3bd0 EFLAGS: 00000082RAX: 0000000000000000 RBX: eb851eb853975fcf RCX: ffffa1ce5fc1c9c8RDX: 00000000ffffffd8 RSI: 0000000000000027 RDI: ffffa1ce5fc1c9c0RBP: ffffa1c6865d3280 R08: ffffffffb0f570a8 R09: 0000000000009ffbR10: 0000000000000286 R11: ffffffffb0f2ad50 R12: ffffa1c6865d3d10R13: ffffa1c6865d3c70 R14: 0000000000000000 R15: 0000000000000004FS:  00007ff9f32aa740(0000) GS:ffffa1ce5fc00000(0000)knlGS:0000000000000000CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033CR2: 00007ff9f3134ba0 CR3: 00000008484e4000 CR4: 00000000000006f0Call Trace: <TASK> lock_acquire+0xbe/0x2d0 _raw_spin_lock_irqsave+0x3a/0x60 hugepage_subpool_put_pages.part.0+0xe/0xc0 free_huge_folio+0x253/0x3f0 dissolve_free_huge_page+0x147/0x210 __page_handle_poison+0x9/0x70 memory_failure+0x4e6/0x8c0 hard_offline_page_store+0x55/0xa0 kernfs_fop_write_iter+0x12c/0x1d0 vfs_write+0x380/0x540 ksys_write+0x64/0xe0 do_syscall_64+0xbc/0x1d0 entry_SYSCALL_64_after_hwframe+0x77/0x7fRIP: 0033:0x7ff9f3114887RSP: 002b:00007ffecbacb458 EFLAGS: 00000246 ORIG_RAX: 0000000000000001RAX: ffffffffffffffda RBX: 000000000000000c RCX: 00007ff9f3114887RDX: 000000000000000c RSI: 0000564494164e10 RDI: 0000000000000001RBP: 0000564494164e10 R08: 00007ff9f31d1460 R09: 000000007fffffffR10: 0000000000000000 R11: 0000000000000246 R12: 000000000000000cR13: 00007ff9f321b780 R14: 00007ff9f3217600 R15: 00007ff9f3216a00 </TASK>Kernel panic - not syncing: kernel: panic_on_warn set ...CPU: 8 PID: 1011 Comm: bash Kdump: loaded Not tainted6.9.0-rc3-next-20240410-00012-gdb69f219f4be #3Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.14.0-0-g155821a1990b-prebuilt.qemu.org 04/01/2014Call Trace: <TASK> panic+0x326/0x350 check_panic_on_warn+0x4f/0x50 __warn+0x98/0x190 report_bug+0x18e/0x1a0 handle_bug+0x3d/0x70 exc_invalid_op+0x18/0x70 asm_exc_invalid_op+0x1a/0x20RIP: 0010:__lock_acquire+0xccb/0x1ca0RSP: 0018:ffffa7a1c7fe3bd0 EFLAGS: 00000082RAX: 0000000000000000 RBX: eb851eb853975fcf RCX: ffffa1ce5fc1c9c8RDX: 00000000ffffffd8 RSI: 0000000000000027 RDI: ffffa1ce5fc1c9c0RBP: ffffa1c6865d3280 R08: ffffffffb0f570a8 R09: 0000000000009ffbR10: 0000000000000286 R11: ffffffffb0f2ad50 R12: ffffa1c6865d3d10R13: ffffa1c6865d3c70 R14: 0000000000000000 R15: 0000000000000004 lock_acquire+0xbe/0x2d0 _raw_spin_lock_irqsave+0x3a/0x60 hugepage_subpool_put_pages.part.0+0xe/0xc0 free_huge_folio+0x253/0x3f0 dissolve_free_huge_page+0x147/0x210 __page_handle_poison+0x9/0x70 memory_failure+0x4e6/0x8c0 hard_offline_page_store+0x55/0xa0 kernfs_fop_write_iter+0x12c/0x1d0 vfs_write+0x380/0x540 ksys_write+0x64/0xe0 do_syscall_64+0xbc/0x1d0 entry_SYSCALL_64_after_hwframe+0x77/0x7fRIP: 0033:0x7ff9f3114887RSP: 002b:00007ffecbacb458 EFLAGS: 00000246 ORIG_RAX: 0000000000000001RAX: ffffffffffffffda RBX: 000000000000000c RCX: 00007ff9f3114887RDX: 000000000000000c RSI: 0000564494164e10 RDI: 0000000000000001RBP: 0000564494164e10 R08: 00007ff9f31d1460 R09: 000000007fffffffR10: 0000000000000000 R11: 0000000000000246 R12: 000000000000000cR13: 00007ff9f321b780 R14: 00007ff9f3217600 R15: 00007ff9f3216a00 </TASK>After git bisecting and digging into the code, I believe the root cause isthat _deferred_list field of folio is unioned with _hugetlb_subpool field.In __update_and_free_hugetlb_folio(), folio->_deferred_---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/hugetlb: fix DEBUG_LOCKS_WARN_ON(1) when dissolve_free_hugetlb_folio()When I did memory failure tests recently, below warning occurs:DEBUG_LOCKS_WARN_ON(1)WARNING: CPU: 8 PID: 1011 at kernel/locking/lockdep.c:232__lock_acquire+0xccb/0x1ca0Modules linked in: mce_inject hwpoison_injectCPU: 8 PID: 1011 Comm: bash Kdump: loaded Not tainted6.9.0-rc3-next-20240410-00012-gdb69f219f4be #3Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.14.0-0-g155821a1990b-prebuilt.qemu.org 04/01/2014RIP: 0010:__lock_acquire+0xccb/0x1ca0RSP: 0018:ffffa7a1c7fe3bd0 EFLAGS: 00000082RAX: 0000000000000000 RBX: eb851eb853975fcf RCX: ffffa1ce5fc1c9c8RDX: 00000000ffffffd8 RSI: 0000000000000027 RDI: ffffa1ce5fc1c9c0RBP: ffffa1c6865d3280 R08: ffffffffb0f570a8 R09: 0000000000009ffbR10: 0000000000000286 R11: ffffffffb0f2ad50 R12: ffffa1c6865d3d10R13: ffffa1c6865d3c70 R14: 0000000000000000 R15: 0000000000000004FS:  00007ff9f32aa740(0000) GS:ffffa1ce5fc00000(0000)knlGS:0000000000000000CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033CR2: 00007ff9f3134ba0 CR3: 00000008484e4000 CR4: 00000000000006f0Call Trace: <TASK> lock_acquire+0xbe/0x2d0 _raw_spin_lock_irqsave+0x3a/0x60 hugepage_subpool_put_pages.part.0+0xe/0xc0 free_huge_folio+0x253/0x3f0 dissolve_free_huge_page+0x147/0x210 __page_handle_poison+0x9/0x70 memory_failure+0x4e6/0x8c0 hard_offline_page_store+0x55/0xa0 kernfs_fop_write_iter+0x12c/0x1d0 vfs_write+0x380/0x540 ksys_write+0x64/0xe0 do_syscall_64+0xbc/0x1d0 entry_SYSCALL_64_after_hwframe+0x77/0x7fRIP: 0033:0x7ff9f3114887RSP: 002b:00007ffecbacb458 EFLAGS: 00000246 ORIG_RAX: 0000000000000001RAX: ffffffffffffffda RBX: 000000000000000c RCX: 00007ff9f3114887RDX: 000000000000000c RSI: 0000564494164e10 RDI: 0000000000000001RBP: 0000564494164e10 R08: 00007ff9f31d1460 R09: 000000007fffffffR10: 0000000000000000 R11: 0000000000000246 R12: 000000000000000cR13: 00007ff9f321b780 R14: 00007ff9f3217600 R15: 00007ff9f3216a00 </TASK>Kernel panic - not syncing: kernel: panic_on_warn set ...CPU: 8 PID: 1011 Comm: bash Kdump: loaded Not tainted6.9.0-rc3-next-20240410-00012-gdb69f219f4be #3Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.14.0-0-g155821a1990b-prebuilt.qemu.org 04/01/2014Call Trace: <TASK> panic+0x326/0x350 check_panic_on_warn+0x4f/0x50 __warn+0x98/0x190 report_bug+0x18e/0x1a0 handle_bug+0x3d/0x70 exc_invalid_op+0x18/0x70 asm_exc_invalid_op+0x1a/0x20RIP: 0010:__lock_acquire+0xccb/0x1ca0RSP: 0018:ffffa7a1c7fe3bd0 EFLAGS: 00000082RAX: 0000000000000000 RBX: eb851eb853975fcf RCX: ffffa1ce5fc1c9c8RDX: 00000000ffffffd8 RSI: 0000000000000027 RDI: ffffa1ce5fc1c9c0RBP: ffffa1c6865d3280 R08: ffffffffb0f570a8 R09: 0000000000009ffbR10: 0000000000000286 R11: ffffffffb0f2ad50 R12: ffffa1c6865d3d10R13: ffffa1c6865d3c70 R14: 0000000000000000 R15: 0000000000000004 lock_acquire+0xbe/0x2d0 _raw_spin_lock_irqsave+0x3a/0x60 hugepage_subpool_put_pages.part.0+0xe/0xc0 free_huge_folio+0x253/0x3f0 dissolve_free_huge_page+0x147/0x210 __page_handle_poison+0x9/0x70 memory_failure+0x4e6/0x8c0 hard_offline_page_store+0x55/0xa0 kernfs_fop_write_iter+0x12c/0x1d0 vfs_write+0x380/0x540 ksys_write+0x64/0xe0 do_syscall_64+0xbc/0x1d0 entry_SYSCALL_64_after_hwframe+0x77/0x7fRIP: 0033:0x7ff9f3114887RSP: 002b:00007ffecbacb458 EFLAGS: 00000246 ORIG_RAX: 0000000000000001RAX: ffffffffffffffda RBX: 000000000000000c RCX: 00007ff9f3114887RDX: 000000000000000c RSI: 0000564494164e10 RDI: 0000000000000001RBP: 0000564494164e10 R08: 00007ff9f31d1460 R09: 000000007fffffffR10: 0000000000000000 R11: 0000000000000246 R12: 000000000000000cR13: 00007ff9f321b780 R14: 00007ff9f3217600 R15: 00007ff9f3216a00 </TASK>After git bisecting and digging into the code, I believe the root cause isthat _deferred_list field of folio is unioned with _hugetlb_subpool field.In __update_and_free_hugetlb_folio(), folio->_deferred_---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36028` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-2.16\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-lowlatency - 4.8.0-39.42~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1004.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1001.10\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1102-aws - 4.15.0-1030.31~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1114-azure - 4.11.0-1009.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1099-gcp - 4.10.0-1004.4\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-oracle - 4.15.0-1007.9~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -32,36 +32,36 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016100880000040",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
 					}
 				]
 			}

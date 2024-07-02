@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47169 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: serial:rp2: use 'request_firmware' instead of 'request_firmware_nowait' In'rp2_probe', the driver registers 'rp2_uart_interrupt' then calls'rp2_fw_cb' through 'request_firmware_nowait'. In 'rp2_fw_cb', if thefirmware don't exists, function just return without initializing ports of'rp2_card'. But now the interrupt handler function has been registered, andwhen an interrupt comes, 'rp2_uart_interrupt' may access those ports thencausing NULL pointer dereference or other bugs. Because the driver doessome initialization work in 'rp2_fw_cb', in order to make the driver readyto handle interrupts, 'request_firmware' should be used instead ofasynchronous 'request_firmware_nowait'. This report reveals it: INFO:trying to register non-static key. the code is fine but needs lockdepannotation. turning off the locking correctness validator. CPU: 2 PID: 0Comm: swapper/2 Not tainted 4.19.177-gdba4159c14ef-dirty #45 Hardware name:QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014 Call Trace: <IRQ> __dump_stacklib/dump_stack.c:77 [inline] dump_stack+0xec/0x156 lib/dump_stack.c:118assign_lock_key kernel/locking/lockdep.c:727 [inline]register_lock_class+0x14e5/0x1ba0 kernel/locking/lockdep.c:753__lock_acquire+0x187/0x3750 kernel/locking/lockdep.c:3303lock_acquire+0x124/0x340 kernel/locking/lockdep.c:3907 __raw_spin_lockinclude/linux/spinlock_api_smp.h:142 [inline] _raw_spin_lock+0x32/0x50kernel/locking/spinlock.c:144 spin_lock include/linux/spinlock.h:329[inline] rp2_ch_interrupt drivers/tty/serial/rp2.c:466 [inline]rp2_asic_interrupt.isra.9+0x15d/0x990 drivers/tty/serial/rp2.c:493rp2_uart_interrupt+0x49/0xe0 drivers/tty/serial/rp2.c:504__handle_irq_event_percpu+0xfb/0x770 kernel/irq/handle.c:149handle_irq_event_percpu+0x79/0x150 kernel/irq/handle.c:189handle_irq_event+0xac/0x140 kernel/irq/handle.c:206handle_fasteoi_irq+0x232/0x5c0 kernel/irq/chip.c:725generic_handle_irq_desc include/linux/irqdesc.h:155 [inline]handle_irq+0x230/0x3a0 arch/x86/kernel/irq_64.c:87 do_IRQ+0xa7/0x1e0arch/x86/kernel/irq.c:247 common_interrupt+0xf/0xfarch/x86/entry/entry_64.S:670 </IRQ> RIP: 0010:native_safe_halt+0x28/0x30arch/x86/include/asm/irqflags.h:61 Code: 00 00 55 be 04 00 00 00 48 c7 c700 c2 2f 8c 48 89 e5 e8 fb 31 e7 f8 8b 05 75 af 8d 03 85 c0 7e 07 0f 00 2d8a 61 65 00 fb f4 <5d> c3 90 90 90 90 90 90 0f 1f 44 00 00 55 48 89 e5 4157 41 56 41 RSP: 0018:ffff88806b71fcc8 EFLAGS: 00000246 ORIG_RAX:ffffffffffffffde RAX: 0000000000000000 RBX: ffffffff8bde7e48 RCX:ffffffff88a21285 RDX: 0000000000000000 RSI: 0000000000000004 RDI:ffffffff8c2fc200 RBP: ffff88806b71fcc8 R08: fffffbfff185f840 R09:fffffbfff185f840 R10: 0000000000000001 R11: fffffbfff185f840 R12:0000000000000002 R13: ffffffff8bea18a0 R14: 0000000000000000 R15:0000000000000000 arch_safe_halt arch/x86/include/asm/paravirt.h:94 [inline]default_idle+0x6f/0x360 arch/x86/kernel/process.c:557arch_cpu_idle+0xf/0x20 arch/x86/kernel/process.c:548default_idle_call+0x3b/0x60 kernel/sched/idle.c:93 cpuidle_idle_callkernel/sched/idle.c:153 [inline] do_idle+0x2ab/0x3c0kernel/sched/idle.c:263 cpu_startup_entry+0xcb/0xe0 kernel/sched/idle.c:369start_secondary+0x3b8/0x4e0 arch/x86/kernel/smpboot.c:271secondary_startup_64+0xa4/0xb0 arch/x86/kernel/head_64.S:243 BUG: unable tohandle kernel NULL pointer dereference at 0000000000000010 PGD8000000056d27067 P4D 8000000056d27067 PUD 56d28067 PMD 0 Oops: 0000 [#1]PREEMPT SMP KASAN PTI CPU: 2 PID: 0 Comm: swapper/2 Not tainted4.19.177-gdba4159c14ef-dirty #45 Hardware name: QEMU Standard PC (Q35 +ICH9, 2009), BIOS rel-1.12.0-59- gc9ba5276e321-prebuilt.qemu.org 04/01/2014RIP: 0010:readl arch/x86/include/asm/io.h:59 [inline] RIP:0010:rp2_ch_interrupt drivers/tty/serial/rp2.c:472 [inline] RIP:0010:rp2_asic_interrupt.isra.9+0x181/0x990 drivers/tty/serial/rp2.c: 493 Co---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: serial:rp2: use 'request_firmware' instead of 'request_firmware_nowait' In'rp2_probe', the driver registers 'rp2_uart_interrupt' then calls'rp2_fw_cb' through 'request_firmware_nowait'. In 'rp2_fw_cb', if thefirmware don't exists, function just return without initializing ports of'rp2_card'. But now the interrupt handler function has been registered, andwhen an interrupt comes, 'rp2_uart_interrupt' may access those ports thencausing NULL pointer dereference or other bugs. Because the driver doessome initialization work in 'rp2_fw_cb', in order to make the driver readyto handle interrupts, 'request_firmware' should be used instead ofasynchronous 'request_firmware_nowait'. This report reveals it: INFO:trying to register non-static key. the code is fine but needs lockdepannotation. turning off the locking correctness validator. CPU: 2 PID: 0Comm: swapper/2 Not tainted 4.19.177-gdba4159c14ef-dirty #45 Hardware name:QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014 Call Trace: <IRQ> __dump_stacklib/dump_stack.c:77 [inline] dump_stack+0xec/0x156 lib/dump_stack.c:118assign_lock_key kernel/locking/lockdep.c:727 [inline]register_lock_class+0x14e5/0x1ba0 kernel/locking/lockdep.c:753__lock_acquire+0x187/0x3750 kernel/locking/lockdep.c:3303lock_acquire+0x124/0x340 kernel/locking/lockdep.c:3907 __raw_spin_lockinclude/linux/spinlock_api_smp.h:142 [inline] _raw_spin_lock+0x32/0x50kernel/locking/spinlock.c:144 spin_lock include/linux/spinlock.h:329[inline] rp2_ch_interrupt drivers/tty/serial/rp2.c:466 [inline]rp2_asic_interrupt.isra.9+0x15d/0x990 drivers/tty/serial/rp2.c:493rp2_uart_interrupt+0x49/0xe0 drivers/tty/serial/rp2.c:504__handle_irq_event_percpu+0xfb/0x770 kernel/irq/handle.c:149handle_irq_event_percpu+0x79/0x150 kernel/irq/handle.c:189handle_irq_event+0xac/0x140 kernel/irq/handle.c:206handle_fasteoi_irq+0x232/0x5c0 kernel/irq/chip.c:725generic_handle_irq_desc include/linux/irqdesc.h:155 [inline]handle_irq+0x230/0x3a0 arch/x86/kernel/irq_64.c:87 do_IRQ+0xa7/0x1e0arch/x86/kernel/irq.c:247 common_interrupt+0xf/0xfarch/x86/entry/entry_64.S:670 </IRQ> RIP: 0010:native_safe_halt+0x28/0x30arch/x86/include/asm/irqflags.h:61 Code: 00 00 55 be 04 00 00 00 48 c7 c700 c2 2f 8c 48 89 e5 e8 fb 31 e7 f8 8b 05 75 af 8d 03 85 c0 7e 07 0f 00 2d8a 61 65 00 fb f4 <5d> c3 90 90 90 90 90 90 0f 1f 44 00 00 55 48 89 e5 4157 41 56 41 RSP: 0018:ffff88806b71fcc8 EFLAGS: 00000246 ORIG_RAX:ffffffffffffffde RAX: 0000000000000000 RBX: ffffffff8bde7e48 RCX:ffffffff88a21285 RDX: 0000000000000000 RSI: 0000000000000004 RDI:ffffffff8c2fc200 RBP: ffff88806b71fcc8 R08: fffffbfff185f840 R09:fffffbfff185f840 R10: 0000000000000001 R11: fffffbfff185f840 R12:0000000000000002 R13: ffffffff8bea18a0 R14: 0000000000000000 R15:0000000000000000 arch_safe_halt arch/x86/include/asm/paravirt.h:94 [inline]default_idle+0x6f/0x360 arch/x86/kernel/process.c:557arch_cpu_idle+0xf/0x20 arch/x86/kernel/process.c:548default_idle_call+0x3b/0x60 kernel/sched/idle.c:93 cpuidle_idle_callkernel/sched/idle.c:153 [inline] do_idle+0x2ab/0x3c0kernel/sched/idle.c:263 cpu_startup_entry+0xcb/0xe0 kernel/sched/idle.c:369start_secondary+0x3b8/0x4e0 arch/x86/kernel/smpboot.c:271secondary_startup_64+0xa4/0xb0 arch/x86/kernel/head_64.S:243 BUG: unable tohandle kernel NULL pointer dereference at 0000000000000010 PGD8000000056d27067 P4D 8000000056d27067 PUD 56d28067 PMD 0 Oops: 0000 [#1]PREEMPT SMP KASAN PTI CPU: 2 PID: 0 Comm: swapper/2 Not tainted4.19.177-gdba4159c14ef-dirty #45 Hardware name: QEMU Standard PC (Q35 +ICH9, 2009), BIOS rel-1.12.0-59- gc9ba5276e321-prebuilt.qemu.org 04/01/2014RIP: 0010:readl arch/x86/include/asm/io.h:59 [inline] RIP:0010:rp2_ch_interrupt drivers/tty/serial/rp2.c:472 [inline] RIP:0010:rp2_asic_interrupt.isra.9+0x181/0x990 drivers/tty/serial/rp2.c: 493 Co---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47169` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-80.90')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -48,16 +48,16 @@
 						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"comment": "linux-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1044.46')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1054.57')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -72,12 +72,12 @@
 						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1055.57')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -92,20 +92,20 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000130",
+						"comment": "linux-azure-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000150",
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1016.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
@@ -113,7 +113,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1049.53')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -128,8 +128,8 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000120",
+						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -141,39 +141,39 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1021.22')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000180",
+						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000000",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000090",
+						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000160",
+						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1052.56')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -188,8 +188,8 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000140",
+						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -209,15 +209,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1041.45')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
+						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",

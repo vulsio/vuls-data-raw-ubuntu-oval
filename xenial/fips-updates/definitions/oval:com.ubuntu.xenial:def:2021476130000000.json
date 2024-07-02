@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47613 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:i2c: virtio: fix completion handlingThe driver currently assumes that the notify callback is only receivedwhen the device is done with all the queued buffers.However, this is not true, since the notify callback could be calledwithout any of the queued buffers being completed (for example, withvirtio-pci and shared interrupts) or with only some of the buffers beingcompleted (since the driver makes them available to the device inmultiple separate virtqueue_add_sgs() calls).This can lead to incorrect data on the I2C bus or memory corruption inthe guest if the device operates on buffers which are have been freed bythe driver.  (The WARN_ON in the driver is also triggered.) BUG kmalloc-128 (Tainted: G        W        ): Poison overwritten First byte 0x0 instead of 0x6b Allocated in i2cdev_ioctl_rdwr+0x9d/0x1de age=243 cpu=0 pid=28 \tmemdup_user+0x2e/0xbd \ti2cdev_ioctl_rdwr+0x9d/0x1de \ti2cdev_ioctl+0x247/0x2ed \tvfs_ioctl+0x21/0x30 \tsys_ioctl+0xb18/0xb41 Freed in i2cdev_ioctl_rdwr+0x1bb/0x1de age=68 cpu=0 pid=28 \tkfree+0x1bd/0x1cc \ti2cdev_ioctl_rdwr+0x1bb/0x1de \ti2cdev_ioctl+0x247/0x2ed \tvfs_ioctl+0x21/0x30 \tsys_ioctl+0xb18/0xb41Fix this by calling virtio_get_buf() from the notify handler like othervirtio drivers and by actually waiting for all the buffers to becompleted.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:i2c: virtio: fix completion handlingThe driver currently assumes that the notify callback is only receivedwhen the device is done with all the queued buffers.However, this is not true, since the notify callback could be calledwithout any of the queued buffers being completed (for example, withvirtio-pci and shared interrupts) or with only some of the buffers beingcompleted (since the driver makes them available to the device inmultiple separate virtqueue_add_sgs() calls).This can lead to incorrect data on the I2C bus or memory corruption inthe guest if the device operates on buffers which are have been freed bythe driver.  (The WARN_ON in the driver is also triggered.) BUG kmalloc-128 (Tainted: G        W        ): Poison overwritten First byte 0x0 instead of 0x6b Allocated in i2cdev_ioctl_rdwr+0x9d/0x1de age=243 cpu=0 pid=28 \tmemdup_user+0x2e/0xbd \ti2cdev_ioctl_rdwr+0x9d/0x1de \ti2cdev_ioctl+0x247/0x2ed \tvfs_ioctl+0x21/0x30 \tsys_ioctl+0xb18/0xb41 Freed in i2cdev_ioctl_rdwr+0x1bb/0x1de age=68 cpu=0 pid=28 \tkfree+0x1bd/0x1cc \ti2cdev_ioctl_rdwr+0x1bb/0x1de \ti2cdev_ioctl+0x247/0x2ed \tvfs_ioctl+0x21/0x30 \tsys_ioctl+0xb18/0xb41Fix this by calling virtio_get_buf() from the notify handler like othervirtio drivers and by actually waiting for all the buffers to becompleted.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47613` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1098.105\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2017109110000000",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1098.105')."
 					}
 				]
 			}

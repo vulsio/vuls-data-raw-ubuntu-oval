@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52523 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf,sockmap: Reject sk_msg egress redirects to non-TCP sockets With aSOCKMAP/SOCKHASH map and an sk_msg program user can steer messages sentfrom one TCP socket (s1) to actually egress from another TCP socket (s2):tcp_bpf_sendmsg(s1) // = sk_prot->sendmsg tcp_bpf_send_verdict(s1) //__SK_REDIRECT case tcp_bpf_sendmsg_redir(s2) tcp_bpf_push_locked(s2)tcp_bpf_push(s2) tcp_rate_check_app_limited(s2) // expects tcp_socktcp_sendmsg_locked(s2) // ditto There is a hard-coded assumption in thecall-chain, that the egress socket (s2) is a TCP socket. However in commit122e6c79efe1 (\"sock_map: Update sock type checks for UDP\") we have enabledredirects to non-TCP sockets. This was done for the sake of BPF sk_skbprograms. There was no indention to support sk_msg send-to-egress use case.As a result, attempts to send-to-egress through a non-TCP socket lead to acrash due to invalid downcast from sock to tcp_sock: BUG: kernel NULLpointer dereference, address: 000000000000002f ... Call Trace: <TASK> ?show_regs+0x60/0x70 ? __die+0x1f/0x70 ? page_fault_oops+0x80/0x160 ?do_user_addr_fault+0x2d7/0x800 ? rcu_is_watching+0x11/0x50 ?exc_page_fault+0x70/0x1c0 ? asm_exc_page_fault+0x27/0x30 ?tcp_tso_segs+0x14/0xa0 tcp_write_xmit+0x67/0xce0__tcp_push_pending_frames+0x32/0xf0 tcp_push+0x107/0x140tcp_sendmsg_locked+0x99f/0xbb0 tcp_bpf_push+0x19d/0x3a0tcp_bpf_sendmsg_redir+0x55/0xd0 tcp_bpf_send_verdict+0x407/0x550tcp_bpf_sendmsg+0x1a1/0x390 inet_sendmsg+0x6a/0x70 sock_sendmsg+0x9d/0xc0 ?sockfd_lookup_light+0x12/0x80 __sys_sendto+0x10e/0x160 ?syscall_enter_from_user_mode+0x20/0x60 ? __this_cpu_preempt_check+0x13/0x20? lockdep_hardirqs_on+0x82/0x110 __x64_sys_sendto+0x1f/0x30do_syscall_64+0x38/0x90 entry_SYSCALL_64_after_hwframe+0x63/0xcd Rejectselecting a non-TCP sockets as redirect target from a BPF sk_msg program toprevent the crash. When attempted, user will receive an EACCES error fromsend/sendto/sendmsg() syscall.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52523` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic-64k - 6.6.0-14.14\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-aws - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-azure - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-gcp - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-14-lowlatency - 6.6.0-14.14.1\nlinux-image-unsigned-6.6.0-14-lowlatency-64k - 6.6.0-14.14.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-oracle - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-6.7.0-1001-raspi - 6.7.0-1001.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf,sockmap: Reject sk_msg egress redirects to non-TCP sockets With aSOCKMAP/SOCKHASH map and an sk_msg program user can steer messages sentfrom one TCP socket (s1) to actually egress from another TCP socket (s2):tcp_bpf_sendmsg(s1) // = sk_prot->sendmsg tcp_bpf_send_verdict(s1) //__SK_REDIRECT case tcp_bpf_sendmsg_redir(s2) tcp_bpf_push_locked(s2)tcp_bpf_push(s2) tcp_rate_check_app_limited(s2) // expects tcp_socktcp_sendmsg_locked(s2) // ditto There is a hard-coded assumption in thecall-chain, that the egress socket (s2) is a TCP socket. However in commit122e6c79efe1 (\"sock_map: Update sock type checks for UDP\") we have enabledredirects to non-TCP sockets. This was done for the sake of BPF sk_skbprograms. There was no indention to support sk_msg send-to-egress use case.As a result, attempts to send-to-egress through a non-TCP socket lead to acrash due to invalid downcast from sock to tcp_sock: BUG: kernel NULLpointer dereference, address: 000000000000002f ... Call Trace: <TASK> ?show_regs+0x60/0x70 ? __die+0x1f/0x70 ? page_fault_oops+0x80/0x160 ?do_user_addr_fault+0x2d7/0x800 ? rcu_is_watching+0x11/0x50 ?exc_page_fault+0x70/0x1c0 ? asm_exc_page_fault+0x27/0x30 ?tcp_tso_segs+0x14/0xa0 tcp_write_xmit+0x67/0xce0__tcp_push_pending_frames+0x32/0xf0 tcp_push+0x107/0x140tcp_sendmsg_locked+0x99f/0xbb0 tcp_bpf_push+0x19d/0x3a0tcp_bpf_sendmsg_redir+0x55/0xd0 tcp_bpf_send_verdict+0x407/0x550tcp_bpf_sendmsg+0x1a1/0x390 inet_sendmsg+0x6a/0x70 sock_sendmsg+0x9d/0xc0 ?sockfd_lookup_light+0x12/0x80 __sys_sendto+0x10e/0x160 ?syscall_enter_from_user_mode+0x20/0x60 ? __this_cpu_preempt_check+0x13/0x20? lockdep_hardirqs_on+0x82/0x110 __x64_sys_sendto+0x1f/0x30do_syscall_64+0x38/0x90 entry_SYSCALL_64_after_hwframe+0x63/0xcd Rejectselecting a non-TCP sockets as redirect target from a BPF sk_msg program toprevent the crash. When attempted, user will receive an EACCES error fromsend/sendto/sendmsg() syscall.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52523` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic-64k - 6.6.0-14.14\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-aws - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-azure - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-gcp - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-14-lowlatency - 6.6.0-14.14.1\nlinux-image-unsigned-6.6.0-14-lowlatency-64k - 6.6.0-14.14.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-oracle - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-6.7.0-1001-raspi - 6.7.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,40 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023343240000000",
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000000",
 						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-14.14')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023343240000010",
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
 						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023343240000010",
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
 						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023343240000010",
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
 						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023343240000010",
-						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.6.0-1001.1')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023343240000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000030",
 						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-14.14.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023343240000010",
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
 						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023240230000010",
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000040",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.7.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

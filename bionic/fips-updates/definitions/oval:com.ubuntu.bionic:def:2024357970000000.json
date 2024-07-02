@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35797 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: mm:cachestat: fix two shmem bugs When cachestat on shmem races with swappingand invalidation, there are two possible bugs: 1) A swapin error can haveresulted in a poisoned swap entry in the shmem inode's xarray. Callingget_shadow_from_swap_cache() on it will result in an out-of-bounds accessto swapper_spaces[]. Validate the entry with non_swap_entry() before goingfurther. 2) When we find a valid swap entry in the shmem's inode, theshadow entry in the swapcache might not exist yet: swap IO is still inprogress and we're before __remove_mapping; swapin, invalidation, orswapoff have removed the shadow from swapcache after we saw the shmem swapentry. This will send a NULL to workingset_test_recent(). The latter purelyoperates on pointer bits, so it won't crash - node 0, memcg ID 0, evictiontimestamp 0, etc. are all valid inputs - but it's a bogus test. In theorythat could result in a false \"recently evicted\" count. Such a falsepositive wouldn't be the end of the world. But for code clarity and(future) robustness, be explicit about this case. Bail onget_shadow_from_swap_cache() returning NULL.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mm:cachestat: fix two shmem bugs When cachestat on shmem races with swappingand invalidation, there are two possible bugs: 1) A swapin error can haveresulted in a poisoned swap entry in the shmem inode's xarray. Callingget_shadow_from_swap_cache() on it will result in an out-of-bounds accessto swapper_spaces[]. Validate the entry with non_swap_entry() before goingfurther. 2) When we find a valid swap entry in the shmem's inode, theshadow entry in the swapcache might not exist yet: swap IO is still inprogress and we're before __remove_mapping; swapin, invalidation, orswapoff have removed the shadow from swapcache after we saw the shmem swapentry. This will send a NULL to workingset_test_recent(). The latter purelyoperates on pointer bits, so it won't crash - node 0, memcg ID 0, evictiontimestamp 0, etc. are all valid inputs - but it's a bogus test. In theorythat could result in a false \"recently evicted\" count. Such a falsepositive wouldn't be the end of the world. But for code clarity and(future) robustness, be explicit about this case. Bail onget_shadow_from_swap_cache() returning NULL.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35797` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2103-aws-fips - 4.15.0-2103.109\nlinux-image-unsigned-hmac-4.15.0-2103-aws-fips - 4.15.0-2103.109\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2082-azure-fips - 4.15.0-2082.88\nlinux-image-unsigned-hmac-4.15.0-2082-azure-fips - 4.15.0-2082.88\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nlinux-image-unsigned-hmac-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Compliant"
@@ -39,20 +39,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000010",
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1119.130')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000020",
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2103.109')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000030",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2082.88')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000040",
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2066.71')."
 					}
 				]
 			}

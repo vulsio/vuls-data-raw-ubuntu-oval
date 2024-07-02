@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52854 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: padata:Fix refcnt handling in padata_free_shell() In a high-load arm64environment, the pcrypt_aead01 test in LTP can lead to system UAF(Use-After-Free) issues. Due to the lengthy analysis of the pcrypt_aead01function call, I'll describe the problem scenario using a simplified model:Suppose there's a user of padata named `user_function` that adheres to thepadata requirement of calling `padata_free_shell` after `serial()` has beeninvoked, as demonstrated in the following code: ```c struct request {struct padata_priv padata; struct completion *done; }; void parallel(structpadata_priv *padata) { do_something(); } void serial(struct padata_priv*padata) { struct request *request = container_of(padata, struct request,padata); complete(request->done); } void user_function() {DECLARE_COMPLETION(done) padata->parallel = parallel; padata->serial =serial; padata_do_parallel(); wait_for_completion(&done);padata_free_shell(); } ``` In the corresponding padata.c file, there's thefollowing code: ```c static void padata_serial_worker(struct work_struct*serial_work) { ... cnt = 0; while (!list_empty(&local_list)) { ...padata->serial(padata); cnt++; } local_bh_enable(); if(refcount_sub_and_test(cnt, &pd->refcnt)) padata_free_pd(pd); } ``` Becauseof the high system load and the accumulation of unexecuted softirq at thismoment, `local_bh_enable()` in padata takes longer to execute than usual.Subsequently, when accessing `pd->refcnt`, `pd` has already been releasedby `padata_free_shell()`, resulting in a UAF issue with `pd->refcnt`. Thefix is straightforward: add `refcount_dec_and_test` before calling`padata_free_pd` in `padata_free_shell`.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: padata:Fix refcnt handling in padata_free_shell() In a high-load arm64environment, the pcrypt_aead01 test in LTP can lead to system UAF(Use-After-Free) issues. Due to the lengthy analysis of the pcrypt_aead01function call, I'll describe the problem scenario using a simplified model:Suppose there's a user of padata named `user_function` that adheres to thepadata requirement of calling `padata_free_shell` after `serial()` has beeninvoked, as demonstrated in the following code: ```c struct request {struct padata_priv padata; struct completion *done; }; void parallel(structpadata_priv *padata) { do_something(); } void serial(struct padata_priv*padata) { struct request *request = container_of(padata, struct request,padata); complete(request->done); } void user_function() {DECLARE_COMPLETION(done) padata->parallel = parallel; padata->serial =serial; padata_do_parallel(); wait_for_completion(&done);padata_free_shell(); } ``` In the corresponding padata.c file, there's thefollowing code: ```c static void padata_serial_worker(struct work_struct*serial_work) { ... cnt = 0; while (!list_empty(&local_list)) { ...padata->serial(padata); cnt++; } local_bh_enable(); if(refcount_sub_and_test(cnt, &pd->refcnt)) padata_free_pd(pd); } ``` Becauseof the high system load and the accumulation of unexecuted softirq at thismoment, `local_bh_enable()` in padata takes longer to execute than usual.Subsequently, when accessing `pd->refcnt`, `pd` has already been releasedby `padata_free_shell()`, resulting in a UAF issue with `pd->refcnt`. Thefix is straightforward: add `refcount_dec_and_test` before calling`padata_free_pd` in `padata_free_shell`.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52854` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic-64k - 6.6.0-14.14\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-aws - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-azure - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-gcp - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-14-lowlatency - 6.6.0-14.14.1\nlinux-image-unsigned-6.6.0-14-lowlatency-64k - 6.6.0-14.14.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-oracle - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-6.7.0-1001-raspi - 6.7.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-14.14')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000030",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-14.14.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000040",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

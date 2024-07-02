@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47582 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: core: Make do_proc_control() and do_proc_bulk() killableThe USBDEVFS_CONTROL and USBDEVFS_BULK ioctls invokeusb_start_wait_urb(), which contains an uninterruptible wait with auser-specified timeout value.  If timeout value is very large and thedevice being accessed does not respond in a reasonable amount of time,the kernel will complain about \"Task X blocked for more than Nseconds\", as found in testing by syzbot:INFO: task syz-executor.0:8700 blocked for more than 143 seconds.      Not tainted 5.14.0-rc7-syzkaller #0\"echo 0 > /proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:syz-executor.0  state:D stack:23192 pid: 8700 ppid:  8455flags:0x00004004Call Trace: context_switch kernel/sched/core.c:4681 [inline] __schedule+0xc07/0x11f0 kernel/sched/core.c:5938 schedule+0x14b/0x210 kernel/sched/core.c:6017 schedule_timeout+0x98/0x2f0 kernel/time/timer.c:1857 do_wait_for_common+0x2da/0x480 kernel/sched/completion.c:85 __wait_for_common kernel/sched/completion.c:106 [inline] wait_for_common kernel/sched/completion.c:117 [inline] wait_for_completion_timeout+0x46/0x60 kernel/sched/completion.c:157 usb_start_wait_urb+0x167/0x550 drivers/usb/core/message.c:63 do_proc_bulk+0x978/0x1080 drivers/usb/core/devio.c:1236 proc_bulk drivers/usb/core/devio.c:1273 [inline] usbdev_do_ioctl drivers/usb/core/devio.c:2547 [inline] usbdev_ioctl+0x3441/0x6b10 drivers/usb/core/devio.c:2713...To fix this problem, this patch replaces usbfs's calls tousb_control_msg() and usb_bulk_msg() with special-purpose code thatdoes essentially the same thing (as recommended in the comment forusb_start_wait_urb()), except that it always uses a killable wait andit uses GFP_KERNEL rather than GFP_NOIO.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: core: Make do_proc_control() and do_proc_bulk() killableThe USBDEVFS_CONTROL and USBDEVFS_BULK ioctls invokeusb_start_wait_urb(), which contains an uninterruptible wait with auser-specified timeout value.  If timeout value is very large and thedevice being accessed does not respond in a reasonable amount of time,the kernel will complain about \"Task X blocked for more than Nseconds\", as found in testing by syzbot:INFO: task syz-executor.0:8700 blocked for more than 143 seconds.      Not tainted 5.14.0-rc7-syzkaller #0\"echo 0 > /proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:syz-executor.0  state:D stack:23192 pid: 8700 ppid:  8455flags:0x00004004Call Trace: context_switch kernel/sched/core.c:4681 [inline] __schedule+0xc07/0x11f0 kernel/sched/core.c:5938 schedule+0x14b/0x210 kernel/sched/core.c:6017 schedule_timeout+0x98/0x2f0 kernel/time/timer.c:1857 do_wait_for_common+0x2da/0x480 kernel/sched/completion.c:85 __wait_for_common kernel/sched/completion.c:106 [inline] wait_for_common kernel/sched/completion.c:117 [inline] wait_for_completion_timeout+0x46/0x60 kernel/sched/completion.c:157 usb_start_wait_urb+0x167/0x550 drivers/usb/core/message.c:63 do_proc_bulk+0x978/0x1080 drivers/usb/core/devio.c:1236 proc_bulk drivers/usb/core/devio.c:1273 [inline] usbdev_do_ioctl drivers/usb/core/devio.c:2547 [inline] usbdev_ioctl+0x3441/0x6b10 drivers/usb/core/devio.c:2713...To fix this problem, this patch replaces usbfs's calls tousb_control_msg() and usb_bulk_msg() with special-purpose code thatdoes essentially the same thing (as recommended in the comment forusb_start_wait_urb()), except that it always uses a killable wait andit uses GFP_KERNEL rather than GFP_NOIO.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47582` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					}
 				]
 			}

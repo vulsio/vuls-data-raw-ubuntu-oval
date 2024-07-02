@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35860 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:support deferring bpf_link dealloc to after RCU grace period BPF link forsome program types is passed as a \"context\" which can be used by those BPFprograms to look up additional information. E.g., for multi-kprobes andmulti-uprobes, link is used to fetch BPF cookie values. Because of thisruntime dependency, when bpf_link refcnt drops to zero there could still beactive BPF programs running accessing link data. This patch adds genericsupport to defer bpf_link dealloc callback to after RCU GP, if requested.This is done by exposing two different deallocation callbacks, onesynchronous and one deferred. If deferred one is provided, bpf_link_free()will schedule dealloc_deferred() callback to happen after RCU GP. BPF isusing two flavors of RCU: \"classic\" non-sleepable one and RCU tasks traceone. The latter is used when sleepable BPF programs are used.bpf_link_free() accommodates that by checking underlying BPF program'ssleepable flag, and goes either through normal RCU GP only fornon-sleepable, or through RCU tasks trace GP *and* then normal RCU GP(taking into account rcu_trace_implies_rcu_gp() optimization), if BPFprogram is sleepable. We use this for multi-kprobe and multi-uprobe links,which dereference link during program run. We also preventively switchraw_tp link to use deferred dealloc callback, as upcoming changes inbpf-next tree expose raw_tp link data (specifically, cookie value) to BPFprogram at runtime as well.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:support deferring bpf_link dealloc to after RCU grace period BPF link forsome program types is passed as a \"context\" which can be used by those BPFprograms to look up additional information. E.g., for multi-kprobes andmulti-uprobes, link is used to fetch BPF cookie values. Because of thisruntime dependency, when bpf_link refcnt drops to zero there could still beactive BPF programs running accessing link data. This patch adds genericsupport to defer bpf_link dealloc callback to after RCU GP, if requested.This is done by exposing two different deallocation callbacks, onesynchronous and one deferred. If deferred one is provided, bpf_link_free()will schedule dealloc_deferred() callback to happen after RCU GP. BPF isusing two flavors of RCU: \"classic\" non-sleepable one and RCU tasks traceone. The latter is used when sleepable BPF programs are used.bpf_link_free() accommodates that by checking underlying BPF program'ssleepable flag, and goes either through normal RCU GP only fornon-sleepable, or through RCU tasks trace GP *and* then normal RCU GP(taking into account rcu_trace_implies_rcu_gp() optimization), if BPFprogram is sleepable. We use this for multi-kprobe and multi-uprobe links,which dereference link during program run. We also preventively switchraw_tp link to use deferred dealloc callback, as upcoming changes inbpf-next tree expose raw_tp link data (specifically, cookie value) to BPFprogram at runtime as well.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35860` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-2.16\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-lowlatency - 4.8.0-39.42~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1004.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1001.10\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1102-aws - 4.15.0-1030.31~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1114-azure - 4.11.0-1009.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1099-gcp - 4.10.0-1004.4\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-oracle - 4.15.0-1007.9~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -32,36 +32,36 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016100880000040",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
 					}
 				]
 			}

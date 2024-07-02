@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36001 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: netfs:Fix the pre-flush when appending to a file in writethrough mode Innetfs_perform_write(), when the file is marked NETFS_ICTX_WRITETHROUGH orO_*SYNC or RWF_*SYNC was specified, write-through caching is performed on abuffered file. When setting up for write-through, we flush any conflictingwrites in the region and wait for the write to complete, failing if there'sa write error to return. The issue arises if we're writing at or above theEOF position because we skip the flush and - more importantly - the wait.This becomes a problem if there's a partial folio at the end of the filethat is being written out and we want to make a write to it too. Both thealready-running write and the write we start both want to clear thewriteback mark, but whoever is second causes a warning looking somethinglike: ------------[ cut here ]------------ R=00000012: folio 11 is notunder writeback WARNING: CPU: 34 PID: 654 at fs/netfs/write_collect.c:105... CPU: 34 PID: 654 Comm: kworker/u386:27 Tainted: G S ... ... Workqueue:events_unbound netfs_write_collection_worker ... RIP:0010:netfs_writeback_lookup_folio Fix this by making the flush-and-waitunconditional. It will do nothing if there are no folios in the pagecacheand will return quickly if there are no folios in the region specified.Further, move the WBC attachment above the flush call as the flush is goingto attach a WBC and detach it again if it is not present - and since weneed one anyway we might as well share it.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: netfs:Fix the pre-flush when appending to a file in writethrough mode Innetfs_perform_write(), when the file is marked NETFS_ICTX_WRITETHROUGH orO_*SYNC or RWF_*SYNC was specified, write-through caching is performed on abuffered file. When setting up for write-through, we flush any conflictingwrites in the region and wait for the write to complete, failing if there'sa write error to return. The issue arises if we're writing at or above theEOF position because we skip the flush and - more importantly - the wait.This becomes a problem if there's a partial folio at the end of the filethat is being written out and we want to make a write to it too. Both thealready-running write and the write we start both want to clear thewriteback mark, but whoever is second causes a warning looking somethinglike: ------------[ cut here ]------------ R=00000012: folio 11 is notunder writeback WARNING: CPU: 34 PID: 654 at fs/netfs/write_collect.c:105... CPU: 34 PID: 654 Comm: kworker/u386:27 Tainted: G S ... ... Workqueue:events_unbound netfs_write_collection_worker ... RIP:0010:netfs_writeback_lookup_folio Fix this by making the flush-and-waitunconditional. It will do nothing if there are no folios in the pagecacheand will return quickly if there are no folios in the region specified.Further, move the WBC attachment above the flush call as the flush is goingto attach a WBC and detach it again if it is not present - and since weneed one anyway we might as well share it.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36001` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-4.15.0-214-generic-lpae - 4.13.0-16.19\nlinux-image-4.15.0-214-lowlatency - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-lowlatency - 4.13.0-16.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-152-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-152-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-152-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-152-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-152-lowlatency - 5.4.0-37.41~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1143-kvm - 4.15.0-1002.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1159-aws - 4.15.0-1001.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1104-aws - 5.4.0-1018.18~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1168-azure - 4.15.0-1082.92\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1110-azure - 5.4.0-1020.20~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1153-gcp - 4.15.0-1071.81\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1107-gcp - 5.4.0-1019.19~18.04.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1051-ibm - 5.4.0-1010.11~18.04.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1122-oracle - 4.15.0-1007.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1103-oracle - 5.4.0-1019.19~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-1088-raspi - 5.4.0-1013.13~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -32,24 +32,24 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
-						"comment": "linux package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000000",
+						"comment": "linux package in bionic, is related to the CVE in some way and has been fixed (note: '4.13.0-16.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
 						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000050",
+						"comment": "linux-hwe-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-37.41~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
-						"comment": "linux-kvm package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-kvm package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
-						"comment": "linux-aws package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-aws package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -60,40 +60,40 @@
 						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
-						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000100",
+						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1018.18~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
 						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
-						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000010",
+						"comment": "linux-azure-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1082.92')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000070",
+						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
 						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
-						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000040",
+						"comment": "linux-gcp-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1071.81')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000090",
+						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -108,12 +108,12 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016107230000030",
+						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1010.11~18.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
-						"comment": "linux-oracle package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000110",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -124,16 +124,16 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000080",
+						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
 						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
-						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000060",
+						"comment": "linux-raspi-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1013.13~18.04.1')."
 					}
 				]
 			}

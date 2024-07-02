@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27010 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net/sched: Fix mirred deadlock on device recursion When the mirred actionis used on a classful egress qdisc and a packet is mirrored or redirectedto self we hit a qdisc lock deadlock. See trace below. [..... other inforemoved for brevity....] [ 82.890906] [ 82.890906]============================================ [ 82.890906] WARNING: possiblerecursive locking detected [ 82.890906] 6.8.0-05205-g77fadd89fe2d-dirty#213 Tainted: G W [ 82.890906] --------------------------------------------[ 82.890906] ping/418 is trying to acquire lock: [ 82.890906]ffff888006994110 (&sch->q.lock){+.-.}-{3:3}, at:__dev_queue_xmit+0x1778/0x3550 [ 82.890906] [ 82.890906] but task isalready holding lock: [ 82.890906] ffff888006994110(&sch->q.lock){+.-.}-{3:3}, at: __dev_queue_xmit+0x1778/0x3550 [ 82.890906][ 82.890906] other info that might help us debug this: [ 82.890906]Possible unsafe locking scenario: [ 82.890906] [ 82.890906] CPU0 [82.890906] ---- [ 82.890906] lock(&sch->q.lock); [ 82.890906]lock(&sch->q.lock); [ 82.890906] [ 82.890906] *** DEADLOCK *** [ 82.890906][..... other info removed for brevity....] Example setup (eth0->eth0) torecreate tc qdisc add dev eth0 root handle 1: htb default 30 tc filter adddev eth0 handle 1: protocol ip prio 2 matchall \\ action mirred egressredirect dev eth0 Another example(eth0->eth1->eth0) to recreate tc qdiscadd dev eth0 root handle 1: htb default 30 tc filter add dev eth0 handle 1:protocol ip prio 2 matchall \\ action mirred egress redirect dev eth1 tcqdisc add dev eth1 root handle 1: htb default 30 tc filter add dev eth1handle 1: protocol ip prio 2 matchall \\ action mirred egress redirect deveth0 We fix this by adding an owner field (CPU id) to struct Qdisc setafter root qdisc is entered. When the softirq enters it a second time, ifthe qdisc owner is the same CPU, the packet is dropped to break the loop.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/sched: Fix mirred deadlock on device recursion When the mirred actionis used on a classful egress qdisc and a packet is mirrored or redirectedto self we hit a qdisc lock deadlock. See trace below. [..... other inforemoved for brevity....] [ 82.890906] [ 82.890906]============================================ [ 82.890906] WARNING: possiblerecursive locking detected [ 82.890906] 6.8.0-05205-g77fadd89fe2d-dirty#213 Tainted: G W [ 82.890906] --------------------------------------------[ 82.890906] ping/418 is trying to acquire lock: [ 82.890906]ffff888006994110 (&sch->q.lock){+.-.}-{3:3}, at:__dev_queue_xmit+0x1778/0x3550 [ 82.890906] [ 82.890906] but task isalready holding lock: [ 82.890906] ffff888006994110(&sch->q.lock){+.-.}-{3:3}, at: __dev_queue_xmit+0x1778/0x3550 [ 82.890906][ 82.890906] other info that might help us debug this: [ 82.890906]Possible unsafe locking scenario: [ 82.890906] [ 82.890906] CPU0 [82.890906] ---- [ 82.890906] lock(&sch->q.lock); [ 82.890906]lock(&sch->q.lock); [ 82.890906] [ 82.890906] *** DEADLOCK *** [ 82.890906][..... other info removed for brevity....] Example setup (eth0->eth0) torecreate tc qdisc add dev eth0 root handle 1: htb default 30 tc filter adddev eth0 handle 1: protocol ip prio 2 matchall \\ action mirred egressredirect dev eth0 Another example(eth0->eth1->eth0) to recreate tc qdiscadd dev eth0 root handle 1: htb default 30 tc filter add dev eth0 handle 1:protocol ip prio 2 matchall \\ action mirred egress redirect dev eth1 tcqdisc add dev eth1 root handle 1: htb default 30 tc filter add dev eth1handle 1: protocol ip prio 2 matchall \\ action mirred egress redirect deveth0 We fix this by adding an owner field (CPU id) to struct Qdisc setafter root qdisc is entered. When the softirq enters it a second time, ifthe qdisc owner is the same CPU, the packet is dropped to break the loop.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27010` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-3.13.0-173-generic-lpae - 3.11.0-12.19\nlinux-image-3.13.0-173-lowlatency - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500 - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500mc - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-smp - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-emb - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-smp - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-lowlatency - 3.11.0-12.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					}
 				]
 			}

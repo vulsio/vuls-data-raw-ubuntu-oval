@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35872 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/secretmem: fix GUP-fast succeeding on secretmem foliosfolio_is_secretmem() currently relies on secretmem folios being LRU folios,to save some cycles. However, folios might reside in a folio batch withoutthe LRU flag set, or temporarily have their LRU flag cleared. Consequently,the LRU flag is unreliable for this purpose. In particular, this is thecase when secretmem_fault() allocates a fresh page and callsfilemap_add_folio()->folio_add_lru(). The folio might be added to theper-cpu folio batch and won't get the LRU flag set until the batch wasdrained using e.g., lru_add_drain(). Consequently, folio_is_secretmem()might not detect secretmem folios and GUP-fast can succeed in grabbing asecretmem folio, crashing the kernel when we would later tryreading/writing to the folio, because the folio has been unmapped from thedirectmap. Fix it by removing that unreliable check.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/secretmem: fix GUP-fast succeeding on secretmem foliosfolio_is_secretmem() currently relies on secretmem folios being LRU folios,to save some cycles. However, folios might reside in a folio batch withoutthe LRU flag set, or temporarily have their LRU flag cleared. Consequently,the LRU flag is unreliable for this purpose. In particular, this is thecase when secretmem_fault() allocates a fresh page and callsfilemap_add_folio()->folio_add_lru(). The folio might be added to theper-cpu folio batch and won't get the LRU flag set until the batch wasdrained using e.g., lru_add_drain(). Consequently, folio_is_secretmem()might not detect secretmem folios and GUP-fast can succeed in grabbing asecretmem folio, crashing the kernel when we would later tryreading/writing to the folio, because the folio has been unmapped from thedirectmap. Fix it by removing that unreliable check.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35872` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1098.105\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2017109110000000",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1098.105')."
 					}
 				]
 			}

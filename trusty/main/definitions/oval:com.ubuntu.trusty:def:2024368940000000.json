@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36894 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: gadget: f_fs: Fix race between aio_cancel() and AIO request completeFFS based applications can utilize the aio_cancel() callback to dequeuepending USB requests submitted to the UDC.  There is a scenario where theFFS application issues an AIO cancel call, while the UDC is handling asoft disconnect.  For a DWC3 based implementation, the callstack lookslike the following:    DWC3 Gadget                               FFS Applicationdwc3_gadget_soft_disconnect()              ...  --> dwc3_stop_active_transfers()    --> dwc3_gadget_giveback(-ESHUTDOWN)      --> ffs_epfile_async_io_complete()   ffs_aio_cancel()        --> usb_ep_free_request()            --> usb_ep_dequeue()There is currently no locking implemented between the AIO completionhandler and AIO cancel, so the issue occurs if the completion routine isrunning in parallel to an AIO cancel call coming from the FFS application.As the completion call frees the USB request (io_data->req) the FFSapplication is also referencing it for the usb_ep_dequeue() call.  This canlead to accessing a stale/hanging pointer.commit b566d38857fc (\"usb: gadget: f_fs: use io_data->status consistently\")relocated the usb_ep_free_request() into ffs_epfile_async_io_complete().However, in order to properly implement locking to mitigate this issue, thespinlock can't be added to ffs_epfile_async_io_complete(), asusb_ep_dequeue() (if successfully dequeuing a USB request) will call thefunction driver's completion handler in the same context.  Hence, leadinginto a deadlock.Fix this issue by moving the usb_ep_free_request() back toffs_user_copy_worker(), and ensuring that it explicitly sets io_data->reqto NULL after freeing it within the ffs->eps_lock.  This resolves the racecondition above, as the ffs_aio_cancel() routine will not continueattempting to dequeue a request that has already been freed, or theffs_user_copy_work() not freeing the USB request until the AIO cancel isdone referencing it.This fix depends on  commit b566d38857fc (\"usb: gadget: f_fs: use io_data->status  consistently\")",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: gadget: f_fs: Fix race between aio_cancel() and AIO request completeFFS based applications can utilize the aio_cancel() callback to dequeuepending USB requests submitted to the UDC.  There is a scenario where theFFS application issues an AIO cancel call, while the UDC is handling asoft disconnect.  For a DWC3 based implementation, the callstack lookslike the following:    DWC3 Gadget                               FFS Applicationdwc3_gadget_soft_disconnect()              ...  --> dwc3_stop_active_transfers()    --> dwc3_gadget_giveback(-ESHUTDOWN)      --> ffs_epfile_async_io_complete()   ffs_aio_cancel()        --> usb_ep_free_request()            --> usb_ep_dequeue()There is currently no locking implemented between the AIO completionhandler and AIO cancel, so the issue occurs if the completion routine isrunning in parallel to an AIO cancel call coming from the FFS application.As the completion call frees the USB request (io_data->req) the FFSapplication is also referencing it for the usb_ep_dequeue() call.  This canlead to accessing a stale/hanging pointer.commit b566d38857fc (\"usb: gadget: f_fs: use io_data->status consistently\")relocated the usb_ep_free_request() into ffs_epfile_async_io_complete().However, in order to properly implement locking to mitigate this issue, thespinlock can't be added to ffs_epfile_async_io_complete(), asusb_ep_dequeue() (if successfully dequeuing a USB request) will call thefunction driver's completion handler in the same context.  Hence, leadinginto a deadlock.Fix this issue by moving the usb_ep_free_request() back toffs_user_copy_worker(), and ensuring that it explicitly sets io_data->reqto NULL after freeing it within the ffs->eps_lock.  This resolves the racecondition above, as the ffs_aio_cancel() routine will not continueattempting to dequeue a request that has already been freed, or theffs_user_copy_work() not freeing the USB request until the AIO cancel isdone referencing it.This fix depends on  commit b566d38857fc (\"usb: gadget: f_fs: use io_data->status  consistently\")\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36894` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-3.13.0-173-generic-lpae - 3.11.0-12.19\nlinux-image-3.13.0-173-lowlatency - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500 - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500mc - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-smp - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-emb - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-smp - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-lowlatency - 3.11.0-12.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					}
 				]
 			}

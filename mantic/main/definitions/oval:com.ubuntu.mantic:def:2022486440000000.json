@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48644 on Ubuntu 23.10 (mantic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net/sched: taprio: avoid disabling offload when it was never enabled In anincredibly strange API design decision, qdisc->destroy() gets called evenif qdisc->init() never succeeded, not exclusively since commit 87b60cfacf9f(\"net_sched: fix error recovery at qdisc creation\"), but apparently alsoearlier (in the case of qdisc_create_dflt()). The taprio qdisc does notfully acknowledge this when it attempts full offload, because it starts offwith q->flags = TAPRIO_FLAGS_INVALID in taprio_init(), then it replacesq->flags with TCA_TAPRIO_ATTR_FLAGS parsed from netlink (intaprio_change(), tail called from taprio_init()). But in taprio_destroy(),we call taprio_disable_offload(), and this determines what to do based onFULL_OFFLOAD_IS_ENABLED(q->flags). But looking at the implementation ofFULL_OFFLOAD_IS_ENABLED() (a bitwise check of bit 1 in q->flags), it isinvalid to call this macro on q->flags when it containsTAPRIO_FLAGS_INVALID, because that is set to U32_MAX, and thereforeFULL_OFFLOAD_IS_ENABLED() will return true on an invalid set of flags. As aresult, it is possible to crash the kernel if user space forces an errorbetween setting q->flags = TAPRIO_FLAGS_INVALID, and the calling oftaprio_enable_offload(). This is because drivers do not expect the offloadto be disabled when it was never enabled. The error that we force here isto attach taprio as a non-root qdisc, but instead as child of an mqprioroot qdisc: $ tc qdisc add dev swp0 root handle 1: \\ mqprio num_tc 8 map 01 2 3 4 5 6 7 \\ queues 1@0 1@1 1@2 1@3 1@4 1@5 1@6 1@7 hw 0 $ tc qdiscreplace dev swp0 parent 1:1 \\ taprio num_tc 8 map 0 1 2 3 4 5 6 7 \\ queues1@0 1@1 1@2 1@3 1@4 1@5 1@6 1@7 base-time 0 \\ sched-entry S 0x7f 990000sched-entry S 0x80 100000 \\ flags 0x0 clockid CLOCK_TAI Unable to handlekernel paging request at virtual address fffffffffffffff8[fffffffffffffff8] pgd=0000000000000000, p4d=0000000000000000 Internalerror: Oops: 96000004 [#1] PREEMPT SMP Call trace: taprio_dump+0x27c/0x310vsc9959_port_setup_tc+0x1f4/0x460 felix_port_setup_tc+0x24/0x3cdsa_slave_setup_tc+0x54/0x27c taprio_disable_offload.isra.0+0x58/0xe0taprio_destroy+0x80/0x104 qdisc_create+0x240/0x470tc_modify_qdisc+0x1fc/0x6b0 rtnetlink_rcv_msg+0x12c/0x390netlink_rcv_skb+0x5c/0x130 rtnetlink_rcv+0x1c/0x2c Fix this by keepingtrack of the operations we made, and undo the offload only if we actuallydid it. I've added \"bool offloaded\" inside a 4 byte hole between \"intclockid\" and \"atomic64_t picos_per_byte\". Now the first cache line lookslike below: $ pahole -C taprio_sched net/sched/sch_taprio.o structtaprio_sched { struct Qdisc * * qdiscs; /* 0 8 */ struct Qdisc * root; /* 88 */ u32 flags; /* 16 4 */ enum tk_offsets tk_offset; /* 20 4 */ intclockid; /* 24 4 */ bool offloaded; /* 28 1 */ /* XXX 3 bytes hole, try topack */ atomic64_t picos_per_byte; /* 32 0 */ /* XXX 8 bytes hole, try topack */ spinlock_t current_entry_lock; /* 40 0 */ /* XXX 8 bytes hole, tryto pack */ struct sched_entry * current_entry; /* 48 8 */ structsched_gate_list * oper_sched; /* 56 8 */ /* --- cacheline 1 boundary (64bytes) --- */",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/sched: taprio: avoid disabling offload when it was never enabled In anincredibly strange API design decision, qdisc->destroy() gets called evenif qdisc->init() never succeeded, not exclusively since commit 87b60cfacf9f(\"net_sched: fix error recovery at qdisc creation\"), but apparently alsoearlier (in the case of qdisc_create_dflt()). The taprio qdisc does notfully acknowledge this when it attempts full offload, because it starts offwith q->flags = TAPRIO_FLAGS_INVALID in taprio_init(), then it replacesq->flags with TCA_TAPRIO_ATTR_FLAGS parsed from netlink (intaprio_change(), tail called from taprio_init()). But in taprio_destroy(),we call taprio_disable_offload(), and this determines what to do based onFULL_OFFLOAD_IS_ENABLED(q->flags). But looking at the implementation ofFULL_OFFLOAD_IS_ENABLED() (a bitwise check of bit 1 in q->flags), it isinvalid to call this macro on q->flags when it containsTAPRIO_FLAGS_INVALID, because that is set to U32_MAX, and thereforeFULL_OFFLOAD_IS_ENABLED() will return true on an invalid set of flags. As aresult, it is possible to crash the kernel if user space forces an errorbetween setting q->flags = TAPRIO_FLAGS_INVALID, and the calling oftaprio_enable_offload(). This is because drivers do not expect the offloadto be disabled when it was never enabled. The error that we force here isto attach taprio as a non-root qdisc, but instead as child of an mqprioroot qdisc: $ tc qdisc add dev swp0 root handle 1: \\ mqprio num_tc 8 map 01 2 3 4 5 6 7 \\ queues 1@0 1@1 1@2 1@3 1@4 1@5 1@6 1@7 hw 0 $ tc qdiscreplace dev swp0 parent 1:1 \\ taprio num_tc 8 map 0 1 2 3 4 5 6 7 \\ queues1@0 1@1 1@2 1@3 1@4 1@5 1@6 1@7 base-time 0 \\ sched-entry S 0x7f 990000sched-entry S 0x80 100000 \\ flags 0x0 clockid CLOCK_TAI Unable to handlekernel paging request at virtual address fffffffffffffff8[fffffffffffffff8] pgd=0000000000000000, p4d=0000000000000000 Internalerror: Oops: 96000004 [#1] PREEMPT SMP Call trace: taprio_dump+0x27c/0x310vsc9959_port_setup_tc+0x1f4/0x460 felix_port_setup_tc+0x24/0x3cdsa_slave_setup_tc+0x54/0x27c taprio_disable_offload.isra.0+0x58/0xe0taprio_destroy+0x80/0x104 qdisc_create+0x240/0x470tc_modify_qdisc+0x1fc/0x6b0 rtnetlink_rcv_msg+0x12c/0x390netlink_rcv_skb+0x5c/0x130 rtnetlink_rcv+0x1c/0x2c Fix this by keepingtrack of the operations we made, and undo the offload only if we actuallydid it. I've added \"bool offloaded\" inside a 4 byte hole between \"intclockid\" and \"atomic64_t picos_per_byte\". Now the first cache line lookslike below: $ pahole -C taprio_sched net/sched/sch_taprio.o structtaprio_sched { struct Qdisc * * qdiscs; /* 0 8 */ struct Qdisc * root; /* 88 */ u32 flags; /* 16 4 */ enum tk_offsets tk_offset; /* 20 4 */ intclockid; /* 24 4 */ bool offloaded; /* 28 1 */ /* XXX 3 bytes hole, try topack */ atomic64_t picos_per_byte; /* 32 0 */ /* XXX 8 bytes hole, try topack */ spinlock_t current_entry_lock; /* 40 0 */ /* XXX 8 bytes hole, tryto pack */ struct sched_entry * current_entry; /* 48 8 */ structsched_gate_list * oper_sched; /* 56 8 */ /* --- cacheline 1 boundary (64bytes) --- */\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48644` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-6.2.0-20-generic-lpae - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic-64k - 6.2.0-20.20\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-aws - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-azure - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1005-gcp - 6.2.0-1005.5\nNo subscription required\n\nlinux-image-6.5.0-1003-laptop - 6.5.0-1003.6\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-lowlatency - 6.2.0-1003.3\nlinux-image-unsigned-6.2.0-1003-lowlatency-64k - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-oracle - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-6.2.0-1004-raspi - 6.2.0-1004.5\nlinux-image-6.2.0-1004-raspi-nolpae - 6.2.0-1004.5\nNo subscription required\n\nlinux-image-6.5.0-1002-starfive - 6.5.0-1002.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
-						"comment": "linux package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000000",
+						"comment": "linux package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-20.20')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
-						"comment": "linux-aws package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-aws package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
-						"comment": "linux-azure package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-azure package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
-						"comment": "linux-gcp package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000020",
+						"comment": "linux-gcp package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
 						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
-						"comment": "linux-laptop package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000060",
+						"comment": "linux-laptop package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1003.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
-						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-lowlatency package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
-						"comment": "linux-oracle package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-oracle package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
-						"comment": "linux-raspi package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000030",
+						"comment": "linux-raspi package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
-						"comment": "linux-starfive package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000050",
+						"comment": "linux-starfive package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1002.3')."
 					}
 				]
 			}

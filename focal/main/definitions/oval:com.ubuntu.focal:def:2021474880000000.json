@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47488 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: cgroup:Fix memory leak caused by missing cgroup_bpf_offline When enablingCONFIG_CGROUP_BPF, kmemleak can be observed by running the command asbelow: $mount -t cgroup -o none,name=foo cgroup cgroup/ $umount cgroup/unreferenced object 0xc3585c40 (size 64): comm \"mount\", pid 425, jiffies4294959825 (age 31.990s) hex dump (first 32 bytes): 01 00 00 80 84 8c 28 c000 00 00 00 00 00 00 00 ......(......... 00 00 00 00 00 00 00 00 6c 43 a0c3 00 00 00 00 ........lC...... backtrace: [<e95a2f9e>]cgroup_bpf_inherit+0x44/0x24c [<1f03679c>] cgroup_setup_root+0x174/0x37c[<ed4b0ac5>] cgroup1_get_tree+0x2c0/0x4a0 [<f85b12fd>]vfs_get_tree+0x24/0x108 [<f55aec5c>] path_mount+0x384/0x988 [<e2d5e9cd>]do_mount+0x64/0x9c [<208c9cfe>] sys_mount+0xfc/0x1f4 [<06dd06e0>]ret_fast_syscall+0x0/0x48 [<a8308cb3>] 0xbeb4daa8 This is because thatsince the commit 2b0d3d3e4fcf (\"percpu_ref: reduce memory footprint ofpercpu_ref in fast path\") root_cgrp->bpf.refcnt.data is allocated by thefunction percpu_ref_init in cgroup_bpf_inherit which is called bycgroup_setup_root when mounting, but not freed along with root_cgrp whenumounting. Adding cgroup_bpf_offline which calls percpu_ref_kill tocgroup_kill_sb can free root_cgrp->bpf.refcnt.data in umount path. Thispatch also fixes the commit 4bfc0bb2c60e (\"bpf: decouple the lifetime ofcgroup_bpf from cgroup itself\"). A cgroup_bpf_offline is needed to do acleanup that frees the resources which are allocated by cgroup_bpf_inheritin cgroup_setup_root. And inside cgroup_bpf_offline, cgroup_get() is at thebeginning and cgroup_put is at the end of cgroup_bpf_release which iscalled by cgroup_bpf_offline. So cgroup_bpf_offline can keep the balance ofcgroup's refcount.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: cgroup:Fix memory leak caused by missing cgroup_bpf_offline When enablingCONFIG_CGROUP_BPF, kmemleak can be observed by running the command asbelow: $mount -t cgroup -o none,name=foo cgroup cgroup/ $umount cgroup/unreferenced object 0xc3585c40 (size 64): comm \"mount\", pid 425, jiffies4294959825 (age 31.990s) hex dump (first 32 bytes): 01 00 00 80 84 8c 28 c000 00 00 00 00 00 00 00 ......(......... 00 00 00 00 00 00 00 00 6c 43 a0c3 00 00 00 00 ........lC...... backtrace: [<e95a2f9e>]cgroup_bpf_inherit+0x44/0x24c [<1f03679c>] cgroup_setup_root+0x174/0x37c[<ed4b0ac5>] cgroup1_get_tree+0x2c0/0x4a0 [<f85b12fd>]vfs_get_tree+0x24/0x108 [<f55aec5c>] path_mount+0x384/0x988 [<e2d5e9cd>]do_mount+0x64/0x9c [<208c9cfe>] sys_mount+0xfc/0x1f4 [<06dd06e0>]ret_fast_syscall+0x0/0x48 [<a8308cb3>] 0xbeb4daa8 This is because thatsince the commit 2b0d3d3e4fcf (\"percpu_ref: reduce memory footprint ofpercpu_ref in fast path\") root_cgrp->bpf.refcnt.data is allocated by thefunction percpu_ref_init in cgroup_bpf_inherit which is called bycgroup_setup_root when mounting, but not freed along with root_cgrp whenumounting. Adding cgroup_bpf_offline which calls percpu_ref_kill tocgroup_kill_sb can free root_cgrp->bpf.refcnt.data in umount path. Thispatch also fixes the commit 4bfc0bb2c60e (\"bpf: decouple the lifetime ofcgroup_bpf from cgroup itself\"). A cgroup_bpf_offline is needed to do acleanup that frees the resources which are allocated by cgroup_bpf_inheritin cgroup_setup_root. And inside cgroup_bpf_offline, cgroup_get() is at thebeginning and cgroup_put is at the end of cgroup_bpf_release which iscalled by cgroup_bpf_offline. So cgroup_bpf_offline can keep the balance ofcgroup's refcount.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47488` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -48,16 +48,16 @@
 						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"comment": "linux-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -72,12 +72,12 @@
 						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -92,24 +92,24 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000130",
+						"comment": "linux-azure-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000150",
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -124,8 +124,8 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000120",
+						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -137,39 +137,39 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000180",
+						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"comment": "linux-ibm package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000090",
+						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"comment": "linux-iot package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -184,8 +184,8 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000140",
+						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -205,7 +205,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
@@ -213,7 +213,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"comment": "linux-xilinx-zynqmp package in focal is affected and needs fixing."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47094 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: KVM:x86/mmu: Don't advance iterator after restart due to yielding Afterdropping mmu_lock in the TDP MMU, restart the iterator duringtdp_iter_next() and do not advance the iterator. Advancing the iteratorresults in skipping the top-level SPTE and all its children, which is fatalif any of the skipped SPTEs were not visited before yielding. When zappingall SPTEs, i.e. when min_level == root_level, restarting the iter and theninvoking tdp_iter_next() is always fatal if the current gfn has as a validSPTE, as advancing the iterator results in try_step_side() skipping thecurrent gfn, which wasn't visited before yielding. Sprinkle WARNs oniter->yielded being true in various helpers that are often used inconjunction with yielding, and tag the helper with __must_check to reducethe probabily of improper usage. Failing to zap a top-level SPTE manifestsin one of two ways. If a valid SPTE is skipped by bothkvm_tdp_mmu_zap_all() and kvm_tdp_mmu_put_root(), the shadow page will beleaked and KVM will WARN accordingly. WARNING: CPU: 1 PID: 3509 atarch/x86/kvm/mmu/tdp_mmu.c:46 [kvm] RIP:0010:kvm_mmu_uninit_tdp_mmu+0x3e/0x50 [kvm] Call Trace: <TASK>kvm_arch_destroy_vm+0x130/0x1b0 [kvm] kvm_destroy_vm+0x162/0x2a0 [kvm]kvm_vcpu_release+0x34/0x60 [kvm] __fput+0x82/0x240 task_work_run+0x5c/0x90do_exit+0x364/0xa10 ? futex_unqueue+0x38/0x60 do_group_exit+0x33/0xa0get_signal+0x155/0x850 arch_do_signal_or_restart+0xed/0x750exit_to_user_mode_prepare+0xc5/0x120 syscall_exit_to_user_mode+0x1d/0x40do_syscall_64+0x48/0xc0 entry_SYSCALL_64_after_hwframe+0x44/0xae Ifkvm_tdp_mmu_zap_all() skips a gfn/SPTE but that SPTE is then zapped bykvm_tdp_mmu_put_root(), KVM triggers a use-after-free in the form ofmarking a struct page as dirty/accessed after it has been put back on thefree list. This directly triggers a WARN due to encountering a page withpage_count() == 0, but it can also lead to data corruption and additionalerrors in the kernel. WARNING: CPU: 7 PID: 1995658 atarch/x86/kvm/../../../virt/kvm/kvm_main.c:171 RIP:0010:kvm_is_zone_device_pfn.part.0+0x9e/0xd0 [kvm] Call Trace: <TASK>kvm_set_pfn_dirty+0x120/0x1d0 [kvm] __handle_changed_spte+0x92e/0xca0 [kvm]__handle_changed_spte+0x63c/0xca0 [kvm] __handle_changed_spte+0x63c/0xca0[kvm] __handle_changed_spte+0x63c/0xca0 [kvm] zap_gfn_range+0x549/0x620[kvm] kvm_tdp_mmu_put_root+0x1b6/0x270 [kvm] mmu_free_root_page+0x219/0x2c0[kvm] kvm_mmu_free_roots+0x1b4/0x4e0 [kvm] kvm_mmu_unload+0x1c/0xa0 [kvm]kvm_arch_destroy_vm+0x1f2/0x5c0 [kvm] kvm_put_kvm+0x3b1/0x8b0 [kvm]kvm_vcpu_release+0x4e/0x70 [kvm] __fput+0x1f7/0x8c0task_work_run+0xf8/0x1a0 do_exit+0x97b/0x2230 do_group_exit+0xda/0x2a0get_signal+0x3be/0x1e50 arch_do_signal_or_restart+0x244/0x17f0exit_to_user_mode_prepare+0xcb/0x120 syscall_exit_to_user_mode+0x1d/0x40do_syscall_64+0x4d/0x90 entry_SYSCALL_64_after_hwframe+0x44/0xae Note, theunderlying bug existed even before commit 1af4a96025b3 (\"KVM: x86/mmu:Yield in TDU MMU iter even if no SPTES changed\") moved calls totdp_mmu_iter_cond_resched() to the beginning of loops, as KVM could stillincorrectly advance past a top-level entry when yielding on a lower-levelentry. But with respect to leaking shadow pages, the bug was introduced byyielding before processing the current gfn. Alternatively,tdp_mmu_iter_cond_resched() could simply fall through, or callers couldjump to their \"retry\" label. The downside of that approach is thattdp_mmu_iter_cond_resched() _must_ be called before anything else in theloop, and there's no easy way to enfornce that requirement. Ideally, KVMwould handling the cond_resched() fully within the iterator macro (the codeis actually quite clean) and avoid this entire class of bugs, but that isextremely difficult do wh ---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: KVM:x86/mmu: Don't advance iterator after restart due to yielding Afterdropping mmu_lock in the TDP MMU, restart the iterator duringtdp_iter_next() and do not advance the iterator. Advancing the iteratorresults in skipping the top-level SPTE and all its children, which is fatalif any of the skipped SPTEs were not visited before yielding. When zappingall SPTEs, i.e. when min_level == root_level, restarting the iter and theninvoking tdp_iter_next() is always fatal if the current gfn has as a validSPTE, as advancing the iterator results in try_step_side() skipping thecurrent gfn, which wasn't visited before yielding. Sprinkle WARNs oniter->yielded being true in various helpers that are often used inconjunction with yielding, and tag the helper with __must_check to reducethe probabily of improper usage. Failing to zap a top-level SPTE manifestsin one of two ways. If a valid SPTE is skipped by bothkvm_tdp_mmu_zap_all() and kvm_tdp_mmu_put_root(), the shadow page will beleaked and KVM will WARN accordingly. WARNING: CPU: 1 PID: 3509 atarch/x86/kvm/mmu/tdp_mmu.c:46 [kvm] RIP:0010:kvm_mmu_uninit_tdp_mmu+0x3e/0x50 [kvm] Call Trace: <TASK>kvm_arch_destroy_vm+0x130/0x1b0 [kvm] kvm_destroy_vm+0x162/0x2a0 [kvm]kvm_vcpu_release+0x34/0x60 [kvm] __fput+0x82/0x240 task_work_run+0x5c/0x90do_exit+0x364/0xa10 ? futex_unqueue+0x38/0x60 do_group_exit+0x33/0xa0get_signal+0x155/0x850 arch_do_signal_or_restart+0xed/0x750exit_to_user_mode_prepare+0xc5/0x120 syscall_exit_to_user_mode+0x1d/0x40do_syscall_64+0x48/0xc0 entry_SYSCALL_64_after_hwframe+0x44/0xae Ifkvm_tdp_mmu_zap_all() skips a gfn/SPTE but that SPTE is then zapped bykvm_tdp_mmu_put_root(), KVM triggers a use-after-free in the form ofmarking a struct page as dirty/accessed after it has been put back on thefree list. This directly triggers a WARN due to encountering a page withpage_count() == 0, but it can also lead to data corruption and additionalerrors in the kernel. WARNING: CPU: 7 PID: 1995658 atarch/x86/kvm/../../../virt/kvm/kvm_main.c:171 RIP:0010:kvm_is_zone_device_pfn.part.0+0x9e/0xd0 [kvm] Call Trace: <TASK>kvm_set_pfn_dirty+0x120/0x1d0 [kvm] __handle_changed_spte+0x92e/0xca0 [kvm]__handle_changed_spte+0x63c/0xca0 [kvm] __handle_changed_spte+0x63c/0xca0[kvm] __handle_changed_spte+0x63c/0xca0 [kvm] zap_gfn_range+0x549/0x620[kvm] kvm_tdp_mmu_put_root+0x1b6/0x270 [kvm] mmu_free_root_page+0x219/0x2c0[kvm] kvm_mmu_free_roots+0x1b4/0x4e0 [kvm] kvm_mmu_unload+0x1c/0xa0 [kvm]kvm_arch_destroy_vm+0x1f2/0x5c0 [kvm] kvm_put_kvm+0x3b1/0x8b0 [kvm]kvm_vcpu_release+0x4e/0x70 [kvm] __fput+0x1f7/0x8c0task_work_run+0xf8/0x1a0 do_exit+0x97b/0x2230 do_group_exit+0xda/0x2a0get_signal+0x3be/0x1e50 arch_do_signal_or_restart+0x244/0x17f0exit_to_user_mode_prepare+0xcb/0x120 syscall_exit_to_user_mode+0x1d/0x40do_syscall_64+0x4d/0x90 entry_SYSCALL_64_after_hwframe+0x44/0xae Note, theunderlying bug existed even before commit 1af4a96025b3 (\"KVM: x86/mmu:Yield in TDU MMU iter even if no SPTES changed\") moved calls totdp_mmu_iter_cond_resched() to the beginning of loops, as KVM could stillincorrectly advance past a top-level entry when yielding on a lower-levelentry. But with respect to leaking shadow pages, the bug was introduced byyielding before processing the current gfn. Alternatively,tdp_mmu_iter_cond_resched() could simply fall through, or callers couldjump to their \"retry\" label. The downside of that approach is thattdp_mmu_iter_cond_resched() _must_ be called before anything else in theloop, and there's no easy way to enfornce that requirement. Ideally, KVMwould handling the cond_resched() fully within the iterator macro (the codeis actually quite clean) and avoid this entire class of bugs, but that isextremely difficult do wh ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47094` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

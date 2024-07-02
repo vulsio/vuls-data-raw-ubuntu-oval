@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52490 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: mm:migrate: fix getting incorrect page mapping during page migration Whenrunning stress-ng testing, we found below kernel crash after a few hours:Unable to handle kernel NULL pointer dereference at virtual address0000000000000000 pc : dentry_name+0xd8/0x224 lr : pointer+0x22c/0x370 sp :ffff800025f134c0 ...... Call trace: dentry_name+0xd8/0x224pointer+0x22c/0x370 vsnprintf+0x1ec/0x730 vscnprintf+0x2c/0x60vprintk_store+0x70/0x234 vprintk_emit+0xe0/0x24c vprintk_default+0x3c/0x44vprintk_func+0x84/0x2d0 printk+0x64/0x88 __dump_page+0x52c/0x530dump_page+0x14/0x20 set_migratetype_isolate+0x110/0x224start_isolate_page_range+0xc4/0x20c offline_pages+0x124/0x474memory_block_offline+0x44/0xf4 memory_subsys_offline+0x3c/0x70device_offline+0xf0/0x120 ...... After analyzing the vmcore, I found thisissue is caused by page migration. The scenario is that, one thread isdoing page migration, and we will use the target page's ->mapping field tosave 'anon_vma' pointer between page unmap and page move, and now thetarget page is locked and refcount is 1. Currently, there is anotherstress-ng thread performing memory hotplug, attempting to offline thetarget page that is being migrated. It discovers that the refcount of thistarget page is 1, preventing the offline operation, thus proceeding to dumpthe page. However, page_mapping() of the target page may return anincorrect file mapping to crash the system in dump_mapping(), since thetarget page->mapping only saves 'anon_vma' pointer without settingPAGE_MAPPING_ANON flag. There are seveval ways to fix this issue: (1)Setting the PAGE_MAPPING_ANON flag for target page's ->mapping when saving'anon_vma', but this can confuse PageAnon() for PFN walkers, since thetarget page has not built mappings yet. (2) Getting the page lock to callpage_mapping() in __dump_page() to avoid crashing the system, however,there are still some PFN walkers that call page_mapping() without holdingthe page lock, such as compaction. (3) Using target page->private field tosave the 'anon_vma' pointer and 2 bits page state, just as page->mappingrecords an anonymous page, which can remove the page_mapping() impact forPFN walkers and also seems a simple way. So I choose option 3 to fix thisissue, and this can also fix other potential issues for PFN walkers, suchas compaction.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mm:migrate: fix getting incorrect page mapping during page migration Whenrunning stress-ng testing, we found below kernel crash after a few hours:Unable to handle kernel NULL pointer dereference at virtual address0000000000000000 pc : dentry_name+0xd8/0x224 lr : pointer+0x22c/0x370 sp :ffff800025f134c0 ...... Call trace: dentry_name+0xd8/0x224pointer+0x22c/0x370 vsnprintf+0x1ec/0x730 vscnprintf+0x2c/0x60vprintk_store+0x70/0x234 vprintk_emit+0xe0/0x24c vprintk_default+0x3c/0x44vprintk_func+0x84/0x2d0 printk+0x64/0x88 __dump_page+0x52c/0x530dump_page+0x14/0x20 set_migratetype_isolate+0x110/0x224start_isolate_page_range+0xc4/0x20c offline_pages+0x124/0x474memory_block_offline+0x44/0xf4 memory_subsys_offline+0x3c/0x70device_offline+0xf0/0x120 ...... After analyzing the vmcore, I found thisissue is caused by page migration. The scenario is that, one thread isdoing page migration, and we will use the target page's ->mapping field tosave 'anon_vma' pointer between page unmap and page move, and now thetarget page is locked and refcount is 1. Currently, there is anotherstress-ng thread performing memory hotplug, attempting to offline thetarget page that is being migrated. It discovers that the refcount of thistarget page is 1, preventing the offline operation, thus proceeding to dumpthe page. However, page_mapping() of the target page may return anincorrect file mapping to crash the system in dump_mapping(), since thetarget page->mapping only saves 'anon_vma' pointer without settingPAGE_MAPPING_ANON flag. There are seveval ways to fix this issue: (1)Setting the PAGE_MAPPING_ANON flag for target page's ->mapping when saving'anon_vma', but this can confuse PageAnon() for PFN walkers, since thetarget page has not built mappings yet. (2) Getting the page lock to callpage_mapping() in __dump_page() to avoid crashing the system, however,there are still some PFN walkers that call page_mapping() without holdingthe page lock, such as compaction. (3) Using target page->private field tosave the 'anon_vma' pointer and 2 bits page state, just as page->mappingrecords an anonymous page, which can remove the page_mapping() impact forPFN walkers and also seems a simple way. So I choose option 3 to fix thisissue, and this can also fix other potential issues for PFN walkers, suchas compaction.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52490` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-2.16\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-lowlatency - 4.8.0-39.42~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1004.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1001.10\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1102-aws - 4.15.0-1030.31~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1114-azure - 4.11.0-1009.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1099-gcp - 4.10.0-1004.4\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-oracle - 4.15.0-1007.9~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -43,36 +43,36 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016100880000040",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
 					}
 				]
 			}

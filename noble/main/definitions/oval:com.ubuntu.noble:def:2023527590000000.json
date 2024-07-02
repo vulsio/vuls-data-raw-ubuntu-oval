@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52759 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: gfs2:ignore negated quota changes When lots of quota changes are made, there maybe cases in which an inode's quota information is increased and thendecreased, such as when blocks are added to a file, then deleted from it.If the timing is right, function do_qc can add pending quota changes to atransaction, then later, another call to do_qc can negate those changes,resulting in a net gain of 0. The quota_change information is recorded inthe qc buffer (and qd element of the inode as well). The buffer is added tothe transaction by the first call to do_qc, but a subsequent call changesthe value from non-zero back to zero. At that point it's too late to removethe buffer_head from the transaction. Later, when the quota sync code iscalled, the zero-change qd element is discovered and flagged as an assertwarning. If the fs is mounted with errors=panic, the kernel will panic.This is usually seen when files are truncated and the quota changes arenegated by punch_hole/truncate which uses gfs2_quota_hold andgfs2_quota_unhold rather than block allocations that use gfs2_quota_lockand gfs2_quota_unlock which automatically do quota sync. This patch solvesthe problem by adding a check to qd_check_sync such that net-zero quotachanges already added to the transaction are no longer deemed necessary tobe synced, and skipped. In this case references are taken for the qd andthe slot from do_qc so those need to be put. The normal sequence of eventsfor a normal non-zero quota change is as follows: gfs2_quota_change do_qcqd_hold slot_hold Later, when the changes are to be synced: gfs2_quota_syncqd_fish qd_check_sync gets qd ref via lockref_get_not_dead do_syncdo_qc(QC_SYNC) qd_put lockref_put_or_lock qd_unlock qd_putlockref_put_or_lock In the net-zero change case, we add a check toqd_check_sync so it puts the qd and slot references acquired ingfs2_quota_change and skip the unneeded sync.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: gfs2:ignore negated quota changes When lots of quota changes are made, there maybe cases in which an inode's quota information is increased and thendecreased, such as when blocks are added to a file, then deleted from it.If the timing is right, function do_qc can add pending quota changes to atransaction, then later, another call to do_qc can negate those changes,resulting in a net gain of 0. The quota_change information is recorded inthe qc buffer (and qd element of the inode as well). The buffer is added tothe transaction by the first call to do_qc, but a subsequent call changesthe value from non-zero back to zero. At that point it's too late to removethe buffer_head from the transaction. Later, when the quota sync code iscalled, the zero-change qd element is discovered and flagged as an assertwarning. If the fs is mounted with errors=panic, the kernel will panic.This is usually seen when files are truncated and the quota changes arenegated by punch_hole/truncate which uses gfs2_quota_hold andgfs2_quota_unhold rather than block allocations that use gfs2_quota_lockand gfs2_quota_unlock which automatically do quota sync. This patch solvesthe problem by adding a check to qd_check_sync such that net-zero quotachanges already added to the transaction are no longer deemed necessary tobe synced, and skipped. In this case references are taken for the qd andthe slot from do_qc so those need to be put. The normal sequence of eventsfor a normal non-zero quota change is as follows: gfs2_quota_change do_qcqd_hold slot_hold Later, when the changes are to be synced: gfs2_quota_syncqd_fish qd_check_sync gets qd ref via lockref_get_not_dead do_syncdo_qc(QC_SYNC) qd_put lockref_put_or_lock qd_unlock qd_putlockref_put_or_lock In the net-zero change case, we add a check toqd_check_sync so it puts the qd and slot references acquired ingfs2_quota_change and skip the unneeded sync.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52759` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic-64k - 6.6.0-14.14\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-aws - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-azure - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-gcp - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-14-lowlatency - 6.6.0-14.14.1\nlinux-image-unsigned-6.6.0-14-lowlatency-64k - 6.6.0-14.14.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-oracle - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-6.7.0-1001-raspi - 6.7.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-14.14')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000030",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-14.14.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000040",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					}
 				]
 			}

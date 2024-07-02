@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52759 on Ubuntu 20.04 FIPS Compliant (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: gfs2:ignore negated quota changes When lots of quota changes are made, there maybe cases in which an inode's quota information is increased and thendecreased, such as when blocks are added to a file, then deleted from it.If the timing is right, function do_qc can add pending quota changes to atransaction, then later, another call to do_qc can negate those changes,resulting in a net gain of 0. The quota_change information is recorded inthe qc buffer (and qd element of the inode as well). The buffer is added tothe transaction by the first call to do_qc, but a subsequent call changesthe value from non-zero back to zero. At that point it's too late to removethe buffer_head from the transaction. Later, when the quota sync code iscalled, the zero-change qd element is discovered and flagged as an assertwarning. If the fs is mounted with errors=panic, the kernel will panic.This is usually seen when files are truncated and the quota changes arenegated by punch_hole/truncate which uses gfs2_quota_hold andgfs2_quota_unhold rather than block allocations that use gfs2_quota_lockand gfs2_quota_unlock which automatically do quota sync. This patch solvesthe problem by adding a check to qd_check_sync such that net-zero quotachanges already added to the transaction are no longer deemed necessary tobe synced, and skipped. In this case references are taken for the qd andthe slot from do_qc so those need to be put. The normal sequence of eventsfor a normal non-zero quota change is as follows: gfs2_quota_change do_qcqd_hold slot_hold Later, when the changes are to be synced: gfs2_quota_syncqd_fish qd_check_sync gets qd ref via lockref_get_not_dead do_syncdo_qc(QC_SYNC) qd_put lockref_put_or_lock qd_unlock qd_putlockref_put_or_lock In the net-zero change case, we add a check toqd_check_sync so it puts the qd and slot references acquired ingfs2_quota_change and skip the unneeded sync.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: gfs2:ignore negated quota changes When lots of quota changes are made, there maybe cases in which an inode's quota information is increased and thendecreased, such as when blocks are added to a file, then deleted from it.If the timing is right, function do_qc can add pending quota changes to atransaction, then later, another call to do_qc can negate those changes,resulting in a net gain of 0. The quota_change information is recorded inthe qc buffer (and qd element of the inode as well). The buffer is added tothe transaction by the first call to do_qc, but a subsequent call changesthe value from non-zero back to zero. At that point it's too late to removethe buffer_head from the transaction. Later, when the quota sync code iscalled, the zero-change qd element is discovered and flagged as an assertwarning. If the fs is mounted with errors=panic, the kernel will panic.This is usually seen when files are truncated and the quota changes arenegated by punch_hole/truncate which uses gfs2_quota_hold andgfs2_quota_unhold rather than block allocations that use gfs2_quota_lockand gfs2_quota_unlock which automatically do quota sync. This patch solvesthe problem by adding a check to qd_check_sync such that net-zero quotachanges already added to the transaction are no longer deemed necessary tobe synced, and skipped. In this case references are taken for the qd andthe slot from do_qc so those need to be put. The normal sequence of eventsfor a normal non-zero quota change is as follows: gfs2_quota_change do_qcqd_hold slot_hold Later, when the changes are to be synced: gfs2_quota_syncqd_fish qd_check_sync gets qd ref via lockref_get_not_dead do_syncdo_qc(QC_SYNC) qd_put lockref_put_or_lock qd_unlock qd_putlockref_put_or_lock In the net-zero change case, we add a check toqd_check_sync so it puts the qd and slot references acquired ingfs2_quota_change and skip the unneeded sync.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52759` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1058-azure-fde - 5.15.0-1058.66~20.04.2.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Compliant"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-173.191')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -49,15 +49,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-100.110~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1108.115')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1120.130')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -73,11 +73,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-aws-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1056.61~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1126.133')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -93,39 +93,39 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1058.66~20.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023229950000030",
+						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1058.66~20.04.2.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1080.87')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1094.104')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-aws-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1120.130+fips1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-azure-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1126.133+fips1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-gcp-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1124.133+fips1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1124.133')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -141,7 +141,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gcp-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1053.61~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -153,19 +153,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1087.91')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gkeop-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1038.44~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"comment": "linux-ibm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1067.72')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-ibm-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1048.51~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -173,19 +173,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-intel-iotg-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1050.56~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"comment": "linux-iot package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1032.33')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-100.110~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1119.128')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -201,7 +201,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-oracle-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1053.59~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -221,7 +221,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1104.116')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
@@ -229,7 +229,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"comment": "linux-xilinx-zynqmp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1039.43')."
 					}
 				]
 			}

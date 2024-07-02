@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26837 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: net:bridge: switchdev: Skip MDB replays of deferred events on offload Beforethis change, generation of the list of MDB events to replay would raceagainst the creation of new group memberships, either from the IGMP/MLDsnooping logic or from user configuration. While new memberships areimmediately visible to walkers of br->mdb_list, the notification of theirexistence to switchdev event subscribers is deferred until a later point intime. So if a replay list was generated during a time that overlapped withsuch a window, it would also contain a replay of the not-yet-deliveredevent. The driver would thus receive two copies of what the bridgeinternally considered to be one single event. On destruction of the bridge,only a single membership deletion event was therefore sent. As aconsequence of this, drivers which reference count memberships (at leastDSA), would be left with orphan groups in their hardware database when thebridge was destroyed. This is only an issue when replaying additions. Whiledeletion events may still be pending on the deferred queue, they willalready have been removed from br->mdb_list, so no duplicates can begenerated in that scenario. To a user this meant that old groupmemberships, from a bridge in which a port was previously attached, couldbe reanimated (in hardware) when the port joined a new bridge, without thenew bridge's knowledge. For example, on an mv88e6xxx system, create asnooping bridge and immediately add a port to it: root@infix-06-0b-00:~$ iplink add dev br0 up type bridge mcast_snooping 1 && \\ > ip link set dev x3up master br0 And then destroy the bridge: root@infix-06-0b-00:~$ ip linkdel dev br0 root@infix-06-0b-00:~$ mvls atu ADDRESS FID STATE Q F 0 1 2 3 45 6 7 8 9 a DEV:0 Marvell 88E6393X 33:33:00:00:00:6a 1 static - - 0 . . . .. . . . . . 33:33:ff:87:e4:3f 1 static - - 0 . . . . . . . . . .ff:ff:ff:ff:ff:ff 1 static - - 0 1 2 3 4 5 6 7 8 9 a root@infix-06-0b-00:~$The two IPv6 groups remain in the hardware database because the port (x3)is notified of the host's membership twice: once via the original event andonce via a replay. Since only a single delete notification is sent, thecount remains at 1 when the bridge is destroyed. Then add the same port (oranother port belonging to the same hardware domain) to a new bridge, thistime with snooping disabled: root@infix-06-0b-00:~$ ip link add dev br1 uptype bridge mcast_snooping 0 && \\ > ip link set dev x3 up master br1 Allmulticast, including the two IPv6 groups from br0, should now be flooded,according to the policy of br1. But instead the old memberships are stillactive in the hardware database, causing the switch to only forward trafficto those groups towards the CPU (port 0). Eliminate the race in two steps:1. Grab the write-side lock of the MDB while generating the replay list.This prevents new memberships from showing up while we are generating thereplay list. But it leaves the scenario in which a deferred event wasalready generated, but not delivered, before we grabbed the lock.Therefore: 2. Make sure that no deferred version of a replay event isalready enqueued to the switchdev deferred queue, before adding it to thereplay list, when replaying additions.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:bridge: switchdev: Skip MDB replays of deferred events on offload Beforethis change, generation of the list of MDB events to replay would raceagainst the creation of new group memberships, either from the IGMP/MLDsnooping logic or from user configuration. While new memberships areimmediately visible to walkers of br->mdb_list, the notification of theirexistence to switchdev event subscribers is deferred until a later point intime. So if a replay list was generated during a time that overlapped withsuch a window, it would also contain a replay of the not-yet-deliveredevent. The driver would thus receive two copies of what the bridgeinternally considered to be one single event. On destruction of the bridge,only a single membership deletion event was therefore sent. As aconsequence of this, drivers which reference count memberships (at leastDSA), would be left with orphan groups in their hardware database when thebridge was destroyed. This is only an issue when replaying additions. Whiledeletion events may still be pending on the deferred queue, they willalready have been removed from br->mdb_list, so no duplicates can begenerated in that scenario. To a user this meant that old groupmemberships, from a bridge in which a port was previously attached, couldbe reanimated (in hardware) when the port joined a new bridge, without thenew bridge's knowledge. For example, on an mv88e6xxx system, create asnooping bridge and immediately add a port to it: root@infix-06-0b-00:~$ iplink add dev br0 up type bridge mcast_snooping 1 && \\ > ip link set dev x3up master br0 And then destroy the bridge: root@infix-06-0b-00:~$ ip linkdel dev br0 root@infix-06-0b-00:~$ mvls atu ADDRESS FID STATE Q F 0 1 2 3 45 6 7 8 9 a DEV:0 Marvell 88E6393X 33:33:00:00:00:6a 1 static - - 0 . . . .. . . . . . 33:33:ff:87:e4:3f 1 static - - 0 . . . . . . . . . .ff:ff:ff:ff:ff:ff 1 static - - 0 1 2 3 4 5 6 7 8 9 a root@infix-06-0b-00:~$The two IPv6 groups remain in the hardware database because the port (x3)is notified of the host's membership twice: once via the original event andonce via a replay. Since only a single delete notification is sent, thecount remains at 1 when the bridge is destroyed. Then add the same port (oranother port belonging to the same hardware domain) to a new bridge, thistime with snooping disabled: root@infix-06-0b-00:~$ ip link add dev br1 uptype bridge mcast_snooping 0 && \\ > ip link set dev x3 up master br1 Allmulticast, including the two IPv6 groups from br0, should now be flooded,according to the policy of br1. But instead the old memberships are stillactive in the hardware database, causing the switch to only forward trafficto those groups towards the CPU (port 0). Eliminate the race in two steps:1. Grab the write-side lock of the MDB while generating the replay list.This prevents new memberships from showing up while we are generating thereplay list. But it leaves the scenario in which a deferred event wasalready generated, but not delivered, before we grabbed the lock.Therefore: 2. Make sure that no deferred version of a replay event isalready enqueued to the switchdev deferred queue, before adding it to thereplay list, when replaying additions.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26837` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000000",
+						"comment": "linux package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-9.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -49,15 +49,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000010",
+						"comment": "linux-kvm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-aws package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -73,11 +73,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-aws-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
+						"comment": "linux-azure package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1006.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -93,7 +93,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
@@ -101,19 +101,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-fde-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000080",
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
 						"comment": "linux-fips package in fips/focal is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-gcp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -129,7 +129,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gcp-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -140,20 +140,20 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000030",
+						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gkeop-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000000",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-ibm-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -161,19 +161,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-intel-iotg-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000160",
+						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-oracle package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -189,7 +189,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-oracle-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -208,16 +208,16 @@
 						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000050",
+						"comment": "linux-raspi package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
+						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",

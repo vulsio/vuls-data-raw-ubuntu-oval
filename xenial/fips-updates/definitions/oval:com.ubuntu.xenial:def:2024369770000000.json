@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36977 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: dwc3: Wait unconditionally after issuing EndXfer commandCurrently all controller IP/revisions except DWC3_usb3 >= 310await 1ms unconditionally for ENDXFER completion when IOC is notset. This is because DWC_usb3 controller revisions >= 3.10asupports GUCTL2[14: Rst_actbitlater] bit which allows pollingCMDACT bit to know whether ENDXFER command is completed.Consider a case where an IN request was queued, and parallellysoft_disconnect was called (due to ffs_epfile_release). Thiseventually calls stop_active_transfer with IOC cleared, hencesend_gadget_ep_cmd() skips waiting for CMDACT cleared duringEndXfer. For DWC3 controllers with revisions >= 310a, we don'tforcefully wait for 1ms either, and we proceed by unmapping therequests. If ENDXFER didn't complete by this time, it leads toSMMU faults since the controller would still be accessing thoserequests.Fix this by ensuring ENDXFER completion by adding 1ms delay in__dwc3_stop_active_transfer() unconditionally.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: dwc3: Wait unconditionally after issuing EndXfer commandCurrently all controller IP/revisions except DWC3_usb3 >= 310await 1ms unconditionally for ENDXFER completion when IOC is notset. This is because DWC_usb3 controller revisions >= 3.10asupports GUCTL2[14: Rst_actbitlater] bit which allows pollingCMDACT bit to know whether ENDXFER command is completed.Consider a case where an IN request was queued, and parallellysoft_disconnect was called (due to ffs_epfile_release). Thiseventually calls stop_active_transfer with IOC cleared, hencesend_gadget_ep_cmd() skips waiting for CMDACT cleared duringEndXfer. For DWC3 controllers with revisions >= 310a, we don'tforcefully wait for 1ms either, and we proceed by unmapping therequests. If ENDXFER didn't complete by this time, it leads toSMMU faults since the controller would still be accessing thoserequests.Fix this by ensuring ENDXFER completion by adding 1ms delay in__dwc3_stop_active_transfer() unconditionally.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36977` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1098.105\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2017109110000000",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1098.105')."
 					}
 				]
 			}

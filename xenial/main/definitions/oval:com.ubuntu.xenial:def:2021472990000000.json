@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47299 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: xdp,net: Fix use-after-free in bpf_xdp_link_release The problem occurs betweendev_get_by_index() and dev_xdp_attach_link(). At this point,dev_xdp_uninstall() is called. Then xdp link will not be detachedautomatically when dev is released. But link->dev already points to dev,when xdp link is released, dev will still be accessed, but dev has beenreleased. dev_get_by_index() | link->dev = dev | | rtnl_lock() |unregister_netdevice_many() | dev_xdp_uninstall() | rtnl_unlock()rtnl_lock(); | dev_xdp_attach_link() | rtnl_unlock(); | | netdev_run_todo()// dev released bpf_xdp_link_release() | /* access dev. | use-after-free */| [ 45.966867] BUG: KASAN: use-after-free inbpf_xdp_link_release+0x3b8/0x3d0 [ 45.967619] Read of size 8 at addrffff00000f9980c8 by task a.out/732 [ 45.968297] [ 45.968502] CPU: 1 PID:732 Comm: a.out Not tainted 5.13.0+ #22 [ 45.969222] Hardware name:linux,dummy-virt (DT) [ 45.969795] Call trace: [ 45.970106]dump_backtrace+0x0/0x4c8 [ 45.970564] show_stack+0x30/0x40 [ 45.970981]dump_stack_lvl+0x120/0x18c [ 45.971470]print_address_description.constprop.0+0x74/0x30c [ 45.972182]kasan_report+0x1e8/0x200 [ 45.972659] __asan_report_load8_noabort+0x2c/0x50[ 45.973273] bpf_xdp_link_release+0x3b8/0x3d0 [ 45.973834]bpf_link_free+0xd0/0x188 [ 45.974315] bpf_link_put+0x1d0/0x218 [ 45.974790]bpf_link_release+0x3c/0x58 [ 45.975291] __fput+0x20c/0x7e8 [ 45.975706]____fput+0x24/0x30 [ 45.976117] task_work_run+0x104/0x258 [ 45.976609]do_notify_resume+0x894/0xaf8 [ 45.977121] work_pending+0xc/0x328 [45.977575] [ 45.977775] The buggy address belongs to the page: [ 45.978369]page:fffffc00003e6600 refcount:0 mapcount:0 mapping:0000000000000000index:0x0 pfn:0x4f998 [ 45.979522] flags:0x7fffe0000000000(node=0|zone=0|lastcpupid=0x3ffff) [ 45.980349] raw:07fffe0000000000 fffffc00003e6708 ffff0000dac3c010 0000000000000000 [45.981309] raw: 0000000000000000 0000000000000000 00000000ffffffff0000000000000000 [ 45.982259] page dumped because: kasan: bad accessdetected [ 45.982948] [ 45.983153] Memory state around the buggy address: [45.983753] ffff00000f997f80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fcfc [ 45.984645] ffff00000f998000: ff ff ff ff ff ff ff ff ff ff ff ff ff ffff ff [ 45.985533] >ffff00000f998080: ff ff ff ff ff ff ff ff ff ff ff ffff ff ff ff [ 45.986419] ^ [ 45.987112] ffff00000f998100: ff ff ff ff ff ffff ff ff ff ff ff ff ff ff ff [ 45.988006] ffff00000f998180: ff ff ff ff ffff ff ff ff ff ff ff ff ff ff ff [ 45.988895]================================================================== [45.989773] Disabling lock debugging due to kernel taint [ 45.990552] Kernelpanic - not syncing: panic_on_warn set ... [ 45.991166] CPU: 1 PID: 732Comm: a.out Tainted: G B 5.13.0+ #22 [ 45.991929] Hardware name:linux,dummy-virt (DT) [ 45.992448] Call trace: [ 45.992753]dump_backtrace+0x0/0x4c8 [ 45.993208] show_stack+0x30/0x40 [ 45.993627]dump_stack_lvl+0x120/0x18c [ 45.994113] dump_stack+0x1c/0x34 [ 45.994530]panic+0x3a4/0x7d8 [ 45.994930] end_report+0x194/0x198 [ 45.995380]kasan_report+0x134/0x200 [ 45.995850] __asan_report_load8_noabort+0x2c/0x50[ 45.996453] bpf_xdp_link_release+0x3b8/0x3d0 [ 45.997007]bpf_link_free+0xd0/0x188 [ 45.997474] bpf_link_put+0x1d0/0x218 [ 45.997942]bpf_link_release+0x3c/0x58 [ 45.998429] __fput+0x20c/0x7e8 [ 45.998833]____fput+0x24/0x30 [ 45.999247] task_work_run+0x104/0x258 [ 45.999731]do_notify_resume+0x894/0xaf8 [ 46.000236] work_pending ---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: xdp,net: Fix use-after-free in bpf_xdp_link_release The problem occurs betweendev_get_by_index() and dev_xdp_attach_link(). At this point,dev_xdp_uninstall() is called. Then xdp link will not be detachedautomatically when dev is released. But link->dev already points to dev,when xdp link is released, dev will still be accessed, but dev has beenreleased. dev_get_by_index() | link->dev = dev | | rtnl_lock() |unregister_netdevice_many() | dev_xdp_uninstall() | rtnl_unlock()rtnl_lock(); | dev_xdp_attach_link() | rtnl_unlock(); | | netdev_run_todo()// dev released bpf_xdp_link_release() | /* access dev. | use-after-free */| [ 45.966867] BUG: KASAN: use-after-free inbpf_xdp_link_release+0x3b8/0x3d0 [ 45.967619] Read of size 8 at addrffff00000f9980c8 by task a.out/732 [ 45.968297] [ 45.968502] CPU: 1 PID:732 Comm: a.out Not tainted 5.13.0+ #22 [ 45.969222] Hardware name:linux,dummy-virt (DT) [ 45.969795] Call trace: [ 45.970106]dump_backtrace+0x0/0x4c8 [ 45.970564] show_stack+0x30/0x40 [ 45.970981]dump_stack_lvl+0x120/0x18c [ 45.971470]print_address_description.constprop.0+0x74/0x30c [ 45.972182]kasan_report+0x1e8/0x200 [ 45.972659] __asan_report_load8_noabort+0x2c/0x50[ 45.973273] bpf_xdp_link_release+0x3b8/0x3d0 [ 45.973834]bpf_link_free+0xd0/0x188 [ 45.974315] bpf_link_put+0x1d0/0x218 [ 45.974790]bpf_link_release+0x3c/0x58 [ 45.975291] __fput+0x20c/0x7e8 [ 45.975706]____fput+0x24/0x30 [ 45.976117] task_work_run+0x104/0x258 [ 45.976609]do_notify_resume+0x894/0xaf8 [ 45.977121] work_pending+0xc/0x328 [45.977575] [ 45.977775] The buggy address belongs to the page: [ 45.978369]page:fffffc00003e6600 refcount:0 mapcount:0 mapping:0000000000000000index:0x0 pfn:0x4f998 [ 45.979522] flags:0x7fffe0000000000(node=0|zone=0|lastcpupid=0x3ffff) [ 45.980349] raw:07fffe0000000000 fffffc00003e6708 ffff0000dac3c010 0000000000000000 [45.981309] raw: 0000000000000000 0000000000000000 00000000ffffffff0000000000000000 [ 45.982259] page dumped because: kasan: bad accessdetected [ 45.982948] [ 45.983153] Memory state around the buggy address: [45.983753] ffff00000f997f80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fcfc [ 45.984645] ffff00000f998000: ff ff ff ff ff ff ff ff ff ff ff ff ff ffff ff [ 45.985533] >ffff00000f998080: ff ff ff ff ff ff ff ff ff ff ff ffff ff ff ff [ 45.986419] ^ [ 45.987112] ffff00000f998100: ff ff ff ff ff ffff ff ff ff ff ff ff ff ff ff [ 45.988006] ffff00000f998180: ff ff ff ff ffff ff ff ff ff ff ff ff ff ff ff [ 45.988895]================================================================== [45.989773] Disabling lock debugging due to kernel taint [ 45.990552] Kernelpanic - not syncing: panic_on_warn set ... [ 45.991166] CPU: 1 PID: 732Comm: a.out Tainted: G B 5.13.0+ #22 [ 45.991929] Hardware name:linux,dummy-virt (DT) [ 45.992448] Call trace: [ 45.992753]dump_backtrace+0x0/0x4c8 [ 45.993208] show_stack+0x30/0x40 [ 45.993627]dump_stack_lvl+0x120/0x18c [ 45.994113] dump_stack+0x1c/0x34 [ 45.994530]panic+0x3a4/0x7d8 [ 45.994930] end_report+0x194/0x198 [ 45.995380]kasan_report+0x134/0x200 [ 45.995850] __asan_report_load8_noabort+0x2c/0x50[ 45.996453] bpf_xdp_link_release+0x3b8/0x3d0 [ 45.997007]bpf_link_free+0xd0/0x188 [ 45.997474] bpf_link_put+0x1d0/0x218 [ 45.997942]bpf_link_release+0x3c/0x58 [ 45.998429] __fput+0x20c/0x7e8 [ 45.998833]____fput+0x24/0x30 [ 45.999247] task_work_run+0x104/0x258 [ 45.999731]do_notify_resume+0x894/0xaf8 [ 46.000236] work_pending ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47299` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-2.16\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-lowlatency - 4.8.0-39.42~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1004.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1001.10\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1102-aws - 4.15.0-1030.31~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1114-azure - 4.11.0-1009.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1099-gcp - 4.10.0-1004.4\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-oracle - 4.15.0-1007.9~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -32,36 +32,36 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016100880000040",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
 					}
 				]
 			}

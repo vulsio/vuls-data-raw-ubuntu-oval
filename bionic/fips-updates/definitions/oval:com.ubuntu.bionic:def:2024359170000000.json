@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35917 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:s390/bpf: Fix bpf_plt pointer arithmetic Kui-Feng Lee reported a crash ons390x triggered by the dummy_st_ops/dummy_init_ptr_arg test [1]:[<0000000000000002>] 0x2 [<00000000009d5cde>]bpf_struct_ops_test_run+0x156/0x250 [<000000000033145a>]__sys_bpf+0xa1a/0xd00 [<00000000003319dc>] __s390x_sys_bpf+0x44/0x50[<0000000000c4382c>] __do_syscall+0x244/0x300 [<0000000000c59a40>]system_call+0x70/0x98 This is caused by GCC moving memcpy() afterassignments in bpf_jit_plt(), resulting in NULL pointers being writteninstead of the return and the target addresses. Looking at the GCCinternals, the reordering is allowed because the alias analysis thinks thatthe memcpy() destination and the assignments' left-hand-sides are based ondifferent objects: new_plt and bpf_plt_ret/bpf_plt_target respectively, andtherefore they cannot alias. This is in turn due to a violation of the Cstandard: When two pointers are subtracted, both shall point to elements ofthe same array object, or one past the last element of the array object ...From the C's perspective, bpf_plt_ret and bpf_plt are distinct objects andcannot be subtracted. In the practical terms, doing so confuses the GCC'salias analysis. The code was written this way in order to let the C sideknow a few offsets defined in the assembly. While nice, this is by no meansnecessary. Fix the noncompliance by hardcoding these offsets. [1]https://lore.kernel.org/bpf/c9923c1d-971d-4022-8dc8-1364e929d34c@gmail.com/",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:s390/bpf: Fix bpf_plt pointer arithmetic Kui-Feng Lee reported a crash ons390x triggered by the dummy_st_ops/dummy_init_ptr_arg test [1]:[<0000000000000002>] 0x2 [<00000000009d5cde>]bpf_struct_ops_test_run+0x156/0x250 [<000000000033145a>]__sys_bpf+0xa1a/0xd00 [<00000000003319dc>] __s390x_sys_bpf+0x44/0x50[<0000000000c4382c>] __do_syscall+0x244/0x300 [<0000000000c59a40>]system_call+0x70/0x98 This is caused by GCC moving memcpy() afterassignments in bpf_jit_plt(), resulting in NULL pointers being writteninstead of the return and the target addresses. Looking at the GCCinternals, the reordering is allowed because the alias analysis thinks thatthe memcpy() destination and the assignments' left-hand-sides are based ondifferent objects: new_plt and bpf_plt_ret/bpf_plt_target respectively, andtherefore they cannot alias. This is in turn due to a violation of the Cstandard: When two pointers are subtracted, both shall point to elements ofthe same array object, or one past the last element of the array object ...From the C's perspective, bpf_plt_ret and bpf_plt are distinct objects andcannot be subtracted. In the practical terms, doing so confuses the GCC'salias analysis. The code was written this way in order to let the C sideknow a few offsets defined in the assembly. While nice, this is by no meansnecessary. Fix the noncompliance by hardcoding these offsets. [1]https://lore.kernel.org/bpf/c9923c1d-971d-4022-8dc8-1364e929d34c@gmail.com/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35917` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2103-aws-fips - 4.15.0-2103.109\nlinux-image-unsigned-hmac-4.15.0-2103-aws-fips - 4.15.0-2103.109\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2082-azure-fips - 4.15.0-2082.88\nlinux-image-unsigned-hmac-4.15.0-2082-azure-fips - 4.15.0-2082.88\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nlinux-image-unsigned-hmac-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Compliant"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000010",
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1119.130')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000020",
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2103.109')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000030",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2082.88')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000040",
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2066.71')."
 					}
 				]
 			}

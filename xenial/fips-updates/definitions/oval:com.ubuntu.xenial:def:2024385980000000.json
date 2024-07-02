@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-38598 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:md: fix resync softlockup when bitmap size is less than array sizeIs is reported that for dm-raid10, lvextend + lvchange --syncaction willtrigger following softlockup:kernel:watchdog: BUG: soft lockup - CPU#3 stuck for 26s! [mdX_resync:6976]CPU: 7 PID: 3588 Comm: mdX_resync Kdump: loaded Not tainted6.9.0-rc4-next-20240419 #1RIP: 0010:_raw_spin_unlock_irq+0x13/0x30Call Trace: <TASK> md_bitmap_start_sync+0x6b/0xf0 raid10_sync_request+0x25c/0x1b40 [raid10] md_do_sync+0x64b/0x1020 md_thread+0xa7/0x170 kthread+0xcf/0x100 ret_from_fork+0x30/0x50 ret_from_fork_asm+0x1a/0x30And the detailed process is as follows:md_do_sync j = mddev->resync_min while (j < max_sectors)  sectors = raid10_sync_request(mddev, j, &skipped)   if (!md_bitmap_start_sync(..., &sync_blocks))    // md_bitmap_start_sync set sync_blocks to 0    return sync_blocks + sectors_skippe;  // sectors = 0;  j += sectors;  // j never changeRoot cause is that commit 301867b1c168 (\"md/raid10: checkslab-out-of-bounds in md_bitmap_get_counter\") return early frommd_bitmap_get_counter(), without setting returned blocks.Fix this problem by always set returned blocks frommd_bitmap_get_counter\"(), as it used to be.Noted that this patch just fix the softlockup problem in kernel, thecase that bitmap size doesn't match array size still need to be fixed.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:md: fix resync softlockup when bitmap size is less than array sizeIs is reported that for dm-raid10, lvextend + lvchange --syncaction willtrigger following softlockup:kernel:watchdog: BUG: soft lockup - CPU#3 stuck for 26s! [mdX_resync:6976]CPU: 7 PID: 3588 Comm: mdX_resync Kdump: loaded Not tainted6.9.0-rc4-next-20240419 #1RIP: 0010:_raw_spin_unlock_irq+0x13/0x30Call Trace: <TASK> md_bitmap_start_sync+0x6b/0xf0 raid10_sync_request+0x25c/0x1b40 [raid10] md_do_sync+0x64b/0x1020 md_thread+0xa7/0x170 kthread+0xcf/0x100 ret_from_fork+0x30/0x50 ret_from_fork_asm+0x1a/0x30And the detailed process is as follows:md_do_sync j = mddev->resync_min while (j < max_sectors)  sectors = raid10_sync_request(mddev, j, &skipped)   if (!md_bitmap_start_sync(..., &sync_blocks))    // md_bitmap_start_sync set sync_blocks to 0    return sync_blocks + sectors_skippe;  // sectors = 0;  j += sectors;  // j never changeRoot cause is that commit 301867b1c168 (\"md/raid10: checkslab-out-of-bounds in md_bitmap_get_counter\") return early frommd_bitmap_get_counter(), without setting returned blocks.Fix this problem by always set returned blocks frommd_bitmap_get_counter\"(), as it used to be.Noted that this patch just fix the softlockup problem in kernel, thecase that bitmap size doesn't match array size still need to be fixed.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-38598` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1098.105\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2017109110000000",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1098.105')."
 					}
 				]
 			}

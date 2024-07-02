@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47400 on Ubuntu 20.04 FIPS Compliant (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: net:hns3: do not allow call hns3_nic_net_open repeatedly hns3_nic_net_open() isnot allowed to called repeatly, but there is no checking for this. Whendoing device reset and setup tc concurrently, there is a small oppotunityto call hns3_nic_net_open repeatedly, and cause kernel bug by callingnapi_enable twice. The calltrace information is like below: [ 3078.222780]------------[ cut here ]------------ [ 3078.230255] kernel BUG atnet/core/dev.c:6991! [ 3078.236224] Internal error: Oops - BUG: 0 [#1]PREEMPT SMP [ 3078.243431] Modules linked in: hns3 hclgevf hclge hnae3vfio_iommu_type1 vfio_pci vfio_virqfd vfio pv680_mii(O) [ 3078.258880] CPU:0 PID: 295 Comm: kworker/u8:5 Tainted: G O 5.14.0-rc4+ #1 [ 3078.269102]Hardware name: , BIOS KpxxxFPGA 1P B600 V181 08/12/2021 [ 3078.276801]Workqueue: hclge hclge_service_task [hclge] [ 3078.288774] pstate: 60400009(nZCv daif +PAN -UAO -TCO BTYPE=--) [ 3078.296168] pc :napi_enable+0x80/0x84 tc qdisc sho[w 3d0e7v8 .e3t0h218 79] lr :hns3_nic_net_open+0x138/0x510 [hns3] [ 3078.314771] sp : ffff8000108abb20 [3078.319099] x29: ffff8000108abb20 x28: 0000000000000000 x27:ffff0820a8490300 [ 3078.329121] x26: 0000000000000001 x25: ffff08209cfc6200x24: 0000000000000000 [ 3078.339044] x23: ffff0820a8490300 x22:ffff08209cd76000 x21: ffff0820abfe3880 [ 3078.349018] x20: 0000000000000000x19: ffff08209cd76900 x18: 0000000000000000 [ 3078.358620] x17:0000000000000000 x16: ffffc816e1727a50 x15: 0000ffff8f4ff930 [ 3078.368895]x14: 0000000000000000 x13: 0000000000000000 x12: 0000259e9dbeb6b4 [3078.377987] x11: 0096a8f7e764eb40 x10: 634615ad28d3eab5 x9 :ffffc816ad8885b8 [ 3078.387091] x8 : ffff08209cfc6fb8 x7 : ffff0820ac0da058x6 : ffff0820a8490344 [ 3078.396356] x5 : 0000000000000140 x4 :0000000000000003 x3 : ffff08209cd76938 [ 3078.405365] x2 : 0000000000000000x1 : 0000000000000010 x0 : ffff0820abfe38a0 [ 3078.414657] Call trace: [3078.418517] napi_enable+0x80/0x84 [ 3078.424626]hns3_reset_notify_up_enet+0x78/0xd0 [hns3] [ 3078.433469]hns3_reset_notify+0x64/0x80 [hns3] [ 3078.441430]hclge_notify_client+0x68/0xb0 [hclge] [ 3078.450511]hclge_reset_rebuild+0x524/0x884 [hclge] [ 3078.458879]hclge_reset_service_task+0x3c4/0x680 [hclge] [ 3078.467470]hclge_service_task+0xb0/0xb54 [hclge] [ 3078.475675]process_one_work+0x1dc/0x48c [ 3078.481888] worker_thread+0x15c/0x464 [3078.487104] kthread+0x160/0x170 [ 3078.492479] ret_from_fork+0x10/0x18 [3078.498785] Code: c8027c81 35ffffa2 d50323bf d65f03c0 (d4210000) [3078.506889] ---[ end trace 8ebe0340a1b0fb44 ]--- Once hns3_nic_net_open()is excute success, the flag HNS3_NIC_STATE_DOWN will be cleared. So addchecking for this flag, directly return when HNS3_NIC_STATE_DOWN is no set.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:hns3: do not allow call hns3_nic_net_open repeatedly hns3_nic_net_open() isnot allowed to called repeatly, but there is no checking for this. Whendoing device reset and setup tc concurrently, there is a small oppotunityto call hns3_nic_net_open repeatedly, and cause kernel bug by callingnapi_enable twice. The calltrace information is like below: [ 3078.222780]------------[ cut here ]------------ [ 3078.230255] kernel BUG atnet/core/dev.c:6991! [ 3078.236224] Internal error: Oops - BUG: 0 [#1]PREEMPT SMP [ 3078.243431] Modules linked in: hns3 hclgevf hclge hnae3vfio_iommu_type1 vfio_pci vfio_virqfd vfio pv680_mii(O) [ 3078.258880] CPU:0 PID: 295 Comm: kworker/u8:5 Tainted: G O 5.14.0-rc4+ #1 [ 3078.269102]Hardware name: , BIOS KpxxxFPGA 1P B600 V181 08/12/2021 [ 3078.276801]Workqueue: hclge hclge_service_task [hclge] [ 3078.288774] pstate: 60400009(nZCv daif +PAN -UAO -TCO BTYPE=--) [ 3078.296168] pc :napi_enable+0x80/0x84 tc qdisc sho[w 3d0e7v8 .e3t0h218 79] lr :hns3_nic_net_open+0x138/0x510 [hns3] [ 3078.314771] sp : ffff8000108abb20 [3078.319099] x29: ffff8000108abb20 x28: 0000000000000000 x27:ffff0820a8490300 [ 3078.329121] x26: 0000000000000001 x25: ffff08209cfc6200x24: 0000000000000000 [ 3078.339044] x23: ffff0820a8490300 x22:ffff08209cd76000 x21: ffff0820abfe3880 [ 3078.349018] x20: 0000000000000000x19: ffff08209cd76900 x18: 0000000000000000 [ 3078.358620] x17:0000000000000000 x16: ffffc816e1727a50 x15: 0000ffff8f4ff930 [ 3078.368895]x14: 0000000000000000 x13: 0000000000000000 x12: 0000259e9dbeb6b4 [3078.377987] x11: 0096a8f7e764eb40 x10: 634615ad28d3eab5 x9 :ffffc816ad8885b8 [ 3078.387091] x8 : ffff08209cfc6fb8 x7 : ffff0820ac0da058x6 : ffff0820a8490344 [ 3078.396356] x5 : 0000000000000140 x4 :0000000000000003 x3 : ffff08209cd76938 [ 3078.405365] x2 : 0000000000000000x1 : 0000000000000010 x0 : ffff0820abfe38a0 [ 3078.414657] Call trace: [3078.418517] napi_enable+0x80/0x84 [ 3078.424626]hns3_reset_notify_up_enet+0x78/0xd0 [hns3] [ 3078.433469]hns3_reset_notify+0x64/0x80 [hns3] [ 3078.441430]hclge_notify_client+0x68/0xb0 [hclge] [ 3078.450511]hclge_reset_rebuild+0x524/0x884 [hclge] [ 3078.458879]hclge_reset_service_task+0x3c4/0x680 [hclge] [ 3078.467470]hclge_service_task+0xb0/0xb54 [hclge] [ 3078.475675]process_one_work+0x1dc/0x48c [ 3078.481888] worker_thread+0x15c/0x464 [3078.487104] kthread+0x160/0x170 [ 3078.492479] ret_from_fork+0x10/0x18 [3078.498785] Code: c8027c81 35ffffa2 d50323bf d65f03c0 (d4210000) [3078.506889] ---[ end trace 8ebe0340a1b0fb44 ]--- Once hns3_nic_net_open()is excute success, the flag HNS3_NIC_STATE_DOWN will be cleared. So addchecking for this flag, directly return when HNS3_NIC_STATE_DOWN is no set.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47400` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1092-fips - 5.4.0-1092.102\nlinux-image-unsigned-hmac-5.4.0-1092-fips - 5.4.0-1092.102\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1118-aws-fips - 5.4.0-1118.128+fips1\nlinux-image-unsigned-hmac-5.4.0-1118-aws-fips - 5.4.0-1118.128+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1123-azure-fips - 5.4.0-1123.130+fips1\nlinux-image-unsigned-hmac-5.4.0-1123-azure-fips - 5.4.0-1123.130+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1122-gcp-fips - 5.4.0-1122.131+fips1\nlinux-image-unsigned-hmac-5.4.0-1122-gcp-fips - 5.4.0-1122.131+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Compliant"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-91.102')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -48,16 +48,16 @@
 						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
+						"comment": "linux-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1050.52')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1060.63')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -72,12 +72,12 @@
 						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000120",
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1064.67')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -92,40 +92,40 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000140",
+						"comment": "linux-azure-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000160",
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1022.25')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000060",
+						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1092.102')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips-updates/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000210",
+						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1118.128+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips-updates/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000220",
+						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1123.130+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips-updates/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000230",
+						"comment": "linux-gcp-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1122.131+fips1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1058.62')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -140,8 +140,8 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000130",
+						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -153,39 +153,39 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1027.28')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
+						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"comment": "linux-ibm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000200",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
+						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1058.62')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -200,8 +200,8 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000150",
+						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -221,15 +221,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1047.52')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000180",
+						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]
 			}

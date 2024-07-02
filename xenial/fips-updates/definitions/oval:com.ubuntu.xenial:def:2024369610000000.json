@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36961 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:thermal/debugfs: Fix two locking issues with thermal zone debugWith the current thermal zone locking arrangement in the debugfs code,user space can open the \"mitigations\" file for a thermal zone beforethe zone's debugfs pointer is set which will result in a NULL pointerdereference in tze_seq_start().Moreover, thermal_debug_tz_remove() is not called under the thermalzone lock, so it can run in parallel with the other functions accessingthe thermal zone's struct thermal_debugfs object.  Then, it may cleartz->debugfs after one of those functions has checked it and thestruct thermal_debugfs object may be freed prematurely.To address the first problem, pass a pointer to the thermal zone'sstruct thermal_debugfs object to debugfs_create_file() inthermal_debug_tz_add() and make tze_seq_start(), tze_seq_next(),tze_seq_stop(), and tze_seq_show() retrieve it from s->privateinstead of a pointer to the thermal zone object.  This will ensurethat tz_debugfs will be valid across the \"mitigations\" file accessesuntil thermal_debugfs_remove_id() called by thermal_debug_tz_remove()removes that file.To address the second problem, use tz->lock in thermal_debug_tz_remove()around the tz->debugfs value check (in case the same thermal zone isremoved at the same time in two different threads) and its reset to NULL.Cc :6.8+ <stable@vger.kernel.org> # 6.8+",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:thermal/debugfs: Fix two locking issues with thermal zone debugWith the current thermal zone locking arrangement in the debugfs code,user space can open the \"mitigations\" file for a thermal zone beforethe zone's debugfs pointer is set which will result in a NULL pointerdereference in tze_seq_start().Moreover, thermal_debug_tz_remove() is not called under the thermalzone lock, so it can run in parallel with the other functions accessingthe thermal zone's struct thermal_debugfs object.  Then, it may cleartz->debugfs after one of those functions has checked it and thestruct thermal_debugfs object may be freed prematurely.To address the first problem, pass a pointer to the thermal zone'sstruct thermal_debugfs object to debugfs_create_file() inthermal_debug_tz_add() and make tze_seq_start(), tze_seq_next(),tze_seq_stop(), and tze_seq_show() retrieve it from s->privateinstead of a pointer to the thermal zone object.  This will ensurethat tz_debugfs will be valid across the \"mitigations\" file accessesuntil thermal_debugfs_remove_id() called by thermal_debug_tz_remove()removes that file.To address the second problem, use tz->lock in thermal_debug_tz_remove()around the tz->debugfs value check (in case the same thermal zone isremoved at the same time in two different threads) and its reset to NULL.Cc :6.8+ <stable@vger.kernel.org> # 6.8+\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36961` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1098.105\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2017109110000000",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1098.105')."
 					}
 				]
 			}

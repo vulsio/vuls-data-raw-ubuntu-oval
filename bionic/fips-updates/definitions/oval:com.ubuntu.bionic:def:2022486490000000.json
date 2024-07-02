@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48649 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/slab_common: fix possible double free of kmem_cache When doingslub_debug test, kfence's 'test_memcache_typesafe_by_rcu' kunit test casecause a use-after-free error: BUG: KASAN: use-after-free inkobject_del+0x14/0x30 Read of size 8 at addr ffff888007679090 by taskkunit_try_catch/261 CPU: 1 PID: 261 Comm: kunit_try_catch Tainted: G B N6.0.0-rc5-next-20220916 #17 Hardware name: QEMU Standard PC (i440FX + PIIX,1996), BIOS 1.15.0-1 04/01/2014 Call Trace: <TASK> dump_stack_lvl+0x34/0x48print_address_description.constprop.0+0x87/0x2a5 print_report+0x103/0x1edkasan_report+0xb7/0x140 kobject_del+0x14/0x30kmem_cache_destroy+0x130/0x170 test_exit+0x1a/0x30kunit_try_run_case+0xad/0xc0 kunit_generic_run_threadfn_adapter+0x26/0x50kthread+0x17b/0x1b0 </TASK> The cause is inside kmem_cache_destroy():kmem_cache_destroy acquire lock/mutex shutdown_cacheschedule_work(kmem_cache_release) (if RCU flag set) release lock/mutexkmem_cache_release (if RCU flag not set) In some certain timing, thescheduled work could be run before the next RCU flag checking, which canthen get a wrong value and lead to double kmem_cache_release(). Fix it bycaching the RCU flag inside protected area, just like 'refcnt'",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/slab_common: fix possible double free of kmem_cache When doingslub_debug test, kfence's 'test_memcache_typesafe_by_rcu' kunit test casecause a use-after-free error: BUG: KASAN: use-after-free inkobject_del+0x14/0x30 Read of size 8 at addr ffff888007679090 by taskkunit_try_catch/261 CPU: 1 PID: 261 Comm: kunit_try_catch Tainted: G B N6.0.0-rc5-next-20220916 #17 Hardware name: QEMU Standard PC (i440FX + PIIX,1996), BIOS 1.15.0-1 04/01/2014 Call Trace: <TASK> dump_stack_lvl+0x34/0x48print_address_description.constprop.0+0x87/0x2a5 print_report+0x103/0x1edkasan_report+0xb7/0x140 kobject_del+0x14/0x30kmem_cache_destroy+0x130/0x170 test_exit+0x1a/0x30kunit_try_run_case+0xad/0xc0 kunit_generic_run_threadfn_adapter+0x26/0x50kthread+0x17b/0x1b0 </TASK> The cause is inside kmem_cache_destroy():kmem_cache_destroy acquire lock/mutex shutdown_cacheschedule_work(kmem_cache_release) (if RCU flag set) release lock/mutexkmem_cache_release (if RCU flag not set) In some certain timing, thescheduled work could be run before the next RCU flag checking, which canthen get a wrong value and lead to double kmem_cache_release(). Fix it bycaching the RCU flag inside protected area, just like 'refcnt'\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48649` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2103-aws-fips - 4.15.0-2103.109\nlinux-image-unsigned-hmac-4.15.0-2103-aws-fips - 4.15.0-2103.109\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2082-azure-fips - 4.15.0-2082.88\nlinux-image-unsigned-hmac-4.15.0-2082-azure-fips - 4.15.0-2082.88\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nlinux-image-unsigned-hmac-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Compliant"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000010",
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1119.130')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000020",
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2103.109')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000030",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2082.88')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000040",
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2066.71')."
 					}
 				]
 			}

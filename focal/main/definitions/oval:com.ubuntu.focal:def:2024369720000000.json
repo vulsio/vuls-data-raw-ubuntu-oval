@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36972 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:af_unix: Update unix_sk(sk)->oob_skb under sk_receive_queue lock.Billy Jheng Bing-Jhong reported a race between __unix_gc() andqueue_oob().__unix_gc() tries to garbage-collect close()d inflight sockets,and then if the socket has MSG_OOB in unix_sk(sk)->oob_skb, GCwill drop the reference and set NULL to it locklessly.However, the peer socket still can send MSG_OOB message andqueue_oob() can update unix_sk(sk)->oob_skb concurrently, leadingNULL pointer dereference. [0]To fix the issue, let's update unix_sk(sk)->oob_skb under thesk_receive_queue's lock and take it everywhere we touch oob_skb.Note that we defer kfree_skb() in manage_oob() to silence lockdepfalse-positive (See [1]).[0]:BUG: kernel NULL pointer dereference, address: 0000000000000008 PF: supervisor write access in kernel mode PF: error_code(0x0002) - not-present pagePGD 8000000009f5e067 P4D 8000000009f5e067 PUD 9f5d067 PMD 0Oops: 0002 [#1] PREEMPT SMP PTICPU: 3 PID: 50 Comm: kworker/3:1 Not tainted 6.9.0-rc5-00191-gd091e579b864#110Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.16.0-0-gd239552ce722-prebuilt.qemu.org 04/01/2014Workqueue: events delayed_fputRIP: 0010:skb_dequeue (./include/linux/skbuff.h:2386./include/linux/skbuff.h:2402 net/core/skbuff.c:3847)Code: 39 e3 74 3e 8b 43 10 48 89 ef 83 e8 01 89 43 10 49 8b 44 24 08 49 c744 24 08 00 00 00 00 49 8b 14 24 49 c7 04 24 00 00 00 00 <48> 89 42 08 4889 10 e8 e7 c5 42 00 4c 89 e0 5b 5d 41 5c c3 cc ccRSP: 0018:ffffc900001bfd48 EFLAGS: 00000002RAX: 0000000000000000 RBX: ffff8880088f5ae8 RCX: 00000000361289f9RDX: 0000000000000000 RSI: 0000000000000206 RDI: ffff8880088f5b00RBP: ffff8880088f5b00 R08: 0000000000080000 R09: 0000000000000001R10: 0000000000000003 R11: 0000000000000001 R12: ffff8880056b6a00R13: ffff8880088f5280 R14: 0000000000000001 R15: ffff8880088f5a80FS:  0000000000000000(0000) GS:ffff88807dd80000(0000)knlGS:0000000000000000CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033CR2: 0000000000000008 CR3: 0000000006314000 CR4: 00000000007506f0PKRU: 55555554Call Trace: <TASK> unix_release_sock (net/unix/af_unix.c:654) unix_release (net/unix/af_unix.c:1050) __sock_release (net/socket.c:660) sock_close (net/socket.c:1423) __fput (fs/file_table.c:423) delayed_fput (fs/file_table.c:444 (discriminator 3)) process_one_work (kernel/workqueue.c:3259) worker_thread (kernel/workqueue.c:3329 kernel/workqueue.c:3416) kthread (kernel/kthread.c:388) ret_from_fork (arch/x86/kernel/process.c:153) ret_from_fork_asm (arch/x86/entry/entry_64.S:257) </TASK>Modules linked in:CR2: 0000000000000008",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:af_unix: Update unix_sk(sk)->oob_skb under sk_receive_queue lock.Billy Jheng Bing-Jhong reported a race between __unix_gc() andqueue_oob().__unix_gc() tries to garbage-collect close()d inflight sockets,and then if the socket has MSG_OOB in unix_sk(sk)->oob_skb, GCwill drop the reference and set NULL to it locklessly.However, the peer socket still can send MSG_OOB message andqueue_oob() can update unix_sk(sk)->oob_skb concurrently, leadingNULL pointer dereference. [0]To fix the issue, let's update unix_sk(sk)->oob_skb under thesk_receive_queue's lock and take it everywhere we touch oob_skb.Note that we defer kfree_skb() in manage_oob() to silence lockdepfalse-positive (See [1]).[0]:BUG: kernel NULL pointer dereference, address: 0000000000000008 PF: supervisor write access in kernel mode PF: error_code(0x0002) - not-present pagePGD 8000000009f5e067 P4D 8000000009f5e067 PUD 9f5d067 PMD 0Oops: 0002 [#1] PREEMPT SMP PTICPU: 3 PID: 50 Comm: kworker/3:1 Not tainted 6.9.0-rc5-00191-gd091e579b864#110Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.16.0-0-gd239552ce722-prebuilt.qemu.org 04/01/2014Workqueue: events delayed_fputRIP: 0010:skb_dequeue (./include/linux/skbuff.h:2386./include/linux/skbuff.h:2402 net/core/skbuff.c:3847)Code: 39 e3 74 3e 8b 43 10 48 89 ef 83 e8 01 89 43 10 49 8b 44 24 08 49 c744 24 08 00 00 00 00 49 8b 14 24 49 c7 04 24 00 00 00 00 <48> 89 42 08 4889 10 e8 e7 c5 42 00 4c 89 e0 5b 5d 41 5c c3 cc ccRSP: 0018:ffffc900001bfd48 EFLAGS: 00000002RAX: 0000000000000000 RBX: ffff8880088f5ae8 RCX: 00000000361289f9RDX: 0000000000000000 RSI: 0000000000000206 RDI: ffff8880088f5b00RBP: ffff8880088f5b00 R08: 0000000000080000 R09: 0000000000000001R10: 0000000000000003 R11: 0000000000000001 R12: ffff8880056b6a00R13: ffff8880088f5280 R14: 0000000000000001 R15: ffff8880088f5a80FS:  0000000000000000(0000) GS:ffff88807dd80000(0000)knlGS:0000000000000000CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033CR2: 0000000000000008 CR3: 0000000006314000 CR4: 00000000007506f0PKRU: 55555554Call Trace: <TASK> unix_release_sock (net/unix/af_unix.c:654) unix_release (net/unix/af_unix.c:1050) __sock_release (net/socket.c:660) sock_close (net/socket.c:1423) __fput (fs/file_table.c:423) delayed_fput (fs/file_table.c:444 (discriminator 3)) process_one_work (kernel/workqueue.c:3259) worker_thread (kernel/workqueue.c:3329 kernel/workqueue.c:3416) kthread (kernel/kthread.c:388) ret_from_fork (arch/x86/kernel/process.c:153) ret_from_fork_asm (arch/x86/entry/entry_64.S:257) </TASK>Modules linked in:CR2: 0000000000000008\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36972` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000000",
+						"comment": "linux package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-9.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -49,15 +49,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000010",
+						"comment": "linux-kvm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-aws package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -73,11 +73,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-aws-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
+						"comment": "linux-azure package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1006.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -93,7 +93,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
@@ -101,15 +101,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-fde-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000080",
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-gcp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -125,7 +125,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gcp-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -136,20 +136,20 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000030",
+						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gkeop-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000000",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-ibm-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -157,19 +157,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-intel-iotg-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000160",
+						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-oracle package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -185,7 +185,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-oracle-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -204,16 +204,16 @@
 						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000050",
+						"comment": "linux-raspi package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
+						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]
 			}

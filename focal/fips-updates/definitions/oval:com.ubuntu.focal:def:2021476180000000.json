@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47618 on Ubuntu 20.04 FIPS Compliant (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:ARM: 9170/1: fix panic when kasan and kprobe are enabledarm32 uses software to simulate the instruction replacedby kprobe. some instructions may be simulated by constructingassembly functions. therefore, before executing instructionsimulation, it is necessary to construct assembly functionexecution environment in C language through binding registers.after kasan is enabled, the register binding relationship willbe destroyed, resulting in instruction simulation errors andcausing kernel panic.the kprobe emulate instruction function is distributed in threefiles: actions-common.c actions-arm.c actions-thumb.c, so disableKASAN when compiling these files.for example, use kprobe insert on cap_capable+20 after kasanenabled, the cap_capable assembly code is as follows:<cap_capable>:e92d47f0\tpush\t{r4, r5, r6, r7, r8, r9, sl, lr}e1a05000\tmov\tr5, r0e280006c\tadd\tr0, r0, #108    ; 0x6ce1a04001\tmov\tr4, r1e1a06002\tmov\tr6, r2e59fa090\tldr\tsl, [pc, #144]  ;ebfc7bf8\tbl\tc03aa4b4 <__asan_load4>e595706c\tldr\tr7, [r5, #108]  ; 0x6ce2859014\tadd\tr9, r5, #20......The emulate_ldr assembly code after enabling kasan is as follows:c06f1384 <emulate_ldr>:e92d47f0\tpush\t{r4, r5, r6, r7, r8, r9, sl, lr}e282803c\tadd\tr8, r2, #60     ; 0x3ce1a05000\tmov\tr5, r0e7e37855\tubfx\tr7, r5, #16, #4e1a00008\tmov\tr0, r8e1a09001\tmov\tr9, r1e1a04002\tmov\tr4, r2ebf35462\tbl\tc03c6530 <__asan_load4>e357000f\tcmp\tr7, #15e7e36655\tubfx\tr6, r5, #12, #4e205a00f\tand\tsl, r5, #150a000001\tbeq\tc06f13bc <emulate_ldr+0x38>e0840107\tadd\tr0, r4, r7, lsl #2ebf3545c\tbl\tc03c6530 <__asan_load4>e084010a\tadd\tr0, r4, sl, lsl #2ebf3545a\tbl\tc03c6530 <__asan_load4>e2890010\tadd\tr0, r9, #16ebf35458\tbl\tc03c6530 <__asan_load4>e5990010\tldr\tr0, [r9, #16]e12fff30\tblx\tr0e356000f\tcm\tr6, #151a000014\tbne\tc06f1430 <emulate_ldr+0xac>e1a06000\tmov\tr6, r0e2840040\tadd\tr0, r4, #64     ; 0x40......when running in emulate_ldr to simulate the ldr instruction, panicoccurred, and the log is as follows:Unable to handle kernel NULL pointer dereference at virtual address00000090pgd = ecb46400[00000090] *pgd=2e0fa003, *pmd=00000000Internal error: Oops: 206 [#1] SMP ARMPC is at cap_capable+0x14/0xb0LR is at emulate_ldr+0x50/0xc0psr: 600d0293 sp : ecd63af8  ip : 00000004  fp : c0a7c30cr10: 00000000  r9 : c30897f4  r8 : ecd63cd4r7 : 0000000f  r6 : 0000000a  r5 : e59fa090  r4 : ecd63c98r3 : c06ae294  r2 : 00000000  r1 : b7611300  r0 : bf4ec008Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment userControl: 32c5387d  Table: 2d546400  DAC: 55555555Process bash (pid: 1643, stack limit = 0xecd60190)(cap_capable) from (kprobe_handler+0x218/0x340)(kprobe_handler) from (kprobe_trap_handler+0x24/0x48)(kprobe_trap_handler) from (do_undefinstr+0x13c/0x364)(do_undefinstr) from (__und_svc_finish+0x0/0x30)(__und_svc_finish) from (cap_capable+0x18/0xb0)(cap_capable) from (cap_vm_enough_memory+0x38/0x48)(cap_vm_enough_memory) from(security_vm_enough_memory_mm+0x48/0x6c)(security_vm_enough_memory_mm) from(copy_process.constprop.5+0x16b4/0x25c8)(copy_process.constprop.5) from (_do_fork+0xe8/0x55c)(_do_fork) from (SyS_clone+0x1c/0x24)(SyS_clone) from (__sys_trace_return+0x0/0x10)Code: 0050a0e1 6c0080e2 0140a0e1 0260a0e1 (f801f0e7)",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ARM: 9170/1: fix panic when kasan and kprobe are enabledarm32 uses software to simulate the instruction replacedby kprobe. some instructions may be simulated by constructingassembly functions. therefore, before executing instructionsimulation, it is necessary to construct assembly functionexecution environment in C language through binding registers.after kasan is enabled, the register binding relationship willbe destroyed, resulting in instruction simulation errors andcausing kernel panic.the kprobe emulate instruction function is distributed in threefiles: actions-common.c actions-arm.c actions-thumb.c, so disableKASAN when compiling these files.for example, use kprobe insert on cap_capable+20 after kasanenabled, the cap_capable assembly code is as follows:<cap_capable>:e92d47f0\tpush\t{r4, r5, r6, r7, r8, r9, sl, lr}e1a05000\tmov\tr5, r0e280006c\tadd\tr0, r0, #108    ; 0x6ce1a04001\tmov\tr4, r1e1a06002\tmov\tr6, r2e59fa090\tldr\tsl, [pc, #144]  ;ebfc7bf8\tbl\tc03aa4b4 <__asan_load4>e595706c\tldr\tr7, [r5, #108]  ; 0x6ce2859014\tadd\tr9, r5, #20......The emulate_ldr assembly code after enabling kasan is as follows:c06f1384 <emulate_ldr>:e92d47f0\tpush\t{r4, r5, r6, r7, r8, r9, sl, lr}e282803c\tadd\tr8, r2, #60     ; 0x3ce1a05000\tmov\tr5, r0e7e37855\tubfx\tr7, r5, #16, #4e1a00008\tmov\tr0, r8e1a09001\tmov\tr9, r1e1a04002\tmov\tr4, r2ebf35462\tbl\tc03c6530 <__asan_load4>e357000f\tcmp\tr7, #15e7e36655\tubfx\tr6, r5, #12, #4e205a00f\tand\tsl, r5, #150a000001\tbeq\tc06f13bc <emulate_ldr+0x38>e0840107\tadd\tr0, r4, r7, lsl #2ebf3545c\tbl\tc03c6530 <__asan_load4>e084010a\tadd\tr0, r4, sl, lsl #2ebf3545a\tbl\tc03c6530 <__asan_load4>e2890010\tadd\tr0, r9, #16ebf35458\tbl\tc03c6530 <__asan_load4>e5990010\tldr\tr0, [r9, #16]e12fff30\tblx\tr0e356000f\tcm\tr6, #151a000014\tbne\tc06f1430 <emulate_ldr+0xac>e1a06000\tmov\tr6, r0e2840040\tadd\tr0, r4, #64     ; 0x40......when running in emulate_ldr to simulate the ldr instruction, panicoccurred, and the log is as follows:Unable to handle kernel NULL pointer dereference at virtual address00000090pgd = ecb46400[00000090] *pgd=2e0fa003, *pmd=00000000Internal error: Oops: 206 [#1] SMP ARMPC is at cap_capable+0x14/0xb0LR is at emulate_ldr+0x50/0xc0psr: 600d0293 sp : ecd63af8  ip : 00000004  fp : c0a7c30cr10: 00000000  r9 : c30897f4  r8 : ecd63cd4r7 : 0000000f  r6 : 0000000a  r5 : e59fa090  r4 : ecd63c98r3 : c06ae294  r2 : 00000000  r1 : b7611300  r0 : bf4ec008Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment userControl: 32c5387d  Table: 2d546400  DAC: 55555555Process bash (pid: 1643, stack limit = 0xecd60190)(cap_capable) from (kprobe_handler+0x218/0x340)(kprobe_handler) from (kprobe_trap_handler+0x24/0x48)(kprobe_trap_handler) from (do_undefinstr+0x13c/0x364)(do_undefinstr) from (__und_svc_finish+0x0/0x30)(__und_svc_finish) from (cap_capable+0x18/0xb0)(cap_capable) from (cap_vm_enough_memory+0x38/0x48)(cap_vm_enough_memory) from(security_vm_enough_memory_mm+0x48/0x6c)(security_vm_enough_memory_mm) from(copy_process.constprop.5+0x16b4/0x25c8)(copy_process.constprop.5) from (_do_fork+0xe8/0x55c)(_do_fork) from (SyS_clone+0x1c/0x24)(SyS_clone) from (__sys_trace_return+0x0/0x10)Code: 0050a0e1 6c0080e2 0140a0e1 0260a0e1 (f801f0e7)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47618` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Compliant"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -48,16 +48,16 @@
 						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
+						"comment": "linux-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -72,12 +72,12 @@
 						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000120",
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -92,40 +92,40 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000140",
+						"comment": "linux-azure-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000160",
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-fips package in fips-updates/focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-aws-fips package in fips-updates/focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-azure-fips package in fips-updates/focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips-updates/focal is affected and may need fixing."
+						"comment": "linux-gcp-fips package in fips-updates/focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -140,8 +140,8 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000130",
+						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -153,39 +153,39 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
+						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"comment": "linux-ibm package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000200",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"comment": "linux-iot package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -200,8 +200,8 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000150",
+						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -221,7 +221,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
@@ -229,7 +229,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"comment": "linux-xilinx-zynqmp package in focal is affected and needs fixing."
 					}
 				]
 			}

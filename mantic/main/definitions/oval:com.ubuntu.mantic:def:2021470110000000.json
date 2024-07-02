@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47011 on Ubuntu 23.10 (mantic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: mm:memcontrol: slab: fix obtain a reference to a freeing memcg Patch series\"Use obj_cgroup APIs to charge kmem pages\", v5. Since Roman's series \"Thenew cgroup slab memory controller\" applied. All slab objects are chargedwith the new APIs of obj_cgroup. The new APIs introduce a struct obj_cgroupto charge slab objects. It prevents long-living objects from pinning theoriginal memory cgroup in the memory. But there are still some cornerobjects (e.g. allocations larger than order-1 page on SLUB) which are notcharged with the new APIs. Those objects (include the pages which areallocated from buddy allocator directly) are charged as kmem pages whichstill hold a reference to the memory cgroup. E.g. We know that the kernelstack is charged as kmem pages because the size of the kernel stack can begreater than 2 pages (e.g. 16KB on x86_64 or arm64). If we create a thread(suppose the thread stack is charged to memory cgroup A) and then move itfrom memory cgroup A to memory cgroup B. Because the kernel stack of thethread hold a reference to the memory cgroup A. The thread can pin thememory cgroup A in the memory even if we remove the cgroup A. If we want tosee this scenario by using the following script. We can see that the systemhas added 500 dying cgroups (This is not a real world issue, just a scriptto show that the large kmallocs are charged as kmem pages which can pin thememory cgroup in the memory). #!/bin/bash cat /proc/cgroups | grep memorycd /sys/fs/cgroup/memory echo 1 > memory.move_charge_at_immigrate for i inrange{1..500} do mkdir kmem_test echo $$ > kmem_test/cgroup.procs sleep3600 & echo $$ > cgroup.procs echo `cat kmem_test/cgroup.procs` >cgroup.procs rmdir kmem_test done cat /proc/cgroups | grep memory Thispatchset aims to make those kmem pages to drop the reference to memorycgroup by using the APIs of obj_cgroup. Finally, we can see that the numberof the dying cgroups will not increase if we run the above test script.This patch (of 7): The rcu_read_lock/unlock only can guarantee that thememcg will not be freed, but it cannot guarantee the success of css_get(which is in the refill_stock when cached memcg changed) to memcg.rcu_read_lock() memcg = obj_cgroup_memcg(old) __memcg_kmem_uncharge(memcg)refill_stock(memcg) if (stock->cached != memcg) // css_get can change theref counter from 0 back to 1. css_get(&memcg->css) rcu_read_unlock() Thisfix is very like the commit: eefbfa7fd678 (\"mm: memcg/slab: fix use afterfree in obj_cgroup_charge\") Fix this by holding a reference to the memcgwhich is passed to the __memcg_kmem_uncharge() before calling__memcg_kmem_uncharge().",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mm:memcontrol: slab: fix obtain a reference to a freeing memcg Patch series\"Use obj_cgroup APIs to charge kmem pages\", v5. Since Roman's series \"Thenew cgroup slab memory controller\" applied. All slab objects are chargedwith the new APIs of obj_cgroup. The new APIs introduce a struct obj_cgroupto charge slab objects. It prevents long-living objects from pinning theoriginal memory cgroup in the memory. But there are still some cornerobjects (e.g. allocations larger than order-1 page on SLUB) which are notcharged with the new APIs. Those objects (include the pages which areallocated from buddy allocator directly) are charged as kmem pages whichstill hold a reference to the memory cgroup. E.g. We know that the kernelstack is charged as kmem pages because the size of the kernel stack can begreater than 2 pages (e.g. 16KB on x86_64 or arm64). If we create a thread(suppose the thread stack is charged to memory cgroup A) and then move itfrom memory cgroup A to memory cgroup B. Because the kernel stack of thethread hold a reference to the memory cgroup A. The thread can pin thememory cgroup A in the memory even if we remove the cgroup A. If we want tosee this scenario by using the following script. We can see that the systemhas added 500 dying cgroups (This is not a real world issue, just a scriptto show that the large kmallocs are charged as kmem pages which can pin thememory cgroup in the memory). #!/bin/bash cat /proc/cgroups | grep memorycd /sys/fs/cgroup/memory echo 1 > memory.move_charge_at_immigrate for i inrange{1..500} do mkdir kmem_test echo $$ > kmem_test/cgroup.procs sleep3600 & echo $$ > cgroup.procs echo `cat kmem_test/cgroup.procs` >cgroup.procs rmdir kmem_test done cat /proc/cgroups | grep memory Thispatchset aims to make those kmem pages to drop the reference to memorycgroup by using the APIs of obj_cgroup. Finally, we can see that the numberof the dying cgroups will not increase if we run the above test script.This patch (of 7): The rcu_read_lock/unlock only can guarantee that thememcg will not be freed, but it cannot guarantee the success of css_get(which is in the refill_stock when cached memcg changed) to memcg.rcu_read_lock() memcg = obj_cgroup_memcg(old) __memcg_kmem_uncharge(memcg)refill_stock(memcg) if (stock->cached != memcg) // css_get can change theref counter from 0 back to 1. css_get(&memcg->css) rcu_read_unlock() Thisfix is very like the commit: eefbfa7fd678 (\"mm: memcg/slab: fix use afterfree in obj_cgroup_charge\") Fix this by holding a reference to the memcgwhich is passed to the __memcg_kmem_uncharge() before calling__memcg_kmem_uncharge().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47011` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-6.2.0-20-generic-lpae - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic-64k - 6.2.0-20.20\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-aws - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-azure - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1005-gcp - 6.2.0-1005.5\nNo subscription required\n\nlinux-image-6.5.0-1003-laptop - 6.5.0-1003.6\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-lowlatency - 6.2.0-1003.3\nlinux-image-unsigned-6.2.0-1003-lowlatency-64k - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-oracle - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-6.2.0-1004-raspi - 6.2.0-1004.5\nlinux-image-6.2.0-1004-raspi-nolpae - 6.2.0-1004.5\nNo subscription required\n\nlinux-image-6.5.0-1002-starfive - 6.5.0-1002.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
-						"comment": "linux package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000000",
+						"comment": "linux package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-20.20')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
-						"comment": "linux-aws package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-aws package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
-						"comment": "linux-azure package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-azure package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
-						"comment": "linux-gcp package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000020",
+						"comment": "linux-gcp package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
 						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
-						"comment": "linux-laptop package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000060",
+						"comment": "linux-laptop package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1003.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
-						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-lowlatency package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
-						"comment": "linux-oracle package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-oracle package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
-						"comment": "linux-raspi package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000030",
+						"comment": "linux-raspi package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
-						"comment": "linux-starfive package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000050",
+						"comment": "linux-starfive package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1002.3')."
 					}
 				]
 			}

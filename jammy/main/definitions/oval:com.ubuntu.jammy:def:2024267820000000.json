@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26782 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: mptcp:fix double-free on socket dismantle when MPTCP server accepts an incomingconnection, it clones its listener socket. However, the pointer to'inet_opt' for the new socket has the same value as the original one: as aconsequence, on program exit it's possible to observe the following splat:BUG: KASAN: double-free in inet_sock_destruct+0x54f/0x8b0 Free of addrffff888485950880 by task swapper/25/0 CPU: 25 PID: 0 Comm: swapper/25Kdump: loaded Not tainted 6.8.0-rc1+ #609 Hardware name: SupermicroSYS-6027R-72RF/X9DRH-7TF/7F/iTF/iF, BIOS 3.0 07/26/2013 Call Trace: <IRQ>dump_stack_lvl+0x32/0x50 print_report+0xca/0x620kasan_report_invalid_free+0x64/0x90 __kasan_slab_free+0x1aa/0x1f0kfree+0xed/0x2e0 inet_sock_destruct+0x54f/0x8b0 __sk_destruct+0x48/0x5b0rcu_do_batch+0x34e/0xd90 rcu_core+0x559/0xac0 __do_softirq+0x183/0x5a4irq_exit_rcu+0x12d/0x170 sysvec_apic_timer_interrupt+0x6b/0x80 </IRQ><TASK> asm_sysvec_apic_timer_interrupt+0x16/0x20 RIP:0010:cpuidle_enter_state+0x175/0x300 Code: 30 00 0f 84 1f 01 00 00 83 e8 0183 f8 ff 75 e5 48 83 c4 18 44 89 e8 5b 5d 41 5c 41 5d 41 5e 41 5f c3 cc cccc cc fb 45 85 ed <0f> 89 60 ff ff ff 48 c1 e5 06 48 c7 43 18 00 00 00 0048 83 44 2b RSP: 0018:ffff888481cf7d90 EFLAGS: 00000202 RAX:0000000000000000 RBX: ffff88887facddc8 RCX: 0000000000000000 RDX:1ffff1110ff588b1 RSI: 0000000000000019 RDI: ffff88887fac4588 RBP:0000000000000004 R08: 0000000000000002 R09: 0000000000043080 R10:0009b02ea273363f R11: ffff88887fabf42b R12: ffffffff932592e0 R13:0000000000000004 R14: 0000000000000000 R15: 00000022c880ec80cpuidle_enter+0x4a/0xa0 do_idle+0x310/0x410 cpu_startup_entry+0x51/0x60start_secondary+0x211/0x270 secondary_startup_64_no_verify+0x184/0x18b</TASK> Allocated by task 6853: kasan_save_stack+0x1c/0x40kasan_save_track+0x10/0x30 __kasan_kmalloc+0xa6/0xb0 __kmalloc+0x1eb/0x450cipso_v4_sock_setattr+0x96/0x360 netlbl_sock_setattr+0x132/0x1f0selinux_netlbl_socket_post_create+0x6c/0x110selinux_socket_post_create+0x37b/0x7f0security_socket_post_create+0x63/0xb0 __sock_create+0x305/0x450__sys_socket_create.part.23+0xbd/0x130 __sys_socket+0x37/0xb0__x64_sys_socket+0x6f/0xb0 do_syscall_64+0x83/0x160entry_SYSCALL_64_after_hwframe+0x6e/0x76 Freed by task 6858:kasan_save_stack+0x1c/0x40 kasan_save_track+0x10/0x30kasan_save_free_info+0x3b/0x60 __kasan_slab_free+0x12c/0x1f0kfree+0xed/0x2e0 inet_sock_destruct+0x54f/0x8b0 __sk_destruct+0x48/0x5b0subflow_ulp_release+0x1f0/0x250 tcp_cleanup_ulp+0x6e/0x110tcp_v4_destroy_sock+0x5a/0x3a0 inet_csk_destroy_sock+0x135/0x390tcp_fin+0x416/0x5c0 tcp_data_queue+0x1bc8/0x4310tcp_rcv_state_process+0x15a3/0x47b0 tcp_v4_do_rcv+0x2c1/0x990tcp_v4_rcv+0x41fb/0x5ed0 ip_protocol_deliver_rcu+0x6d/0x9f0ip_local_deliver_finish+0x278/0x360 ip_local_deliver+0x182/0x2c0ip_rcv+0xb5/0x1c0 __netif_receive_skb_one_core+0x16e/0x1b0process_backlog+0x1e3/0x650 __napi_poll+0xa6/0x500net_rx_action+0x740/0xbb0 __do_softirq+0x183/0x5a4 The buggy addressbelongs to the object at ffff888485950880 which belongs to the cachekmalloc-64 of size 64 The buggy address is located 0 bytes inside of64-byte region [ffff888485950880, ffff8884859508c0) The buggy addressbelongs to the physical page: page:0000000056d1e95e refcount:1 mapcount:0mapping:0000000000000000 index:0xffff888485950700 pfn:0x485950 flags:0x57ffffc0000800(slab|node=1|zone=2|lastcpupid=0x1fffff) page_type:0xffffffff() raw: 0057ffffc0000800 ffff88810004c640 ffffea00121b8ac0dead000000000006 raw: ffff888485950700 0000000000200019 00000001ffffffff0000000000000000 page dumped because: kasan: bad access detected Memorystate around the buggy address: ffff888485950780: fa fb fb ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26782` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-5.15.0-112-generic-lpae - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic-64k - 5.15.0-112.122\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-kvm - 5.15.0-1060.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-azure - 5.15.0-1066.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-azure-fde - 5.15.0-1065.74.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-gke - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-ibm - 5.15.0-1056.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-nvidia - 5.15.0-1058.59\nlinux-image-unsigned-5.15.0-1058-nvidia-lowlatency - 5.15.0-1058.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-oracle - 5.15.0-1061.67\nNo subscription required\n\nlinux-image-5.15.0-1030-xilinx-zynqmp - 5.15.0-1030.34\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mptcp:fix double-free on socket dismantle when MPTCP server accepts an incomingconnection, it clones its listener socket. However, the pointer to'inet_opt' for the new socket has the same value as the original one: as aconsequence, on program exit it's possible to observe the following splat:BUG: KASAN: double-free in inet_sock_destruct+0x54f/0x8b0 Free of addrffff888485950880 by task swapper/25/0 CPU: 25 PID: 0 Comm: swapper/25Kdump: loaded Not tainted 6.8.0-rc1+ #609 Hardware name: SupermicroSYS-6027R-72RF/X9DRH-7TF/7F/iTF/iF, BIOS 3.0 07/26/2013 Call Trace: <IRQ>dump_stack_lvl+0x32/0x50 print_report+0xca/0x620kasan_report_invalid_free+0x64/0x90 __kasan_slab_free+0x1aa/0x1f0kfree+0xed/0x2e0 inet_sock_destruct+0x54f/0x8b0 __sk_destruct+0x48/0x5b0rcu_do_batch+0x34e/0xd90 rcu_core+0x559/0xac0 __do_softirq+0x183/0x5a4irq_exit_rcu+0x12d/0x170 sysvec_apic_timer_interrupt+0x6b/0x80 </IRQ><TASK> asm_sysvec_apic_timer_interrupt+0x16/0x20 RIP:0010:cpuidle_enter_state+0x175/0x300 Code: 30 00 0f 84 1f 01 00 00 83 e8 0183 f8 ff 75 e5 48 83 c4 18 44 89 e8 5b 5d 41 5c 41 5d 41 5e 41 5f c3 cc cccc cc fb 45 85 ed <0f> 89 60 ff ff ff 48 c1 e5 06 48 c7 43 18 00 00 00 0048 83 44 2b RSP: 0018:ffff888481cf7d90 EFLAGS: 00000202 RAX:0000000000000000 RBX: ffff88887facddc8 RCX: 0000000000000000 RDX:1ffff1110ff588b1 RSI: 0000000000000019 RDI: ffff88887fac4588 RBP:0000000000000004 R08: 0000000000000002 R09: 0000000000043080 R10:0009b02ea273363f R11: ffff88887fabf42b R12: ffffffff932592e0 R13:0000000000000004 R14: 0000000000000000 R15: 00000022c880ec80cpuidle_enter+0x4a/0xa0 do_idle+0x310/0x410 cpu_startup_entry+0x51/0x60start_secondary+0x211/0x270 secondary_startup_64_no_verify+0x184/0x18b</TASK> Allocated by task 6853: kasan_save_stack+0x1c/0x40kasan_save_track+0x10/0x30 __kasan_kmalloc+0xa6/0xb0 __kmalloc+0x1eb/0x450cipso_v4_sock_setattr+0x96/0x360 netlbl_sock_setattr+0x132/0x1f0selinux_netlbl_socket_post_create+0x6c/0x110selinux_socket_post_create+0x37b/0x7f0security_socket_post_create+0x63/0xb0 __sock_create+0x305/0x450__sys_socket_create.part.23+0xbd/0x130 __sys_socket+0x37/0xb0__x64_sys_socket+0x6f/0xb0 do_syscall_64+0x83/0x160entry_SYSCALL_64_after_hwframe+0x6e/0x76 Freed by task 6858:kasan_save_stack+0x1c/0x40 kasan_save_track+0x10/0x30kasan_save_free_info+0x3b/0x60 __kasan_slab_free+0x12c/0x1f0kfree+0xed/0x2e0 inet_sock_destruct+0x54f/0x8b0 __sk_destruct+0x48/0x5b0subflow_ulp_release+0x1f0/0x250 tcp_cleanup_ulp+0x6e/0x110tcp_v4_destroy_sock+0x5a/0x3a0 inet_csk_destroy_sock+0x135/0x390tcp_fin+0x416/0x5c0 tcp_data_queue+0x1bc8/0x4310tcp_rcv_state_process+0x15a3/0x47b0 tcp_v4_do_rcv+0x2c1/0x990tcp_v4_rcv+0x41fb/0x5ed0 ip_protocol_deliver_rcu+0x6d/0x9f0ip_local_deliver_finish+0x278/0x360 ip_local_deliver+0x182/0x2c0ip_rcv+0xb5/0x1c0 __netif_receive_skb_one_core+0x16e/0x1b0process_backlog+0x1e3/0x650 __napi_poll+0xa6/0x500net_rx_action+0x740/0xbb0 __do_softirq+0x183/0x5a4 The buggy addressbelongs to the object at ffff888485950880 which belongs to the cachekmalloc-64 of size 64 The buggy address is located 0 bytes inside of64-byte region [ffff888485950880, ffff8884859508c0) The buggy addressbelongs to the physical page: page:0000000056d1e95e refcount:1 mapcount:0mapping:0000000000000000 index:0xffff888485950700 pfn:0x485950 flags:0x57ffffc0000800(slab|node=1|zone=2|lastcpupid=0x1fffff) page_type:0xffffffff() raw: 0057ffffc0000800 ffff88810004c640 ffffea00121b8ac0dead000000000006 raw: ffff888485950700 0000000000200019 00000001ffffffff0000000000000000 page dumped because: kasan: bad access detected Memorystate around the buggy address: ffff888485950780: fa fb fb ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26782` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-5.15.0-112-generic-lpae - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic - 5.15.0-112.122\nlinux-image-unsigned-5.15.0-112-generic-64k - 5.15.0-112.122\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-kvm - 5.15.0-1060.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-azure - 5.15.0-1066.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-azure-fde - 5.15.0-1067.76.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-gke - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-ibm - 5.15.0-1056.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-nvidia - 5.15.0-1058.59\nlinux-image-unsigned-5.15.0-1058-nvidia-lowlatency - 5.15.0-1058.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-oracle - 5.15.0-1061.67\nNo subscription required\n\nlinux-image-5.15.0-1030-xilinx-zynqmp - 5.15.0-1030.34\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -55,7 +55,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
-						"comment": "linux-hwe-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-hwe-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-44.44~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000010",
@@ -79,7 +79,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
-						"comment": "linux-aws-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-aws-6.5 package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000030",
@@ -95,11 +95,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
-						"comment": "linux-azure-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-azure-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1024.25~22.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000040",
-						"comment": "linux-azure-fde package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.74.1')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524470000000",
+						"comment": "linux-azure-fde package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.76.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -110,7 +110,7 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000040",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.70')."
 					},
 					{
@@ -123,7 +123,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
-						"comment": "linux-gcp-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-gcp-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1024.26~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2023240230000020",
@@ -134,7 +134,7 @@
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1046.53')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000050",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1056.59')."
 					},
 					{
@@ -142,7 +142,7 @@
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.64')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000060",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-110.120')."
 					},
 					{
@@ -155,10 +155,10 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
-						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-6.5 package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000070",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.59')."
 					},
 					{
@@ -166,12 +166,12 @@
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023524340000080",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1061.67')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
-						"comment": "linux-oracle-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-oracle-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1026.26~22.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
@@ -187,11 +187,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
-						"comment": "linux-oem-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-oem-6.5 package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
-						"comment": "linux-raspi package in jammy is affected and may need fixing."
+						"comment": "linux-raspi package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1056.59')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
@@ -203,7 +203,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
-						"comment": "linux-starfive-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-starfive-6.5 package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:202211840000020",
@@ -211,7 +211,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
-						"comment": "linux-nvidia-6.5 package in jammy is affected and may need fixing."
+						"comment": "linux-nvidia-6.5 package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '6.5.0-1023.24')."
 					}
 				]
 			}

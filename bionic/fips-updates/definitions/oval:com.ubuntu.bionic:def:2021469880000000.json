@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-46988 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:userfaultfd: release page in error path to avoid BUG_ON Consider thefollowing sequence of events: 1. Userspace issues a UFFD ioctl, which endsup calling into shmem_mfill_atomic_pte(). We successfully account theblocks, we shmem_alloc_page(), but then the copy_from_user() fails. Wereturn -ENOENT. We don't release the page we allocated. 2. Our callerdetects this error code, tries the copy_from_user() after dropping themmap_lock, and retries, calling back into shmem_mfill_atomic_pte(). 3.Meanwhile, let's say another process filled up the tmpfs being used. 4. Soshmem_mfill_atomic_pte() fails to account blocks this time, and immediatelyreturns - without releasing the page. This triggers a BUG_ON in our caller,which asserts that the page should always be consumed, unless -ENOENT isreturned. To fix this, detect if we have such a \"dangling\" page whenaccounting fails, and if so, release it before returning.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:userfaultfd: release page in error path to avoid BUG_ON Consider thefollowing sequence of events: 1. Userspace issues a UFFD ioctl, which endsup calling into shmem_mfill_atomic_pte(). We successfully account theblocks, we shmem_alloc_page(), but then the copy_from_user() fails. Wereturn -ENOENT. We don't release the page we allocated. 2. Our callerdetects this error code, tries the copy_from_user() after dropping themmap_lock, and retries, calling back into shmem_mfill_atomic_pte(). 3.Meanwhile, let's say another process filled up the tmpfs being used. 4. Soshmem_mfill_atomic_pte() fails to account blocks this time, and immediatelyreturns - without releasing the page. This triggers a BUG_ON in our caller,which asserts that the page should always be consumed, unless -ENOENT isreturned. To fix this, detect if we have such a \"dangling\" page whenaccounting fails, and if so, release it before returning.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46988` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2103-aws-fips - 4.15.0-2103.109\nlinux-image-unsigned-hmac-4.15.0-2103-aws-fips - 4.15.0-2103.109\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2082-azure-fips - 4.15.0-2082.88\nlinux-image-unsigned-hmac-4.15.0-2082-azure-fips - 4.15.0-2082.88\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nlinux-image-unsigned-hmac-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Compliant"
@@ -84,8 +84,8 @@
 						"comment": "linux-dell300x: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000010",
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1119.130')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -168,16 +168,16 @@
 						"comment": "linux-snapdragon: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000020",
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2103.109')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000030",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2082.88')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2017109110000040",
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2066.71')."
 					}
 				]
 			}

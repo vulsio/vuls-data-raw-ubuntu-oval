@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52786 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: ext4:fix racy may inline data check in dio write syzbot reports that thefollowing warning from ext4_iomap_begin() triggers as of the commitreferenced below: if (WARN_ON_ONCE(ext4_has_inline_data(inode))) return-ERANGE; This occurs during a dio write, which is never expected toencounter an inode with inline data. To enforce this behavior,ext4_dio_write_iter() checks the current inline state of the inode andclears the MAY_INLINE_DATA state flag to either fall back to bufferedwrites, or enforce that any other writers in progress on the inode are notallowed to create inline data. The problem is that the check for existinginline data and the state flag can span a lock cycle. For example, if theilock is originally locked shared and subsequently upgraded to exclusive,another writer may have reacquired the lock and created inline data beforethe dio write task acquires the lock and proceeds. The commit referencedbelow loosens the lock requirements to allow some forms of unaligned diowrites to occur under shared lock, but AFAICT the inline data check wastechnically already racy for any dio write that would have involved a lockcycle. Regardless, lift clearing of the state bit to the same lock criticalsection that checks for preexisting inline data on the inode to close therace.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ext4:fix racy may inline data check in dio write syzbot reports that thefollowing warning from ext4_iomap_begin() triggers as of the commitreferenced below: if (WARN_ON_ONCE(ext4_has_inline_data(inode))) return-ERANGE; This occurs during a dio write, which is never expected toencounter an inode with inline data. To enforce this behavior,ext4_dio_write_iter() checks the current inline state of the inode andclears the MAY_INLINE_DATA state flag to either fall back to bufferedwrites, or enforce that any other writers in progress on the inode are notallowed to create inline data. The problem is that the check for existinginline data and the state flag can span a lock cycle. For example, if theilock is originally locked shared and subsequently upgraded to exclusive,another writer may have reacquired the lock and created inline data beforethe dio write task acquires the lock and proceeds. The commit referencedbelow loosens the lock requirements to allow some forms of unaligned diowrites to occur under shared lock, but AFAICT the inline data check wastechnically already racy for any dio write that would have involved a lockcycle. Regardless, lift clearing of the state bit to the same lock criticalsection that checks for preexisting inline data on the inode to close therace.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52786` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-3.13.0-173-generic-lpae - 3.11.0-12.19\nlinux-image-3.13.0-173-lowlatency - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500 - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500mc - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-smp - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-emb - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-smp - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-lowlatency - 3.11.0-12.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-164-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-unsigned-4.4.0-164-generic - 4.4.0-13.29~14.04.1\nlinux-image-unsigned-4.4.0-164-lowlatency - 4.4.0-13.29~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1054-aws - 4.4.0-1002.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1059-azure - 4.15.0-1023.24~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}

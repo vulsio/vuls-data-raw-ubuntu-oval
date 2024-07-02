@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47072 on Ubuntu 20.04 FIPS Compliant (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:fix removed dentries still existing after log is synced When we move oneinode from one directory to another and both the inode and its previousparent directory were logged before, we are not supposed to have the dentryfor the old parent if we have a power failure after the log is synced. Onlythe new dentry is supposed to exist. Generally this works correctly,however there is a scenario where this is not currently working, becausethe old parent of the file/directory that was moved is not authoritativefor a range that includes the dir index and dir item keys of the olddentry. This case is better explained with the following example andreproducer: # The test requires a very specific layout of keys and items inthe # fs/subvolume btree to trigger the bug. So we want to make sure that #on whatever platform we are, we have the same leaf/node size. # # Currentlyin btrfs the node/leaf size can not be smaller than the page # size (but itcan be greater than the page size). So use the largest # supportednode/leaf size (64K). $ mkfs.btrfs -f -n 65536 /dev/sdc $ mount /dev/sdc/mnt # \"testdir\" is inode 257. $ mkdir /mnt/testdir $ chmod 755/mnt/testdir # Create several empty files to have the directory \"testdir\"with its # items spread over several leaves (7 in this case). $ for ((i =1; i <= 1200; i++)); do echo -n > /mnt/testdir/file$i done # Create ourtest directory \"dira\", inode number 1458, which gets all # its items inleaf 7. # # The BTRFS_DIR_ITEM_KEY item for inode 257 (\"testdir\") thatpoints to # the entry named \"dira\" is in leaf 2, while theBTRFS_DIR_INDEX_KEY # item that points to that entry is in leaf 3. # # Forthis particular filesystem node size (64K), file count and file # names, weendup with the directory entry items from inode 257 in # leaves 2 and 3, aspreviously mentioned - what matters for triggering # the bug exercised bythis test case is that those items are not placed # in leaf 1, they must beplaced in a leaf different from the one # containing the inode item forinode 257. # # The corresponding BTRFS_DIR_ITEM_KEY and BTRFS_DIR_INDEX_KEYitems for # the parent inode (257) are the following: # # item 460 key (257DIR_ITEM 3724298081) itemoff 48344 itemsize 34 # location key (1458INODE_ITEM 0) type DIR # transid 6 data_len 0 name_len 4 # name: dira # #and: # # item 771 key (257 DIR_INDEX 1202) itemoff 36673 itemsize 34 #location key (1458 INODE_ITEM 0) type DIR # transid 6 data_len 0 name_len 4# name: dira $ mkdir /mnt/testdir/dira # Make sure everything done so faris durably persisted. $ sync # Now do a change to inode 257 (\"testdir\")that does not result in # COWing leaves 2 and 3 - the leaves that containthe directory items # pointing to inode 1458 (directory \"dira\"). # #Changing permissions, the owner/group, updating or adding a xattr, # etc,will not change (COW) leaves 2 and 3. So for the sake of # simplicitychange the permissions of inode 257, which results in # updating its inodeitem and therefore change (COW) only leaf 1. $ chmod 700 /mnt/testdir # Nowfsync directory inode 257. # # Since only the first leaf was changed/COWed,we log the inode item of # inode 257 and only the dentries found in thefirst leaf, all have a # key type of BTRFS_DIR_ITEM_KEY, and no keys oftype # BTRFS_DIR_INDEX_KEY, because they sort after the former type andnone # exist in the first leaf. # # We also log 3 items that representranges for dir items and dir # indexes for which the log is authoritative:# # 1) a key of type BTRFS_DIR_LOG_ITEM_KEY, which indicates the log is #authoritative for all BTRFS_DIR_ITEM_KEY keys that have an offset # in therange [0, 2285968570] (the offset here is th ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47072` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1092-fips - 5.4.0-1092.102\nlinux-image-unsigned-hmac-5.4.0-1092-fips - 5.4.0-1092.102\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1118-aws-fips - 5.4.0-1118.128+fips1\nlinux-image-unsigned-hmac-5.4.0-1118-aws-fips - 5.4.0-1118.128+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1123-azure-fips - 5.4.0-1123.130+fips1\nlinux-image-unsigned-hmac-5.4.0-1123-azure-fips - 5.4.0-1123.130+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1122-gcp-fips - 5.4.0-1122.131+fips1\nlinux-image-unsigned-hmac-5.4.0-1122-gcp-fips - 5.4.0-1122.131+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:fix removed dentries still existing after log is synced When we move oneinode from one directory to another and both the inode and its previousparent directory were logged before, we are not supposed to have the dentryfor the old parent if we have a power failure after the log is synced. Onlythe new dentry is supposed to exist. Generally this works correctly,however there is a scenario where this is not currently working, becausethe old parent of the file/directory that was moved is not authoritativefor a range that includes the dir index and dir item keys of the olddentry. This case is better explained with the following example andreproducer: # The test requires a very specific layout of keys and items inthe # fs/subvolume btree to trigger the bug. So we want to make sure that #on whatever platform we are, we have the same leaf/node size. # # Currentlyin btrfs the node/leaf size can not be smaller than the page # size (but itcan be greater than the page size). So use the largest # supportednode/leaf size (64K). $ mkfs.btrfs -f -n 65536 /dev/sdc $ mount /dev/sdc/mnt # \"testdir\" is inode 257. $ mkdir /mnt/testdir $ chmod 755/mnt/testdir # Create several empty files to have the directory \"testdir\"with its # items spread over several leaves (7 in this case). $ for ((i =1; i <= 1200; i++)); do echo -n > /mnt/testdir/file$i done # Create ourtest directory \"dira\", inode number 1458, which gets all # its items inleaf 7. # # The BTRFS_DIR_ITEM_KEY item for inode 257 (\"testdir\") thatpoints to # the entry named \"dira\" is in leaf 2, while theBTRFS_DIR_INDEX_KEY # item that points to that entry is in leaf 3. # # Forthis particular filesystem node size (64K), file count and file # names, weendup with the directory entry items from inode 257 in # leaves 2 and 3, aspreviously mentioned - what matters for triggering # the bug exercised bythis test case is that those items are not placed # in leaf 1, they must beplaced in a leaf different from the one # containing the inode item forinode 257. # # The corresponding BTRFS_DIR_ITEM_KEY and BTRFS_DIR_INDEX_KEYitems for # the parent inode (257) are the following: # # item 460 key (257DIR_ITEM 3724298081) itemoff 48344 itemsize 34 # location key (1458INODE_ITEM 0) type DIR # transid 6 data_len 0 name_len 4 # name: dira # #and: # # item 771 key (257 DIR_INDEX 1202) itemoff 36673 itemsize 34 #location key (1458 INODE_ITEM 0) type DIR # transid 6 data_len 0 name_len 4# name: dira $ mkdir /mnt/testdir/dira # Make sure everything done so faris durably persisted. $ sync # Now do a change to inode 257 (\"testdir\")that does not result in # COWing leaves 2 and 3 - the leaves that containthe directory items # pointing to inode 1458 (directory \"dira\"). # #Changing permissions, the owner/group, updating or adding a xattr, # etc,will not change (COW) leaves 2 and 3. So for the sake of # simplicitychange the permissions of inode 257, which results in # updating its inodeitem and therefore change (COW) only leaf 1. $ chmod 700 /mnt/testdir # Nowfsync directory inode 257. # # Since only the first leaf was changed/COWed,we log the inode item of # inode 257 and only the dentries found in thefirst leaf, all have a # key type of BTRFS_DIR_ITEM_KEY, and no keys oftype # BTRFS_DIR_INDEX_KEY, because they sort after the former type andnone # exist in the first leaf. # # We also log 3 items that representranges for dir items and dir # indexes for which the log is authoritative:# # 1) a key of type BTRFS_DIR_LOG_ITEM_KEY, which indicates the log is #authoritative for all BTRFS_DIR_ITEM_KEY keys that have an offset # in therange [0, 2285968570] (the offset here is th ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47072` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1092-fips - 5.4.0-1092.102\nlinux-image-unsigned-hmac-5.4.0-1092-fips - 5.4.0-1092.102\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1118-aws-fips - 5.4.0-1118.128+fips1\nlinux-image-unsigned-hmac-5.4.0-1118-aws-fips - 5.4.0-1118.128+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1123-azure-fips - 5.4.0-1123.130+fips1\nlinux-image-unsigned-hmac-5.4.0-1123-azure-fips - 5.4.0-1123.130+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1122-gcp-fips - 5.4.0-1122.131+fips1\nlinux-image-unsigned-hmac-5.4.0-1122-gcp-fips - 5.4.0-1122.131+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Compliant"
@@ -48,7 +48,7 @@
 						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
 						"comment": "linux-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -72,7 +72,7 @@
 						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000020",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000120",
 						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
 					},
 					{
@@ -92,7 +92,7 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000140",
 						"comment": "linux-azure-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
 					},
 					{
@@ -100,15 +100,15 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
-						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000160",
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201446110000080",
 						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000060",
 						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1092.102')."
 					},
 					{
@@ -128,7 +128,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000030",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000130",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -144,7 +144,7 @@
 						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000080",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
@@ -152,7 +152,7 @@
 						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000200",
 						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
@@ -160,15 +160,15 @@
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000060",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -188,7 +188,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000040",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000150",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -216,19 +216,19 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000070",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000180",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000210",
 						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1118.128+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000110",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000220",
 						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1123.130+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2019204250000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000230",
 						"comment": "linux-gcp-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1122.131+fips1')."
 					}
 				]

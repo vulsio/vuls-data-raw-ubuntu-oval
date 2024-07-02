@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48733 on Ubuntu 23.10 (mantic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: fix use-after-free after failure to create a snapshotAt ioctl.c:create_snapshot(), we allocate a pending snapshot structure andthen attach it to the transaction's list of pending snapshots. After thatwe call btrfs_commit_transaction(), and if that returns an error we jumpto 'fail' label, where we kfree() the pending snapshot structure. This canresult in a later use-after-free of the pending snapshot:1) We allocated the pending snapshot and added it to the transaction's   list of pending snapshots;2) We call btrfs_commit_transaction(), and it fails either at the first   call to btrfs_run_delayed_refs() or btrfs_start_dirty_block_groups().   In both cases, we don't abort the transaction and we release our   transaction handle. We jump to the 'fail' label and free the pending   snapshot structure. We return with the pending snapshot still in the   transaction's list;3) Another task commits the transaction. This time there's no error at   all, and then during the transaction commit it accesses a pointer   to the pending snapshot structure that the snapshot creation task   has already freed, resulting in a user-after-free.This issue could actually be detected by smatch, which produced thefollowing warning:  fs/btrfs/ioctl.c:843 create_snapshot() warn: '&pending_snapshot->list'not removed from listSo fix this by not having the snapshot creation ioctl directly add thepending snapshot to the transaction's list. Instead add the pendingsnapshot to the transaction handle, and then at btrfs_commit_transaction()we add the snapshot to the list only when we can guarantee that any errorreturned after that point will result in a transaction abort, in whichcase the ioctl code can safely free the pending snapshot and no one canaccess it anymore.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: fix use-after-free after failure to create a snapshotAt ioctl.c:create_snapshot(), we allocate a pending snapshot structure andthen attach it to the transaction's list of pending snapshots. After thatwe call btrfs_commit_transaction(), and if that returns an error we jumpto 'fail' label, where we kfree() the pending snapshot structure. This canresult in a later use-after-free of the pending snapshot:1) We allocated the pending snapshot and added it to the transaction's   list of pending snapshots;2) We call btrfs_commit_transaction(), and it fails either at the first   call to btrfs_run_delayed_refs() or btrfs_start_dirty_block_groups().   In both cases, we don't abort the transaction and we release our   transaction handle. We jump to the 'fail' label and free the pending   snapshot structure. We return with the pending snapshot still in the   transaction's list;3) Another task commits the transaction. This time there's no error at   all, and then during the transaction commit it accesses a pointer   to the pending snapshot structure that the snapshot creation task   has already freed, resulting in a user-after-free.This issue could actually be detected by smatch, which produced thefollowing warning:  fs/btrfs/ioctl.c:843 create_snapshot() warn: '&pending_snapshot->list'not removed from listSo fix this by not having the snapshot creation ioctl directly add thepending snapshot to the transaction's list. Instead add the pendingsnapshot to the transaction handle, and then at btrfs_commit_transaction()we add the snapshot to the list only when we can guarantee that any errorreturned after that point will result in a transaction abort, in whichcase the ioctl code can safely free the pending snapshot and no one canaccess it anymore.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48733` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-6.2.0-20-generic-lpae - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic - 6.2.0-20.20\nlinux-image-unsigned-6.2.0-20-generic-64k - 6.2.0-20.20\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-aws - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-azure - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1005-gcp - 6.2.0-1005.5\nNo subscription required\n\nlinux-image-6.5.0-1003-laptop - 6.5.0-1003.6\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-lowlatency - 6.2.0-1003.3\nlinux-image-unsigned-6.2.0-1003-lowlatency-64k - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.2.0-1003-oracle - 6.2.0-1003.3\nNo subscription required\n\nlinux-image-6.2.0-1004-raspi - 6.2.0-1004.5\nlinux-image-6.2.0-1004-raspi-nolpae - 6.2.0-1004.5\nNo subscription required\n\nlinux-image-6.5.0-1002-starfive - 6.5.0-1002.3\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 23.10"
@@ -32,44 +32,44 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000000",
-						"comment": "linux package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000000",
+						"comment": "linux package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-20.20')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000010",
-						"comment": "linux-aws package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-aws package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000020",
-						"comment": "linux-azure package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-azure package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000030",
-						"comment": "linux-gcp package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000020",
+						"comment": "linux-gcp package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000060",
 						"comment": "linux-ibm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000090",
-						"comment": "linux-laptop package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000060",
+						"comment": "linux-laptop package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1003.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000070",
-						"comment": "linux-lowlatency package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-lowlatency package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000040",
-						"comment": "linux-oracle package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000010",
+						"comment": "linux-oracle package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000050",
-						"comment": "linux-raspi package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000030",
+						"comment": "linux-raspi package in mantic, is related to the CVE in some way and has been fixed (note: '6.2.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.mantic:tst:201245420000080",
-						"comment": "linux-starfive package in mantic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.mantic:tst:2016107230000050",
+						"comment": "linux-starfive package in mantic, is related to the CVE in some way and has been fixed (note: '6.5.0-1002.3')."
 					}
 				]
 			}

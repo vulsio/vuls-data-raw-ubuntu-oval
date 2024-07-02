@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35910 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: tcp:properly terminate timers for kernel sockets We had various syzbot reportsabout tcp timers firing after the corresponding netns has been dismantled.Fortunately Josef Bacik could trigger the issue more often, and could testa patch I wrote two years ago. When TCP sockets are closed, we callinet_csk_clear_xmit_timers() to 'stop' the timers.inet_csk_clear_xmit_timers() can be called from any context, including whensocket lock is held. This is the reason it uses sk_stop_timer(), akadel_timer(). This means that ongoing timers might finish much later. Foruser sockets, this is fine because each running timer holds a reference onthe socket, and the user socket holds a reference on the netns. For kernelsockets, we risk that the netns is freed before timer can complete, becausekernel sockets do not hold reference on the netns. This patch addsinet_csk_clear_xmit_timers_sync() function that using sk_stop_timer_sync()to make sure all timers are terminated before the kernel socket isreleased. Modules using kernel sockets close them in their netns exit()handler. Also add sock_not_owned_by_me() helper to get LOCKDEP support :inet_csk_clear_xmit_timers_sync() must not be called while socket lock isheld. It is very possible we can revert in the future commit 3a58f13a881e(\"net: rds: acquire refcount on TCP sockets\") which attempted to solve theissue in rds only. (net/smc/af_smc.c and net/mptcp/subflow.c have similarcode) We probably can remove the check_net() tests fromtcp_out_of_resources() and __tcp_close() in the future.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: tcp:properly terminate timers for kernel sockets We had various syzbot reportsabout tcp timers firing after the corresponding netns has been dismantled.Fortunately Josef Bacik could trigger the issue more often, and could testa patch I wrote two years ago. When TCP sockets are closed, we callinet_csk_clear_xmit_timers() to 'stop' the timers.inet_csk_clear_xmit_timers() can be called from any context, including whensocket lock is held. This is the reason it uses sk_stop_timer(), akadel_timer(). This means that ongoing timers might finish much later. Foruser sockets, this is fine because each running timer holds a reference onthe socket, and the user socket holds a reference on the netns. For kernelsockets, we risk that the netns is freed before timer can complete, becausekernel sockets do not hold reference on the netns. This patch addsinet_csk_clear_xmit_timers_sync() function that using sk_stop_timer_sync()to make sure all timers are terminated before the kernel socket isreleased. Modules using kernel sockets close them in their netns exit()handler. Also add sock_not_owned_by_me() helper to get LOCKDEP support :inet_csk_clear_xmit_timers_sync() must not be called while socket lock isheld. It is very possible we can revert in the future commit 3a58f13a881e(\"net: rds: acquire refcount on TCP sockets\") which attempted to solve theissue in rds only. (net/smc/af_smc.c and net/mptcp/subflow.c have similarcode) We probably can remove the check_net() tests fromtcp_out_of_resources() and __tcp_close() in the future.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35910` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-3.13.0-173-generic-lpae - 3.11.0-12.19\nlinux-image-3.13.0-173-lowlatency - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500 - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500mc - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-smp - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-emb - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-smp - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-lowlatency - 3.11.0-12.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					}
 				]
 			}

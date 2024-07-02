@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47034 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/64s: Fix pte update for kernel memory on radix When adding a PTE aptesync is needed to order the update of the PTE with subsequent accessesotherwise a spurious fault may be raised. radix__set_pte_at() does not dothis for performance gains. For non-kernel memory this is not an issue asany faults of this kind are corrected by the page fault handler. For kernelmemory these faults are not handled. The current solution is that there isa ptesync in flush_cache_vmap() which should be called when mapping fromthe vmalloc region. However, map_kernel_page() does not callflush_cache_vmap(). This is troublesome in particular for code patchingwith Strict RWX on radix. In do_patch_instruction() the page frame thatcontains the instruction to be patched is mapped and then immediatelypatched. With no ordering or synchronization between setting up the PTE andwriting to the page it is possible for faults. As the code patching is doneusing __put_user_asm_goto() the resulting fault is obscured - but using anormal store instead it can be seen: BUG: Unable to handle kernel dataaccess on write at 0xc008000008f24a3c Faulting instruction address:0xc00000000008bd74 Oops: Kernel access of bad area, sig: 11 [#1] LEPAGE_SIZE=64K MMU=Radix SMP NR_CPUS=2048 NUMA PowerNV Modules linked in:nop_module(PO+) [last unloaded: nop_module] CPU: 4 PID: 757 Comm: shTainted: P O 5.10.0-rc5-01361-ge3c1b78c8440-dirty #43 NIP: c00000000008bd74LR: c00000000008bd50 CTR: c000000000025810 REGS: c000000016f634a0 TRAP:0300 Tainted: P O (5.10.0-rc5-01361-ge3c1b78c8440-dirty) MSR:9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE> CR: 44002884 XER: 00000000 CFAR:c00000000007c68c DAR: c008000008f24a3c DSISR: 42000000 IRQMASK: 1 Thisresults in the kind of issue reported here:https://lore.kernel.org/linuxppc-dev/15AC5B0E-A221-4B8C-9039-FA96B8EF7C88@lca.pw/Chris Riedl suggested a reliable way to reproduce the issue: $ mount -tdebugfs none /sys/kernel/debug $ (while true; do echo function >/sys/kernel/debug/tracing/current_tracer ; echo nop >/sys/kernel/debug/tracing/current_tracer ; done) & Turning ftrace on andoff does a large amount of code patching which in usually less then 5minwill crash giving a trace like: ftrace-powerpc: (____ptrval____): replaced(4b473b11) != old (60000000) ------------[ ftrace bug ]------------ ftracefailed to modify [<c000000000bf8e5c>] napi_busy_loop+0xc/0x390 actual:11:3b:47:4b Setting ftrace call site to call ftrace function ftrace recordflags: 80000001 (1) expected tramp: c00000000006c96c ------------[ cut here]------------ WARNING: CPU: 4 PID: 809 at kernel/trace/ftrace.c:2065ftrace_bug+0x28c/0x2e8 Modules linked in: nop_module(PO-) [last unloaded:nop_module] CPU: 4 PID: 809 Comm: sh Tainted: P O5.10.0-rc5-01360-gf878ccaf250a #1 NIP: c00000000024f334 LR:c00000000024f330 CTR: c0000000001a5af0 REGS: c000000004c8b760 TRAP: 0700Tainted: P O (5.10.0-rc5-01360-gf878ccaf250a) MSR: 900000000282b033<SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE> CR: 28008848 XER: 20040000 CFAR:c0000000001a9c98 IRQMASK: 0 GPR00: c00000000024f330 c000000004c8b9f0c000000002770600 0000000000000022 GPR04: 00000000ffff7fff c000000004c8b6d00000000000000027 c0000007fe9bcdd8 GPR08: 0000000000000023 ffffffffffffffd80000000000000027 c000000002613118 GPR12: 0000000000008000 c0000007fffdca000000000000000000 0000000000000000 GPR16: 0000000023ec37c5 00000000000000000000000000000000 0000000000000008 GPR20: c000000004c8bc90 c0000000027a2d20c000000004c8bcd0 c000000002612fe8 GPR24: 0000000000000038 00000000000000300000000000000028 0000000000000020 GPR28: c000000000ff1b68 c000000000bf8e5cc00000000312f700 c000000000fbb9b0 NIP ftrace_bug+0x28c/0x2e8 LRftrace_bug+0x288/0x2e8 Call T ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47034` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic-64k - 6.5.0-14.14~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-gcp - 6.5.0-1010.10~22.04.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-6.5.0-14-lowlatency - 6.5.0-14.14.1~22.04.1\nlinux-image-unsigned-6.5.0-14-lowlatency-64k - 6.5.0-14.14.1~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1003-oem - 6.5.0-1003.3\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-6.5.0-1007-starfive - 6.5.0-1007.8~22.04.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1013-oracle - 6.5.0-1013.13~22.04.4\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/64s: Fix pte update for kernel memory on radix When adding a PTE aptesync is needed to order the update of the PTE with subsequent accessesotherwise a spurious fault may be raised. radix__set_pte_at() does not dothis for performance gains. For non-kernel memory this is not an issue asany faults of this kind are corrected by the page fault handler. For kernelmemory these faults are not handled. The current solution is that there isa ptesync in flush_cache_vmap() which should be called when mapping fromthe vmalloc region. However, map_kernel_page() does not callflush_cache_vmap(). This is troublesome in particular for code patchingwith Strict RWX on radix. In do_patch_instruction() the page frame thatcontains the instruction to be patched is mapped and then immediatelypatched. With no ordering or synchronization between setting up the PTE andwriting to the page it is possible for faults. As the code patching is doneusing __put_user_asm_goto() the resulting fault is obscured - but using anormal store instead it can be seen: BUG: Unable to handle kernel dataaccess on write at 0xc008000008f24a3c Faulting instruction address:0xc00000000008bd74 Oops: Kernel access of bad area, sig: 11 [#1] LEPAGE_SIZE=64K MMU=Radix SMP NR_CPUS=2048 NUMA PowerNV Modules linked in:nop_module(PO+) [last unloaded: nop_module] CPU: 4 PID: 757 Comm: shTainted: P O 5.10.0-rc5-01361-ge3c1b78c8440-dirty #43 NIP: c00000000008bd74LR: c00000000008bd50 CTR: c000000000025810 REGS: c000000016f634a0 TRAP:0300 Tainted: P O (5.10.0-rc5-01361-ge3c1b78c8440-dirty) MSR:9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE> CR: 44002884 XER: 00000000 CFAR:c00000000007c68c DAR: c008000008f24a3c DSISR: 42000000 IRQMASK: 1 Thisresults in the kind of issue reported here:https://lore.kernel.org/linuxppc-dev/15AC5B0E-A221-4B8C-9039-FA96B8EF7C88@lca.pw/Chris Riedl suggested a reliable way to reproduce the issue: $ mount -tdebugfs none /sys/kernel/debug $ (while true; do echo function >/sys/kernel/debug/tracing/current_tracer ; echo nop >/sys/kernel/debug/tracing/current_tracer ; done) & Turning ftrace on andoff does a large amount of code patching which in usually less then 5minwill crash giving a trace like: ftrace-powerpc: (____ptrval____): replaced(4b473b11) != old (60000000) ------------[ ftrace bug ]------------ ftracefailed to modify [<c000000000bf8e5c>] napi_busy_loop+0xc/0x390 actual:11:3b:47:4b Setting ftrace call site to call ftrace function ftrace recordflags: 80000001 (1) expected tramp: c00000000006c96c ------------[ cut here]------------ WARNING: CPU: 4 PID: 809 at kernel/trace/ftrace.c:2065ftrace_bug+0x28c/0x2e8 Modules linked in: nop_module(PO-) [last unloaded:nop_module] CPU: 4 PID: 809 Comm: sh Tainted: P O5.10.0-rc5-01360-gf878ccaf250a #1 NIP: c00000000024f334 LR:c00000000024f330 CTR: c0000000001a5af0 REGS: c000000004c8b760 TRAP: 0700Tainted: P O (5.10.0-rc5-01360-gf878ccaf250a) MSR: 900000000282b033<SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE> CR: 28008848 XER: 20040000 CFAR:c0000000001a9c98 IRQMASK: 0 GPR00: c00000000024f330 c000000004c8b9f0c000000002770600 0000000000000022 GPR04: 00000000ffff7fff c000000004c8b6d00000000000000027 c0000007fe9bcdd8 GPR08: 0000000000000023 ffffffffffffffd80000000000000027 c000000002613118 GPR12: 0000000000008000 c0000007fffdca000000000000000000 0000000000000000 GPR16: 0000000023ec37c5 00000000000000000000000000000000 0000000000000008 GPR20: c000000004c8bc90 c0000000027a2d20c000000004c8bcd0 c000000002612fe8 GPR24: 0000000000000038 00000000000000300000000000000028 0000000000000020 GPR28: c000000000ff1b68 c000000000bf8e5cc00000000312f700 c000000000fbb9b0 NIP ftrace_bug+0x28c/0x2e8 LRftrace_bug+0x288/0x2e8 Call T ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47034` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic-64k - 6.5.0-14.14~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-gcp - 6.5.0-1010.10~22.04.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-6.5.0-14-lowlatency - 6.5.0-14.14.1~22.04.1\nlinux-image-unsigned-6.5.0-14-lowlatency-64k - 6.5.0-14.14.1~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1003-oem - 6.5.0-1003.3\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-6.5.0-1007-starfive - 6.5.0-1007.8~22.04.1\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1013-oracle - 6.5.0-1013.13~22.04.4\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -44,7 +44,7 @@
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019204250000030",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000160",
 						"comment": "linux-hwe-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-14.14~22.04.1')."
 					},
 					{
@@ -68,7 +68,7 @@
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019204250000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000190",
 						"comment": "linux-aws-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8~22.04.1')."
 					},
 					{
@@ -84,12 +84,12 @@
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019204250000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000200",
 						"comment": "linux-azure-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7~22.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000030",
-						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1006.7')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000080",
+						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -112,7 +112,7 @@
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019204250000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000210",
 						"comment": "linux-gcp-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10~22.04.3')."
 					},
 					{
@@ -120,7 +120,7 @@
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019193770000000",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000070",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
@@ -128,11 +128,11 @@
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000110",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000090",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
@@ -144,11 +144,11 @@
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019204250000040",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000170",
 						"comment": "linux-lowlatency-hwe-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-14.14.1~22.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019204250000010",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000140",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
@@ -172,7 +172,7 @@
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5, was needs-triage')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019204250000020",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000150",
 						"comment": "linux-oem-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1003.3')."
 					},
 					{
@@ -188,12 +188,20 @@
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019204250000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000180",
 						"comment": "linux-starfive-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.8~22.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2019204250000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000130",
+						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000220",
 						"comment": "linux-oracle-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1013.13~22.04.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2016107230000230",
+						"comment": "linux-nvidia-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1004.4')."
 					}
 				]
 			}

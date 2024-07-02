@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36962 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: ks8851: Queue RX packets in IRQ handler instead of disabling BHsCurrently the driver uses local_bh_disable()/local_bh_enable() in itsIRQ handler to avoid triggering net_rx_action() softirq on exit fromnetif_rx(). The net_rx_action() could trigger this driver .start_xmitcallback, which is protected by the same lock as the IRQ handler, socalling the .start_xmit from netif_rx() from the IRQ handler criticalsection protected by the lock could lead to an attempt to claim thealready claimed lock, and a hang.The local_bh_disable()/local_bh_enable() approach works only in casethe IRQ handler is protected by a spinlock, but does not work if theIRQ handler is protected by mutex, i.e. this works for KS8851 withParallel bus interface, but not for KS8851 with SPI bus interface.Remove the BH manipulation and instead of calling netif_rx() insidethe IRQ handler code protected by the lock, queue all the receivedSKBs in the IRQ handler into a queue first, and once the IRQ handlerexits the critical section protected by the lock, dequeue all thequeued SKBs and push them all into netif_rx(). At this point, it issafe to trigger the net_rx_action() softirq, since the netif_rx()call is outside of the lock that protects the IRQ handler.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: ks8851: Queue RX packets in IRQ handler instead of disabling BHsCurrently the driver uses local_bh_disable()/local_bh_enable() in itsIRQ handler to avoid triggering net_rx_action() softirq on exit fromnetif_rx(). The net_rx_action() could trigger this driver .start_xmitcallback, which is protected by the same lock as the IRQ handler, socalling the .start_xmit from netif_rx() from the IRQ handler criticalsection protected by the lock could lead to an attempt to claim thealready claimed lock, and a hang.The local_bh_disable()/local_bh_enable() approach works only in casethe IRQ handler is protected by a spinlock, but does not work if theIRQ handler is protected by mutex, i.e. this works for KS8851 withParallel bus interface, but not for KS8851 with SPI bus interface.Remove the BH manipulation and instead of calling netif_rx() insidethe IRQ handler code protected by the lock, queue all the receivedSKBs in the IRQ handler into a queue first, and once the IRQ handlerexits the critical section protected by the lock, dequeue all thequeued SKBs and push them all into netif_rx(). At this point, it issafe to trigger the net_rx_action() softirq, since the netif_rx()call is outside of the lock that protects the IRQ handler.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36962` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1098.105\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2017109110000000",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1098.105')."
 					}
 				]
 			}

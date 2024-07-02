@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27053 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: wifi:wilc1000: fix RCU usage in connect path With lockdep enabled, calls to theconnect function from cfg802.11 layer lead to the following warning:============================= WARNING: suspicious RCU usage 6.7.0-rc1-wt+#333 Not tainted -----------------------------drivers/net/wireless/microchip/wilc1000/hif.c:386 suspiciousrcu_dereference_check() usage! [...] stack backtrace: CPU: 0 PID: 100 Comm:wpa_supplicant Not tainted 6.7.0-rc1-wt+ #333 Hardware name: Atmel SAMA5unwind_backtrace from show_stack+0x18/0x1c show_stack fromdump_stack_lvl+0x34/0x48 dump_stack_lvl fromwilc_parse_join_bss_param+0x7dc/0x7f4 wilc_parse_join_bss_param fromconnect+0x2c4/0x648 connect from cfg80211_connect+0x30c/0xb74cfg80211_connect from nl80211_connect+0x860/0xa94 nl80211_connect fromgenl_rcv_msg+0x3fc/0x59c genl_rcv_msg from netlink_rcv_skb+0xd0/0x1f8netlink_rcv_skb from genl_rcv+0x2c/0x3c genl_rcv fromnetlink_unicast+0x3b0/0x550 netlink_unicast fromnetlink_sendmsg+0x368/0x688 netlink_sendmsg from____sys_sendmsg+0x190/0x430 ____sys_sendmsg from ___sys_sendmsg+0x110/0x158___sys_sendmsg from sys_sendmsg+0xe8/0x150 sys_sendmsg fromret_fast_syscall+0x0/0x1c This warning is emitted because in the connectpath, when trying to parse target BSS parameters, we dereference a RCUpointer whithout being in RCU critical section. Fix RCU dereference usageby moving it to a RCU read critical section. To avoid wrapping the wholewilc_parse_join_bss_param under the critical section, just use the criticalsection to copy ies data\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27053` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120~20.04.1\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120~20.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: wifi:wilc1000: fix RCU usage in connect path With lockdep enabled, calls to theconnect function from cfg802.11 layer lead to the following warning:============================= WARNING: suspicious RCU usage 6.7.0-rc1-wt+#333 Not tainted -----------------------------drivers/net/wireless/microchip/wilc1000/hif.c:386 suspiciousrcu_dereference_check() usage! [...] stack backtrace: CPU: 0 PID: 100 Comm:wpa_supplicant Not tainted 6.7.0-rc1-wt+ #333 Hardware name: Atmel SAMA5unwind_backtrace from show_stack+0x18/0x1c show_stack fromdump_stack_lvl+0x34/0x48 dump_stack_lvl fromwilc_parse_join_bss_param+0x7dc/0x7f4 wilc_parse_join_bss_param fromconnect+0x2c4/0x648 connect from cfg80211_connect+0x30c/0xb74cfg80211_connect from nl80211_connect+0x860/0xa94 nl80211_connect fromgenl_rcv_msg+0x3fc/0x59c genl_rcv_msg from netlink_rcv_skb+0xd0/0x1f8netlink_rcv_skb from genl_rcv+0x2c/0x3c genl_rcv fromnetlink_unicast+0x3b0/0x550 netlink_unicast fromnetlink_sendmsg+0x368/0x688 netlink_sendmsg from____sys_sendmsg+0x190/0x430 ____sys_sendmsg from ___sys_sendmsg+0x110/0x158___sys_sendmsg from sys_sendmsg+0xe8/0x150 sys_sendmsg fromret_fast_syscall+0x0/0x1c This warning is emitted because in the connectpath, when trying to parse target BSS parameters, we dereference a RCUpointer whithout being in RCU critical section. Fix RCU dereference usageby moving it to a RCU read critical section. To avoid wrapping the wholewilc_parse_join_bss_param under the critical section, just use the criticalsection to copy ies data\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27053` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1063-aws - 5.15.0-1063.69~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-azure-fde - 5.15.0-1065.74~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gcp - 5.15.0-1062.70~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1046-gkeop - 5.15.0-1046.53~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-110-lowlatency - 5.15.0-110.120~20.04.1\nlinux-image-unsigned-5.15.0-110-lowlatency-64k - 5.15.0-110.120~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -47,7 +47,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-189.209')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -63,15 +63,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-113.123~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1116.123')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"comment": "linux-aws package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1128.138')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -91,7 +91,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1133.140')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -107,23 +107,23 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1065.74~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524470000000",
+						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1065.74~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1088.95')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1132.141')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -151,7 +151,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1095.99')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2022458860000050",
@@ -159,11 +159,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"comment": "linux-ibm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1075.80')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-ibm-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1056.59~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -175,7 +175,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"comment": "linux-iot package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1040.41')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2023524340000020",
@@ -183,7 +183,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"comment": "linux-oracle package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1127.136')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -199,7 +199,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-oracle-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1061.67~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -219,7 +219,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"comment": "linux-raspi package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
@@ -227,7 +227,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"comment": "linux-xilinx-zynqmp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1047.51')."
 					}
 				]
 			}
