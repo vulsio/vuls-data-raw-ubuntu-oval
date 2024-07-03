@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47603 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:audit: improve robustness of the audit queue handlingIf the audit daemon were ever to get stuck in a stopped state thekernel's kauditd_thread() could get blocked attempting to send auditrecords to the userspace audit daemon.  With the kernel threadblocked it is possible that the audit queue could grow unbounded ascertain audit record generating events must be exempt from the queuelimits else the system enter a deadlock state.This patch resolves this problem by lowering the kernel thread'ssocket sending timeout from MAX_SCHEDULE_TIMEOUT to HZ/10 and tweaksthe kauditd_send_queue() function to better manage the various auditqueues when connection problems occur between the kernel and theaudit daemon.  With this patch, the backlog may temporarily growbeyond the defined limits when the audit daemon is stopped and thesystem is under heavy audit pressure, but kauditd_thread() willcontinue to make progress and drain the queues as it would for otherconnection problems.  For example, with the audit daemon put into astopped state and the system configured to audit every syscall itwas still possible to shutdown the system without a kernel panic,deadlock, etc.; granted, the system was slow to shutdown but that isto be expected given the extreme pressure of recording every syscall.The timeout value of HZ/10 was chosen primarily throughexperimentation and this developer's \"gut feeling\".  There is likelyno one perfect value, but as this scenario is limited in scope (rootprivileges would be needed to send SIGSTOP to the audit daemon), itis likely not worth exposing this as a tunable at present.  This canalways be done at a later date if it proves necessary.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: audit:improve robustness of the audit queue handling If the audit daemon wereever to get stuck in a stopped state the kernel's kauditd_thread() couldget blocked attempting to send audit records to the userspace audit daemon.With the kernel thread blocked it is possible that the audit queue couldgrow unbounded as certain audit record generating events must be exemptfrom the queue limits else the system enter a deadlock state. This patchresolves this problem by lowering the kernel thread's socket sendingtimeout from MAX_SCHEDULE_TIMEOUT to HZ/10 and tweaks thekauditd_send_queue() function to better manage the various audit queueswhen connection problems occur between the kernel and the audit daemon.With this patch, the backlog may temporarily grow beyond the defined limitswhen the audit daemon is stopped and the system is under heavy auditpressure, but kauditd_thread() will continue to make progress and drain thequeues as it would for other connection problems. For example, with theaudit daemon put into a stopped state and the system configured to auditevery syscall it was still possible to shutdown the system without a kernelpanic, deadlock, etc.; granted, the system was slow to shutdown but that isto be expected given the extreme pressure of recording every syscall. Thetimeout value of HZ/10 was chosen primarily through experimentation andthis developer's \"gut feeling\". There is likely no one perfect value, butas this scenario is limited in scope (root privileges would be needed tosend SIGSTOP to the audit daemon), it is likely not worth exposing this asa tunable at present. This can always be done at a later date if it provesnecessary.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Certified"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-06-20",
+			"public_date": "2024-06-19 15:15:00 UTC",
 			"cve": {
 				"text": "CVE-2021-47603",
 				"href": "https://ubuntu.com/security/CVE-2021-47603",
-				"public": "20240620"
+				"public": "20240619"
 			}
 		}
 	},

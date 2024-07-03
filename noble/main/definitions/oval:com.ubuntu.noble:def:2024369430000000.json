@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36943 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:fs/proc/task_mmu: fix loss of young/dirty bits during pagemap scanmake_uffd_wp_pte() was previously doing:  pte = ptep_get(ptep);  ptep_modify_prot_start(ptep);  pte = pte_mkuffd_wp(pte);  ptep_modify_prot_commit(ptep, pte);But if another thread accessed or dirtied the pte between the first 2calls, this could lead to loss of that information.  Sinceptep_modify_prot_start() gets and clears atomically, the following is thecorrect pattern and prevents any possible race.  Any access after thefirst call would see an invalid pte and cause a fault:  pte = ptep_modify_prot_start(ptep);  pte = pte_mkuffd_wp(pte);  ptep_modify_prot_commit(ptep, pte);",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:fs/proc/task_mmu: fix loss of young/dirty bits during pagemap scanmake_uffd_wp_pte() was previously doing: pte = ptep_get(ptep);ptep_modify_prot_start(ptep); pte = pte_mkuffd_wp(pte);ptep_modify_prot_commit(ptep, pte); But if another thread accessed ordirtied the pte between the first 2 calls, this could lead to loss of thatinformation. Since ptep_modify_prot_start() gets and clears atomically, thefollowing is the correct pattern and prevents any possible race. Any accessafter the first call would see an invalid pte and cause a fault: pte =ptep_modify_prot_start(ptep); pte = pte_mkuffd_wp(pte);ptep_modify_prot_commit(ptep, pte);",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"

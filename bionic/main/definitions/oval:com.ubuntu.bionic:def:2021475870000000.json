@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47587 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: systemport: Add global locking for descriptor lifecycleThe descriptor list is a shared resource across all of the transmit queues,andthe locking mechanism used today only protects concurrency across a giventransmit queue between the transmit and reclaiming. This creates anopportunityfor the SYSTEMPORT hardware to work on corrupted descriptors if we havemultiple producers at once which is the case when using multiple transmitqueues.This was particularly noticeable when using multiple flows/transmit queuesandit showed up in interesting ways in that UDP packets would get a correctUDPheader checksum being calculated over an incorrect packet length. SimilarlyTCPpackets would get an equally correct checksum computed by the hardware overanincorrect packet length.The SYSTEMPORT hardware maintains an internal descriptor list that itre-arrangeswhen the driver produces a new descriptor anytime it writes to theWRITE_PORT_{HI,LO} registers, there is however some delay in the hardwaretore-organize its descriptors and it is possible that concurrent TX queueseventually break this internal allocation scheme to the point where thelength/status part of the descriptor gets used for an incorrect databuffer.The fix is to impose a global serialization for all TX queues in the shortsection where we are writing to the WRITE_PORT_{HI,LO} registers whichsolvesthe corruption even with multiple concurrent TX queues being used.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:systemport: Add global locking for descriptor lifecycle The descriptor listis a shared resource across all of the transmit queues, and the lockingmechanism used today only protects concurrency across a given transmitqueue between the transmit and reclaiming. This creates an opportunity forthe SYSTEMPORT hardware to work on corrupted descriptors if we havemultiple producers at once which is the case when using multiple transmitqueues. This was particularly noticeable when using multiple flows/transmitqueues and it showed up in interesting ways in that UDP packets would get acorrect UDP header checksum being calculated over an incorrect packetlength. Similarly TCP packets would get an equally correct checksumcomputed by the hardware over an incorrect packet length. The SYSTEMPORThardware maintains an internal descriptor list that it re-arranges when thedriver produces a new descriptor anytime it writes to theWRITE_PORT_{HI,LO} registers, there is however some delay in the hardwareto re-organize its descriptors and it is possible that concurrent TX queueseventually break this internal allocation scheme to the point where thelength/status part of the descriptor gets used for an incorrect databuffer. The fix is to impose a global serialization for all TX queues inthe short section where we are writing to the WRITE_PORT_{HI,LO} registerswhich solves the corruption even with multiple concurrent TX queues beingused.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-06-20",
+			"public_date": "2024-06-19 15:15:00 UTC",
 			"cve": {
 				"text": "CVE-2021-47587",
 				"href": "https://ubuntu.com/security/CVE-2021-47587",
-				"public": "20240620"
+				"public": "20240619"
 			}
 		}
 	},
