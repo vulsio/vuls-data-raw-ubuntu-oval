@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26924 on Ubuntu 24.04 LTS (noble) - high",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nft_set_pipapo: do not free live element Pablo reports a crashwith large batches of elements with a back-to-back add/remove pattern.Quoting Pablo: add_elem(\"00000000\") timeout 100 ms ... add_elem(\"0000000X\")timeout 100 ms del_elem(\"0000000X\") <---------------- delete one that wasjust added ... add_elem(\"00005000\") timeout 100 ms 1) nft_pipapo_remove()removes element 0000000X Then, KASAN shows a splat. Looking at the removefunction there is a chance that we will drop a rule that maps to anon-deactivated element. Removal happens in two steps, first we do a lookupfor key k and return the to-be-removed element and mark it as inactive inthe next generation. Then, in a second step, the element gets removed fromthe set/map. The _remove function does not work correctly if we have morethan one element that share the same key. This can happen if we insert anelement into a set when the set already holds an element with same key, butthe element mapping to the existing key has timed out or is not active inthe next generation. In such case its possible that removal will unmap thewrong element. If this happens, we will leak the non-deactivated element,it becomes unreachable. The element that got deactivated (and will be freedlater) will remain reachable in the set data structure, this can result ina crash when such an element is retrieved during lookup (stale pointer).Add a check that the fully matching key does in fact map to the elementthat we have marked as inactive in the deactivation step. If not, we needto continue searching. Add a bug/warn trap at the end of the function aswell, the remove function must not ever be called with aninvisible/unreachable/non-existent element. v2: avoid uneeded temporaryvariable (Stefano)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26924` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-36-generic - 6.8.0-36.36\nlinux-image-unsigned-6.8.0-36-generic - 6.8.0-36.36\nlinux-image-unsigned-6.8.0-36-generic-64k - 6.8.0-36.36\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-azure - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-gcp - 6.8.0-1009.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-ibm - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-36-lowlatency - 6.8.0-36.36.1\nlinux-image-unsigned-6.8.0-36-lowlatency-64k - 6.8.0-36.36.1\nNo subscription required\n\nlinux-image-6.8.0-1006-raspi - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-intel - 6.8.0-1006.13\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nft_set_pipapo: do not free live element Pablo reports a crashwith large batches of elements with a back-to-back add/remove pattern.Quoting Pablo: add_elem(\"00000000\") timeout 100 ms ... add_elem(\"0000000X\")timeout 100 ms del_elem(\"0000000X\") <---------------- delete one that wasjust added ... add_elem(\"00005000\") timeout 100 ms 1) nft_pipapo_remove()removes element 0000000X Then, KASAN shows a splat. Looking at the removefunction there is a chance that we will drop a rule that maps to anon-deactivated element. Removal happens in two steps, first we do a lookupfor key k and return the to-be-removed element and mark it as inactive inthe next generation. Then, in a second step, the element gets removed fromthe set/map. The _remove function does not work correctly if we have morethan one element that share the same key. This can happen if we insert anelement into a set when the set already holds an element with same key, butthe element mapping to the existing key has timed out or is not active inthe next generation. In such case its possible that removal will unmap thewrong element. If this happens, we will leak the non-deactivated element,it becomes unreachable. The element that got deactivated (and will be freedlater) will remain reachable in the set data structure, this can result ina crash when such an element is retrieved during lookup (stale pointer).Add a check that the fully matching key does in fact map to the elementthat we have marked as inactive in the deactivation step. If not, we needto continue searching. Add a bug/warn trap at the end of the function aswell, the remove function must not ever be called with aninvisible/unreachable/non-existent element. v2: avoid uneeded temporaryvariable (Stefano)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26924` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-36-generic - 6.8.0-36.36\nlinux-image-unsigned-6.8.0-36-generic - 6.8.0-36.36\nlinux-image-unsigned-6.8.0-36-generic-64k - 6.8.0-36.36\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-aws - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-azure - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-gcp - 6.8.0-1009.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-ibm - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-36-lowlatency - 6.8.0-36.36.1\nlinux-image-unsigned-6.8.0-36-lowlatency-64k - 6.8.0-36.36.1\nNo subscription required\n\nlinux-image-6.8.0-1006-raspi - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-oem - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-intel - 6.8.0-1006.13\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -33,7 +33,11 @@
 				"https://ubuntu.com/security/notices/USN-6874-1",
 				"https://ubuntu.com/security/notices/USN-6875-1",
 				"https://ubuntu.com/security/notices/USN-6863-1",
-				"https://ubuntu.com/security/notices/USN-6864-1"
+				"https://ubuntu.com/security/notices/USN-6864-1",
+				"https://ubuntu.com/security/notices/USN-6872-2",
+				"https://ubuntu.com/security/notices/USN-6864-2",
+				"https://ubuntu.com/security/notices/USN-6873-2",
+				"https://ubuntu.com/security/notices/USN-6870-2"
 			]
 		}
 	},
@@ -48,15 +52,15 @@
 						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-36.36')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1011.12')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2024218230000000",
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1010.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000010",
 						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2024218230000000",
+						"test_ref": "oval:com.ubuntu.noble:tst:2024218230000010",
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1009.10')."
 					},
 					{
@@ -80,8 +84,8 @@
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2024269240000010",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1007.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2024269240000030",

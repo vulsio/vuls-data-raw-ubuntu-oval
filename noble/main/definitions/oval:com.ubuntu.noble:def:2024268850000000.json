@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26885 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:Fix DEVMAP_HASH overflow check on 32-bit arches The devmap code allocates anumber hash buckets equal to the next power of two of the max_entries valueprovided when creating the map. When rounding up to the next power of two,the 32-bit variable storing the number of buckets can overflow, and thecode checks for overflow by checking if the truncated 32-bit value is equalto 0. However, on 32-bit arches the rounding up itself can overflow mid-waythrough, because it ends up doing a left-shift of 32 bits on an unsignedlong value. If the size of an unsigned long is four bytes, this isundefined behaviour, so there is no guarantee that we'll end up with a niceand tidy 0-value at the end. Syzbot managed to turn this into a crash onarm32 by creating a DEVMAP_HASH with max_entries > 0x80000000 and thentrying to update it. Fix this by moving the overflow check to before therounding up operation.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26885` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic-64k - 6.8.0-35.35\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-aws - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-azure - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gcp - 6.8.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-ibm - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-35-lowlatency - 6.8.0-35.35.1\nlinux-image-unsigned-6.8.0-35-lowlatency-64k - 6.8.0-35.35.1\nNo subscription required\n\nlinux-image-6.8.0-1005-raspi - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-oem - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1005.12\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:Fix DEVMAP_HASH overflow check on 32-bit arches The devmap code allocates anumber hash buckets equal to the next power of two of the max_entries valueprovided when creating the map. When rounding up to the next power of two,the 32-bit variable storing the number of buckets can overflow, and thecode checks for overflow by checking if the truncated 32-bit value is equalto 0. However, on 32-bit arches the rounding up itself can overflow mid-waythrough, because it ends up doing a left-shift of 32 bits on an unsignedlong value. If the size of an unsigned long is four bytes, this isundefined behaviour, so there is no guarantee that we'll end up with a niceand tidy 0-value at the end. Syzbot managed to turn this into a crash onarm32 by creating a DEVMAP_HASH with max_entries > 0x80000000 and thentrying to update it. Fix this by moving the overflow check to before therounding up operation.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26885` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic - 6.8.0-35.35\nlinux-image-unsigned-6.8.0-35-generic-64k - 6.8.0-35.35\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1009-aws - 6.8.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-azure - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gcp - 6.8.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-ibm - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-35-lowlatency - 6.8.0-35.35.1\nlinux-image-unsigned-6.8.0-35-lowlatency-64k - 6.8.0-35.35.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-oracle - 6.8.0-1006.6\nlinux-image-unsigned-6.8.0-1006-oracle-64k - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-6.8.0-1005-raspi - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-oem - 6.8.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1005.12\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240417",
 				"cvss_score": "7.8",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
-				"usns": "6816-1,6817-1,6820-1,6821-1,6821-2,6817-2,6828-1,6820-2,6821-3,6817-3,6821-4,6871-1"
+				"usns": "6816-1,6817-1,6820-1,6821-1,6821-2,6817-2,6828-1,6820-2,6821-3,6817-3,6821-4,6871-1,6878-1"
 			},
 			"public_date_at_usn": "2024-04-17 11:15:00 UTC",
 			"ref": [
@@ -39,7 +39,8 @@
 				"https://ubuntu.com/security/notices/USN-6821-3",
 				"https://ubuntu.com/security/notices/USN-6817-3",
 				"https://ubuntu.com/security/notices/USN-6821-4",
-				"https://ubuntu.com/security/notices/USN-6871-1"
+				"https://ubuntu.com/security/notices/USN-6871-1",
+				"https://ubuntu.com/security/notices/USN-6878-1"
 			]
 		}
 	},
@@ -74,8 +75,8 @@
 						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-35.35.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1006.6')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000040",
+						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1006.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000060",
