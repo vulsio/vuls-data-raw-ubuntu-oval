@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024394860000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-39486 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/drm_file: Fix pid refcounting racefilp->pid is supposed to be a refcounted pointer; however, before thispatch, drm_file_update_pid() only increments the refcount of a structpid after storing a pointer to it in filp->pid and dropping thedev->filelist_mutex, making the following race possible:process A               process B=========               =========                        begin drm_file_update_pid                        mutex_lock(&dev->filelist_mutex)                        rcu_replace_pointer(filp->pid, <pid B>, 1)                        mutex_unlock(&dev->filelist_mutex)begin drm_file_update_pidmutex_lock(&dev->filelist_mutex)rcu_replace_pointer(filp->pid, <pid A>, 1)mutex_unlock(&dev->filelist_mutex)get_pid(<pid A>)synchronize_rcu()put_pid(<pid B>)   *** pid B reaches refcount 0 and is freed here ***                        get_pid(<pid B>)   *** UAF ***                        synchronize_rcu()                        put_pid(<pid A>)As far as I know, this race can only occur with CONFIG_PREEMPT_RCU=ybecause it requires RCU to detect a quiescent state in code that is notexplicitly calling into the scheduler.This race leads to use-after-free of a \"struct pid\".It is probably somewhat hard to hit because process A has to passthrough a synchronize_rcu() operation while process B is betweenmutex_unlock() and get_pid().Fix it by ensuring that by the time a pointer to the current task's pidis stored in the file, an extra reference to the pid has been taken.This fix also removes the condition for synchronize_rcu(); I thinkthat optimization is unnecessary complexity, since in that case wewould usually have bailed out on the lockless check above.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-39486",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-39486"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-09",
+			"cve": {
+				"text": "CVE-2024-39486",
+				"href": "https://ubuntu.com/security/CVE-2024-39486",
+				"public": "20240709"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024394760000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-39476 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:md/raid5: fix deadlock that raid5d() wait for itself to clearMD_SB_CHANGE_PENDINGXiao reported that lvm2 test lvconvert-raid-takeover.sh can hang withsmall possibility, the root cause is exactly the same as commitbed9e27baf52 (\"Revert \"md/raid5: Wait for MD_SB_CHANGE_PENDING in raid5d\"\")However, Dan reported another hang after that, and junxiao investigatedthe problem and found out that this is caused by plugged bio can't issuefrom raid5d().Current implementation in raid5d() has a weird dependence:1) md_check_recovery() from raid5d() must hold 'reconfig_mutex' to clear   MD_SB_CHANGE_PENDING;2) raid5d() handles IO in a deadloop, until all IO are issued;3) IO from raid5d() must wait for MD_SB_CHANGE_PENDING to be cleared;This behaviour is introduce before v2.6, and for consequence, if othercontext hold 'reconfig_mutex', and md_check_recovery() can't updatesuper_block, then raid5d() will waste one cpu 100% by the deadloop, until'reconfig_mutex' is released.Refer to the implementation from raid1 and raid10, fix this problem byskipping issue IO if MD_SB_CHANGE_PENDING is still set aftermd_check_recovery(), daemon thread will be woken up when 'reconfig_mutex'is released. Meanwhile, the hang problem will be fixed as well.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-39476",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-39476"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-09",
+			"cve": {
+				"text": "CVE-2024-39476",
+				"href": "https://ubuntu.com/security/CVE-2024-39476",
+				"public": "20240709"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
