@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48651 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: ipvlan:Fix out-of-bound bugs caused by unset skb->mac_header If an AF_PACKETsocket is used to send packets through ipvlan and the default xmit functionof the AF_PACKET socket is changed from dev_queue_xmit() topacket_direct_xmit() via setsockopt() with the option name ofPACKET_QDISC_BYPASS, the skb->mac_header may not be reset and remains asthe initial value of 65535, this may trigger slab-out-of-bounds bugs asfollowing:================================================================= UG:KASAN: slab-out-of-bounds in ipvlan_xmit_mode_l2+0xdb/0x330 [ipvlan] PU: 2PID: 1768 Comm: raw_send Kdump: loaded Not tainted 6.0.0-rc4+ #6 ardwarename: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.14.0-1.fc33 all Trace:print_address_description.constprop.0+0x1d/0x160print_report.cold+0x4f/0x112 kasan_report+0xa3/0x130ipvlan_xmit_mode_l2+0xdb/0x330 [ipvlan] ipvlan_start_xmit+0x29/0xa0[ipvlan] __dev_direct_xmit+0x2e2/0x380 packet_direct_xmit+0x22/0x60packet_snd+0x7c9/0xc40 sock_sendmsg+0x9a/0xa0 __sys_sendto+0x18a/0x230__x64_sys_sendto+0x74/0x90 do_syscall_64+0x3b/0x90entry_SYSCALL_64_after_hwframe+0x63/0xcd The root cause is: 1. packet_snd()only reset skb->mac_header when sock->type is SOCK_RAW and skb->protocol isnot specified as in packet_parse_headers() 2. packet_direct_xmit() doesn'treset skb->mac_header as dev_queue_xmit() In this case, skb->mac_header is65535 when ipvlan_xmit_mode_l2() is called. So when ipvlan_xmit_mode_l2()gets mac header with eth_hdr() which use \"skb->head + skb->mac_header\",out-of-bound access occurs. This patch replaces eth_hdr() withskb_eth_hdr() in ipvlan_xmit_mode_l2() and reset mac header in multicast tosolve this out-of-bound bug.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48651` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2103-aws-fips - 4.15.0-2103.109\nlinux-image-unsigned-hmac-4.15.0-2103-aws-fips - 4.15.0-2103.109\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2082-azure-fips - 4.15.0-2082.88\nlinux-image-unsigned-hmac-4.15.0-2082-azure-fips - 4.15.0-2082.88\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nlinux-image-unsigned-hmac-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ipvlan:Fix out-of-bound bugs caused by unset skb->mac_header If an AF_PACKETsocket is used to send packets through ipvlan and the default xmit functionof the AF_PACKET socket is changed from dev_queue_xmit() topacket_direct_xmit() via setsockopt() with the option name ofPACKET_QDISC_BYPASS, the skb->mac_header may not be reset and remains asthe initial value of 65535, this may trigger slab-out-of-bounds bugs asfollowing:================================================================= UG:KASAN: slab-out-of-bounds in ipvlan_xmit_mode_l2+0xdb/0x330 [ipvlan] PU: 2PID: 1768 Comm: raw_send Kdump: loaded Not tainted 6.0.0-rc4+ #6 ardwarename: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.14.0-1.fc33 all Trace:print_address_description.constprop.0+0x1d/0x160print_report.cold+0x4f/0x112 kasan_report+0xa3/0x130ipvlan_xmit_mode_l2+0xdb/0x330 [ipvlan] ipvlan_start_xmit+0x29/0xa0[ipvlan] __dev_direct_xmit+0x2e2/0x380 packet_direct_xmit+0x22/0x60packet_snd+0x7c9/0xc40 sock_sendmsg+0x9a/0xa0 __sys_sendto+0x18a/0x230__x64_sys_sendto+0x74/0x90 do_syscall_64+0x3b/0x90entry_SYSCALL_64_after_hwframe+0x63/0xcd The root cause is: 1. packet_snd()only reset skb->mac_header when sock->type is SOCK_RAW and skb->protocol isnot specified as in packet_parse_headers() 2. packet_direct_xmit() doesn'treset skb->mac_header as dev_queue_xmit() In this case, skb->mac_header is65535 when ipvlan_xmit_mode_l2() is called. So when ipvlan_xmit_mode_l2()gets mac header with eth_hdr() which use \"skb->head + skb->mac_header\",out-of-bound access occurs. This patch replaces eth_hdr() withskb_eth_hdr() in ipvlan_xmit_mode_l2() and reset mac header in multicast tosolve this out-of-bound bug.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48651` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1107-fips - 4.15.0-1107.118\nlinux-image-hmac-4.15.0-1107-fips - 4.15.0-1107.118\nlinux-image-unsigned-4.15.0-1107-fips - 4.15.0-1107.118\nlinux-image-unsigned-hmac-4.15.0-1107-fips - 4.15.0-1107.118\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2089-aws-fips - 4.15.0-2089.95\nlinux-image-unsigned-hmac-4.15.0-2089-aws-fips - 4.15.0-2089.95\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2070-azure-fips - 4.15.0-2070.76\nlinux-image-unsigned-hmac-4.15.0-2070-azure-fips - 4.15.0-2070.76\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2054-gcp-fips - 4.15.0-2054.59\nlinux-image-unsigned-hmac-4.15.0-2054-gcp-fips - 4.15.0-2054.59\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Compliant"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000000",
-						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1119.130')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471030000000",
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1107.118')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000010",
-						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2103.109')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471030000010",
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2089.95')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000020",
-						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2082.88')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471030000020",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2070.76')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000030",
-						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2066.71')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471030000030",
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2054.59')."
 					}
 				]
 			}

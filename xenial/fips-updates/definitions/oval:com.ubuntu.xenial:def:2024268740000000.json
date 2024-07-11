@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26874 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/mediatek: Fix a null pointer crash in mtk_drm_crtc_finish_page_flipIt's possible that mtk_crtc->event is NULL inmtk_drm_crtc_finish_page_flip(). pending_needs_vblank value is set bymtk_crtc->event, but in mtk_drm_crtc_atomic_flush(), it's is not guarded bythe same lock in mtk_drm_finish_page_flip(), thus a race condition happens.Consider the following case: CPU1 CPU2 step 1: mtk_drm_crtc_atomic_begin()mtk_crtc->event is not null, step 1: mtk_drm_crtc_atomic_flush:mtk_drm_crtc_update_config( !!mtk_crtc->event) step 2: mtk_crtc_ddp_irq ->mtk_drm_finish_page_flip: lock mtk_crtc->event set to null,pending_needs_vblank set to false unlock pending_needs_vblank set to true,step 2: mtk_crtc_ddp_irq -> mtk_drm_finish_page_flip called again,pending_needs_vblank is still true //null pointer Instead of guarding theentire mtk_drm_crtc_atomic_flush(), it's more efficient to just check ifmtk_crtc->event is null before use.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26874` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1098.105\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1098.105\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/mediatek: Fix a null pointer crash in mtk_drm_crtc_finish_page_flipIt's possible that mtk_crtc->event is NULL inmtk_drm_crtc_finish_page_flip(). pending_needs_vblank value is set bymtk_crtc->event, but in mtk_drm_crtc_atomic_flush(), it's is not guarded bythe same lock in mtk_drm_finish_page_flip(), thus a race condition happens.Consider the following case: CPU1 CPU2 step 1: mtk_drm_crtc_atomic_begin()mtk_crtc->event is not null, step 1: mtk_drm_crtc_atomic_flush:mtk_drm_crtc_update_config( !!mtk_crtc->event) step 2: mtk_crtc_ddp_irq ->mtk_drm_finish_page_flip: lock mtk_crtc->event set to null,pending_needs_vblank set to false unlock pending_needs_vblank set to true,step 2: mtk_crtc_ddp_irq -> mtk_drm_finish_page_flip called again,pending_needs_vblank is still true //null pointer Instead of guarding theentire mtk_drm_crtc_atomic_flush(), it's more efficient to just check ifmtk_crtc->event is null before use.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26874` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -37,7 +37,8 @@
 				"https://ubuntu.com/security/notices/USN-6817-3",
 				"https://ubuntu.com/security/notices/USN-6821-4",
 				"https://ubuntu.com/security/notices/USN-6871-1",
-				"https://ubuntu.com/security/notices/USN-6878-1"
+				"https://ubuntu.com/security/notices/USN-6878-1",
+				"https://ubuntu.com/security/notices/USN-6892-1"
 			]
 		}
 	},
@@ -48,8 +49,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:2016200220000000",
-						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1098.105')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000080",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1003.3')."
 					}
 				]
 			}

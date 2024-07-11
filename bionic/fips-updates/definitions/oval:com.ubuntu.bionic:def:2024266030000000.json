@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26603 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/fpu: Stop relying on userspace for info to fault in xsave buffer Beforethis change, the expected size of the user space buffer was taken fromfx_sw->xstate_size. fx_sw->xstate_size can be changed from user-space, soit is possible construct a sigreturn frame where: * fx_sw->xstate_size issmaller than the size required by valid bits in fx_sw->xfeatures. *user-space unmaps parts of the sigrame fpu buffer so that not all of thebuffer required by xrstor is accessible. In this case, xrstor tries torestore and accesses the unmapped area which results in a fault. Butfault_in_readable succeeds because buf + fx_sw->xstate_size is within thestill mapped area, so it goes back and tries xrstor again. It will spin inthis loop forever. Instead, fault in the maximum size which can be touchedby XRSTOR (taken from fpstate->user_size). [ dhansen: tweak subject /changelog ]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26603` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-4.15.0-1119-fips - 4.15.0-1119.130\nlinux-image-unsigned-hmac-4.15.0-1119-fips - 4.15.0-1119.130\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2103-aws-fips - 4.15.0-2103.109\nlinux-image-unsigned-hmac-4.15.0-2103-aws-fips - 4.15.0-2103.109\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2082-azure-fips - 4.15.0-2082.88\nlinux-image-unsigned-hmac-4.15.0-2082-azure-fips - 4.15.0-2082.88\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nlinux-image-unsigned-hmac-4.15.0-2066-gcp-fips - 4.15.0-2066.71\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/fpu: Stop relying on userspace for info to fault in xsave buffer Beforethis change, the expected size of the user space buffer was taken fromfx_sw->xstate_size. fx_sw->xstate_size can be changed from user-space, soit is possible construct a sigreturn frame where: * fx_sw->xstate_size issmaller than the size required by valid bits in fx_sw->xfeatures. *user-space unmaps parts of the sigrame fpu buffer so that not all of thebuffer required by xrstor is accessible. In this case, xrstor tries torestore and accesses the unmapped area which results in a fault. Butfault_in_readable succeeds because buf + fx_sw->xstate_size is within thestill mapped area, so it goes back and tries xrstor again. It will spin inthis loop forever. Instead, fault in the maximum size which can be touchedby XRSTOR (taken from fpstate->user_size). [ dhansen: tweak subject /changelog ]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26603` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nlinux-image-unsigned-hmac-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Compliant"
@@ -24,7 +24,7 @@
 				"public": "20240226",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "6820-1,6821-1,6821-2,6828-1,6820-2,6821-3,6821-4,6871-1"
+				"usns": "6820-1,6821-1,6821-2,6828-1,6820-2,6821-3,6821-4,6871-1,6892-1"
 			},
 			"public_date_at_usn": "2024-02-26 16:28:00 UTC",
 			"ref": [
@@ -35,7 +35,8 @@
 				"https://ubuntu.com/security/notices/USN-6820-2",
 				"https://ubuntu.com/security/notices/USN-6821-3",
 				"https://ubuntu.com/security/notices/USN-6821-4",
-				"https://ubuntu.com/security/notices/USN-6871-1"
+				"https://ubuntu.com/security/notices/USN-6871-1",
+				"https://ubuntu.com/security/notices/USN-6892-1"
 			]
 		}
 	},
@@ -99,7 +100,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000000",
-						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1119.130')."
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1027.32')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -183,15 +184,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000010",
-						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2103.109')."
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000020",
-						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2082.88')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000030",
-						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2066.71')."
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2013.14')."
 					}
 				]
 			}
