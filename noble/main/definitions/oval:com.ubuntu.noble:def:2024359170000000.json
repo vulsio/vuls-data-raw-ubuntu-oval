@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35917 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:s390/bpf: Fix bpf_plt pointer arithmetic Kui-Feng Lee reported a crash ons390x triggered by the dummy_st_ops/dummy_init_ptr_arg test [1]:[<0000000000000002>] 0x2 [<00000000009d5cde>]bpf_struct_ops_test_run+0x156/0x250 [<000000000033145a>]__sys_bpf+0xa1a/0xd00 [<00000000003319dc>] __s390x_sys_bpf+0x44/0x50[<0000000000c4382c>] __do_syscall+0x244/0x300 [<0000000000c59a40>]system_call+0x70/0x98 This is caused by GCC moving memcpy() afterassignments in bpf_jit_plt(), resulting in NULL pointers being writteninstead of the return and the target addresses. Looking at the GCCinternals, the reordering is allowed because the alias analysis thinks thatthe memcpy() destination and the assignments' left-hand-sides are based ondifferent objects: new_plt and bpf_plt_ret/bpf_plt_target respectively, andtherefore they cannot alias. This is in turn due to a violation of the Cstandard: When two pointers are subtracted, both shall point to elements ofthe same array object, or one past the last element of the array object ...From the C's perspective, bpf_plt_ret and bpf_plt are distinct objects andcannot be subtracted. In the practical terms, doing so confuses the GCC'salias analysis. The code was written this way in order to let the C sideknow a few offsets defined in the assembly. While nice, this is by no meansnecessary. Fix the noncompliance by hardcoding these offsets. [1]https://lore.kernel.org/bpf/c9923c1d-971d-4022-8dc8-1364e929d34c@gmail.com/",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:s390/bpf: Fix bpf_plt pointer arithmetic Kui-Feng Lee reported a crash ons390x triggered by the dummy_st_ops/dummy_init_ptr_arg test [1]:[<0000000000000002>] 0x2 [<00000000009d5cde>]bpf_struct_ops_test_run+0x156/0x250 [<000000000033145a>]__sys_bpf+0xa1a/0xd00 [<00000000003319dc>] __s390x_sys_bpf+0x44/0x50[<0000000000c4382c>] __do_syscall+0x244/0x300 [<0000000000c59a40>]system_call+0x70/0x98 This is caused by GCC moving memcpy() afterassignments in bpf_jit_plt(), resulting in NULL pointers being writteninstead of the return and the target addresses. Looking at the GCCinternals, the reordering is allowed because the alias analysis thinks thatthe memcpy() destination and the assignments' left-hand-sides are based ondifferent objects: new_plt and bpf_plt_ret/bpf_plt_target respectively, andtherefore they cannot alias. This is in turn due to a violation of the Cstandard: When two pointers are subtracted, both shall point to elements ofthe same array object, or one past the last element of the array object ...From the C's perspective, bpf_plt_ret and bpf_plt are distinct objects andcannot be subtracted. In the practical terms, doing so confuses the GCC'salias analysis. The code was written this way in order to let the C sideknow a few offsets defined in the assembly. While nice, this is by no meansnecessary. Fix the noncompliance by hardcoding these offsets. [1]https://lore.kernel.org/bpf/c9923c1d-971d-4022-8dc8-1364e929d34c@gmail.com/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35917` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -22,7 +22,11 @@
 				"text": "CVE-2024-35917",
 				"href": "https://ubuntu.com/security/CVE-2024-35917",
 				"public": "20240519"
-			}
+			},
+			"public_date_at_usn": "2024-05-19 09:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6893-1"
+			]
 		}
 	},
 	"notes": {},
@@ -32,48 +36,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-38.38')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000000",
+						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-38.38')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
 						"comment": "linux-aws package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1011.12')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1010.10')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000010",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1010.11')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000020",
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1010.11')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
 						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1006.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-38.38.1')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-38.38.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
 						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1007.7')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
+						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
-						"comment": "linux-intel package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1007.14')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
+						"comment": "linux-intel package in noble was vulnerable but has been fixed (note: '6.8.0-1007.14')."
 					}
 				]
 			}

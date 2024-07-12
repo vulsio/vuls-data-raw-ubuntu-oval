@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35934 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net/smc: reduce rtnl pressure in smc_pnet_create_pnetids_list() Many syzbotreports show extreme rtnl pressure, and many of them hint that smc acquiresrtnl in netns creation for no good reason [1] This patch returns early fromsmc_pnet_net_init() if there is no netdevice yet. I am not even sure whysmc_pnet_create_pnetids_list() even exists, because smc_pnet_netdev_event()is also calling smc_pnet_add_base_pnetid() when handling NETDEV_UP event.[1] extract of typical syzbot reports 2 locks held by syz-executor.3/12252:#0: ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.4/12253: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.1/12257: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.2/12261: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.0/12265: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.3/12268: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.4/12271: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.1/12274: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.2/12280: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/smc: reduce rtnl pressure in smc_pnet_create_pnetids_list() Many syzbotreports show extreme rtnl pressure, and many of them hint that smc acquiresrtnl in netns creation for no good reason [1] This patch returns early fromsmc_pnet_net_init() if there is no netdevice yet. I am not even sure whysmc_pnet_create_pnetids_list() even exists, because smc_pnet_netdev_event()is also calling smc_pnet_add_base_pnetid() when handling NETDEV_UP event.[1] extract of typical syzbot reports 2 locks held by syz-executor.3/12252:#0: ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.4/12253: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.1/12257: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.2/12261: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.0/12265: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.3/12268: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.4/12271: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.1/12274: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878 2 locks held by syz-executor.2/12280: #0:ffffffff8f369610 (pernet_ops_rwsem){++++}-{3:3}, at:copy_net_ns+0x4c7/0x7b0 net/core/net_namespace.c:491 #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_create_pnetids_listnet/smc/smc_pnet.c:809 [inline] #1: ffffffff8f375b88(rtnl_mutex){+.+.}-{3:3}, at: smc_pnet_net_init+0x10a/0x1e0net/smc/smc_pnet.c:878\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35934` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -22,7 +22,11 @@
 				"text": "CVE-2024-35934",
 				"href": "https://ubuntu.com/security/CVE-2024-35934",
 				"public": "20240519"
-			}
+			},
+			"public_date_at_usn": "2024-05-19 11:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6893-1"
+			]
 		}
 	},
 	"notes": {},
@@ -32,48 +36,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-38.38')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000000",
+						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-38.38')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
 						"comment": "linux-aws package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1011.12')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1010.10')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000010",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1010.11')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000020",
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1010.11')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
 						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1006.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-38.38.1')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-38.38.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
 						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1007.7')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
+						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
-						"comment": "linux-intel package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1007.14')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
+						"comment": "linux-intel package in noble was vulnerable but has been fixed (note: '6.8.0-1007.14')."
 					}
 				]
 			}
