@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-38616 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: wifi:carl9170: re-fix fortified-memset warning The carl9170_tx_release()function sometimes triggers a fortified-memset warning in my randconfigbuilds: In file included from include/linux/string.h:254, fromdrivers/net/wireless/ath/carl9170/tx.c:40: In function'fortify_memset_chk', inlined from 'carl9170_tx_release' atdrivers/net/wireless/ath/carl9170/tx.c:283:2, inlined from 'kref_put' atinclude/linux/kref.h:65:3, inlined from 'carl9170_tx_put_skb' atdrivers/net/wireless/ath/carl9170/tx.c:342:9:include/linux/fortify-string.h:493:25: error: call to'__write_overflow_field' declared with attribute warning: detected writebeyond size of field (1st parameter); maybe use struct_group()?[-Werror=attribute-warning] 493 | __write_overflow_field(p_size_field,size); Kees previously tried to avoid this by using memset_after(), but itseems this does not fully address the problem. I noticed that thememset_after() here is done on a different part of the union (status) thanthe original cast was from (rate_driver_data), which may confuse thecompiler. Unfortunately, the memset_after() trick does not work ondriver_rates[] because that is part of an anonymous struct, and I could notget struct_group() to do this either. Using two separate memset() calls onthe two members does address the warning though.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: wifi:carl9170: re-fix fortified-memset warning The carl9170_tx_release()function sometimes triggers a fortified-memset warning in my randconfigbuilds: In file included from include/linux/string.h:254, fromdrivers/net/wireless/ath/carl9170/tx.c:40: In function'fortify_memset_chk', inlined from 'carl9170_tx_release' atdrivers/net/wireless/ath/carl9170/tx.c:283:2, inlined from 'kref_put' atinclude/linux/kref.h:65:3, inlined from 'carl9170_tx_put_skb' atdrivers/net/wireless/ath/carl9170/tx.c:342:9:include/linux/fortify-string.h:493:25: error: call to'__write_overflow_field' declared with attribute warning: detected writebeyond size of field (1st parameter); maybe use struct_group()?[-Werror=attribute-warning] 493 | __write_overflow_field(p_size_field,size); Kees previously tried to avoid this by using memset_after(), but itseems this does not fully address the problem. I noticed that thememset_after() here is done on a different part of the union (status) thanthe original cast was from (rate_driver_data), which may confuse thecompiler. Unfortunately, the memset_after() trick does not work ondriver_rates[] because that is part of an anonymous struct, and I could notget struct_group() to do this either. Using two separate memset() calls onthe two members does address the warning though.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-38616` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Certified"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016200220000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					}
 				]
 			}

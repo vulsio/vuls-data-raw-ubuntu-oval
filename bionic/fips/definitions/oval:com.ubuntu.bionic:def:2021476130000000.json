@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47613 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: i2c:virtio: fix completion handling The driver currently assumes that thenotify callback is only received when the device is done with all thequeued buffers. However, this is not true, since the notify callback couldbe called without any of the queued buffers being completed (for example,with virtio-pci and shared interrupts) or with only some of the buffersbeing completed (since the driver makes them available to the device inmultiple separate virtqueue_add_sgs() calls). This can lead to incorrectdata on the I2C bus or memory corruption in the guest if the deviceoperates on buffers which are have been freed by the driver. (The WARN_ONin the driver is also triggered.) BUG kmalloc-128 (Tainted: G W ): Poisonoverwritten First byte 0x0 instead of 0x6b Allocated ini2cdev_ioctl_rdwr+0x9d/0x1de age=243 cpu=0 pid=28 memdup_user+0x2e/0xbdi2cdev_ioctl_rdwr+0x9d/0x1de i2cdev_ioctl+0x247/0x2ed vfs_ioctl+0x21/0x30sys_ioctl+0xb18/0xb41 Freed in i2cdev_ioctl_rdwr+0x1bb/0x1de age=68 cpu=0pid=28 kfree+0x1bd/0x1cc i2cdev_ioctl_rdwr+0x1bb/0x1dei2cdev_ioctl+0x247/0x2ed vfs_ioctl+0x21/0x30 sys_ioctl+0xb18/0xb41 Fix thisby calling virtio_get_buf() from the notify handler like other virtiodrivers and by actually waiting for all the buffers to be completed.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: i2c:virtio: fix completion handling The driver currently assumes that thenotify callback is only received when the device is done with all thequeued buffers. However, this is not true, since the notify callback couldbe called without any of the queued buffers being completed (for example,with virtio-pci and shared interrupts) or with only some of the buffersbeing completed (since the driver makes them available to the device inmultiple separate virtqueue_add_sgs() calls). This can lead to incorrectdata on the I2C bus or memory corruption in the guest if the deviceoperates on buffers which are have been freed by the driver. (The WARN_ONin the driver is also triggered.) BUG kmalloc-128 (Tainted: G W ): Poisonoverwritten First byte 0x0 instead of 0x6b Allocated ini2cdev_ioctl_rdwr+0x9d/0x1de age=243 cpu=0 pid=28 memdup_user+0x2e/0xbdi2cdev_ioctl_rdwr+0x9d/0x1de i2cdev_ioctl+0x247/0x2ed vfs_ioctl+0x21/0x30sys_ioctl+0xb18/0xb41 Freed in i2cdev_ioctl_rdwr+0x1bb/0x1de age=68 cpu=0pid=28 kfree+0x1bd/0x1cc i2cdev_ioctl_rdwr+0x1bb/0x1dei2cdev_ioctl+0x247/0x2ed vfs_ioctl+0x21/0x30 sys_ioctl+0xb18/0xb41 Fix thisby calling virtio_get_buf() from the notify handler like other virtiodrivers and by actually waiting for all the buffers to be completed.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47613` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Certified"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000000",
+						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000010",
+						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-gcp-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					}
 				]
 			}

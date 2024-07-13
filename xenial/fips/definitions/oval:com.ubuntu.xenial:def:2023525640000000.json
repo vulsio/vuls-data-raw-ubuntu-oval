@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52564 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: Revert\"tty: n_gsm: fix UAF in gsm_cleanup_mux\" This reverts commit9b9c8195f3f0d74a826077fc1c01b9ee74907239. The commit above is reverted asit did not solve the original issue. gsm_cleanup_mux() tries to free up thevirtual ttys by calling gsm_dlci_release() for each available DLCI. There,dlci_put() is called to decrease the reference counter for the DLCI viatty_port_put() which finally calls gsm_dlci_free(). This already clears thepointer which is being checked in gsm_cleanup_mux() before callinggsm_dlci_release(). Therefore, it is not necessary to clear this pointer ingsm_cleanup_mux() as done in the reverted commit. The commit introduces anull pointer dereference: <TASK> ? __die+0x1f/0x70 ?page_fault_oops+0x156/0x420 ? search_exception_tables+0x37/0x50 ?fixup_exception+0x21/0x310 ? exc_page_fault+0x69/0x150 ?asm_exc_page_fault+0x26/0x30 ? tty_port_put+0x19/0xa0gsmtty_cleanup+0x29/0x80 [n_gsm] release_one_tty+0x37/0xe0process_one_work+0x1e6/0x3e0 worker_thread+0x4c/0x3d0 ?__pfx_worker_thread+0x10/0x10 kthread+0xe1/0x110 ? __pfx_kthread+0x10/0x10ret_from_fork+0x2f/0x50 ? __pfx_kthread+0x10/0x10ret_from_fork_asm+0x1b/0x30 </TASK> The actual issue is that nothing guardsdlci_put() from being called multiple times while the tty driver wastriggered but did not yet finished calling gsm_dlci_free().",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: Revert\"tty: n_gsm: fix UAF in gsm_cleanup_mux\" This reverts commit9b9c8195f3f0d74a826077fc1c01b9ee74907239. The commit above is reverted asit did not solve the original issue. gsm_cleanup_mux() tries to free up thevirtual ttys by calling gsm_dlci_release() for each available DLCI. There,dlci_put() is called to decrease the reference counter for the DLCI viatty_port_put() which finally calls gsm_dlci_free(). This already clears thepointer which is being checked in gsm_cleanup_mux() before callinggsm_dlci_release(). Therefore, it is not necessary to clear this pointer ingsm_cleanup_mux() as done in the reverted commit. The commit introduces anull pointer dereference: <TASK> ? __die+0x1f/0x70 ?page_fault_oops+0x156/0x420 ? search_exception_tables+0x37/0x50 ?fixup_exception+0x21/0x310 ? exc_page_fault+0x69/0x150 ?asm_exc_page_fault+0x26/0x30 ? tty_port_put+0x19/0xa0gsmtty_cleanup+0x29/0x80 [n_gsm] release_one_tty+0x37/0xe0process_one_work+0x1e6/0x3e0 worker_thread+0x4c/0x3d0 ?__pfx_worker_thread+0x10/0x10 kthread+0xe1/0x110 ? __pfx_kthread+0x10/0x10ret_from_fork+0x2f/0x50 ? __pfx_kthread+0x10/0x10ret_from_fork_asm+0x1b/0x30 </TASK> The actual issue is that nothing guardsdlci_put() from being called multiple times while the tty driver wastriggered but did not yet finished calling gsm_dlci_free().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52564` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Certified"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016200220000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					}
 				]
 			}

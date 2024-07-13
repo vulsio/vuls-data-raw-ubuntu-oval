@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-39276 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:ext4: fix mb_cache_entry's e_refcnt leak in ext4_xattr_block_cache_find()Syzbot reports a warning as follows:============================================WARNING: CPU: 0 PID: 5075 at fs/mbcache.c:419 mb_cache_destroy+0x224/0x290Modules linked in:CPU: 0 PID: 5075 Comm: syz-executor199 Not tainted 6.9.0-rc6-gb947cc5bf6d7RIP: 0010:mb_cache_destroy+0x224/0x290 fs/mbcache.c:419Call Trace: <TASK> ext4_put_super+0x6d4/0xcd0 fs/ext4/super.c:1375 generic_shutdown_super+0x136/0x2d0 fs/super.c:641 kill_block_super+0x44/0x90 fs/super.c:1675 ext4_kill_sb+0x68/0xa0 fs/ext4/super.c:7327[...]============================================This is because when finding an entry in ext4_xattr_block_cache_find(), ifext4_sb_bread() returns -ENOMEM, the ce's e_refcnt, which has already grownin the __entry_find(), won't be put away, and eventually trigger the aboveissue in mb_cache_destroy() due to reference count leakage.So call mb_cache_entry_put() on the -ENOMEM error branch as a quick fix.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ext4: fix mb_cache_entry's e_refcnt leak in ext4_xattr_block_cache_find()Syzbot reports a warning as follows:============================================WARNING: CPU: 0 PID: 5075 at fs/mbcache.c:419 mb_cache_destroy+0x224/0x290Modules linked in:CPU: 0 PID: 5075 Comm: syz-executor199 Not tainted 6.9.0-rc6-gb947cc5bf6d7RIP: 0010:mb_cache_destroy+0x224/0x290 fs/mbcache.c:419Call Trace: <TASK> ext4_put_super+0x6d4/0xcd0 fs/ext4/super.c:1375 generic_shutdown_super+0x136/0x2d0 fs/super.c:641 kill_block_super+0x44/0x90 fs/super.c:1675 ext4_kill_sb+0x68/0xa0 fs/ext4/super.c:7327[...]============================================This is because when finding an entry in ext4_xattr_block_cache_find(), ifext4_sb_bread() returns -ENOMEM, the ce's e_refcnt, which has already grownin the __entry_find(), won't be put away, and eventually trigger the aboveissue in mb_cache_destroy() due to reference count leakage.So call mb_cache_entry_put() on the -ENOMEM error branch as a quick fix.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-39276` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Certified"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016200220000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					}
 				]
 			}

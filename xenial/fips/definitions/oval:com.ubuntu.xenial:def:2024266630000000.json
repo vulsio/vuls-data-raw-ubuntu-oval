@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26663 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: tipc:Check the bearer type before calling tipc_udp_nl_bearer_add() syzbotreported the following general protection fault [1]: general protectionfault, probably for non-canonical address 0xdffffc0000000010: 0000 [#1]PREEMPT SMP KASAN KASAN: null-ptr-deref in range[0x0000000000000080-0x0000000000000087] ... RIP:0010:tipc_udp_is_known_peer+0x9c/0x250 net/tipc/udp_media.c:291 ... CallTrace: <TASK> tipc_udp_nl_bearer_add+0x212/0x2f0 net/tipc/udp_media.c:646tipc_nl_bearer_add+0x21e/0x360 net/tipc/bearer.c:1089genl_family_rcv_msg_doit+0x1fc/0x2e0 net/netlink/genetlink.c:972genl_family_rcv_msg net/netlink/genetlink.c:1052 [inline]genl_rcv_msg+0x561/0x800 net/netlink/genetlink.c:1067netlink_rcv_skb+0x16b/0x440 net/netlink/af_netlink.c:2544genl_rcv+0x28/0x40 net/netlink/genetlink.c:1076 netlink_unicast_kernelnet/netlink/af_netlink.c:1341 [inline] netlink_unicast+0x53b/0x810net/netlink/af_netlink.c:1367 netlink_sendmsg+0x8b7/0xd70net/netlink/af_netlink.c:1909 sock_sendmsg_nosec net/socket.c:730 [inline]__sock_sendmsg+0xd5/0x180 net/socket.c:745 ____sys_sendmsg+0x6ac/0x940net/socket.c:2584 ___sys_sendmsg+0x135/0x1d0 net/socket.c:2638__sys_sendmsg+0x117/0x1e0 net/socket.c:2667 do_syscall_x64arch/x86/entry/common.c:52 [inline] do_syscall_64+0x40/0x110arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x63/0x6b Thecause of this issue is that when tipc_nl_bearer_add() is called with theTIPC_NLA_BEARER_UDP_OPTS attribute, tipc_udp_nl_bearer_add() is called evenif the bearer is not UDP. tipc_udp_is_known_peer() called bytipc_udp_nl_bearer_add() assumes that the media_ptr field of thetipc_bearer has an udp_bearer type object, so the function goes crazy fornon-UDP bearers. This patch fixes the issue by checking the bearer typebefore calling tipc_udp_nl_bearer_add() in tipc_nl_bearer_add().",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: tipc:Check the bearer type before calling tipc_udp_nl_bearer_add() syzbotreported the following general protection fault [1]: general protectionfault, probably for non-canonical address 0xdffffc0000000010: 0000 [#1]PREEMPT SMP KASAN KASAN: null-ptr-deref in range[0x0000000000000080-0x0000000000000087] ... RIP:0010:tipc_udp_is_known_peer+0x9c/0x250 net/tipc/udp_media.c:291 ... CallTrace: <TASK> tipc_udp_nl_bearer_add+0x212/0x2f0 net/tipc/udp_media.c:646tipc_nl_bearer_add+0x21e/0x360 net/tipc/bearer.c:1089genl_family_rcv_msg_doit+0x1fc/0x2e0 net/netlink/genetlink.c:972genl_family_rcv_msg net/netlink/genetlink.c:1052 [inline]genl_rcv_msg+0x561/0x800 net/netlink/genetlink.c:1067netlink_rcv_skb+0x16b/0x440 net/netlink/af_netlink.c:2544genl_rcv+0x28/0x40 net/netlink/genetlink.c:1076 netlink_unicast_kernelnet/netlink/af_netlink.c:1341 [inline] netlink_unicast+0x53b/0x810net/netlink/af_netlink.c:1367 netlink_sendmsg+0x8b7/0xd70net/netlink/af_netlink.c:1909 sock_sendmsg_nosec net/socket.c:730 [inline]__sock_sendmsg+0xd5/0x180 net/socket.c:745 ____sys_sendmsg+0x6ac/0x940net/socket.c:2584 ___sys_sendmsg+0x135/0x1d0 net/socket.c:2638__sys_sendmsg+0x117/0x1e0 net/socket.c:2667 do_syscall_x64arch/x86/entry/common.c:52 [inline] do_syscall_64+0x40/0x110arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x63/0x6b Thecause of this issue is that when tipc_nl_bearer_add() is called with theTIPC_NLA_BEARER_UDP_OPTS attribute, tipc_udp_nl_bearer_add() is called evenif the bearer is not UDP. tipc_udp_is_known_peer() called bytipc_udp_nl_bearer_add() assumes that the media_ptr field of thetipc_bearer has an udp_bearer type object, so the function goes crazy fornon-UDP bearers. This patch fixes the issue by checking the bearer typebefore calling tipc_udp_nl_bearer_add() in tipc_nl_bearer_add().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26663` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Certified"
@@ -31,7 +31,8 @@
 				"https://ubuntu.com/security/notices/USN-6766-2",
 				"https://ubuntu.com/security/notices/USN-6766-3",
 				"https://ubuntu.com/security/notices/USN-6795-1",
-				"https://ubuntu.com/security/notices/USN-6828-1"
+				"https://ubuntu.com/security/notices/USN-6828-1",
+				"https://ubuntu.com/security/notices/USN-6895-1"
 			]
 		}
 	},
@@ -42,8 +43,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016200220000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					}
 				]
 			}

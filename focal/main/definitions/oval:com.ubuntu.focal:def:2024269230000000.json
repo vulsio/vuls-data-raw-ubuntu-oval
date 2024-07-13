@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26923 on Ubuntu 20.04 LTS (focal) - high",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:af_unix: Fix garbage collector racing against connect() Garbage collectordoes not take into account the risk of embryo getting enqueued during thegarbage collection. If such embryo has a peer that carries SCM_RIGHTS, twoconsecutive passes of scan_children() may see a different set of children.Leading to an incorrectly elevated inflight count, and then a danglingpointer within the gc_inflight_list. sockets are AF_UNIX/SOCK_STREAM S isan unconnected socket L is a listening in-flight socket bound to addr, notin fdtable V's fd will be passed via sendmsg(), gets inflight count bumpedconnect(S, addr) sendmsg(S, [V]); close(V) __unix_gc() ----------------------------------------- ----------- NS = unix_create1() skb1 =sock_wmalloc(NS) L = unix_find_other(addr) unix_state_lock(L) unix_peer(S)= NS // V count=1 inflight=0 NS = unix_peer(S) skb2 = sock_alloc()skb_queue_tail(NS, skb2[V]) // V became in-flight // V count=2 inflight=1close(V) // V count=1 inflight=1 // GC candidate condition met for u ingc_inflight_list: if (total_refs == inflight_refs) add u to gc_candidates// gc_candidates={L, V} for u in gc_candidates: scan_children(u,dec_inflight) // embryo (skb1) was not // reachable from L yet, so V's //inflight remains unchanged __skb_queue_tail(L, skb1) unix_state_unlock(L)for u in gc_candidates: if (u.inflight) scan_children(u,inc_inflight_move_tail) // V count=1 inflight=2 (!) If there is aGC-candidate listening socket, lock/unlock its state. This makes GC waituntil the end of any ongoing connect() to that socket. After flipping thelock, a possibly SCM-laden embryo is already enqueued. And if there isanother embryo coming, it can not possibly carry SCM_RIGHTS. At this point,unix_inflight() can not happen because unix_gc_lock is already taken.Inflight graph remains unaffected.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:af_unix: Fix garbage collector racing against connect() Garbage collectordoes not take into account the risk of embryo getting enqueued during thegarbage collection. If such embryo has a peer that carries SCM_RIGHTS, twoconsecutive passes of scan_children() may see a different set of children.Leading to an incorrectly elevated inflight count, and then a danglingpointer within the gc_inflight_list. sockets are AF_UNIX/SOCK_STREAM S isan unconnected socket L is a listening in-flight socket bound to addr, notin fdtable V's fd will be passed via sendmsg(), gets inflight count bumpedconnect(S, addr) sendmsg(S, [V]); close(V) __unix_gc() ----------------------------------------- ----------- NS = unix_create1() skb1 =sock_wmalloc(NS) L = unix_find_other(addr) unix_state_lock(L) unix_peer(S)= NS // V count=1 inflight=0 NS = unix_peer(S) skb2 = sock_alloc()skb_queue_tail(NS, skb2[V]) // V became in-flight // V count=2 inflight=1close(V) // V count=1 inflight=1 // GC candidate condition met for u ingc_inflight_list: if (total_refs == inflight_refs) add u to gc_candidates// gc_candidates={L, V} for u in gc_candidates: scan_children(u,dec_inflight) // embryo (skb1) was not // reachable from L yet, so V's //inflight remains unchanged __skb_queue_tail(L, skb1) unix_state_unlock(L)for u in gc_candidates: if (u.inflight) scan_children(u,inc_inflight_move_tail) // V count=1 inflight=2 (!) If there is aGC-candidate listening socket, lock/unlock its state. This makes GC waituntil the end of any ongoing connect() to that socket. After flipping thelock, a possibly SCM-laden embryo is already enqueued. And if there isanother embryo coming, it can not possibly carry SCM_RIGHTS. At this point,unix_inflight() can not happen because unix_gc_lock is already taken.Inflight graph remains unaffected.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26923` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-5.4.0-189-generic-lpae - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1116-kvm - 5.4.0-1116.123\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1133-azure - 5.4.0-1133.140\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1088-bluefield - 5.4.0-1088.95\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1132-gcp - 5.4.0-1132.141\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1095-gkeop - 5.4.0-1095.99\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1075-ibm - 5.4.0-1075.80\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -25,7 +25,9 @@
 			},
 			"public_date_at_usn": "2024-04-25 06:15:00 UTC",
 			"ref": [
-				"https://ubuntu.com/security/notices/USN-6893-1"
+				"https://ubuntu.com/security/notices/USN-6893-1",
+				"https://ubuntu.com/security/notices/USN-6895-1",
+				"https://ubuntu.com/security/notices/USN-6896-1"
 			]
 		}
 	},
@@ -36,8 +38,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-189.209')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000000",
+						"comment": "linux package in focal was vulnerable but has been fixed (note: '5.4.0-189.209')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -56,8 +58,8 @@
 						"comment": "linux-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-116.126~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1116.123')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000010",
+						"comment": "linux-kvm package in focal was vulnerable but has been fixed (note: '5.4.0-1116.123')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
@@ -80,8 +82,8 @@
 						"comment": "linux-aws-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1065.71~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1133.140')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000020",
+						"comment": "linux-azure package in focal was vulnerable but has been fixed (note: '5.4.0-1133.140')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -108,12 +110,12 @@
 						"comment": "linux-azure-fde-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1068.77~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1088.95')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000030",
+						"comment": "linux-bluefield package in focal was vulnerable but has been fixed (note: '5.4.0-1088.95')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1132.141')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000040",
+						"comment": "linux-gcp package in focal was vulnerable but has been fixed (note: '5.4.0-1132.141')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -129,7 +131,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-gcp-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1064.72~20.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -140,16 +142,16 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1095.99')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000050",
+						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1095.99')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
 						"comment": "linux-gkeop-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1048.55~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1075.80')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2021336550000010",
+						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1075.80')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",

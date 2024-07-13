@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26813 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:vfio/platform: Create persistent IRQ handlers The vfio-platform SET_IRQSioctl currently allows loopback triggering of an interrupt before asignaling eventfd has been configured by the user, which thereby allows aNULL pointer dereference. Rather than register the IRQ relative to a validtrigger, register all IRQs in a disabled state in the device open path.This allows mask operations on the IRQ to nest within the overall enablestate governed by a valid eventfd signal. This decouples @masked, protectedby the @locked spinlock from @trigger, protected via the @igate mutex. Indoing so, it's guaranteed that changes to @trigger cannot race the IRQhandlers because the IRQ handler is synchronously disabled before modifyingthe trigger, and loopback triggering of the IRQ via ioctl is safe due toserialization with trigger changes via igate. For compatibility,request_irq() failures are maintained to be local to the SET_IRQS ioctlrather than a fatal error in the open device path. This allows, forexample, a userspace driver with polling mode support to continue to workregardless of moving the request_irq() call site. This necessarily blocksall SET_IRQS access to the failed index.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:vfio/platform: Create persistent IRQ handlers The vfio-platform SET_IRQSioctl currently allows loopback triggering of an interrupt before asignaling eventfd has been configured by the user, which thereby allows aNULL pointer dereference. Rather than register the IRQ relative to a validtrigger, register all IRQs in a disabled state in the device open path.This allows mask operations on the IRQ to nest within the overall enablestate governed by a valid eventfd signal. This decouples @masked, protectedby the @locked spinlock from @trigger, protected via the @igate mutex. Indoing so, it's guaranteed that changes to @trigger cannot race the IRQhandlers because the IRQ handler is synchronously disabled before modifyingthe trigger, and loopback triggering of the IRQ via ioctl is safe due toserialization with trigger changes via igate. For compatibility,request_irq() failures are maintained to be local to the SET_IRQS ioctlrather than a fatal error in the open device path. This allows, forexample, a userspace driver with polling mode support to continue to workregardless of moving the request_irq() call site. This necessarily blocksall SET_IRQS access to the failed index.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26813` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-5.4.0-189-generic-lpae - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1116-kvm - 5.4.0-1116.123\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1133-azure - 5.4.0-1133.140\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1088-bluefield - 5.4.0-1088.95\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1132-gcp - 5.4.0-1132.141\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1095-gkeop - 5.4.0-1095.99\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1075-ibm - 5.4.0-1075.80\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -29,7 +29,8 @@
 				"https://ubuntu.com/security/notices/USN-6817-1",
 				"https://ubuntu.com/security/notices/USN-6817-2",
 				"https://ubuntu.com/security/notices/USN-6817-3",
-				"https://ubuntu.com/security/notices/USN-6878-1"
+				"https://ubuntu.com/security/notices/USN-6878-1",
+				"https://ubuntu.com/security/notices/USN-6896-1"
 			]
 		}
 	},
@@ -40,8 +41,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-189.209')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000000",
+						"comment": "linux package in focal was vulnerable but has been fixed (note: '5.4.0-189.209')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -60,8 +61,8 @@
 						"comment": "linux-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-116.126~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1116.123')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000010",
+						"comment": "linux-kvm package in focal was vulnerable but has been fixed (note: '5.4.0-1116.123')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
@@ -84,8 +85,8 @@
 						"comment": "linux-aws-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1065.71~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1133.140')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000020",
+						"comment": "linux-azure package in focal was vulnerable but has been fixed (note: '5.4.0-1133.140')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -112,16 +113,16 @@
 						"comment": "linux-azure-fde-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1068.77~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1088.95')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000030",
+						"comment": "linux-bluefield package in focal was vulnerable but has been fixed (note: '5.4.0-1088.95')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
-						"comment": "linux-fips package in fips/focal is affected and may need fixing."
+						"comment": "linux-fips package in fips/focal is affected. An update containing the fix has been completed and is pending publication."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1132.141')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000040",
+						"comment": "linux-gcp package in focal was vulnerable but has been fixed (note: '5.4.0-1132.141')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -137,7 +138,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-gcp-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1064.72~20.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -148,16 +149,16 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1095.99')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000050",
+						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1095.99')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
 						"comment": "linux-gkeop-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1048.55~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1075.80')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2021336550000010",
+						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1075.80')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
@@ -229,15 +230,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips/focal is affected and may need fixing."
+						"comment": "linux-aws-fips package in fips/focal is affected. An update containing the fix has been completed and is pending publication."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips/focal is affected and may need fixing."
+						"comment": "linux-azure-fips package in fips/focal is affected. An update containing the fix has been completed and is pending publication."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips/focal is affected and may need fixing."
+						"comment": "linux-gcp-fips package in fips/focal is affected. An update containing the fix has been completed and is pending publication."
 					}
 				]
 			}

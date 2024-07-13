@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-46978 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: KVM:nVMX: Always make an attempt to map eVMCS after migration When enlightenedVMCS is in use and nested state is migrated withvmx_get_nested_state()/vmx_set_nested_state() KVM can't map evmcs pageright away: evmcs gpa is not 'struct kvm_vmx_nested_state_hdr' and we can'tread it from VP assist page because userspace may decide to restoreHV_X64_MSR_VP_ASSIST_PAGE after restoring nested state (and QEMU, forexample, does exactly that). To make sure eVMCS is mapped/vmx_set_nested_state() raises KVM_REQ_GET_NESTED_STATE_PAGES request.Commit f2c7ef3ba955 (\"KVM: nSVM: cancel KVM_REQ_GET_NESTED_STATE_PAGES onnested vmexit\") added KVM_REQ_GET_NESTED_STATE_PAGES clearing tonested_vmx_vmexit() to make sure MSR permission bitmap is not switched whenan immediate exit from L2 to L1 happens right after migration (caused by apending event, for example). Unfortunately, in the exact same situation westill need to have eVMCS mapped so nested_sync_vmcs12_to_shadow() reflectschanges in VMCS12 to eVMCS. As a band-aid, restore nested_get_evmcs_page()when clearing KVM_REQ_GET_NESTED_STATE_PAGES in nested_vmx_vmexit(). The'fix' is far from being ideal as we can't easily propagate possiblefailures and even if we could, this is most likely already too late to doso. The whole 'KVM_REQ_GET_NESTED_STATE_PAGES' idea for mapping eVMCS aftermigration seems to be fragile as we diverge too much from the 'native' pathwhen vmptr loading happens on vmx_set_nested_state().",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: KVM:nVMX: Always make an attempt to map eVMCS after migration When enlightenedVMCS is in use and nested state is migrated withvmx_get_nested_state()/vmx_set_nested_state() KVM can't map evmcs pageright away: evmcs gpa is not 'struct kvm_vmx_nested_state_hdr' and we can'tread it from VP assist page because userspace may decide to restoreHV_X64_MSR_VP_ASSIST_PAGE after restoring nested state (and QEMU, forexample, does exactly that). To make sure eVMCS is mapped/vmx_set_nested_state() raises KVM_REQ_GET_NESTED_STATE_PAGES request.Commit f2c7ef3ba955 (\"KVM: nSVM: cancel KVM_REQ_GET_NESTED_STATE_PAGES onnested vmexit\") added KVM_REQ_GET_NESTED_STATE_PAGES clearing tonested_vmx_vmexit() to make sure MSR permission bitmap is not switched whenan immediate exit from L2 to L1 happens right after migration (caused by apending event, for example). Unfortunately, in the exact same situation westill need to have eVMCS mapped so nested_sync_vmcs12_to_shadow() reflectschanges in VMCS12 to eVMCS. As a band-aid, restore nested_get_evmcs_page()when clearing KVM_REQ_GET_NESTED_STATE_PAGES in nested_vmx_vmexit(). The'fix' is far from being ideal as we can't easily propagate possiblefailures and even if we could, this is most likely already too late to doso. The whole 'KVM_REQ_GET_NESTED_STATE_PAGES' idea for mapping eVMCS aftermigration seems to be fragile as we diverge too much from the 'native' pathwhen vmptr loading happens on vmx_set_nested_state().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46978` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Certified"
@@ -84,8 +84,8 @@
 						"comment": "linux-dell300x: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000000",
+						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -168,16 +168,16 @@
 						"comment": "linux-snapdragon: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000010",
+						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-gcp-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					}
 				]
 			}

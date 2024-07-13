@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26718 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:dm-crypt, dm-verity: disable tasklets Tasklets have an inherent problemwith memory corruption. The function tasklet_action_common callstasklet_trylock, then it calls the tasklet callback and then it callstasklet_unlock. If the tasklet callback frees the structure that containsthe tasklet or if it calls some code that may free it, tasklet_unlock willwrite into free memory. The commits 8e14f610159d and d9a02e016aaf try tofix it for dm-crypt, but it is not a sufficient fix and the data corruptioncan still happen [1]. There is no fix for dm-verity and dm-verity willwrite into free memory with every tasklet-processed bio. There will beatomic workqueues implemented in the kernel 6.9 [2]. They will have betterinterface and they will not suffer from the memory corruption problem. Butwe need something that stops the memory corruption now and that can bebackported to the stable kernels. So, I'm proposing this commit thatdisables tasklets in both dm-crypt and dm-verity. This commit doesn'tremove the tasklet support, because the tasklet code will be reused whenatomic workqueues will be implemented. [1]https://lore.kernel.org/all/d390d7ee-f142-44d3-822a-87949e14608b@suse.de/T/[2] https://lore.kernel.org/lkml/20240130091300.2968534-1-tj@kernel.org/",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:dm-crypt, dm-verity: disable tasklets Tasklets have an inherent problemwith memory corruption. The function tasklet_action_common callstasklet_trylock, then it calls the tasklet callback and then it callstasklet_unlock. If the tasklet callback frees the structure that containsthe tasklet or if it calls some code that may free it, tasklet_unlock willwrite into free memory. The commits 8e14f610159d and d9a02e016aaf try tofix it for dm-crypt, but it is not a sufficient fix and the data corruptioncan still happen [1]. There is no fix for dm-verity and dm-verity willwrite into free memory with every tasklet-processed bio. There will beatomic workqueues implemented in the kernel 6.9 [2]. They will have betterinterface and they will not suffer from the memory corruption problem. Butwe need something that stops the memory corruption now and that can bebackported to the stable kernels. So, I'm proposing this commit thatdisables tasklets in both dm-crypt and dm-verity. This commit doesn'tremove the tasklet support, because the tasklet code will be reused whenatomic workqueues will be implemented. [1]https://lore.kernel.org/all/d390d7ee-f142-44d3-822a-87949e14608b@suse.de/T/[2] https://lore.kernel.org/lkml/20240130091300.2968534-1-tj@kernel.org/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26718` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Certified"
@@ -22,7 +22,11 @@
 				"text": "CVE-2024-26718",
 				"href": "https://ubuntu.com/security/CVE-2024-26718",
 				"public": "20240403"
-			}
+			},
+			"public_date_at_usn": "2024-04-03 15:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6895-1"
+			]
 		}
 	},
 	"notes": {},
@@ -32,8 +36,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016200220000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52765 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: mfd:qcom-spmi-pmic: Fix revid implementation The Qualcomm SPMI PMIC revidimplementation is broken in multiple ways. First, it assumes that justbecause the sibling base device has been registered that means that it isalso bound to a driver, which may not be the case (e.g. due to probedeferral or asynchronous probe). This could trigger a NULL-pointerdereference when attempting to access the driver data of the unbounddevice. Second, it accesses driver data of a sibling device directly andwithout any locking, which means that the driver data may be freed while itis being accessed (e.g. on driver unbind). Third, it leaks a struct devicereference to the sibling device which is looked up using thespmi_device_from_of() every time a function (child) device is calling therevid function (e.g. on probe). Fix this mess by reimplementing the revidlookup so that it is done only at probe of the PMIC device; the base devicefetches the revid info from the hardware, while any secondary SPMI devicefetches the information from the base device and caches it so that it canbe accessed safely from its children. If the base device has not beenprobed yet then probe of a secondary device is deferred.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mfd:qcom-spmi-pmic: Fix revid implementation The Qualcomm SPMI PMIC revidimplementation is broken in multiple ways. First, it assumes that justbecause the sibling base device has been registered that means that it isalso bound to a driver, which may not be the case (e.g. due to probedeferral or asynchronous probe). This could trigger a NULL-pointerdereference when attempting to access the driver data of the unbounddevice. Second, it accesses driver data of a sibling device directly andwithout any locking, which means that the driver data may be freed while itis being accessed (e.g. on driver unbind). Third, it leaks a struct devicereference to the sibling device which is looked up using thespmi_device_from_of() every time a function (child) device is calling therevid function (e.g. on probe). Fix this mess by reimplementing the revidlookup so that it is done only at probe of the PMIC device; the base devicefetches the revid info from the hardware, while any secondary SPMI devicefetches the information from the base device and caches it so that it canbe accessed safely from its children. If the base device has not beenprobed yet then probe of a secondary device is deferred.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52765` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Certified"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016200220000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					}
 				]
 			}

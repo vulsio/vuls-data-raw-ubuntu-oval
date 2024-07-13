@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36962 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: net:ks8851: Queue RX packets in IRQ handler instead of disabling BHs Currentlythe driver uses local_bh_disable()/local_bh_enable() in its IRQ handler toavoid triggering net_rx_action() softirq on exit from netif_rx(). Thenet_rx_action() could trigger this driver .start_xmit callback, which isprotected by the same lock as the IRQ handler, so calling the .start_xmitfrom netif_rx() from the IRQ handler critical section protected by the lockcould lead to an attempt to claim the already claimed lock, and a hang. Thelocal_bh_disable()/local_bh_enable() approach works only in case the IRQhandler is protected by a spinlock, but does not work if the IRQ handler isprotected by mutex, i.e. this works for KS8851 with Parallel bus interface,but not for KS8851 with SPI bus interface. Remove the BH manipulation andinstead of calling netif_rx() inside the IRQ handler code protected by thelock, queue all the received SKBs in the IRQ handler into a queue first,and once the IRQ handler exits the critical section protected by the lock,dequeue all the queued SKBs and push them all into netif_rx(). At thispoint, it is safe to trigger the net_rx_action() softirq, since thenetif_rx() call is outside of the lock that protects the IRQ handler.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:ks8851: Queue RX packets in IRQ handler instead of disabling BHs Currentlythe driver uses local_bh_disable()/local_bh_enable() in its IRQ handler toavoid triggering net_rx_action() softirq on exit from netif_rx(). Thenet_rx_action() could trigger this driver .start_xmit callback, which isprotected by the same lock as the IRQ handler, so calling the .start_xmitfrom netif_rx() from the IRQ handler critical section protected by the lockcould lead to an attempt to claim the already claimed lock, and a hang. Thelocal_bh_disable()/local_bh_enable() approach works only in case the IRQhandler is protected by a spinlock, but does not work if the IRQ handler isprotected by mutex, i.e. this works for KS8851 with Parallel bus interface,but not for KS8851 with SPI bus interface. Remove the BH manipulation andinstead of calling netif_rx() inside the IRQ handler code protected by thelock, queue all the received SKBs in the IRQ handler into a queue first,and once the IRQ handler exits the critical section protected by the lock,dequeue all the queued SKBs and push them all into netif_rx(). At thispoint, it is safe to trigger the net_rx_action() softirq, since thenetif_rx() call is outside of the lock that protects the IRQ handler.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36962` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Certified"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000000",
+						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000010",
+						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-gcp-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					}
 				]
 			}

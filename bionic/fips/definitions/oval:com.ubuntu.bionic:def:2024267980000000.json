@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26798 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: fbcon:always restore the old font data in fbcon_do_set_font() Commit a5a923038d70(fbdev: fbcon: Properly revert changes when vc_resize() failed) startedrestoring old font data upon failure (of vc_resize()). But it performs soonly for user fonts. It means that the \"system\"/internal fonts are notrestored at all. So in result, the very first call to fbcon_do_set_font()performs no restore at all upon failing vc_resize(). This can be reproducedby Syzkaller to crash the system on the next invocation of font_get(). It'srather hard to hit the allocation failure in vc_resize() on the firstfont_set(), but not impossible. Esp. if fault injection is used to aid theexecution/failure. It was demonstrated by Sirius: BUG: unable to handlepage fault for address: fffffffffffffff8 #PF: supervisor read access inkernel mode #PF: error_code(0x0000) - not-present page PGD cb7b067 P4Dcb7b067 PUD cb7d067 PMD 0 Oops: 0000 [#1] PREEMPT SMP KASAN CPU: 1 PID:8007 Comm: poc Not tainted 6.7.0-g9d1694dc91ce #20 Hardware name: QEMUStandard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014 RIP:0010:fbcon_get_font+0x229/0x800 drivers/video/fbdev/core/fbcon.c:2286 CallTrace: <TASK> con_font_get drivers/tty/vt/vt.c:4558 [inline]con_font_op+0x1fc/0xf20 drivers/tty/vt/vt.c:4673 vt_k_ioctldrivers/tty/vt/vt_ioctl.c:474 [inline] vt_ioctl+0x632/0x2ec0drivers/tty/vt/vt_ioctl.c:752 tty_ioctl+0x6f8/0x1570drivers/tty/tty_io.c:2803 vfs_ioctl fs/ioctl.c:51 [inline] ... So restorethe font data in any case, not only for user fonts. Note the later 'if' isnow protected by 'old_userfont' and not 'old_data' as the latter is alwaysset now. (And it is supposed to be non-NULL. Otherwise we would see the bugabove again.)",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: fbcon:always restore the old font data in fbcon_do_set_font() Commit a5a923038d70(fbdev: fbcon: Properly revert changes when vc_resize() failed) startedrestoring old font data upon failure (of vc_resize()). But it performs soonly for user fonts. It means that the \"system\"/internal fonts are notrestored at all. So in result, the very first call to fbcon_do_set_font()performs no restore at all upon failing vc_resize(). This can be reproducedby Syzkaller to crash the system on the next invocation of font_get(). It'srather hard to hit the allocation failure in vc_resize() on the firstfont_set(), but not impossible. Esp. if fault injection is used to aid theexecution/failure. It was demonstrated by Sirius: BUG: unable to handlepage fault for address: fffffffffffffff8 #PF: supervisor read access inkernel mode #PF: error_code(0x0000) - not-present page PGD cb7b067 P4Dcb7b067 PUD cb7d067 PMD 0 Oops: 0000 [#1] PREEMPT SMP KASAN CPU: 1 PID:8007 Comm: poc Not tainted 6.7.0-g9d1694dc91ce #20 Hardware name: QEMUStandard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014 RIP:0010:fbcon_get_font+0x229/0x800 drivers/video/fbdev/core/fbcon.c:2286 CallTrace: <TASK> con_font_get drivers/tty/vt/vt.c:4558 [inline]con_font_op+0x1fc/0xf20 drivers/tty/vt/vt.c:4673 vt_k_ioctldrivers/tty/vt/vt_ioctl.c:474 [inline] vt_ioctl+0x632/0x2ec0drivers/tty/vt/vt_ioctl.c:752 tty_ioctl+0x6f8/0x1570drivers/tty/tty_io.c:2803 vfs_ioctl fs/ioctl.c:51 [inline] ... So restorethe font data in any case, not only for user fonts. Note the later 'if' isnow protected by 'old_userfont' and not 'old_data' as the latter is alwaysset now. (And it is supposed to be non-NULL. Otherwise we would see the bugabove again.)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26798` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Certified"
@@ -33,7 +33,8 @@
 				"https://ubuntu.com/security/notices/USN-6821-3",
 				"https://ubuntu.com/security/notices/USN-6821-4",
 				"https://ubuntu.com/security/notices/USN-6871-1",
-				"https://ubuntu.com/security/notices/USN-6892-1"
+				"https://ubuntu.com/security/notices/USN-6892-1",
+				"https://ubuntu.com/security/notices/USN-6895-1"
 			]
 		}
 	},
@@ -44,20 +45,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000000",
+						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000010",
+						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-gcp-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					}
 				]
 			}

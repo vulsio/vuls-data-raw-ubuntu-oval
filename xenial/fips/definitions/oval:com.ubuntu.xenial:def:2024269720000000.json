@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26972 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: ubifs:ubifs_symlink: Fix memleak of inode->i_link in error path For errorhandling path in ubifs_symlink(), inode will be marked as bad first, theniput() is invoked. If inode->i_link is initialized byfscrypt_encrypt_symlink() in encryption scenario, inode->i_link won't befreed by callchain ubifs_free_inode -> fscrypt_free_inode in error handlingpath, because make_bad_inode() has changed 'inode->i_mode' as 'S_IFREG'.Following kmemleak is easy to be reproduced by injecting error inubifs_jnl_update() when doing symlink in encryption scenario: unreferencedobject 0xffff888103da3d98 (size 8): comm \"ln\", pid 1692, jiffies 4294914701(age 12.045s) backtrace: kmemdup+0x32/0x70__fscrypt_encrypt_symlink+0xed/0x1c0 ubifs_symlink+0x210/0x300 [ubifs]vfs_symlink+0x216/0x360 do_symlinkat+0x11a/0x190 do_syscall_64+0x3b/0xe0There are two ways fixing it: 1. Remove make_bad_inode() in error handlingpath. We can do that because ubifs_evict_inode() will do same processes forgood symlink inode and bad symlink inode, for inode->i_nlink checking isbefore is_bad_inode(). 2. Free inode->i_link before marking inode bad.Method 2 is picked, it has less influence, personally, I think.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ubifs:ubifs_symlink: Fix memleak of inode->i_link in error path For errorhandling path in ubifs_symlink(), inode will be marked as bad first, theniput() is invoked. If inode->i_link is initialized byfscrypt_encrypt_symlink() in encryption scenario, inode->i_link won't befreed by callchain ubifs_free_inode -> fscrypt_free_inode in error handlingpath, because make_bad_inode() has changed 'inode->i_mode' as 'S_IFREG'.Following kmemleak is easy to be reproduced by injecting error inubifs_jnl_update() when doing symlink in encryption scenario: unreferencedobject 0xffff888103da3d98 (size 8): comm \"ln\", pid 1692, jiffies 4294914701(age 12.045s) backtrace: kmemdup+0x32/0x70__fscrypt_encrypt_symlink+0xed/0x1c0 ubifs_symlink+0x210/0x300 [ubifs]vfs_symlink+0x216/0x360 do_symlinkat+0x11a/0x190 do_syscall_64+0x3b/0xe0There are two ways fixing it: 1. Remove make_bad_inode() in error handlingpath. We can do that because ubifs_evict_inode() will do same processes forgood symlink inode and bad symlink inode, for inode->i_nlink checking isbefore is_bad_inode(). 2. Free inode->i_link before marking inode bad.Method 2 is picked, it has less influence, personally, I think.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26972` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Certified"
@@ -40,8 +40,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016200220000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					}
 				]
 			}

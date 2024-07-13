@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35991 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:dmaengine: idxd: Convert spinlock to mutex to lock evl workqueuedrain_workqueue() cannot be called safely in a spinlocked context due topossible task rescheduling. In the multi-task scenario, callingqueue_work() while drain_workqueue() will lead to a Call Trace as pushing awork on a draining workqueue is not permitted in spinlocked context. CallTrace: <TASK> ? __warn+0x7d/0x140 ? __queue_work+0x2b2/0x440 ?report_bug+0x1f8/0x200 ? handle_bug+0x3c/0x70 ? exc_invalid_op+0x18/0x70 ?asm_exc_invalid_op+0x1a/0x20 ? __queue_work+0x2b2/0x440queue_work_on+0x28/0x30 idxd_misc_thread+0x303/0x5a0 [idxd] ?__schedule+0x369/0xb40 ? __pfx_irq_thread_fn+0x10/0x10 ?irq_thread+0xbc/0x1b0 irq_thread_fn+0x21/0x70 irq_thread+0x102/0x1b0 ?preempt_count_add+0x74/0xa0 ? __pfx_irq_thread_dtor+0x10/0x10 ?__pfx_irq_thread+0x10/0x10 kthread+0x103/0x140 ? __pfx_kthread+0x10/0x10ret_from_fork+0x31/0x50 ? __pfx_kthread+0x10/0x10ret_from_fork_asm+0x1b/0x30 </TASK> The current implementation uses aspinlock to protect event log workqueue and will lead to the Call Trace dueto potential task rescheduling. To address the locking issue, convert thespinlock to mutex, allowing the drain_workqueue() to be called in a safemutex-locked context. This change ensures proper synchronization whenaccessing the event log workqueue, preventing potential Call Trace andimproving the overall robustness of the code.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35991` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:dmaengine: idxd: Convert spinlock to mutex to lock evl workqueuedrain_workqueue() cannot be called safely in a spinlocked context due topossible task rescheduling. In the multi-task scenario, callingqueue_work() while drain_workqueue() will lead to a Call Trace as pushing awork on a draining workqueue is not permitted in spinlocked context. CallTrace: <TASK> ? __warn+0x7d/0x140 ? __queue_work+0x2b2/0x440 ?report_bug+0x1f8/0x200 ? handle_bug+0x3c/0x70 ? exc_invalid_op+0x18/0x70 ?asm_exc_invalid_op+0x1a/0x20 ? __queue_work+0x2b2/0x440queue_work_on+0x28/0x30 idxd_misc_thread+0x303/0x5a0 [idxd] ?__schedule+0x369/0xb40 ? __pfx_irq_thread_fn+0x10/0x10 ?irq_thread+0xbc/0x1b0 irq_thread_fn+0x21/0x70 irq_thread+0x102/0x1b0 ?preempt_count_add+0x74/0xa0 ? __pfx_irq_thread_dtor+0x10/0x10 ?__pfx_irq_thread+0x10/0x10 kthread+0x103/0x140 ? __pfx_kthread+0x10/0x10ret_from_fork+0x31/0x50 ? __pfx_kthread+0x10/0x10ret_from_fork_asm+0x1b/0x30 </TASK> The current implementation uses aspinlock to protect event log workqueue and will lead to the Call Trace dueto potential task rescheduling. To address the locking issue, convert thespinlock to mutex, allowing the drain_workqueue() to be called in a safemutex-locked context. This change ensures proper synchronization whenaccessing the event log workqueue, preventing potential Call Trace andimproving the overall robustness of the code.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35991` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-fips - 5.4.0-1007.8\nlinux-image-unsigned-hmac-5.4.0-1007-fips - 5.4.0-1007.8\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -48,7 +48,7 @@
 						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
 						"comment": "linux-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -72,7 +72,7 @@
 						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000120",
 						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
 					},
 					{
@@ -92,7 +92,7 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000130",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000140",
 						"comment": "linux-azure-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.8~20.04.1')."
 					},
 					{
@@ -100,7 +100,7 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000150",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000160",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
@@ -108,20 +108,20 @@
 						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
-						"comment": "linux-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000060",
+						"comment": "linux-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000210",
+						"comment": "linux-aws-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000220",
+						"comment": "linux-azure-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000230",
+						"comment": "linux-gcp-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
@@ -140,7 +140,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000130",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -156,7 +156,7 @@
 						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000180",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
@@ -164,7 +164,7 @@
 						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000190",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000200",
 						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
 					},
 					{
@@ -172,15 +172,15 @@
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000110",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -200,7 +200,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000150",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -228,7 +228,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000180",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

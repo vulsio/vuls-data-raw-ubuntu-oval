@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26937 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/i915/gt: Reset queue_priority_hint on parking Originally, with strictin order execution, we could complete execution only when the queue wasempty. Preempt-to-busy allows replacement of an active request that maycomplete before the preemption is processed by HW. If that happens, therequest is retired from the queue, but the queue_priority_hint remains set,preventing direct submission until after the next CS interrupt isprocessed. This preempt-to-busy race can be triggered by the heartbeat,which will also act as the power-management barrier and upon completionallow us to idle the HW. We may process the completion of the heartbeat,and begin parking the engine before the CS event that restores thequeue_priority_hint, causing us to fail the assertion that it is MIN. <3>[166.210729] __engine_park:283GEM_BUG_ON(engine->sched_engine->queue_priority_hint != (-((int)(~0U >> 1))- 1)) <0>[ 166.210781] Dumping ftrace buffer: <0>[ 166.210795]--------------------------------- ... <0>[ 167.302811] drm_fdin-1097 2..s1.165741070us : trace_ports: 0000:00:02.0 rcs0: promote { ccid:20 1217:2 prio0 } <0>[ 167.302861] drm_fdin-1097 2d.s2. 165741072us :execlists_submission_tasklet: 0000:00:02.0 rcs0: preempting last=1217:2,prio=0, hint=2147483646 <0>[ 167.302928] drm_fdin-1097 2d.s2. 165741072us :__i915_request_unsubmit: 0000:00:02.0 rcs0: fence 1217:2, current 0 <0>[167.302992] drm_fdin-1097 2d.s2. 165741073us : __i915_request_submit:0000:00:02.0 rcs0: fence 3:4660, current 4659 <0>[ 167.303044]drm_fdin-1097 2d.s1. 165741076us : execlists_submission_tasklet:0000:00:02.0 rcs0: context:3 schedule-in, ccid:40 <0>[ 167.303095]drm_fdin-1097 2d.s1. 165741077us : trace_ports: 0000:00:02.0 rcs0: submit {ccid:40 3:4660* prio 2147483646 } <0>[ 167.303159] kworker/-89 11.....165741139us : i915_request_retire.part.0: 0000:00:02.0 rcs0: fence c90:2,current 2 <0>[ 167.303208] kworker/-89 11..... 165741148us :__intel_context_do_unpin: 0000:00:02.0 rcs0: context:c90 unpin <0>[167.303272] kworker/-89 11..... 165741159us : i915_request_retire.part.0:0000:00:02.0 rcs0: fence 1217:2, current 2 <0>[ 167.303321] kworker/-8911..... 165741166us : __intel_context_do_unpin: 0000:00:02.0 rcs0:context:1217 unpin <0>[ 167.303384] kworker/-89 11..... 165741170us :i915_request_retire.part.0: 0000:00:02.0 rcs0: fence 3:4660, current 4660<0>[ 167.303434] kworker/-89 11d..1. 165741172us : __intel_context_retire:0000:00:02.0 rcs0: context:1216 retire runtime: { total:56028ns,avg:56028ns } <0>[ 167.303484] kworker/-89 11..... 165741198us :__engine_park: 0000:00:02.0 rcs0: parked <0>[ 167.303534] <idle>-0 5d.H3.165741207us : execlists_irq_handler: 0000:00:02.0 rcs0: semaphore yield:00000040 <0>[ 167.303583] kworker/-89 11..... 165741397us :__intel_context_retire: 0000:00:02.0 rcs0: context:1217 retire runtime: {total:325575ns, avg:0ns } <0>[ 167.303756] kworker/-89 11..... 165741777us: __intel_context_retire: 0000:00:02.0 rcs0: context:c90 retire runtime: {total:0ns, avg:0ns } <0>[ 167.303806] kworker/-89 11..... 165742017us :__engine_park: __engine_park:283GEM_BUG_ON(engine->sched_engine->queue_priority_hint != (-((int)(~0U >> 1))- 1)) <0>[ 167.303811] --------------------------------- <4>[ 167.304722]------------[ cut here ]------------ <2>[ 167.304725] kernel BUG atdrivers/gpu/drm/i915/gt/intel_engine_pm.c:283! <4>[ 167.304731] invalidopcode: 0000 [#1] PREEMPT SMP NOPTI <4>[ 167.304734] CPU: 11 PID: 89 Comm:kworker/11:1 Tainted: G W 6.8.0-rc2-CI_DRM_14193-gc655e0fd2804+ #1 <4>[167.304736] Hardware name: Intel Corporation Rocket Lake ClientPlatform/RocketLake S UDIMM 6L RVP, BIOS RKLSFWI1.R00.3173.A03.220421013804/21/2022 <4>[ 167.304738] Workqueue: i915-unordered retire_work_handler[i915] <4>[ 16 ---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/i915/gt: Reset queue_priority_hint on parking Originally, with strictin order execution, we could complete execution only when the queue wasempty. Preempt-to-busy allows replacement of an active request that maycomplete before the preemption is processed by HW. If that happens, therequest is retired from the queue, but the queue_priority_hint remains set,preventing direct submission until after the next CS interrupt isprocessed. This preempt-to-busy race can be triggered by the heartbeat,which will also act as the power-management barrier and upon completionallow us to idle the HW. We may process the completion of the heartbeat,and begin parking the engine before the CS event that restores thequeue_priority_hint, causing us to fail the assertion that it is MIN. <3>[166.210729] __engine_park:283GEM_BUG_ON(engine->sched_engine->queue_priority_hint != (-((int)(~0U >> 1))- 1)) <0>[ 166.210781] Dumping ftrace buffer: <0>[ 166.210795]--------------------------------- ... <0>[ 167.302811] drm_fdin-1097 2..s1.165741070us : trace_ports: 0000:00:02.0 rcs0: promote { ccid:20 1217:2 prio0 } <0>[ 167.302861] drm_fdin-1097 2d.s2. 165741072us :execlists_submission_tasklet: 0000:00:02.0 rcs0: preempting last=1217:2,prio=0, hint=2147483646 <0>[ 167.302928] drm_fdin-1097 2d.s2. 165741072us :__i915_request_unsubmit: 0000:00:02.0 rcs0: fence 1217:2, current 0 <0>[167.302992] drm_fdin-1097 2d.s2. 165741073us : __i915_request_submit:0000:00:02.0 rcs0: fence 3:4660, current 4659 <0>[ 167.303044]drm_fdin-1097 2d.s1. 165741076us : execlists_submission_tasklet:0000:00:02.0 rcs0: context:3 schedule-in, ccid:40 <0>[ 167.303095]drm_fdin-1097 2d.s1. 165741077us : trace_ports: 0000:00:02.0 rcs0: submit {ccid:40 3:4660* prio 2147483646 } <0>[ 167.303159] kworker/-89 11.....165741139us : i915_request_retire.part.0: 0000:00:02.0 rcs0: fence c90:2,current 2 <0>[ 167.303208] kworker/-89 11..... 165741148us :__intel_context_do_unpin: 0000:00:02.0 rcs0: context:c90 unpin <0>[167.303272] kworker/-89 11..... 165741159us : i915_request_retire.part.0:0000:00:02.0 rcs0: fence 1217:2, current 2 <0>[ 167.303321] kworker/-8911..... 165741166us : __intel_context_do_unpin: 0000:00:02.0 rcs0:context:1217 unpin <0>[ 167.303384] kworker/-89 11..... 165741170us :i915_request_retire.part.0: 0000:00:02.0 rcs0: fence 3:4660, current 4660<0>[ 167.303434] kworker/-89 11d..1. 165741172us : __intel_context_retire:0000:00:02.0 rcs0: context:1216 retire runtime: { total:56028ns,avg:56028ns } <0>[ 167.303484] kworker/-89 11..... 165741198us :__engine_park: 0000:00:02.0 rcs0: parked <0>[ 167.303534] <idle>-0 5d.H3.165741207us : execlists_irq_handler: 0000:00:02.0 rcs0: semaphore yield:00000040 <0>[ 167.303583] kworker/-89 11..... 165741397us :__intel_context_retire: 0000:00:02.0 rcs0: context:1217 retire runtime: {total:325575ns, avg:0ns } <0>[ 167.303756] kworker/-89 11..... 165741777us: __intel_context_retire: 0000:00:02.0 rcs0: context:c90 retire runtime: {total:0ns, avg:0ns } <0>[ 167.303806] kworker/-89 11..... 165742017us :__engine_park: __engine_park:283GEM_BUG_ON(engine->sched_engine->queue_priority_hint != (-((int)(~0U >> 1))- 1)) <0>[ 167.303811] --------------------------------- <4>[ 167.304722]------------[ cut here ]------------ <2>[ 167.304725] kernel BUG atdrivers/gpu/drm/i915/gt/intel_engine_pm.c:283! <4>[ 167.304731] invalidopcode: 0000 [#1] PREEMPT SMP NOPTI <4>[ 167.304734] CPU: 11 PID: 89 Comm:kworker/11:1 Tainted: G W 6.8.0-rc2-CI_DRM_14193-gc655e0fd2804+ #1 <4>[167.304736] Hardware name: Intel Corporation Rocket Lake ClientPlatform/RocketLake S UDIMM 6L RVP, BIOS RKLSFWI1.R00.3173.A03.220421013804/21/2022 <4>[ 167.304738] Workqueue: i915-unordered retire_work_handler[i915] <4>[ 16 ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26937` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-5.4.0-189-generic-lpae - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1116-kvm - 5.4.0-1116.123\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1133-azure - 5.4.0-1133.140\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1088-bluefield - 5.4.0-1088.95\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1132-gcp - 5.4.0-1132.141\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1095-gkeop - 5.4.0-1095.99\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1075-ibm - 5.4.0-1075.80\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -29,7 +29,8 @@
 				"https://ubuntu.com/security/notices/USN-6817-1",
 				"https://ubuntu.com/security/notices/USN-6817-2",
 				"https://ubuntu.com/security/notices/USN-6817-3",
-				"https://ubuntu.com/security/notices/USN-6878-1"
+				"https://ubuntu.com/security/notices/USN-6878-1",
+				"https://ubuntu.com/security/notices/USN-6896-1"
 			]
 		}
 	},
@@ -40,8 +41,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-189.209')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000000",
+						"comment": "linux package in focal was vulnerable but has been fixed (note: '5.4.0-189.209')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -60,8 +61,8 @@
 						"comment": "linux-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-116.126~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1116.123')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000010",
+						"comment": "linux-kvm package in focal was vulnerable but has been fixed (note: '5.4.0-1116.123')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
@@ -84,8 +85,8 @@
 						"comment": "linux-aws-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1065.71~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1133.140')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000020",
+						"comment": "linux-azure package in focal was vulnerable but has been fixed (note: '5.4.0-1133.140')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -112,16 +113,16 @@
 						"comment": "linux-azure-fde-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1068.77~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1088.95')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000030",
+						"comment": "linux-bluefield package in focal was vulnerable but has been fixed (note: '5.4.0-1088.95')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
-						"comment": "linux-fips package in fips/focal is affected and may need fixing."
+						"comment": "linux-fips package in fips/focal is affected. An update containing the fix has been completed and is pending publication."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1132.141')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000040",
+						"comment": "linux-gcp package in focal was vulnerable but has been fixed (note: '5.4.0-1132.141')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -137,7 +138,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication."
+						"comment": "linux-gcp-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1064.72~20.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -148,16 +149,16 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1095.99')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000050",
+						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1095.99')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
 						"comment": "linux-gkeop-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1048.55~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1075.80')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2021336550000010",
+						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1075.80')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
@@ -229,15 +230,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips/focal is affected and may need fixing."
+						"comment": "linux-aws-fips package in fips/focal is affected. An update containing the fix has been completed and is pending publication."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips/focal is affected and may need fixing."
+						"comment": "linux-azure-fips package in fips/focal is affected. An update containing the fix has been completed and is pending publication."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips/focal is affected and may need fixing."
+						"comment": "linux-gcp-fips package in fips/focal is affected. An update containing the fix has been completed and is pending publication."
 					}
 				]
 			}
