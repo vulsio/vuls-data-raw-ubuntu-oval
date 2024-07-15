@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024409740000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-40974 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/pseries: Enforce hcall result buffer validity and sizeplpar_hcall(), plpar_hcall9(), and related functions expect callers toprovide valid result buffers of certain minimum size. Currently thisis communicated only through comments in the code and the compiler hasno idea.For example, if I write a bug like this:  long retbuf[PLPAR_HCALL_BUFSIZE]; // should be PLPAR_HCALL9_BUFSIZE  plpar_hcall9(H_ALLOCATE_VAS_WINDOW, retbuf, ...);This compiles with no diagnostics emitted, but likely results in stackcorruption at runtime when plpar_hcall9() stores results past the endof the array. (To be clear this is a contrived example and I have notfound a real instance yet.)To make this class of error less likely, we can use explicitly-sizedarray parameters instead of pointers in the declarations for the hcallAPIs. When compiled with -Warray-bounds[1], the code above nowprovokes a diagnostic like this:error: array argument is too small;is of size 32, callee requires at least 72 [-Werror,-Warray-bounds]   60 |                 plpar_hcall9(H_ALLOCATE_VAS_WINDOW, retbuf,      |                 ^                                   ~~~~~~[1] Enabled for LLVM builds but not GCC for now. See commit    0da6e5fd6c37 (\"gcc: disable '-Warray-bounds' for gcc-13 too\") and    related changes.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-40974",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-40974"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-15",
+			"cve": {
+				"text": "CVE-2024-40974",
+				"href": "https://ubuntu.com/security/CVE-2024-40974",
+				"public": "20240715"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

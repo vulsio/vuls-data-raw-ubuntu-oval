@@ -1,0 +1,142 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024409540000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-40954 on Ubuntu 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: do not leave a dangling sk pointer, when socket creation failsIt is possible to trigger a use-after-free by:  * attaching an fentry probe to __sock_release() and the probe calling the    bpf_get_socket_cookie() helper  * running traceroute -I 1.1.1.1 on a freshly booted VMA KASAN enabled kernel will log something like below (decoded andstripped):==================================================================BUG: KASAN: slab-use-after-free in __sock_gen_cookie(./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)Read of size 8 at addr ffff888007110dd8 by task traceroute/299CPU: 2 PID: 299 Comm: traceroute Tainted: G            E      6.10.0-rc2+#2Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.16.2-debian-1.16.2-1 04/01/2014Call Trace: <TASK>dump_stack_lvl (lib/dump_stack.c:117 (discriminator 1))print_report (mm/kasan/report.c:378 mm/kasan/report.c:488)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_report (mm/kasan/report.c:603)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_check_range (mm/kasan/generic.c:183 mm/kasan/generic.c:189)__sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)bpf_get_socket_ptr_cookie (./arch/x86/include/asm/preempt.h:94./include/linux/sock_diag.h:42 net/core/filter.c:5094net/core/filter.c:5092)bpf_prog_875642cf11f1d139___sock_release+0x6e/0x8ebpf_trampoline_6442506592+0x47/0xaf__sock_release (net/socket.c:652)__sock_create (net/socket.c:1601)...Allocated by task 299 on cpu 2 at 78.328492s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)__kasan_slab_alloc (mm/kasan/common.c:312 mm/kasan/common.c:338)kmem_cache_alloc_noprof (mm/slub.c:3941 mm/slub.c:4000 mm/slub.c:4007)sk_prot_alloc (net/core/sock.c:2075)sk_alloc (net/core/sock.c:2134)inet_create (net/ipv4/af_inet.c:327 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Freed by task 299 on cpu 2 at 78.328502s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)kasan_save_free_info (mm/kasan/generic.c:582)poison_slab_object (mm/kasan/common.c:242)__kasan_slab_free (mm/kasan/common.c:256)kmem_cache_free (mm/slub.c:4437 mm/slub.c:4511)__sk_destruct (net/core/sock.c:2117 net/core/sock.c:2208)inet_create (net/ipv4/af_inet.c:397 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Fix this by clearing the struct socket reference in sk_common_release() tocoverall protocol families create functions, which may already attached thereference to the sk object with sock_init_data().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-40954",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-40954"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-15",
+			"cve": {
+				"text": "CVE-2024-40954",
+				"href": "https://ubuntu.com/security/CVE-2024-40954",
+				"public": "20240715"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

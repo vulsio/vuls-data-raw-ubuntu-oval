@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024409250000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-40925 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:block: fix request.queuelist usage in flushFriedrich Weber reported a kernel crash problem and bisected to commit81ada09cc25e (\"blk-flush: reuse rq queuelist in flush state machine\").The root cause is that we use \"list_move_tail(&rq->queuelist, pending)\"in the PREFLUSH/POSTFLUSH sequences. But rq->queuelist.next == xxx sinceit's popped out from plug->cached_rq in __blk_mq_alloc_requests_batch().We don't initialize its queuelist just for this first request, althoughthe queuelist of all later popped requests will be initialized.Fix it by changing to use \"list_add_tail(&rq->queuelist, pending)\" sorq->queuelist doesn't need to be initialized. It should be ok since rqcan't be on any list when PREFLUSH or POSTFLUSH, has no move actually.Please note the commit 81ada09cc25e (\"blk-flush: reuse rq queuelist inflush state machine\") also has another requirement that no drivers wouldtouch rq->queuelist after blk_mq_end_request() since we will reuse it toadd rq to the post-flush pending list in POSTFLUSH. If this is not true,we will have to revert that commit IMHO.This updated version adds \"list_del_init(&rq->queuelist)\" in flush rqcallback since the dm layer may submit request of a weird invalid format(REQ_FSEQ_PREFLUSH | REQ_FSEQ_POSTFLUSH), which causes double list_addif without this \"list_del_init(&rq->queuelist)\". The weird invalid formatproblem should be fixed in dm layer.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-40925",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-40925"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-15",
+			"cve": {
+				"text": "CVE-2024-40925",
+				"href": "https://ubuntu.com/security/CVE-2024-40925",
+				"public": "20240715"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

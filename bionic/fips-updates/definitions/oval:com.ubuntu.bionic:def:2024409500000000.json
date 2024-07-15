@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024409500000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-40950 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: huge_memory: fix misused mapping_large_folio_support() for anon foliosWhen I did a large folios split test, a WARNING \"[ 5059.122759][ T166]Cannot split file folio to non-0 order\" was triggered.  But the test casesare only for anonmous folios.  while mapping_large_folio_support() is onlyreasonable for page cache folios.In split_huge_page_to_list_to_order(), the folio passed tomapping_large_folio_support() maybe anonmous folio.  The folio_test_anon()check is missing.  So the split of the anonmous THP is failed.  This isalso the same for shmem_mapping().  We'd better add a check for both.  Butthe shmem_mapping() in __split_huge_page() is not involved, as foranonmous folios, the end parameter is set to -1, so (head[i].index >= end)is always false.  shmem_mapping() is not called.Also add a VM_WARN_ON_ONCE() in mapping_large_folio_support() for anonmapping, So we can detect the wrong use more easily.THP folios maybe exist in the pagecache even the file system doesn'tsupport large folio, it is because when CONFIG_TRANSPARENT_HUGEPAGE isenabled, khugepaged will try to collapse read-only file-backed pages toTHP.  But the mapping does not actually support multi order large foliosproperly.Using /sys/kernel/debug/split_huge_pages to verify this, with this patch,large anon THP is successfully split and the warning is ceased.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-40950",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-40950"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-15",
+			"cve": {
+				"text": "CVE-2024-40950",
+				"href": "https://ubuntu.com/security/CVE-2024-40950",
+				"public": "20240715"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
