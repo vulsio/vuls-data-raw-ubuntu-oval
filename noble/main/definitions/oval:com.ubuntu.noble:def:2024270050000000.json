@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27005 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:interconnect: Don't access req_list while it's being manipulated Theicc_lock mutex was split into separate icc_lock and icc_bw_lock mutexes in[1] to avoid lockdep splats. However, this didn't adequately protect accessto icc_node::req_list. The icc_set_bw() function will eventually iterateover req_list while only holding icc_bw_lock, but req_list can be modifiedwhile only holding icc_lock. This causes races between icc_set_bw(),of_icc_get(), and icc_put(). Example A: CPU0 CPU1 ---- ----icc_set_bw(path_a) mutex_lock(&icc_bw_lock); icc_put(path_b)mutex_lock(&icc_lock); aggregate_requests() hlist_for_each_entry(r, ...hlist_del(... <r = invalid pointer> Example B: CPU0 CPU1 ---- ----icc_set_bw(path_a) mutex_lock(&icc_bw_lock); path_b = of_icc_get()of_icc_get_by_index() mutex_lock(&icc_lock); path_find() path_init()aggregate_requests() hlist_for_each_entry(r, ... hlist_add_head(... <r =invalid pointer> Fix this by ensuring icc_bw_lock is always held beforemanipulating icc_node::req_list. The additional places icc_bw_lock is helddon't perform any memory allocations, so we should still be safe from theoriginal lockdep splats that motivated the separate locks. [1] commitaf42269c3523 (\"interconnect: Fix locking for runpm vs reclaim\")\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27005` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:interconnect: Don't access req_list while it's being manipulated Theicc_lock mutex was split into separate icc_lock and icc_bw_lock mutexes in[1] to avoid lockdep splats. However, this didn't adequately protect accessto icc_node::req_list. The icc_set_bw() function will eventually iterateover req_list while only holding icc_bw_lock, but req_list can be modifiedwhile only holding icc_lock. This causes races between icc_set_bw(),of_icc_get(), and icc_put(). Example A: CPU0 CPU1 ---- ----icc_set_bw(path_a) mutex_lock(&icc_bw_lock); icc_put(path_b)mutex_lock(&icc_lock); aggregate_requests() hlist_for_each_entry(r, ...hlist_del(... <r = invalid pointer> Example B: CPU0 CPU1 ---- ----icc_set_bw(path_a) mutex_lock(&icc_bw_lock); path_b = of_icc_get()of_icc_get_by_index() mutex_lock(&icc_lock); path_find() path_init()aggregate_requests() hlist_for_each_entry(r, ... hlist_add_head(... <r =invalid pointer> Fix this by ensuring icc_bw_lock is always held beforemanipulating icc_node::req_list. The additional places icc_bw_lock is helddon't perform any memory allocations, so we should still be safe from theoriginal lockdep splats that motivated the separate locks. [1] commitaf42269c3523 (\"interconnect: Fix locking for runpm vs reclaim\")\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27005` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-gke - 6.8.0-1006.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -25,7 +25,8 @@
 			},
 			"public_date_at_usn": "2024-05-01 06:15:00 UTC",
 			"ref": [
-				"https://ubuntu.com/security/notices/USN-6893-1"
+				"https://ubuntu.com/security/notices/USN-6893-1",
+				"https://ubuntu.com/security/notices/USN-6893-2"
 			]
 		}
 	},
@@ -52,15 +53,15 @@
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1010.11')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1006.9')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1006.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
 						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-38.38.1')."
 					},
 					{
@@ -68,7 +69,7 @@
 						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1007.7')."
 					},
 					{
@@ -76,7 +77,7 @@
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000060",
 						"comment": "linux-intel package in noble was vulnerable but has been fixed (note: '6.8.0-1007.14')."
 					}
 				]

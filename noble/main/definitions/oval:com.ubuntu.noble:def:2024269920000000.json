@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26992 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: KVM:x86/pmu: Disable support for adaptive PEBS Drop support for virtualizingadaptive PEBS, as KVM's implementation is architecturally broken without anobvious/easy path forward, and because exposing adaptive PEBS can leak hostLBRs to the guest, i.e. can leak host kernel addresses to the guest. Bug #1is that KVM doesn't account for the upper 32 bits of IA32_FIXED_CTR_CTRLwhen (re)programming fixed counters, e.g fixed_ctrl_field() drops the upperbits, reprogram_fixed_counters() stores local variables as u8s andtruncates the upper bits too, etc. Bug #2 is that, because KVM _always_sets precise_ip to a non-zero value for PEBS events, perf will _always_generate an adaptive record, even if the guest requested a basic record.Note, KVM will also enable adaptive PEBS in individual *counter*, even ifadaptive PEBS isn't exposed to the guest, but this is benign asMSR_PEBS_DATA_CFG is guaranteed to be zero, i.e. the guest will only eversee Basic records. Bug #3 is in perf. intel_pmu_disable_fixed() doesn'tclear the upper bits either, i.e. leaves ICL_FIXED_0_ADAPTIVE set, andintel_pmu_enable_fixed() effectively doesn't clear ICL_FIXED_0_ADAPTIVEeither. I.e. perf _always_ enables ADAPTIVE counters, regardless of whatKVM requests. Bug #4 is that adaptive PEBS *might* effectively bypass eventfilters set by the host, as \"Updated Memory Access Info Group\" recordsinformation that might be disallowed by userspace viaKVM_SET_PMU_EVENT_FILTER. Bug #5 is that KVM doesn't ensure LBR MSRs holdguest values (or at least zeros) when entering a vCPU with adaptive PEBS,which allows the guest to read host LBRs, i.e. host RIPs/addresses, byenabling \"LBR Entries\" records. Disable adaptive PEBS support as animmediate fix due to the severity of the LBR leak in particular, andbecause fixing all of the bugs will be non-trivial, e.g. not suitable forbackporting to stable kernels. Note! This will break live migration, buttrying to make KVM play nice with live migration would be quitecomplicated, wouldn't be guaranteed to work (i.e. KVM might stillkill/confuse the guest), and it's not clear that there are any publiclyavailable VMMs that support adaptive PEBS, let alone live migrate VMs thatsupport adaptive PEBS, e.g. QEMU doesn't support PEBS in any capacity.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26992` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: KVM:x86/pmu: Disable support for adaptive PEBS Drop support for virtualizingadaptive PEBS, as KVM's implementation is architecturally broken without anobvious/easy path forward, and because exposing adaptive PEBS can leak hostLBRs to the guest, i.e. can leak host kernel addresses to the guest. Bug #1is that KVM doesn't account for the upper 32 bits of IA32_FIXED_CTR_CTRLwhen (re)programming fixed counters, e.g fixed_ctrl_field() drops the upperbits, reprogram_fixed_counters() stores local variables as u8s andtruncates the upper bits too, etc. Bug #2 is that, because KVM _always_sets precise_ip to a non-zero value for PEBS events, perf will _always_generate an adaptive record, even if the guest requested a basic record.Note, KVM will also enable adaptive PEBS in individual *counter*, even ifadaptive PEBS isn't exposed to the guest, but this is benign asMSR_PEBS_DATA_CFG is guaranteed to be zero, i.e. the guest will only eversee Basic records. Bug #3 is in perf. intel_pmu_disable_fixed() doesn'tclear the upper bits either, i.e. leaves ICL_FIXED_0_ADAPTIVE set, andintel_pmu_enable_fixed() effectively doesn't clear ICL_FIXED_0_ADAPTIVEeither. I.e. perf _always_ enables ADAPTIVE counters, regardless of whatKVM requests. Bug #4 is that adaptive PEBS *might* effectively bypass eventfilters set by the host, as \"Updated Memory Access Info Group\" recordsinformation that might be disallowed by userspace viaKVM_SET_PMU_EVENT_FILTER. Bug #5 is that KVM doesn't ensure LBR MSRs holdguest values (or at least zeros) when entering a vCPU with adaptive PEBS,which allows the guest to read host LBRs, i.e. host RIPs/addresses, byenabling \"LBR Entries\" records. Disable adaptive PEBS support as animmediate fix due to the severity of the LBR leak in particular, andbecause fixing all of the bugs will be non-trivial, e.g. not suitable forbackporting to stable kernels. Note! This will break live migration, buttrying to make KVM play nice with live migration would be quitecomplicated, wouldn't be guaranteed to work (i.e. KVM might stillkill/confuse the guest), and it's not clear that there are any publiclyavailable VMMs that support adaptive PEBS, let alone live migrate VMs thatsupport adaptive PEBS, e.g. QEMU doesn't support PEBS in any capacity.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26992` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-gke - 6.8.0-1006.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -25,7 +25,8 @@
 			},
 			"public_date_at_usn": "2024-05-01 06:15:00 UTC",
 			"ref": [
-				"https://ubuntu.com/security/notices/USN-6893-1"
+				"https://ubuntu.com/security/notices/USN-6893-1",
+				"https://ubuntu.com/security/notices/USN-6893-2"
 			]
 		}
 	},
@@ -52,15 +53,15 @@
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1010.11')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1006.9')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1006.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
 						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-38.38.1')."
 					},
 					{
@@ -68,7 +69,7 @@
 						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1007.7')."
 					},
 					{
@@ -76,7 +77,7 @@
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000060",
 						"comment": "linux-intel package in noble was vulnerable but has been fixed (note: '6.8.0-1007.14')."
 					}
 				]

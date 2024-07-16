@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35944 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: VMCI:Fix memcpy() run-time warning in dg_dispatch_as_host() Syzkaller hit'WARNING in dg_dispatch_as_host' bug. memcpy: detected field-spanning write(size 56) of single field \"&dg_info->msg\" atdrivers/misc/vmw_vmci/vmci_datagram.c:237 (size 24) WARNING: CPU: 0 PID:1555 at drivers/misc/vmw_vmci/vmci_datagram.c:237dg_dispatch_as_host+0x88e/0xa60 drivers/misc/vmw_vmci/vmci_datagram.c:237Some code commentry, based on my understanding: 544 #defineVMCI_DG_SIZE(_dg) (VMCI_DG_HEADERSIZE + (size_t)(_dg)->payload_size) ///This is 24 + payload_size memcpy(&dg_info->msg, dg, dg_size); Destination =dg_info->msg ---> this is a 24 byte structure(struct vmci_datagram) Source= dg --> this is a 24 byte structure (struct vmci_datagram) Size = dg_size= 24 + payload_size {payload_size = 56-24 =32} -- Syzkaller managed to setpayload_size to 32. 35 struct delayed_datagram_info { 36 structdatagram_entry *entry; 37 struct work_struct work; 38 boolin_dg_host_queue; 39 /* msg and msg_payload must be together. */ 40 structvmci_datagram msg; 41 u8 msg_payload[]; 42 }; So those extra bytes ofpayload are copied into msg_payload[], a run time warning is seen whilefuzzing with Syzkaller. One possible way to fix the warning is to split thememcpy() into two parts -- one -- direct assignment of msg and secondtaking care of payload. Gustavo quoted: \"Under FORTIFY_SOURCE we should notcopy data across multiple members in a structure.\"\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35944` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: VMCI:Fix memcpy() run-time warning in dg_dispatch_as_host() Syzkaller hit'WARNING in dg_dispatch_as_host' bug. memcpy: detected field-spanning write(size 56) of single field \"&dg_info->msg\" atdrivers/misc/vmw_vmci/vmci_datagram.c:237 (size 24) WARNING: CPU: 0 PID:1555 at drivers/misc/vmw_vmci/vmci_datagram.c:237dg_dispatch_as_host+0x88e/0xa60 drivers/misc/vmw_vmci/vmci_datagram.c:237Some code commentry, based on my understanding: 544 #defineVMCI_DG_SIZE(_dg) (VMCI_DG_HEADERSIZE + (size_t)(_dg)->payload_size) ///This is 24 + payload_size memcpy(&dg_info->msg, dg, dg_size); Destination =dg_info->msg ---> this is a 24 byte structure(struct vmci_datagram) Source= dg --> this is a 24 byte structure (struct vmci_datagram) Size = dg_size= 24 + payload_size {payload_size = 56-24 =32} -- Syzkaller managed to setpayload_size to 32. 35 struct delayed_datagram_info { 36 structdatagram_entry *entry; 37 struct work_struct work; 38 boolin_dg_host_queue; 39 /* msg and msg_payload must be together. */ 40 structvmci_datagram msg; 41 u8 msg_payload[]; 42 }; So those extra bytes ofpayload are copied into msg_payload[], a run time warning is seen whilefuzzing with Syzkaller. One possible way to fix the warning is to split thememcpy() into two parts -- one -- direct assignment of msg and secondtaking care of payload. Gustavo quoted: \"Under FORTIFY_SOURCE we should notcopy data across multiple members in a structure.\"\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35944` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-gke - 6.8.0-1006.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -27,7 +27,8 @@
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-6893-1",
 				"https://ubuntu.com/security/notices/USN-6896-1",
-				"https://ubuntu.com/security/notices/USN-6898-1"
+				"https://ubuntu.com/security/notices/USN-6898-1",
+				"https://ubuntu.com/security/notices/USN-6893-2"
 			]
 		}
 	},
@@ -54,15 +55,15 @@
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1010.11')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1006.9')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1006.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
 						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-38.38.1')."
 					},
 					{
@@ -70,7 +71,7 @@
 						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1007.7')."
 					},
 					{
@@ -78,7 +79,7 @@
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000060",
 						"comment": "linux-intel package in noble was vulnerable but has been fixed (note: '6.8.0-1007.14')."
 					}
 				]

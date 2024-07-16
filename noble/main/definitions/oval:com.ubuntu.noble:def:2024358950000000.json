@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35895 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf,sockmap: Prevent lock inversion deadlock in map delete elem syzkallerstarted using corpuses where a BPF tracing program deletes elements from asockmap/sockhash map. Because BPF tracing programs can be invoked from anyinterrupt context, locks taken during a map_delete_elem operation must behardirq-safe. Otherwise a deadlock due to lock inversion is possible, asreported by lockdep: CPU0 CPU1 ---- ---- lock(&htab->buckets[i].lock);local_irq_disable(); lock(&host->lock); lock(&htab->buckets[i].lock);<Interrupt> lock(&host->lock); Locks in sockmap are hardirq-unsafe bydesign. We expects elements to be deleted from sockmap/sockhash only intask (normal) context with interrupts enabled, or in softirq context.Detect when map_delete_elem operation is invoked from a context which is_not_ hardirq-unsafe, that is interrupts are disabled, and bail out with anerror. Note that map updates are not affected by this issue. BPF verifierdoes not allow updating sockmap/sockhash from a BPF tracing program today.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35895` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf,sockmap: Prevent lock inversion deadlock in map delete elem syzkallerstarted using corpuses where a BPF tracing program deletes elements from asockmap/sockhash map. Because BPF tracing programs can be invoked from anyinterrupt context, locks taken during a map_delete_elem operation must behardirq-safe. Otherwise a deadlock due to lock inversion is possible, asreported by lockdep: CPU0 CPU1 ---- ---- lock(&htab->buckets[i].lock);local_irq_disable(); lock(&host->lock); lock(&htab->buckets[i].lock);<Interrupt> lock(&host->lock); Locks in sockmap are hardirq-unsafe bydesign. We expects elements to be deleted from sockmap/sockhash only intask (normal) context with interrupts enabled, or in softirq context.Detect when map_delete_elem operation is invoked from a context which is_not_ hardirq-unsafe, that is interrupts are disabled, and bail out with anerror. Note that map updates are not affected by this issue. BPF verifierdoes not allow updating sockmap/sockhash from a BPF tracing program today.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35895` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-gke - 6.8.0-1006.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -27,7 +27,8 @@
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-6893-1",
 				"https://ubuntu.com/security/notices/USN-6896-1",
-				"https://ubuntu.com/security/notices/USN-6898-1"
+				"https://ubuntu.com/security/notices/USN-6898-1",
+				"https://ubuntu.com/security/notices/USN-6893-2"
 			]
 		}
 	},
@@ -54,15 +55,15 @@
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1010.11')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1006.9')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1006.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
 						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-38.38.1')."
 					},
 					{
@@ -70,7 +71,7 @@
 						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1007.7')."
 					},
 					{
@@ -78,7 +79,7 @@
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000060",
 						"comment": "linux-intel package in noble was vulnerable but has been fixed (note: '6.8.0-1007.14')."
 					}
 				]

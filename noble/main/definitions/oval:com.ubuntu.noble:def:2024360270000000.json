@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36027 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:zoned: do not flag ZEROOUT on non-dirty extent buffer Btrfs clears thecontent of an extent buffer marked as EXTENT_BUFFER_ZONED_ZEROOUT beforethe bio submission. This mechanism is introduced to prevent a write hole ofan extent buffer, which is once allocated, marked dirty, but turns outunnecessary and cleaned up within one transaction operation. Currently,btrfs_clear_buffer_dirty() marks the extent buffer asEXTENT_BUFFER_ZONED_ZEROOUT, and skips the entry function. If this callhappens while the buffer is under IO (with the WRITEBACK flag set, withoutthe DIRTY flag), we can add the ZEROOUT flag and clear the buffer's contentjust before a bio submission. As a result: 1) it can lead to adding faultydelayed reference item which leads to a FS corrupted (EUCLEAN) error, and2) it writes out cleared tree node on disk The former issue is previouslydiscussed in [1]. The corruption happens when it runs a delayed referenceupdate. So, on-disk data is safe. [1]https://lore.kernel.org/linux-btrfs/3f4f2a0ff1a6c818050434288925bdcf3cd719e5.1709124777.git.naohiro.aota@wdc.com/The latter one can reach on-disk data. But, as that node is alreadyprocessed by btrfs_clear_buffer_dirty(), that will be invalidated in thenext transaction commit anyway. So, the chance of hitting the corruption isrelatively small. Anyway, we should skip flagging ZEROOUT on a non-DIRTYextent buffer, to keep the content under IO intact.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36027` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:zoned: do not flag ZEROOUT on non-dirty extent buffer Btrfs clears thecontent of an extent buffer marked as EXTENT_BUFFER_ZONED_ZEROOUT beforethe bio submission. This mechanism is introduced to prevent a write hole ofan extent buffer, which is once allocated, marked dirty, but turns outunnecessary and cleaned up within one transaction operation. Currently,btrfs_clear_buffer_dirty() marks the extent buffer asEXTENT_BUFFER_ZONED_ZEROOUT, and skips the entry function. If this callhappens while the buffer is under IO (with the WRITEBACK flag set, withoutthe DIRTY flag), we can add the ZEROOUT flag and clear the buffer's contentjust before a bio submission. As a result: 1) it can lead to adding faultydelayed reference item which leads to a FS corrupted (EUCLEAN) error, and2) it writes out cleared tree node on disk The former issue is previouslydiscussed in [1]. The corruption happens when it runs a delayed referenceupdate. So, on-disk data is safe. [1]https://lore.kernel.org/linux-btrfs/3f4f2a0ff1a6c818050434288925bdcf3cd719e5.1709124777.git.naohiro.aota@wdc.com/The latter one can reach on-disk data. But, as that node is alreadyprocessed by btrfs_clear_buffer_dirty(), that will be invalidated in thenext transaction commit anyway. So, the chance of hitting the corruption isrelatively small. Anyway, we should skip flagging ZEROOUT on a non-DIRTYextent buffer, to keep the content under IO intact.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36027` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-gke - 6.8.0-1006.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -25,7 +25,8 @@
 			},
 			"public_date_at_usn": "2024-05-30 16:15:00 UTC",
 			"ref": [
-				"https://ubuntu.com/security/notices/USN-6893-1"
+				"https://ubuntu.com/security/notices/USN-6893-1",
+				"https://ubuntu.com/security/notices/USN-6893-2"
 			]
 		}
 	},
@@ -52,15 +53,15 @@
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1010.11')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1006.9')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1006.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
 						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-38.38.1')."
 					},
 					{
@@ -68,7 +69,7 @@
 						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1007.7')."
 					},
 					{
@@ -76,7 +77,7 @@
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000060",
 						"comment": "linux-intel package in noble was vulnerable but has been fixed (note: '6.8.0-1007.14')."
 					}
 				]
