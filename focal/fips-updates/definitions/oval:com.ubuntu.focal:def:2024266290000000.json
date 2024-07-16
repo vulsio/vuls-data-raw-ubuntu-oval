@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26629 on Ubuntu 20.04 FIPS Compliant (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: nfsd:fix RELEASE_LOCKOWNER The test on so_count in nfsd4_release_lockowner() isnonsense and harmful. Revert to using check_for_locks(), changing that tonot sleep. First: harmful. As is documented in the kdoc comment fornfsd4_release_lockowner(), the test on so_count can transiently return afalse positive resulting in a return of NFS4ERR_LOCKS_HELD when in fact nolocks are held. This is clearly a protocol violation and with the Linux NFSclient it can cause incorrect behaviour. If RELEASE_LOCKOWNER is sent whilesome other thread is still processing a LOCK request which failed because,at the time that request was received, the given owner held a conflictinglock, then the nfsd thread processing that LOCK request can hold areference (conflock) to the lock owner that causesnfsd4_release_lockowner() to return an incorrect error. The Linux NFSclient ignores that NFS4ERR_LOCKS_HELD error because it never sendsNFS4_RELEASE_LOCKOWNER without first releasing any locks, so it knows thatthe error is impossible. It assumes the lock owner was in fact released soit feels free to use the same lock owner identifier in some later lockingrequest. When it does reuse a lock owner identifier for which a previousRELEASE failed, it will naturally use a lock_seqid of zero. However theserver, which didn't release the lock owner, will expect a largerlock_seqid and so will respond with NFS4ERR_BAD_SEQID. So clearly it isharmful to allow a false positive, which testing so_count allows. The testis nonsense because ... well... it doesn't mean anything. so_count is thesum of three different counts. 1/ the set of states listed on so_stateids2/ the set of active vfs locks owned by any of those states 3/ varioustransient counts such as for conflicting locks. When it is tested against'2' it is clear that one of these is the transient reference obtained byfind_lockowner_str_locked(). It is not clear what the other one is expectedto be. In practice, the count is often 2 because there is precisely onestate on so_stateids. If there were more, this would fail. In my testing Isee two circumstances when RELEASE_LOCKOWNER is called. In one case, CLOSEis called before RELEASE_LOCKOWNER. That results in all the lock statesbeing removed, and so the lockowner being discarded (it is removed whenthere are no more references which usually happens when the lock state isdiscarded). When nfsd4_release_lockowner() finds that the lock ownerdoesn't exist, it returns success. The other case shows an so_count of '2'and precisely one state listed in so_stateid. It appears that the Linuxclient uses a separate lock owner for each file resulting in one lock stateper lock owner, so this test on '2' is safe. For another client it mightnot be safe. So this patch changes check_for_locks() to use the (newish)find_any_file_locked() so that it doesn't take a reference on the nfs4_fileand so never calls nfsd_file_put(), and so never sleeps. With this check isit safe to restore the use of check_for_locks() rather than testingso_count against the mysterious '2'.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: nfsd:fix RELEASE_LOCKOWNER The test on so_count in nfsd4_release_lockowner() isnonsense and harmful. Revert to using check_for_locks(), changing that tonot sleep. First: harmful. As is documented in the kdoc comment fornfsd4_release_lockowner(), the test on so_count can transiently return afalse positive resulting in a return of NFS4ERR_LOCKS_HELD when in fact nolocks are held. This is clearly a protocol violation and with the Linux NFSclient it can cause incorrect behaviour. If RELEASE_LOCKOWNER is sent whilesome other thread is still processing a LOCK request which failed because,at the time that request was received, the given owner held a conflictinglock, then the nfsd thread processing that LOCK request can hold areference (conflock) to the lock owner that causesnfsd4_release_lockowner() to return an incorrect error. The Linux NFSclient ignores that NFS4ERR_LOCKS_HELD error because it never sendsNFS4_RELEASE_LOCKOWNER without first releasing any locks, so it knows thatthe error is impossible. It assumes the lock owner was in fact released soit feels free to use the same lock owner identifier in some later lockingrequest. When it does reuse a lock owner identifier for which a previousRELEASE failed, it will naturally use a lock_seqid of zero. However theserver, which didn't release the lock owner, will expect a largerlock_seqid and so will respond with NFS4ERR_BAD_SEQID. So clearly it isharmful to allow a false positive, which testing so_count allows. The testis nonsense because ... well... it doesn't mean anything. so_count is thesum of three different counts. 1/ the set of states listed on so_stateids2/ the set of active vfs locks owned by any of those states 3/ varioustransient counts such as for conflicting locks. When it is tested against'2' it is clear that one of these is the transient reference obtained byfind_lockowner_str_locked(). It is not clear what the other one is expectedto be. In practice, the count is often 2 because there is precisely onestate on so_stateids. If there were more, this would fail. In my testing Isee two circumstances when RELEASE_LOCKOWNER is called. In one case, CLOSEis called before RELEASE_LOCKOWNER. That results in all the lock statesbeing removed, and so the lockowner being discarded (it is removed whenthere are no more references which usually happens when the lock state isdiscarded). When nfsd4_release_lockowner() finds that the lock ownerdoesn't exist, it returns success. The other case shows an so_count of '2'and precisely one state listed in so_stateid. It appears that the Linuxclient uses a separate lock owner for each file resulting in one lock stateper lock owner, so this test on '2' is safe. For another client it mightnot be safe. So this patch changes check_for_locks() to use the (newish)find_any_file_locked() so that it doesn't take a reference on the nfs4_fileand so never calls nfsd_file_put(), and so never sleeps. With this check isit safe to restore the use of check_for_locks() rather than testingso_count against the mysterious '2'.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26629` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1068-azure - 5.15.0-1068.77~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1048-gkeop - 5.15.0-1048.55~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-intel-iotg - 5.15.0-1060.66~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Compliant"
@@ -32,7 +32,8 @@
 				"https://ubuntu.com/security/notices/USN-6819-3",
 				"https://ubuntu.com/security/notices/USN-6818-3",
 				"https://ubuntu.com/security/notices/USN-6818-4",
-				"https://ubuntu.com/security/notices/USN-6819-4"
+				"https://ubuntu.com/security/notices/USN-6819-4",
+				"https://ubuntu.com/security/notices/USN-6898-1"
 			]
 		}
 	},
@@ -103,8 +104,8 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1068.77~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022380960000000",
+						"comment": "linux-azure-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1068.77~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
@@ -155,8 +156,8 @@
 						"comment": "linux-gkeop package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1048.55~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022380960000020",
+						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1048.55~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
@@ -171,8 +172,8 @@
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1060.66~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022380960000010",
+						"comment": "linux-intel-iotg-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1060.66~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
