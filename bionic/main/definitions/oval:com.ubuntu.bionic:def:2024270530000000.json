@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27053 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: wifi:wilc1000: fix RCU usage in connect path With lockdep enabled, calls to theconnect function from cfg802.11 layer lead to the following warning:============================= WARNING: suspicious RCU usage 6.7.0-rc1-wt+#333 Not tainted -----------------------------drivers/net/wireless/microchip/wilc1000/hif.c:386 suspiciousrcu_dereference_check() usage! [...] stack backtrace: CPU: 0 PID: 100 Comm:wpa_supplicant Not tainted 6.7.0-rc1-wt+ #333 Hardware name: Atmel SAMA5unwind_backtrace from show_stack+0x18/0x1c show_stack fromdump_stack_lvl+0x34/0x48 dump_stack_lvl fromwilc_parse_join_bss_param+0x7dc/0x7f4 wilc_parse_join_bss_param fromconnect+0x2c4/0x648 connect from cfg80211_connect+0x30c/0xb74cfg80211_connect from nl80211_connect+0x860/0xa94 nl80211_connect fromgenl_rcv_msg+0x3fc/0x59c genl_rcv_msg from netlink_rcv_skb+0xd0/0x1f8netlink_rcv_skb from genl_rcv+0x2c/0x3c genl_rcv fromnetlink_unicast+0x3b0/0x550 netlink_unicast fromnetlink_sendmsg+0x368/0x688 netlink_sendmsg from____sys_sendmsg+0x190/0x430 ____sys_sendmsg from ___sys_sendmsg+0x110/0x158___sys_sendmsg from sys_sendmsg+0xe8/0x150 sys_sendmsg fromret_fast_syscall+0x0/0x1c This warning is emitted because in the connectpath, when trying to parse target BSS parameters, we dereference a RCUpointer whithout being in RCU critical section. Fix RCU dereference usageby moving it to a RCU read critical section. To avoid wrapping the wholewilc_parse_join_bss_param under the critical section, just use the criticalsection to copy ies data",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: wifi:wilc1000: fix RCU usage in connect path With lockdep enabled, calls to theconnect function from cfg802.11 layer lead to the following warning:============================= WARNING: suspicious RCU usage 6.7.0-rc1-wt+#333 Not tainted -----------------------------drivers/net/wireless/microchip/wilc1000/hif.c:386 suspiciousrcu_dereference_check() usage! [...] stack backtrace: CPU: 0 PID: 100 Comm:wpa_supplicant Not tainted 6.7.0-rc1-wt+ #333 Hardware name: Atmel SAMA5unwind_backtrace from show_stack+0x18/0x1c show_stack fromdump_stack_lvl+0x34/0x48 dump_stack_lvl fromwilc_parse_join_bss_param+0x7dc/0x7f4 wilc_parse_join_bss_param fromconnect+0x2c4/0x648 connect from cfg80211_connect+0x30c/0xb74cfg80211_connect from nl80211_connect+0x860/0xa94 nl80211_connect fromgenl_rcv_msg+0x3fc/0x59c genl_rcv_msg from netlink_rcv_skb+0xd0/0x1f8netlink_rcv_skb from genl_rcv+0x2c/0x3c genl_rcv fromnetlink_unicast+0x3b0/0x550 netlink_unicast fromnetlink_sendmsg+0x368/0x688 netlink_sendmsg from____sys_sendmsg+0x190/0x430 ____sys_sendmsg from ___sys_sendmsg+0x110/0x158___sys_sendmsg from sys_sendmsg+0xe8/0x150 sys_sendmsg fromret_fast_syscall+0x0/0x1c This warning is emitted because in the connectpath, when trying to parse target BSS parameters, we dereference a RCUpointer whithout being in RCU critical section. Fix RCU dereference usageby moving it to a RCU read critical section. To avoid wrapping the wholewilc_parse_join_bss_param under the critical section, just use the criticalsection to copy ies data\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27053` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209~18.04.1\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1127-oracle - 5.4.0-1127.136~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -39,7 +39,8 @@
 				"https://ubuntu.com/security/notices/USN-6871-1",
 				"https://ubuntu.com/security/notices/USN-6878-1",
 				"https://ubuntu.com/security/notices/USN-6892-1",
-				"https://ubuntu.com/security/notices/USN-6896-1"
+				"https://ubuntu.com/security/notices/USN-6896-1",
+				"https://ubuntu.com/security/notices/USN-6896-2"
 			]
 		}
 	},
@@ -58,8 +59,8 @@
 						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-189.209~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000000",
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-189.209~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
@@ -142,8 +143,8 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1127.136~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000010",
+						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1127.136~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
