@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2022488220000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48822 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: f_fs: Fix use-after-free for epfileConsider a case where ffs_func_eps_disable is called fromffs_func_disable as part of composition switch and at thesame time ffs_epfile_release get called from userspace.ffs_epfile_release will free up the read buffer and callffs_data_closed which in turn destroys ffs->epfiles andmark it as NULL. While this was happening the driver hasalready initialized the local epfile in ffs_func_eps_disablewhich is now freed and waiting to acquire the spinlock. Oncespinlock is acquired the driver proceeds with the stale valueof epfile and tries to free the already freed read buffercausing use-after-free.Following is the illustration of the race:      CPU1                                  CPU2   ffs_func_eps_disable   epfiles (local copy)\t\t\t\t\tffs_epfile_release\t\t\t\t\tffs_data_closed\t\t\t\t\tif (last file closed)\t\t\t\t\tffs_data_reset\t\t\t\t\tffs_data_clear\t\t\t\t\tffs_epfiles_destroyspin_lockdereference epfilesFix this races by taking epfiles local copy & assigning it underspinlock and if epfiles(local) is null then update it in ffs->epfilesthen finally destroy it.Extending the scope further from the race, protecting the ep relatedstructures, and concurrent accesses.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48822",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48822"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-16 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48822",
+				"href": "https://ubuntu.com/security/CVE-2022-48822",
+				"public": "20240716"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

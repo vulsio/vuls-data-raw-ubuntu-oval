@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35944 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: VMCI:Fix memcpy() run-time warning in dg_dispatch_as_host() Syzkaller hit'WARNING in dg_dispatch_as_host' bug. memcpy: detected field-spanning write(size 56) of single field \"&dg_info->msg\" atdrivers/misc/vmw_vmci/vmci_datagram.c:237 (size 24) WARNING: CPU: 0 PID:1555 at drivers/misc/vmw_vmci/vmci_datagram.c:237dg_dispatch_as_host+0x88e/0xa60 drivers/misc/vmw_vmci/vmci_datagram.c:237Some code commentry, based on my understanding: 544 #defineVMCI_DG_SIZE(_dg) (VMCI_DG_HEADERSIZE + (size_t)(_dg)->payload_size) ///This is 24 + payload_size memcpy(&dg_info->msg, dg, dg_size); Destination =dg_info->msg ---> this is a 24 byte structure(struct vmci_datagram) Source= dg --> this is a 24 byte structure (struct vmci_datagram) Size = dg_size= 24 + payload_size {payload_size = 56-24 =32} -- Syzkaller managed to setpayload_size to 32. 35 struct delayed_datagram_info { 36 structdatagram_entry *entry; 37 struct work_struct work; 38 boolin_dg_host_queue; 39 /* msg and msg_payload must be together. */ 40 structvmci_datagram msg; 41 u8 msg_payload[]; 42 }; So those extra bytes ofpayload are copied into msg_payload[], a run time warning is seen whilefuzzing with Syzkaller. One possible way to fix the warning is to split thememcpy() into two parts -- one -- direct assignment of msg and secondtaking care of payload. Gustavo quoted: \"Under FORTIFY_SOURCE we should notcopy data across multiple members in a structure.\"\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35944` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209~18.04.1\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1127-oracle - 5.4.0-1127.136~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: VMCI:Fix memcpy() run-time warning in dg_dispatch_as_host() Syzkaller hit'WARNING in dg_dispatch_as_host' bug. memcpy: detected field-spanning write(size 56) of single field \"&dg_info->msg\" atdrivers/misc/vmw_vmci/vmci_datagram.c:237 (size 24) WARNING: CPU: 0 PID:1555 at drivers/misc/vmw_vmci/vmci_datagram.c:237dg_dispatch_as_host+0x88e/0xa60 drivers/misc/vmw_vmci/vmci_datagram.c:237Some code commentry, based on my understanding: 544 #defineVMCI_DG_SIZE(_dg) (VMCI_DG_HEADERSIZE + (size_t)(_dg)->payload_size) ///This is 24 + payload_size memcpy(&dg_info->msg, dg, dg_size); Destination =dg_info->msg ---> this is a 24 byte structure(struct vmci_datagram) Source= dg --> this is a 24 byte structure (struct vmci_datagram) Size = dg_size= 24 + payload_size {payload_size = 56-24 =32} -- Syzkaller managed to setpayload_size to 32. 35 struct delayed_datagram_info { 36 structdatagram_entry *entry; 37 struct work_struct work; 38 boolin_dg_host_queue; 39 /* msg and msg_payload must be together. */ 40 structvmci_datagram msg; 41 u8 msg_payload[]; 42 }; So those extra bytes ofpayload are copied into msg_payload[], a run time warning is seen whilefuzzing with Syzkaller. One possible way to fix the warning is to split thememcpy() into two parts -- one -- direct assignment of msg and secondtaking care of payload. Gustavo quoted: \"Under FORTIFY_SOURCE we should notcopy data across multiple members in a structure.\"\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35944` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209~18.04.1\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1133-azure - 5.4.0-1133.140~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1132-gcp - 5.4.0-1132.141~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1075-ibm - 5.4.0-1075.80~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1127-oracle - 5.4.0-1127.136~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -84,8 +84,8 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1133.140~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000010",
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1133.140~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -100,8 +100,8 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1132.141~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000020",
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1132.141~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -116,8 +116,8 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1075.80~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2020278200000010",
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1075.80~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
@@ -132,7 +132,7 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000010",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000030",
 						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1127.136~18.04.1')."
 					},
 					{

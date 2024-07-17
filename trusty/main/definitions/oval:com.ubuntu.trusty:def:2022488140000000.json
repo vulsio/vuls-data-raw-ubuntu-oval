@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2022488140000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48814 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: dsa: seville: register the mdiobus under devresAs explained in commits:74b6d7d13307 (\"net: dsa: realtek: register the MDIO bus under devres\")5135e96a3dd2 (\"net: dsa: don't allocate the slave_mii_bus using devres\")mdiobus_free() will panic when called from devm_mdiobus_free() <-devres_release_all() <- __device_release_driver(), and that mdiobus wasnot previously unregistered.The Seville VSC9959 switch is a platform device, so the initial set ofconstraints that I thought would cause this (I2C or SPI buses which call->remove on ->shutdown) do not apply. But there is one more whichapplies here.If the DSA master itself is on a bus that calls ->remove from ->shutdown(like dpaa2-eth, which is on the fsl-mc bus), there is a device linkbetween the switch and the DSA master, and device_links_unbind_consumers()will unbind the seville switch driver on shutdown.So the same treatment must be applied to all DSA switch drivers, whichis: either use devres for both the mdiobus allocation and registration,or don't use devres at all.The seville driver has a code structure that could accommodate both themdiobus_unregister and mdiobus_free calls, but it has an externaldependency upon mscc_miim_setup() from mdio-mscc-miim.c, which callsdevm_mdiobus_alloc_size() on its behalf. So rather than restructuringthat, and exporting yet one more symbol mscc_miim_teardown(), let's workwith devres and replace of_mdiobus_register with the devres variant.When we use all-devres, we can ensure that devres doesn't free astill-registered bus (it either runs both callbacks, or none).",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48814",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48814"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-16 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48814",
+				"href": "https://ubuntu.com/security/CVE-2022-48814",
+				"public": "20240716"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

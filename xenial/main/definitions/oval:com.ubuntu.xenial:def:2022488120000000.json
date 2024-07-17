@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2022488120000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48812 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: dsa: lantiq_gswip: don't use devres for mdiobusAs explained in commits:74b6d7d13307 (\"net: dsa: realtek: register the MDIO bus under devres\")5135e96a3dd2 (\"net: dsa: don't allocate the slave_mii_bus using devres\")mdiobus_free() will panic when called from devm_mdiobus_free() <-devres_release_all() <- __device_release_driver(), and that mdiobus wasnot previously unregistered.The GSWIP switch is a platform device, so the initial set of constraintsthat I thought would cause this (I2C or SPI buses which call ->remove on->shutdown) do not apply. But there is one more which applies here.If the DSA master itself is on a bus that calls ->remove from ->shutdown(like dpaa2-eth, which is on the fsl-mc bus), there is a device linkbetween the switch and the DSA master, and device_links_unbind_consumers()will unbind the GSWIP switch driver on shutdown.So the same treatment must be applied to all DSA switch drivers, whichis: either use devres for both the mdiobus allocation and registration,or don't use devres at all.The gswip driver has the code structure in place for orderly mdiobusremoval, so just replace devm_mdiobus_alloc() with the non-devresvariant, and add manual free where necessary, to ensure that we don'tlet devres free a still-registered bus.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48812",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48812"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-16 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48812",
+				"href": "https://ubuntu.com/security/CVE-2022-48812",
+				"public": "20240716"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

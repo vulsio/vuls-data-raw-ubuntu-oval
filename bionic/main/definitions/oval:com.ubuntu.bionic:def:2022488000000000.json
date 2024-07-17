@@ -1,0 +1,142 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2022488000000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48800 on Ubuntu 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: vmscan: remove deadlock due to throttling failing to make progressA soft lockup bug in kcompactd was reported in a private bugzilla withthe following visible in dmesg;  watchdog: BUG: soft lockup - CPU#33 stuck for 26s! [kcompactd0:479]  watchdog: BUG: soft lockup - CPU#33 stuck for 52s! [kcompactd0:479]  watchdog: BUG: soft lockup - CPU#33 stuck for 78s! [kcompactd0:479]  watchdog: BUG: soft lockup - CPU#33 stuck for 104s! [kcompactd0:479]The machine had 256G of RAM with no swap and an earlier failedallocation indicated that node 0 where kcompactd was run was potentiallyunreclaimable;  Node 0 active_anon:29355112kB inactive_anon:2913528kB active_file:0kB    inactive_file:0kB unevictable:64kB isolated(anon):0kBisolated(file):0kB    mapped:8kB dirty:0kB writeback:0kB shmem:26780kB shmem_thp:    0kB shmem_pmdmapped: 0kB anon_thp: 23480320kB writeback_tmp:0kB    kernel_stack:2272kB pagetables:24500kB all_unreclaimable? yesVlastimil Babka investigated a crash dump and found that a taskmigrating pages was trying to drain PCP lists;  PID: 52922  TASK: ffff969f820e5000  CPU: 19  COMMAND: \"kworker/u128:3\"  Call Trace:     __schedule     schedule     schedule_timeout     wait_for_completion     __flush_work     __drain_all_pages     __alloc_pages_slowpath.constprop.114     __alloc_pages     alloc_migration_target     migrate_pages     migrate_to_node     do_migrate_pages     cpuset_migrate_mm_workfn     process_one_work     worker_thread     kthread     ret_from_forkThis failure is specific to CONFIG_PREEMPT=n builds.  The root of theproblem is that kcompact0 is not rescheduling on a CPU while a task thathas isolated a large number of the pages from the LRU is waiting onkcompact0 to reschedule so the pages can be released.  Whileshrink_inactive_list() only loops once around too_many_isolated, reclaimcan continue without rescheduling if sc->skipped_deactivate == 1 whichcould happen if there was no file LRU and the inactive anon list was notlow.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48800",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48800"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-16 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48800",
+				"href": "https://ubuntu.com/security/CVE-2022-48800",
+				"public": "20240716"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

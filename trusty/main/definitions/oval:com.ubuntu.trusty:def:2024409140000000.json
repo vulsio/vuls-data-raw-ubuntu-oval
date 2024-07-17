@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-40914 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/huge_memory: don't unpoison huge_zero_folioWhen I did memory failure tests recently, below panic occurs: kernel BUG at include/linux/mm.h:1135! invalid opcode: 0000 [#1] PREEMPT SMP NOPTI CPU: 9 PID: 137 Comm: kswapd1 Not tainted6.9.0-rc4-00491-gd5ce28f156fe-dirty #14 RIP: 0010:shrink_huge_zero_page_scan+0x168/0x1a0 RSP: 0018:ffff9933c6c57bd0 EFLAGS: 00000246 RAX: 000000000000003e RBX: 0000000000000000 RCX: ffff88f61fc5c9c8 RDX: 0000000000000000 RSI: 0000000000000027 RDI: ffff88f61fc5c9c0 RBP: ffffcd7c446b0000 R08: ffffffff9a9405f0 R09: 0000000000005492 R10: 00000000000030ea R11: ffffffff9a9405f0 R12: 0000000000000000 R13: 0000000000000000 R14: 0000000000000000 R15: ffff88e703c4ac00 FS:  0000000000000000(0000) GS:ffff88f61fc40000(0000)knlGS:0000000000000000 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033 CR2: 000055f4da6e9878 CR3: 0000000c71048000 CR4: 00000000000006f0 Call Trace:  <TASK>  do_shrink_slab+0x14f/0x6a0  shrink_slab+0xca/0x8c0  shrink_node+0x2d0/0x7d0  balance_pgdat+0x33a/0x720  kswapd+0x1f3/0x410  kthread+0xd5/0x100  ret_from_fork+0x2f/0x50  ret_from_fork_asm+0x1a/0x30  </TASK> Modules linked in: mce_inject hwpoison_inject ---[ end trace 0000000000000000 ]--- RIP: 0010:shrink_huge_zero_page_scan+0x168/0x1a0 RSP: 0018:ffff9933c6c57bd0 EFLAGS: 00000246 RAX: 000000000000003e RBX: 0000000000000000 RCX: ffff88f61fc5c9c8 RDX: 0000000000000000 RSI: 0000000000000027 RDI: ffff88f61fc5c9c0 RBP: ffffcd7c446b0000 R08: ffffffff9a9405f0 R09: 0000000000005492 R10: 00000000000030ea R11: ffffffff9a9405f0 R12: 0000000000000000 R13: 0000000000000000 R14: 0000000000000000 R15: ffff88e703c4ac00 FS:  0000000000000000(0000) GS:ffff88f61fc40000(0000)knlGS:0000000000000000 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033 CR2: 000055f4da6e9878 CR3: 0000000c71048000 CR4: 00000000000006f0The root cause is that HWPoison flag will be set for huge_zero_foliowithout increasing the folio refcnt.  But then unpoison_memory() willdecrease the folio refcnt unexpectedly as it appears like a successfullyhwpoisoned folio leading to VM_BUG_ON_PAGE(page_ref_count(page) == 0) whenreleasing huge_zero_folio.Skip unpoisoning huge_zero_folio in unpoison_memory() to fix this issue.We're not prepared to unpoison huge_zero_folio yet.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/huge_memory: don't unpoison huge_zero_folioWhen I did memory failure tests recently, below panic occurs: kernel BUG at include/linux/mm.h:1135! invalid opcode: 0000 [#1] PREEMPT SMP NOPTI CPU: 9 PID: 137 Comm: kswapd1 Not tainted6.9.0-rc4-00491-gd5ce28f156fe-dirty #14 RIP: 0010:shrink_huge_zero_page_scan+0x168/0x1a0 RSP: 0018:ffff9933c6c57bd0 EFLAGS: 00000246 RAX: 000000000000003e RBX: 0000000000000000 RCX: ffff88f61fc5c9c8 RDX: 0000000000000000 RSI: 0000000000000027 RDI: ffff88f61fc5c9c0 RBP: ffffcd7c446b0000 R08: ffffffff9a9405f0 R09: 0000000000005492 R10: 00000000000030ea R11: ffffffff9a9405f0 R12: 0000000000000000 R13: 0000000000000000 R14: 0000000000000000 R15: ffff88e703c4ac00 FS:  0000000000000000(0000) GS:ffff88f61fc40000(0000)knlGS:0000000000000000 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033 CR2: 000055f4da6e9878 CR3: 0000000c71048000 CR4: 00000000000006f0 Call Trace:  <TASK>  do_shrink_slab+0x14f/0x6a0  shrink_slab+0xca/0x8c0  shrink_node+0x2d0/0x7d0  balance_pgdat+0x33a/0x720  kswapd+0x1f3/0x410  kthread+0xd5/0x100  ret_from_fork+0x2f/0x50  ret_from_fork_asm+0x1a/0x30  </TASK> Modules linked in: mce_inject hwpoison_inject ---[ end trace 0000000000000000 ]--- RIP: 0010:shrink_huge_zero_page_scan+0x168/0x1a0 RSP: 0018:ffff9933c6c57bd0 EFLAGS: 00000246 RAX: 000000000000003e RBX: 0000000000000000 RCX: ffff88f61fc5c9c8 RDX: 0000000000000000 RSI: 0000000000000027 RDI: ffff88f61fc5c9c0 RBP: ffffcd7c446b0000 R08: ffffffff9a9405f0 R09: 0000000000005492 R10: 00000000000030ea R11: ffffffff9a9405f0 R12: 0000000000000000 R13: 0000000000000000 R14: 0000000000000000 R15: ffff88e703c4ac00 FS:  0000000000000000(0000) GS:ffff88f61fc40000(0000)knlGS:0000000000000000 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033 CR2: 000055f4da6e9878 CR3: 0000000c71048000 CR4: 00000000000006f0The root cause is that HWPoison flag will be set for huge_zero_foliowithout increasing the folio refcnt.  But then unpoison_memory() willdecrease the folio refcnt unexpectedly as it appears like a successfullyhwpoisoned folio leading to VM_BUG_ON_PAGE(page_ref_count(page) == 0) whenreleasing huge_zero_folio.Skip unpoisoning huge_zero_folio in unpoison_memory() to fix this issue.We're not prepared to unpoison huge_zero_folio yet.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40914` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-3.13.0-173-generic-lpae - 3.11.0-12.19\nlinux-image-3.13.0-173-lowlatency - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500 - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500mc - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-smp - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-emb - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-smp - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-lowlatency - 3.11.0-12.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-164-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-unsigned-4.4.0-164-generic - 4.4.0-13.29~14.04.1\nlinux-image-unsigned-4.4.0-164-lowlatency - 4.4.0-13.29~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1054-aws - 4.4.0-1002.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1059-azure - 4.15.0-1023.24~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-07-15",
+			"public_date": "2024-07-12 13:15:00 UTC",
 			"cve": {
 				"text": "CVE-2024-40914",
 				"href": "https://ubuntu.com/security/CVE-2024-40914",
-				"public": "20240715"
+				"public": "20240712"
 			}
 		}
 	},
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}

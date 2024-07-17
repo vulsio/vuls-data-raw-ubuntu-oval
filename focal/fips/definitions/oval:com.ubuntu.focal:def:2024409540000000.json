@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-40954 on Ubuntu 20.04 FIPS Certified (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: do not leave a dangling sk pointer, when socket creation failsIt is possible to trigger a use-after-free by:  * attaching an fentry probe to __sock_release() and the probe calling the    bpf_get_socket_cookie() helper  * running traceroute -I 1.1.1.1 on a freshly booted VMA KASAN enabled kernel will log something like below (decoded andstripped):==================================================================BUG: KASAN: slab-use-after-free in __sock_gen_cookie(./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)Read of size 8 at addr ffff888007110dd8 by task traceroute/299CPU: 2 PID: 299 Comm: traceroute Tainted: G            E      6.10.0-rc2+#2Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.16.2-debian-1.16.2-1 04/01/2014Call Trace: <TASK>dump_stack_lvl (lib/dump_stack.c:117 (discriminator 1))print_report (mm/kasan/report.c:378 mm/kasan/report.c:488)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_report (mm/kasan/report.c:603)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_check_range (mm/kasan/generic.c:183 mm/kasan/generic.c:189)__sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)bpf_get_socket_ptr_cookie (./arch/x86/include/asm/preempt.h:94./include/linux/sock_diag.h:42 net/core/filter.c:5094net/core/filter.c:5092)bpf_prog_875642cf11f1d139___sock_release+0x6e/0x8ebpf_trampoline_6442506592+0x47/0xaf__sock_release (net/socket.c:652)__sock_create (net/socket.c:1601)...Allocated by task 299 on cpu 2 at 78.328492s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)__kasan_slab_alloc (mm/kasan/common.c:312 mm/kasan/common.c:338)kmem_cache_alloc_noprof (mm/slub.c:3941 mm/slub.c:4000 mm/slub.c:4007)sk_prot_alloc (net/core/sock.c:2075)sk_alloc (net/core/sock.c:2134)inet_create (net/ipv4/af_inet.c:327 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Freed by task 299 on cpu 2 at 78.328502s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)kasan_save_free_info (mm/kasan/generic.c:582)poison_slab_object (mm/kasan/common.c:242)__kasan_slab_free (mm/kasan/common.c:256)kmem_cache_free (mm/slub.c:4437 mm/slub.c:4511)__sk_destruct (net/core/sock.c:2117 net/core/sock.c:2208)inet_create (net/ipv4/af_inet.c:397 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Fix this by clearing the struct socket reference in sk_common_release() tocoverall protocol families create functions, which may already attached thereference to the sk object with sock_init_data().",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: do not leave a dangling sk pointer, when socket creation failsIt is possible to trigger a use-after-free by:  * attaching an fentry probe to __sock_release() and the probe calling the    bpf_get_socket_cookie() helper  * running traceroute -I 1.1.1.1 on a freshly booted VMA KASAN enabled kernel will log something like below (decoded andstripped):==================================================================BUG: KASAN: slab-use-after-free in __sock_gen_cookie(./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)Read of size 8 at addr ffff888007110dd8 by task traceroute/299CPU: 2 PID: 299 Comm: traceroute Tainted: G            E      6.10.0-rc2+#2Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.16.2-debian-1.16.2-1 04/01/2014Call Trace: <TASK>dump_stack_lvl (lib/dump_stack.c:117 (discriminator 1))print_report (mm/kasan/report.c:378 mm/kasan/report.c:488)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_report (mm/kasan/report.c:603)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_check_range (mm/kasan/generic.c:183 mm/kasan/generic.c:189)__sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)bpf_get_socket_ptr_cookie (./arch/x86/include/asm/preempt.h:94./include/linux/sock_diag.h:42 net/core/filter.c:5094net/core/filter.c:5092)bpf_prog_875642cf11f1d139___sock_release+0x6e/0x8ebpf_trampoline_6442506592+0x47/0xaf__sock_release (net/socket.c:652)__sock_create (net/socket.c:1601)...Allocated by task 299 on cpu 2 at 78.328492s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)__kasan_slab_alloc (mm/kasan/common.c:312 mm/kasan/common.c:338)kmem_cache_alloc_noprof (mm/slub.c:3941 mm/slub.c:4000 mm/slub.c:4007)sk_prot_alloc (net/core/sock.c:2075)sk_alloc (net/core/sock.c:2134)inet_create (net/ipv4/af_inet.c:327 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Freed by task 299 on cpu 2 at 78.328502s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)kasan_save_free_info (mm/kasan/generic.c:582)poison_slab_object (mm/kasan/common.c:242)__kasan_slab_free (mm/kasan/common.c:256)kmem_cache_free (mm/slub.c:4437 mm/slub.c:4511)__sk_destruct (net/core/sock.c:2117 net/core/sock.c:2208)inet_create (net/ipv4/af_inet.c:397 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Fix this by clearing the struct socket reference in sk_common_release() tocoverall protocol families create functions, which may already attached thereference to the sk object with sock_init_data().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40954` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-fips - 5.4.0-1007.8\nlinux-image-unsigned-hmac-5.4.0-1007-fips - 5.4.0-1007.8\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-07-15",
+			"public_date": "2024-07-12 13:15:00 UTC",
 			"cve": {
 				"text": "CVE-2024-40954",
 				"href": "https://ubuntu.com/security/CVE-2024-40954",
-				"public": "20240715"
+				"public": "20240712"
 			}
 		}
 	},
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000000",
+						"comment": "linux package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-9.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -49,15 +49,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000010",
+						"comment": "linux-kvm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-aws package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -73,11 +73,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-aws-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
+						"comment": "linux-azure package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1006.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -93,7 +93,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
@@ -101,31 +101,31 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-fde-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000080",
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
-						"comment": "linux-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000060",
+						"comment": "linux-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000210",
+						"comment": "linux-aws-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000220",
+						"comment": "linux-azure-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000230",
+						"comment": "linux-gcp-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-gcp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -141,7 +141,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gcp-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -152,20 +152,20 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000030",
+						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gkeop-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000000",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-ibm-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -173,19 +173,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-intel-iotg-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
+						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-oracle package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -201,7 +201,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-oracle-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -220,16 +220,16 @@
 						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000050",
+						"comment": "linux-raspi package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000180",
+						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]
 			}

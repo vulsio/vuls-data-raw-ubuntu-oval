@@ -1,0 +1,142 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2022487900000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48790 on Ubuntu 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nvme: fix a possible use-after-free in controller reset during loadUnlike .queue_rq, in .submit_async_event drivers may not check the ctrlreadiness for AER submission. This may lead to a use-after-freecondition that was observed with nvme-tcp.The race condition may happen in the following scenario:1. driver executes its reset_ctrl_work2. -> nvme_stop_ctrl - flushes ctrl async_event_work3. ctrl sends AEN which is received by the host, which in turn   schedules AEN handling4. teardown admin queue (which releases the queue socket)5. AEN processed, submits another AER, calling the driver to submit6. driver attempts to send the cmd==> use-after-freeIn order to fix that, add ctrl state check to validate the ctrlis actually able to accept the AER submission.This addresses the above race in controller resets because the driverduring teardown should:1. change ctrl state to RESETTING2. flush async_event_work (as well as other async work elements)So after 1,2, any other AER command will find thectrl state to be RESETTING and bail out without submitting the AER.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48790",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48790"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-16 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48790",
+				"href": "https://ubuntu.com/security/CVE-2022-48790",
+				"public": "20240716"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

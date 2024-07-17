@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26956 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: nilfs2:fix failure to detect DAT corruption in btree and direct mappings Patchseries \"nilfs2: fix kernel bug at submit_bh_wbc()\". This resolves a kernelBUG reported by syzbot. Since there are two flaws involved, I've made eachone a separate patch. The first patch alone resolves the syzbot-reportedbug, but I think both fixes should be sent to stable, so I've tagged themas such. This patch (of 2): Syzbot has reported a kernel bug insubmit_bh_wbc() when writing file data to a nilfs2 file system whosemetadata is corrupted. There are two flaws involved in this issue. Thefirst flaw is that when nilfs_get_block() locates a data block using btreeor direct mapping, if the disk address translation routinenilfs_dat_translate() fails with internal code -ENOENT due to DAT metadatacorruption, it can be passed back to nilfs_get_block(). This causesnilfs_get_block() to misidentify an existing block as non-existent, causingboth data block lookup and insertion to fail inconsistently. The secondflaw is that nilfs_get_block() returns a successful status in thisinconsistent state. This causes the caller __block_write_begin_int() orothers to request a read even though the buffer is not mapped, resulting ina BUG_ON check for the BH_Mapped flag in submit_bh_wbc() failing. Thisfixes the first issue by changing the return value to code -EINVAL when aconversion using DAT fails with code -ENOENT, avoiding the conflictingcondition that leads to the kernel bug described above. Here, code -EINVALindicates that metadata corruption was detected during the block lookup,which will be properly handled as a file system error and converted to -EIOwhen passing through the nilfs2 bmap layer.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26956` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209~18.04.1\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1127-oracle - 5.4.0-1127.136~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: nilfs2:fix failure to detect DAT corruption in btree and direct mappings Patchseries \"nilfs2: fix kernel bug at submit_bh_wbc()\". This resolves a kernelBUG reported by syzbot. Since there are two flaws involved, I've made eachone a separate patch. The first patch alone resolves the syzbot-reportedbug, but I think both fixes should be sent to stable, so I've tagged themas such. This patch (of 2): Syzbot has reported a kernel bug insubmit_bh_wbc() when writing file data to a nilfs2 file system whosemetadata is corrupted. There are two flaws involved in this issue. Thefirst flaw is that when nilfs_get_block() locates a data block using btreeor direct mapping, if the disk address translation routinenilfs_dat_translate() fails with internal code -ENOENT due to DAT metadatacorruption, it can be passed back to nilfs_get_block(). This causesnilfs_get_block() to misidentify an existing block as non-existent, causingboth data block lookup and insertion to fail inconsistently. The secondflaw is that nilfs_get_block() returns a successful status in thisinconsistent state. This causes the caller __block_write_begin_int() orothers to request a read even though the buffer is not mapped, resulting ina BUG_ON check for the BH_Mapped flag in submit_bh_wbc() failing. Thisfixes the first issue by changing the return value to code -EINVAL when aconversion using DAT fails with code -ENOENT, avoiding the conflictingcondition that leads to the kernel bug described above. Here, code -EINVALindicates that metadata corruption was detected during the block lookup,which will be properly handled as a file system error and converted to -EIOwhen passing through the nilfs2 bmap layer.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26956` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209~18.04.1\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1133-azure - 5.4.0-1133.140~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1132-gcp - 5.4.0-1132.141~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1075-ibm - 5.4.0-1075.80~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1127-oracle - 5.4.0-1127.136~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -87,8 +87,8 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1133.140~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000010",
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1133.140~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -103,8 +103,8 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1132.141~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000020",
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1132.141~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -119,8 +119,8 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1075.80~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2020278200000010",
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1075.80~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
@@ -135,7 +135,7 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000010",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000030",
 						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1127.136~18.04.1')."
 					},
 					{

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-41004 on Ubuntu 20.04 FIPS Certified (focal) - negligible",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:tracing: Build event generation tests only as modulesThe kprobes and synth event generation test modules add events and lock(get a reference) those event file reference in module init function,and unlock and delete it in module exit function. This is because thoseare designed for playing as modules.If we make those modules as built-in, those events are left locked in thekernel, and never be removed. This causes kprobe event self-test failureas below.[   97.349708] ------------[ cut here ]------------[   97.353453] WARNING: CPU: 3 PID: 1 at kernel/trace/trace_kprobe.c:2133kprobe_trace_self_tests_init+0x3f1/0x480[   97.357106] Modules linked in:[   97.358488] CPU: 3 PID: 1 Comm: swapper/0 Not tainted6.9.0-g699646734ab5-dirty #14[   97.361556] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.15.0-1 04/01/2014[   97.363880] RIP: 0010:kprobe_trace_self_tests_init+0x3f1/0x480[   97.365538] Code: a8 24 08 82 e9 ae fd ff ff 90 0f 0b 90 48 c7 c7 e5 aa0b 82 e9 ee fc ff ff 90 0f 0b 90 48 c7 c7 2d 61 06 82 e9 8e fd ff ff 90<0f> 0b 90 48 c7 c7 33 0b 0c 82 89 c6 e8 6e 03 1f ff 41 ff c7 e9 90[   97.370429] RSP: 0000:ffffc90000013b50 EFLAGS: 00010286[   97.371852] RAX: 00000000fffffff0 RBX: ffff888005919c00 RCX:0000000000000000[   97.373829] RDX: ffff888003f40000 RSI: ffffffff8236a598 RDI:ffff888003f40a68[   97.375715] RBP: 0000000000000000 R08: 0000000000000001 R09:0000000000000000[   97.377675] R10: ffffffff811c9ae5 R11: ffffffff8120c4e0 R12:0000000000000000[   97.379591] R13: 0000000000000001 R14: 0000000000000015 R15:0000000000000000[   97.381536] FS:  0000000000000000(0000) GS:ffff88807dcc0000(0000)knlGS:0000000000000000[   97.383813] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[   97.385449] CR2: 0000000000000000 CR3: 0000000002244000 CR4:00000000000006b0[   97.387347] DR0: 0000000000000000 DR1: 0000000000000000 DR2:0000000000000000[   97.389277] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:0000000000000400[   97.391196] Call Trace:[   97.391967]  <TASK>[   97.392647]  ? __warn+0xcc/0x180[   97.393640]  ? kprobe_trace_self_tests_init+0x3f1/0x480[   97.395181]  ? report_bug+0xbd/0x150[   97.396234]  ? handle_bug+0x3e/0x60[   97.397311]  ? exc_invalid_op+0x1a/0x50[   97.398434]  ? asm_exc_invalid_op+0x1a/0x20[   97.399652]  ? trace_kprobe_is_busy+0x20/0x20[   97.400904]  ? tracing_reset_all_online_cpus+0x15/0x90[   97.402304]  ? kprobe_trace_self_tests_init+0x3f1/0x480[   97.403773]  ? init_kprobe_trace+0x50/0x50[   97.404972]  do_one_initcall+0x112/0x240[   97.406113]  do_initcall_level+0x95/0xb0[   97.407286]  ? kernel_init+0x1a/0x1a0[   97.408401]  do_initcalls+0x3f/0x70[   97.409452]  kernel_init_freeable+0x16f/0x1e0[   97.410662]  ? rest_init+0x1f0/0x1f0[   97.411738]  kernel_init+0x1a/0x1a0[   97.412788]  ret_from_fork+0x39/0x50[   97.413817]  ? rest_init+0x1f0/0x1f0[   97.414844]  ret_from_fork_asm+0x11/0x20[   97.416285]  </TASK>[   97.417134] irq event stamp: 13437323[   97.418376] hardirqs last  enabled at (13437337): [<ffffffff8110bc0c>]console_unlock+0x11c/0x150[   97.421285] hardirqs last disabled at (13437370): [<ffffffff8110bbf1>]console_unlock+0x101/0x150[   97.423838] softirqs last  enabled at (13437366): [<ffffffff8108e17f>]handle_softirqs+0x23f/0x2a0[   97.426450] softirqs last disabled at (13437393): [<ffffffff8108e346>]__irq_exit_rcu+0x66/0xd0[   97.428850] ---[ end trace 0000000000000000 ]---And also, since we can not cleanup dynamic_event file, ftracetest arefailed too.To avoid these issues, build these tests only as modules.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:tracing: Build event generation tests only as modulesThe kprobes and synth event generation test modules add events and lock(get a reference) those event file reference in module init function,and unlock and delete it in module exit function. This is because thoseare designed for playing as modules.If we make those modules as built-in, those events are left locked in thekernel, and never be removed. This causes kprobe event self-test failureas below.[   97.349708] ------------[ cut here ]------------[   97.353453] WARNING: CPU: 3 PID: 1 at kernel/trace/trace_kprobe.c:2133kprobe_trace_self_tests_init+0x3f1/0x480[   97.357106] Modules linked in:[   97.358488] CPU: 3 PID: 1 Comm: swapper/0 Not tainted6.9.0-g699646734ab5-dirty #14[   97.361556] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.15.0-1 04/01/2014[   97.363880] RIP: 0010:kprobe_trace_self_tests_init+0x3f1/0x480[   97.365538] Code: a8 24 08 82 e9 ae fd ff ff 90 0f 0b 90 48 c7 c7 e5 aa0b 82 e9 ee fc ff ff 90 0f 0b 90 48 c7 c7 2d 61 06 82 e9 8e fd ff ff 90<0f> 0b 90 48 c7 c7 33 0b 0c 82 89 c6 e8 6e 03 1f ff 41 ff c7 e9 90[   97.370429] RSP: 0000:ffffc90000013b50 EFLAGS: 00010286[   97.371852] RAX: 00000000fffffff0 RBX: ffff888005919c00 RCX:0000000000000000[   97.373829] RDX: ffff888003f40000 RSI: ffffffff8236a598 RDI:ffff888003f40a68[   97.375715] RBP: 0000000000000000 R08: 0000000000000001 R09:0000000000000000[   97.377675] R10: ffffffff811c9ae5 R11: ffffffff8120c4e0 R12:0000000000000000[   97.379591] R13: 0000000000000001 R14: 0000000000000015 R15:0000000000000000[   97.381536] FS:  0000000000000000(0000) GS:ffff88807dcc0000(0000)knlGS:0000000000000000[   97.383813] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[   97.385449] CR2: 0000000000000000 CR3: 0000000002244000 CR4:00000000000006b0[   97.387347] DR0: 0000000000000000 DR1: 0000000000000000 DR2:0000000000000000[   97.389277] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:0000000000000400[   97.391196] Call Trace:[   97.391967]  <TASK>[   97.392647]  ? __warn+0xcc/0x180[   97.393640]  ? kprobe_trace_self_tests_init+0x3f1/0x480[   97.395181]  ? report_bug+0xbd/0x150[   97.396234]  ? handle_bug+0x3e/0x60[   97.397311]  ? exc_invalid_op+0x1a/0x50[   97.398434]  ? asm_exc_invalid_op+0x1a/0x20[   97.399652]  ? trace_kprobe_is_busy+0x20/0x20[   97.400904]  ? tracing_reset_all_online_cpus+0x15/0x90[   97.402304]  ? kprobe_trace_self_tests_init+0x3f1/0x480[   97.403773]  ? init_kprobe_trace+0x50/0x50[   97.404972]  do_one_initcall+0x112/0x240[   97.406113]  do_initcall_level+0x95/0xb0[   97.407286]  ? kernel_init+0x1a/0x1a0[   97.408401]  do_initcalls+0x3f/0x70[   97.409452]  kernel_init_freeable+0x16f/0x1e0[   97.410662]  ? rest_init+0x1f0/0x1f0[   97.411738]  kernel_init+0x1a/0x1a0[   97.412788]  ret_from_fork+0x39/0x50[   97.413817]  ? rest_init+0x1f0/0x1f0[   97.414844]  ret_from_fork_asm+0x11/0x20[   97.416285]  </TASK>[   97.417134] irq event stamp: 13437323[   97.418376] hardirqs last  enabled at (13437337): [<ffffffff8110bc0c>]console_unlock+0x11c/0x150[   97.421285] hardirqs last disabled at (13437370): [<ffffffff8110bbf1>]console_unlock+0x101/0x150[   97.423838] softirqs last  enabled at (13437366): [<ffffffff8108e17f>]handle_softirqs+0x23f/0x2a0[   97.426450] softirqs last disabled at (13437393): [<ffffffff8108e346>]__irq_exit_rcu+0x66/0xd0[   97.428850] ---[ end trace 0000000000000000 ]---And also, since we can not cleanup dynamic_event file, ftracetest arefailed too.To avoid these issues, build these tests only as modules.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41004` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-fips - 5.4.0-1007.8\nlinux-image-unsigned-hmac-5.4.0-1007-fips - 5.4.0-1007.8\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 FIPS Certified"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000000",
-						"comment": "linux package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000000",
+						"comment": "linux package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-9.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
@@ -49,15 +49,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000340",
-						"comment": "linux-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000060",
-						"comment": "linux-kvm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000010",
+						"comment": "linux-kvm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000020",
-						"comment": "linux-aws package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-aws package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
@@ -73,11 +73,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000350",
-						"comment": "linux-aws-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-aws-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
-						"comment": "linux-azure package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
+						"comment": "linux-azure package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1006.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
@@ -93,7 +93,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
@@ -101,31 +101,31 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-azure-fde-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
-						"comment": "linux-bluefield package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000080",
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201585530000010",
-						"comment": "linux-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000060",
+						"comment": "linux-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000210",
+						"comment": "linux-aws-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000220",
+						"comment": "linux-azure-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips/focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000230",
+						"comment": "linux-gcp-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000050",
-						"comment": "linux-gcp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-gcp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
@@ -141,7 +141,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000360",
-						"comment": "linux-gcp-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gcp-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
@@ -152,20 +152,20 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000120",
-						"comment": "linux-gkeop package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201446110000030",
+						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000430",
-						"comment": "linux-gkeop-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-gkeop-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000220",
-						"comment": "linux-ibm package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000000",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-ibm-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -173,19 +173,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-intel-iotg-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
-						"comment": "linux-iot package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000170",
+						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
-						"comment": "linux-oracle package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000020",
+						"comment": "linux-oracle package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
@@ -201,7 +201,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected and may need fixing."
+						"comment": "linux-oracle-5.15 package in focal is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -220,16 +220,16 @@
 						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201325960000050",
+						"comment": "linux-raspi package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000420",
-						"comment": "linux-xilinx-zynqmp package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2016107230000180",
+						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]
 			}

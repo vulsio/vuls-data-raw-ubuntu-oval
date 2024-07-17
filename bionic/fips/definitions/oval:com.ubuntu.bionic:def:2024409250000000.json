@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-40925 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:block: fix request.queuelist usage in flushFriedrich Weber reported a kernel crash problem and bisected to commit81ada09cc25e (\"blk-flush: reuse rq queuelist in flush state machine\").The root cause is that we use \"list_move_tail(&rq->queuelist, pending)\"in the PREFLUSH/POSTFLUSH sequences. But rq->queuelist.next == xxx sinceit's popped out from plug->cached_rq in __blk_mq_alloc_requests_batch().We don't initialize its queuelist just for this first request, althoughthe queuelist of all later popped requests will be initialized.Fix it by changing to use \"list_add_tail(&rq->queuelist, pending)\" sorq->queuelist doesn't need to be initialized. It should be ok since rqcan't be on any list when PREFLUSH or POSTFLUSH, has no move actually.Please note the commit 81ada09cc25e (\"blk-flush: reuse rq queuelist inflush state machine\") also has another requirement that no drivers wouldtouch rq->queuelist after blk_mq_end_request() since we will reuse it toadd rq to the post-flush pending list in POSTFLUSH. If this is not true,we will have to revert that commit IMHO.This updated version adds \"list_del_init(&rq->queuelist)\" in flush rqcallback since the dm layer may submit request of a weird invalid format(REQ_FSEQ_PREFLUSH | REQ_FSEQ_POSTFLUSH), which causes double list_addif without this \"list_del_init(&rq->queuelist)\". The weird invalid formatproblem should be fixed in dm layer.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:block: fix request.queuelist usage in flushFriedrich Weber reported a kernel crash problem and bisected to commit81ada09cc25e (\"blk-flush: reuse rq queuelist in flush state machine\").The root cause is that we use \"list_move_tail(&rq->queuelist, pending)\"in the PREFLUSH/POSTFLUSH sequences. But rq->queuelist.next == xxx sinceit's popped out from plug->cached_rq in __blk_mq_alloc_requests_batch().We don't initialize its queuelist just for this first request, althoughthe queuelist of all later popped requests will be initialized.Fix it by changing to use \"list_add_tail(&rq->queuelist, pending)\" sorq->queuelist doesn't need to be initialized. It should be ok since rqcan't be on any list when PREFLUSH or POSTFLUSH, has no move actually.Please note the commit 81ada09cc25e (\"blk-flush: reuse rq queuelist inflush state machine\") also has another requirement that no drivers wouldtouch rq->queuelist after blk_mq_end_request() since we will reuse it toadd rq to the post-flush pending list in POSTFLUSH. If this is not true,we will have to revert that commit IMHO.This updated version adds \"list_del_init(&rq->queuelist)\" in flush rqcallback since the dm layer may submit request of a weird invalid format(REQ_FSEQ_PREFLUSH | REQ_FSEQ_POSTFLUSH), which causes double list_addif without this \"list_del_init(&rq->queuelist)\". The weird invalid formatproblem should be fixed in dm layer.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40925` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Certified"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-07-15",
+			"public_date": "2024-07-12 13:15:00 UTC",
 			"cve": {
 				"text": "CVE-2024-40925",
 				"href": "https://ubuntu.com/security/CVE-2024-40925",
-				"public": "20240715"
+				"public": "20240712"
 			}
 		}
 	},
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
-						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000000",
+						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000010",
+						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-gcp-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					}
 				]
 			}

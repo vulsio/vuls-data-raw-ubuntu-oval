@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2022488010000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48801 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:iio: buffer: Fix file related error handling in IIO_BUFFER_GET_FD_IOCTLIf we fail to copy the just created file descriptor to userland, wetry to clean up by putting back 'fd' and freeing 'ib'. The code usesput_unused_fd() for the former which is wrong, as the file descriptorwas already published by fd_install() which gets called internally byanon_inode_getfd().This makes the error handling code leaving a half cleaned up filedescriptor table around and a partially destructed 'file' object,allowing userland to play use-after-free tricks on us, by abusingthe still usable fd and making the code operate on a dangling'file->private_data' pointer.Instead of leaving the kernel in a partially corrupted state, don'tattempt to explicitly clean up and leave this to the process exitpath that'll release any still valid fds, including the one createdby the previous call to anon_inode_getfd(). Simply return -EFAULT toindicate the error.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48801",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48801"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-16 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48801",
+				"href": "https://ubuntu.com/security/CVE-2022-48801",
+				"public": "20240716"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

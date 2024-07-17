@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2022488130000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48813 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: dsa: felix: don't use devres for mdiobusAs explained in commits:74b6d7d13307 (\"net: dsa: realtek: register the MDIO bus under devres\")5135e96a3dd2 (\"net: dsa: don't allocate the slave_mii_bus using devres\")mdiobus_free() will panic when called from devm_mdiobus_free() <-devres_release_all() <- __device_release_driver(), and that mdiobus wasnot previously unregistered.The Felix VSC9959 switch is a PCI device, so the initial set ofconstraints that I thought would cause this (I2C or SPI buses which call->remove on ->shutdown) do not apply. But there is one more whichapplies here.If the DSA master itself is on a bus that calls ->remove from ->shutdown(like dpaa2-eth, which is on the fsl-mc bus), there is a device linkbetween the switch and the DSA master, and device_links_unbind_consumers()will unbind the felix switch driver on shutdown.So the same treatment must be applied to all DSA switch drivers, whichis: either use devres for both the mdiobus allocation and registration,or don't use devres at all.The felix driver has the code structure in place for orderly mdiobusremoval, so just replace devm_mdiobus_alloc_size() with the non-devresvariant, and add manual free where necessary, to ensure that we don'tlet devres free a still-registered bus.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48813",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48813"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-16 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48813",
+				"href": "https://ubuntu.com/security/CVE-2022-48813",
+				"public": "20240716"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
