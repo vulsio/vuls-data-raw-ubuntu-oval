@@ -1,0 +1,44 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.focal:def:2023344540000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-34454 on Ubuntu 20.04 LTS (focal) - medium",
+		"description": "snappy-java is a fast compressor/decompressor for Java. Due to uncheckedmultiplications, an integer overflow may occur in versions prior to1.1.10.1, causing an unrecoverable fatal error. The function`compress(char[] input)` in the file `Snappy.java` receives an array ofcharacters and compresses it. It does so by multiplying the length by 2 andpassing it to the rawCompress` function. Since the length is not tested,the multiplication by two can cause an integer overflow and becomenegative. The rawCompress function then uses the received length and passesit to the natively compiled maxCompressedLength function, using thereturned value to allocate a byte array. Since the maxCompressedLengthfunction treats the length as an unsigned integer, it doesn’t care that itis negative, and it returns a valid value, which is casted to a signedinteger by the Java engine. If the result is negative, a`java.lang.NegativeArraySizeException` exception will be raised whiletrying to allocate the array `buf`. On the other side, if the result ispositive, the `buf` array will successfully be allocated, but its sizemight be too small to use for the compression, causing a fatal AccessViolation error. The same issue exists also when using the `compress`functions that receive double, float, int, long and short, each using adifferent multiplier that may cause the same issue. The issue most likelywon’t occur when using a byte array, since creating a byte array of size0x80000000 (or any other negative value) is impossible in the first place.Version 1.1.10.1 contains a patch for this issue.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 20.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-34454",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-34454"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2023 Canonical Ltd.",
+			"public_date": "2023-06-15 17:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-34454",
+				"href": "https://ubuntu.com/security/CVE-2023-34454",
+				"public": "20230615",
+				"cvss_score": "7.5",
+				"cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:2023344530000000",
+						"comment": "snappy-java package in focal is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

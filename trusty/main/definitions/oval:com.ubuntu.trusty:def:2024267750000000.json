@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024267750000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26775 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: aoe:avoid potential deadlock at set_capacity Move set_capacity() outside of thesection procected by (&d->lock). To avoid possible interrupt unsafe lockingscenario: CPU0 CPU1 ---- ---- [1] lock(&bdev->bd_size_lock);local_irq_disable(); [2] lock(&d->lock); [3] lock(&bdev->bd_size_lock);<Interrupt> [4] lock(&d->lock); *** DEADLOCK *** Where[1](&bdev->bd_size_lock) hold by zram_add()->set_capacity().[2]lock(&d->lock) hold by aoeblk_gdalloc(). And aoeblk_gdalloc() is tryingto acquire [3](&bdev->bd_size_lock) at set_capacity() call. In thissituation an attempt to acquire [4]lock(&d->lock) from aoecmd_cfg_rsp()will lead to deadlock. So the simplest solution is breaking lock dependency[2](&d->lock) -> [3](&bdev->bd_size_lock) by moving set_capacity() outside.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26775",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26775"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-03 17:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26775",
+				"href": "https://ubuntu.com/security/CVE-2024-26775",
+				"public": "20240403"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					}
+				]
+			}
+		]
+	}
+}
