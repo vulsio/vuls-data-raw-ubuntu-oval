@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024421520000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42152 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nvmet: fix a possible leak when destroy a ctrl during qp establishmentIn nvmet_sq_destroy we capture sq->ctrl early and if it is non-NULL weknow that a ctrl was allocated (in the admin connect request handler)and we need to release pending AERs, clear ctrl->sqs and sq->ctrl(for nvme-loop primarily), and drop the final reference on the ctrl.However, a small window is possible where nvmet_sq_destroy starts (asa result of the client giving up and disconnecting) concurrently withthe nvme admin connect cmd (which may be in an early stage). But *before*kill_and_confirm of sq->ref (i.e. the admin connect managed to get an sqlive reference). In this case, sq->ctrl was allocated however after it wascaptured in a local variable in nvmet_sq_destroy.This prevented the final reference drop on the ctrl.Solve this by re-capturing the sq->ctrl after all inflight request hascompleted, where for sure sq->ctrl reference is final, and move forwardbased on that.This issue was observed in an environment with many hosts connectingmultiple ctrls simoutanuosly, creating a delay in allocating a ctrlleading up to this race window.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42152",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42152"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-30",
+			"cve": {
+				"text": "CVE-2024-42152",
+				"href": "https://ubuntu.com/security/CVE-2024-42152",
+				"public": "20240730"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

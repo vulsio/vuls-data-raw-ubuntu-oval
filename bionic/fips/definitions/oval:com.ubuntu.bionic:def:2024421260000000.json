@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024421260000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42126 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc: Avoid nmi_enter/nmi_exit in real mode interrupt.nmi_enter()/nmi_exit() touches per cpu variables which can lead to kernelcrash when invoked during real mode interrupt handling (e.g. early HMI/MCEinterrupt handler) if percpu allocation comes from vmalloc area.Early HMI/MCE handlers are called through DEFINE_INTERRUPT_HANDLER_NMI()wrapper which invokes nmi_enter/nmi_exit calls. We don't see any issue whenpercpu allocation is from the embedded first chunk. However withCONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK enabled there are chances where percpuallocation can come from the vmalloc area.With kernel command line \"percpu_alloc=page\" we can force percpu allocationto come from vmalloc area and can see kernel crash in machine_check_early:[    1.215714] NIP [c000000000e49eb4] rcu_nmi_enter+0x24/0x110[    1.215717] LR [c0000000000461a0] machine_check_early+0xf0/0x2c0[    1.215719] --- interrupt: 200[    1.215720] [c000000fffd73180] [0000000000000000] 0x0 (unreliable)[    1.215722] [c000000fffd731b0] [0000000000000000] 0x0[    1.215724] [c000000fffd73210] [c000000000008364]machine_check_early_common+0x134/0x1f8Fix this by avoiding use of nmi_enter()/nmi_exit() in real mode if percpufirst chunk is not embedded.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42126",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42126"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-30",
+			"cve": {
+				"text": "CVE-2024-42126",
+				"href": "https://ubuntu.com/security/CVE-2024-42126",
+				"public": "20240730"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

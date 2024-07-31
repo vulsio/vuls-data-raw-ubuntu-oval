@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024420960000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42096 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86: stop playing stack games in profile_pc()The 'profile_pc()' function is used for timer-based profiling, whichisn't really all that relevant any more to begin with, but it also endsup making assumptions based on the stack layout that aren't necessarilyvalid.Basically, the code tries to account the time spent in spinlocks to thecaller rather than the spinlock, and while I support that as a concept,it's not worth the code complexity or the KASAN warnings when no seriousprofiling is done using timers anyway these days.And the code really does depend on stack layout that is only true in thesimplest of cases.  We've lost the comment at some point (I think whenthe 32-bit and 64-bit code was unified), but it used to say:\tAssume the lock function has either no stack frame or a copy\tof eflags from PUSHF.which explains why it just blindly loads a word or two straight off thestack pointer and then takes a minimal look at the values to just checkif they might be eflags or the return pc:\tEflags always has bits 22 and up cleared unlike kernel addressesbut that basic stack layout assumption assumes that there isn't any lockdebugging etc going on that would complicate the code and cause a stackframe.It causes KASAN unhappiness reported for years by syzkaller [1] andothers [2].With no real practical reason for this any more, just remove the code.Just for historical interest, here's some background commits relating tothis code from 2006:  0cb91a229364 (\"i386: Account spinlocks to the caller during profiling for!FP kernels\")  31679f38d886 (\"Simplify profile_pc on x86-64\")and a code unification from 2009:  ef4512882dbe (\"x86: time_32/64.c unify profile_pc\")but the basics of this thing actually goes back to before the git tree.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42096",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42096"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-30",
+			"cve": {
+				"text": "CVE-2024-42096",
+				"href": "https://ubuntu.com/security/CVE-2024-42096",
+				"public": "20240730"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
