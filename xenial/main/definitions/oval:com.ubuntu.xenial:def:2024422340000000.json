@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024422340000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42234 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: fix crashes from deferred split racing folio migrationEven on 6.10-rc6, I've been seeing elusive \"Bad page state\"s (often onflags when freeing, yet the flags shown are not bad: PG_locked had beenset and cleared??), and VM_BUG_ON_PAGE(page_ref_count(page) == 0)s fromdeferred_split_scan()'s folio_put(), and a variety of other BUG and WARNsymptoms implying double free by deferred split and large folio migration.6.7 commit 9bcef5973e31 (\"mm: memcg: fix split queue list crash when largefolio migration\") was right to fix the memcg-dependent locking broken in85ce2c517ade (\"memcontrol: only transfer the memcg data for migration\"),but missed a subtlety of deferred_split_scan(): it moves folios to its ownlocal list to work on them without split_queue_lock, during which timefolio->_deferred_list is not empty, but even the \"right\" lock does nothingto secure the folio and the list it is on.Fortunately, deferred_split_scan() is careful to use folio_try_get(): sofolio_migrate_mapping() can avoid the race by folio_undo_large_rmappable()while the old folio's reference count is temporarily frozen to 0 - addingsuch a freeze in the !mapping case too (originally, folio lock andunmapping and no swap cache left an anon folio unreachable, so no freezingwas needed there: but the deferred split queue offers a way to reach it).",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42234",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42234"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-08",
+			"cve": {
+				"text": "CVE-2024-42234",
+				"href": "https://ubuntu.com/security/CVE-2024-42234",
+				"public": "20240808"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
