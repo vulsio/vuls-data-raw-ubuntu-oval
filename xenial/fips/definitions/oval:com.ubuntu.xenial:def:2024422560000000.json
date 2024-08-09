@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024422560000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42256 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cifs: Fix server re-repick on subrequest retryWhen a subrequest is marked for needing retry, netfs will callcifs_prepare_write() which will make cifs repick the server for the opbefore renegotiating credits; it then calls cifs_issue_write() whichinvokes smb2_async_writev() - which re-repicks the server.If a different server is then selected, this causes the increment ofserver->in_flight to happen against one record and the decrement to happenagainst another, leading to misaccounting.Fix this by just removing the repick code in smb2_async_writev().  As thisis only called from netfslib-driven code, cifs_prepare_write() shouldalways have been called first, and so server should never be NULL and thepreparatory step is repeated in the event that we do a retry.The problem manifests as a warning looking something like: WARNING: CPU: 4 PID: 72896 at fs/smb/client/smb2ops.c:97smb2_add_credits+0x3f0/0x9e0 [cifs] ... RIP: 0010:smb2_add_credits+0x3f0/0x9e0 [cifs] ...  smb2_writev_callback+0x334/0x560 [cifs]  cifs_demultiplex_thread+0x77a/0x11b0 [cifs]  kthread+0x187/0x1d0  ret_from_fork+0x34/0x60  ret_from_fork_asm+0x1a/0x30Which may be triggered by a number of different xfstests running against anAzure server in multichannel mode.  generic/249 seems the most repeatable,but generic/215, generic/249 and generic/308 may also show it.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42256",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42256"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-09",
+			"cve": {
+				"text": "CVE-2024-42256",
+				"href": "https://ubuntu.com/security/CVE-2024-42256",
+				"public": "20240809"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

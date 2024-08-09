@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024422530000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42253 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:gpio: pca953x: fix pca953x_irq_bus_sync_unlock raceEnsure that `i2c_lock' is held when setting interrupt latch and mask inpca953x_irq_bus_sync_unlock() in order to avoid races.The other (non-probe) call site pca953x_gpio_set_multiple() ensures thelock is held before calling pca953x_write_regs().The problem occurred when a request raced against irq_bus_sync_unlock()approximately once per thousand reboots on an i.MX8MP based system. * Normal case   0-0022: write register AI|3a {03,02,00,00,01} Input latch P0   0-0022: write register AI|49 {fc,fd,ff,ff,fe} Interrupt mask P0   0-0022: write register AI|08 {ff,00,00,00,00} Output P3   0-0022: write register AI|12 {fc,00,00,00,00} Config P3 * Race case   0-0022: write register AI|08 {ff,00,00,00,00} Output P3   0-0022: write register AI|08 {03,02,00,00,01} *** Wrong register ***   0-0022: write register AI|12 {fc,00,00,00,00} Config P3   0-0022: write register AI|49 {fc,fd,ff,ff,fe} Interrupt mask P0",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42253",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42253"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-09",
+			"cve": {
+				"text": "CVE-2024-42253",
+				"href": "https://ubuntu.com/security/CVE-2024-42253",
+				"public": "20240809"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000010",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
