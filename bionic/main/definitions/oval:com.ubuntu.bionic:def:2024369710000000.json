@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36971 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: net:fix __dst_negative_advice() race __dst_negative_advice() does not enforceproper RCU rules when sk->dst_cache must be cleared, leading to possibleUAF. RCU rules are that we must first clear sk->sk_dst_cache, then calldst_release(old_dst). Note that sk_dst_reset(sk) is implementing thisprotocol correctly, while __dst_negative_advice() uses the wrong order.Given that ip6_negative_advice() has special logic against RTF_CACHE, thismeans each of the three ->negative_advice() existing methods must performthe sk_dst_reset() themselves. Note the check against NULL dst iscentralized in __dst_negative_advice(), there is no need to duplicate it invarious callbacks. Many thanks to Clement Lecigne for tracking this issue.This old bug became visible after the blamed commit, using UDP sockets.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36971` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-192-generic - 5.4.0-192.212~18.04.1\nlinux-image-unsigned-5.4.0-192-lowlatency - 5.4.0-192.212~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1130-aws - 5.4.0-1130.140~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-gcp - 5.4.0-1134.143~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1077-ibm - 5.4.0-1077.82~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1129-oracle - 5.4.0-1129.138~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:fix __dst_negative_advice() race __dst_negative_advice() does not enforceproper RCU rules when sk->dst_cache must be cleared, leading to possibleUAF. RCU rules are that we must first clear sk->sk_dst_cache, then calldst_release(old_dst). Note that sk_dst_reset(sk) is implementing thisprotocol correctly, while __dst_negative_advice() uses the wrong order.Given that ip6_negative_advice() has special logic against RTF_CACHE, thismeans each of the three ->negative_advice() existing methods must performthe sk_dst_reset() themselves. Note the check against NULL dst iscentralized in __dst_negative_advice(), there is no need to duplicate it invarious callbacks. Many thanks to Clement Lecigne for tracking this issue.This old bug became visible after the blamed commit, using UDP sockets.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36971` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-192-generic - 5.4.0-192.212~18.04.1\nlinux-image-unsigned-5.4.0-192-lowlatency - 5.4.0-192.212~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1130-aws - 5.4.0-1130.140~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1135-azure - 5.4.0-1135.142~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-gcp - 5.4.0-1134.143~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1077-ibm - 5.4.0-1077.82~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1129-oracle - 5.4.0-1129.138~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -24,13 +24,14 @@
 				"public": "20240610",
 				"cvss_score": "7.8",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
-				"usns": "6951-1,6953-1,6951-2"
+				"usns": "6951-1,6953-1,6951-2,6951-3"
 			},
 			"public_date_at_usn": "2024-06-10 09:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-6951-1",
 				"https://ubuntu.com/security/notices/USN-6953-1",
-				"https://ubuntu.com/security/notices/USN-6951-2"
+				"https://ubuntu.com/security/notices/USN-6951-2",
+				"https://ubuntu.com/security/notices/USN-6951-3"
 			]
 		}
 	},
@@ -85,8 +86,8 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1135.142~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486740000020",
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1135.142~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -101,7 +102,7 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2022486740000020",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486740000030",
 						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1134.143~18.04.1')."
 					},
 					{
@@ -117,7 +118,7 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2022486740000030",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486740000040",
 						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1077.82~18.04.1')."
 					},
 					{
