@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2022489310000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48931 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:configfs: fix a race in configfs_{,un}register_subsystem()When configfs_register_subsystem() or configfs_unregister_subsystem()is executing link_group() or unlink_group(),it is possible that two processes add or delete list concurrently.Some unfortunate interleavings of them can cause kernel panic.One of cases is:A --> B --> C --> DA <-- B <-- C <-- D     delete list_head *B        |      delete list_head *C--------------------------------|-----------------------------------configfs_unregister_subsystem   |   configfs_unregister_subsystem  unlink_group                  |     unlink_group    unlink_obj                  |       unlink_obj      list_del_init             |         list_del_init        __list_del_entry        |           __list_del_entry          __list_del            |             __list_del            // next == C        |            next->prev = prev   |                                |               next->prev = prev            prev->next = next   |                                |                 // prev == B                                |                 prev->next = nextFix this by adding mutex when calling link_group() or unlink_group(),but parent configfs_subsystem is NULL when config_item is root.So I create a mutex configfs_subsystem_mutex.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Compliant"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48931",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48931"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-22 04:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48931",
+				"href": "https://ubuntu.com/security/CVE-2022-48931",
+				"public": "20240822"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					}
+				]
+			}
+		]
+	}
+}

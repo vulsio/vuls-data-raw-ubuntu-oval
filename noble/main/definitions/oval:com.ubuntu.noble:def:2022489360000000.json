@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2022489360000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48936 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:gso: do not skip outer ip header in case of ipip and net_failoverWe encounter a tcp drop issue in our cloud environment. Packet GROed inhost forwards to a VM virtio_net nic with net_failover enabled. VM actsas a IPVS LB with ipip encapsulation. The full path like:host gro -> vm virtio_net rx -> net_failover rx -> ipvs fullnat -> ipip encap -> net_failover tx -> virtio_net txWhen net_failover transmits a ipip pkt (gso_type = 0x0103, which meansSKB_GSO_TCPV4, SKB_GSO_DODGY and SKB_GSO_IPXIP4), there is no gsodid because it supports TSO and GSO_IPXIP4. But network_header points toinner ip header.Call Trace: tcp4_gso_segment        ------> return NULL inet_gso_segment        ------> inner iph, network_header points to ipip_gso_segment inet_gso_segment        ------> outer iph skb_mac_gso_segmentAfterwards virtio_net transmits the pkt, only inner ip header is modified.And the outer one just keeps unchanged. The pkt will be dropped in remotehost.Call Trace: inet_gso_segment        ------> inner iph, outer iph is skipped skb_mac_gso_segment __skb_gso_segment validate_xmit_skb validate_xmit_skb_list sch_direct_xmit __qdisc_run __dev_queue_xmit        ------> virtio_net dev_hard_start_xmit __dev_queue_xmit        ------> net_failover ip_finish_output2 ip_output iptunnel_xmit ip_tunnel_xmit ipip_tunnel_xmit        ------> ipip dev_hard_start_xmit __dev_queue_xmit ip_finish_output2 ip_output ip_forward ip_rcv __netif_receive_skb_one_core netif_receive_skb_internal napi_gro_receive receive_buf virtnet_poll net_rx_actionThe root cause of this issue is specific with the rare combination ofSKB_GSO_DODGY and a tunnel device that adds an SKB_GSO_ tunnel option.SKB_GSO_DODGY is set from external virtio_net. We need to reset networkheader when callbacks.gso_segment() returns NULL.This patch also includes ipv6_gso_segment(), considering SIT, etc.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48936` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48936",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48936"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-22 04:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48936",
+				"href": "https://ubuntu.com/security/CVE-2022-48936",
+				"public": "20240822"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					}
+				]
+			}
+		]
+	}
+}
