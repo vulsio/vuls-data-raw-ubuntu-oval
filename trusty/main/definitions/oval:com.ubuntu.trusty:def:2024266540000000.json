@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26654 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: ALSA:sh: aica: reorder cleanup operations to avoid UAF bugs Thedreamcastcard->timer could schedule the spu_dma_work and the spu_dma_workcould also arm the dreamcastcard->timer. When the snd_pcm_substream isclosing, the aica_channel will be deallocated. But it could still bedereferenced in the worker thread. The reason is that del_timer() willreturn directly regardless of whether the timer handler is running or notand the worker could be rescheduled in the timer handler. As a result, theUAF bug will happen. The racy situation is shown below: (Thread 1) |(Thread 2) snd_aicapcm_pcm_close() | ... | run_spu_dma() //worker |mod_timer() flush_work() | del_timer() | aica_period_elapsed() //timerkfree(dreamcastcard->channel) | schedule_work() | run_spu_dma() //worker... | dreamcastcard->channel-> //USE In order to mitigate this bug andother possible corner cases, call mod_timer() conditionally inrun_spu_dma(), then implement PCM sync_stop op to cancel both the timer andworker. The sync_stop op will be called from PCM core appropriately whenneeded.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26654` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-258-generic - 4.4.0-258.292~14.04.2\nlinux-image-unsigned-4.4.0-258-generic - 4.4.0-258.292~14.04.2\nlinux-image-unsigned-4.4.0-258-lowlatency - 4.4.0-258.292~14.04.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1135-aws - 4.4.0-1135.141\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ALSA:sh: aica: reorder cleanup operations to avoid UAF bugs Thedreamcastcard->timer could schedule the spu_dma_work and the spu_dma_workcould also arm the dreamcastcard->timer. When the snd_pcm_substream isclosing, the aica_channel will be deallocated. But it could still bedereferenced in the worker thread. The reason is that del_timer() willreturn directly regardless of whether the timer handler is running or notand the worker could be rescheduled in the timer handler. As a result, theUAF bug will happen. The racy situation is shown below: (Thread 1) |(Thread 2) snd_aicapcm_pcm_close() | ... | run_spu_dma() //worker |mod_timer() flush_work() | del_timer() | aica_period_elapsed() //timerkfree(dreamcastcard->channel) | schedule_work() | run_spu_dma() //worker... | dreamcastcard->channel-> //USE In order to mitigate this bug andother possible corner cases, call mod_timer() conditionally inrun_spu_dma(), then implement PCM sync_stop op to cancel both the timer andworker. The sync_stop op will be called from PCM core appropriately whenneeded.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26654` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-258-generic - 4.4.0-258.292~14.04.2\nlinux-image-unsigned-4.4.0-258-generic - 4.4.0-258.292~14.04.2\nlinux-image-unsigned-4.4.0-258-lowlatency - 4.4.0-258.292~14.04.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1135-aws - 4.4.0-1135.141\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1180-azure - 4.15.0-1180.195~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -44,7 +44,8 @@
 				"https://ubuntu.com/security/notices/USN-6927-1",
 				"https://ubuntu.com/security/notices/USN-6972-1",
 				"https://ubuntu.com/security/notices/USN-6976-1",
-				"https://ubuntu.com/security/notices/USN-6972-2"
+				"https://ubuntu.com/security/notices/USN-6972-2",
+				"https://ubuntu.com/security/notices/USN-6972-3"
 			]
 		}
 	},
@@ -67,8 +68,8 @@
 						"comment": "linux-aws package in trusty was vulnerable but has been fixed (note: '4.4.0-1135.141')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1180.195~14.04.1')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2023524700000000",
+						"comment": "linux-azure package in trusty was vulnerable but has been fixed (note: '4.15.0-1180.195~14.04.1')."
 					}
 				]
 			}
