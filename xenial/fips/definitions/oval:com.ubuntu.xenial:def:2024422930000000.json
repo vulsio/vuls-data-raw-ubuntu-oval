@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024422930000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42293 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:arm64: mm: Fix lockless walks with static and dynamic page-table foldingLina reports random oopsen originating from the fast GUP code when16K pages are used with 4-level page-tables, the fourth level beingfolded at runtime due to lack of LPA2.In this configuration, the generic implementation ofp4d_offset_lockless() will return a 'p4d_t *' corresponding to the'pgd_t' allocated on the stack of the caller, gup_fast_pgd_range().This is normally fine, but when the fourth level of page-table is foldedat runtime, pud_offset_lockless() will offset from the address of the'p4d_t' to calculate the address of the PUD in the same page-table page.This results in a stray stack read when the 'p4d_t' has been allocatedon the stack and can send the walker into the weeds.Fix the problem by providing our own definition of p4d_offset_lockless()when CONFIG_PGTABLE_LEVELS <= 4 which returns the real page-tablepointer rather than the address of the local stack variable.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42293",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42293"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-17 09:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-42293",
+				"href": "https://ubuntu.com/security/CVE-2024-42293",
+				"public": "20240817"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
