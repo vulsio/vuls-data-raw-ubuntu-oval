@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-42315 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:exfat: fix potential deadlock on __exfat_get_dentry_setWhen accessing a file with more entries than ES_MAX_ENTRY_NUM, the bh-arrayis allocated in __exfat_get_entry_set. The problem is that the bh-array isallocated with GFP_KERNEL. It does not make sense. In the following cases,a deadlock for sbi->s_lock between the two processes may occur.       CPU0                CPU1       ----                ----  kswapd   balance_pgdat    lock(fs_reclaim)                      exfat_iterate                       lock(&sbi->s_lock)                       exfat_readdir                        exfat_get_uniname_from_ext_entry                         exfat_get_dentry_set                          __exfat_get_dentry_set                           kmalloc_array                            ...                            lock(fs_reclaim)    ...    evict     exfat_evict_inode      lock(&sbi->s_lock)To fix this, let's allocate bh-array with GFP_NOFS.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:exfat: fix potential deadlock on __exfat_get_dentry_setWhen accessing a file with more entries than ES_MAX_ENTRY_NUM, the bh-arrayis allocated in __exfat_get_entry_set. The problem is that the bh-array isallocated with GFP_KERNEL. It does not make sense. In the following cases,a deadlock for sbi->s_lock between the two processes may occur.       CPU0                CPU1       ----                ----  kswapd   balance_pgdat    lock(fs_reclaim)                      exfat_iterate                       lock(&sbi->s_lock)                       exfat_readdir                        exfat_get_uniname_from_ext_entry                         exfat_get_dentry_set                          __exfat_get_dentry_set                           kmalloc_array                            ...                            lock(fs_reclaim)    ...    evict     exfat_evict_inode      lock(&sbi->s_lock)To fix this, let's allocate bh-array with GFP_NOFS.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42315` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Certified"
@@ -34,8 +34,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201585530000000",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:2016200220000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					}
 				]
 			}
