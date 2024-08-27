@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024438980000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-43898 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ext4: sanity check for NULL pointer after ext4_force_shutdownTest case: 2 threads write short inline data to a file.In ext4_page_mkwrite the resulting inline data is converted.Handling ext4_grp_locked_error with description \"block bitmapand bg descriptor inconsistent: X vs Y free clusters\" callsext4_force_shutdown. The conversion clearsEXT4_STATE_MAY_INLINE_DATA but fails forext4_destroy_inline_data_nolock and ext4_mark_iloc_dirty dueto ext4_forced_shutdown. The restoration of inline data failsfor the same reason not setting EXT4_STATE_MAY_INLINE_DATA.Without the flag set a regular process path in ext4_da_write_endfollows trying to dereference page folio private pointer that hasnot been set. The fix calls early return with -EIO error shall thepointer to private be NULL.Sample crash report:Unable to handle kernel paging request at virtual address dfff800000000004KASAN: null-ptr-deref in range [0x0000000000000020-0x0000000000000027]Mem abort info:  ESR = 0x0000000096000005  EC = 0x25: DABT (current EL), IL = 32 bits  SET = 0, FnV = 0  EA = 0, S1PTW = 0  FSC = 0x05: level 1 translation faultData abort info:  ISV = 0, ISS = 0x00000005, ISS2 = 0x00000000  CM = 0, WnR = 0, TnD = 0, TagAccess = 0  GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0[dfff800000000004] address between user and kernel address rangesInternal error: Oops: 0000000096000005 [#1] PREEMPT SMPModules linked in:CPU: 1 PID: 20274 Comm: syz-executor185 Not tainted6.9.0-rc7-syzkaller-gfda5695d692c #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 03/27/2024pstate: 80400005 (Nzcv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)pc : __block_commit_write+0x64/0x2b0 fs/buffer.c:2167lr : __block_commit_write+0x3c/0x2b0 fs/buffer.c:2160sp : ffff8000a1957600x29: ffff8000a1957610 x28: dfff800000000000 x27: ffff0000e30e34b0x26: 0000000000000000 x25: dfff800000000000 x24: dfff800000000000x23: fffffdffc397c9e0 x22: 0000000000000020 x21: 0000000000000020x20: 0000000000000040 x19: fffffdffc397c9c0 x18: 1fffe000367bd196x17: ffff80008eead000 x16: ffff80008ae89e3c x15: 00000000200000c0x14: 1fffe0001cbe4e04 x13: 0000000000000000 x12: 0000000000000000x11: 0000000000000001 x10: 0000000000ff0100 x9 : 0000000000000000x8 : 0000000000000004 x7 : 0000000000000000 x6 : 0000000000000000x5 : fffffdffc397c9c0 x4 : 0000000000000020 x3 : 0000000000000020x2 : 0000000000000040 x1 : 0000000000000020 x0 : fffffdffc397c9c0Call trace: __block_commit_write+0x64/0x2b0 fs/buffer.c:2167 block_write_end+0xb4/0x104 fs/buffer.c:2253 ext4_da_do_write_end fs/ext4/inode.c:2955 [inline] ext4_da_write_end+0x2c4/0xa40 fs/ext4/inode.c:3028 generic_perform_write+0x394/0x588 mm/filemap.c:3985 ext4_buffered_write_iter+0x2c0/0x4ec fs/ext4/file.c:299 ext4_file_write_iter+0x188/0x1780 call_write_iter include/linux/fs.h:2110 [inline] new_sync_write fs/read_write.c:497 [inline] vfs_write+0x968/0xc3c fs/read_write.c:590 ksys_write+0x15c/0x26c fs/read_write.c:643 __do_sys_write fs/read_write.c:655 [inline] __se_sys_write fs/read_write.c:652 [inline] __arm64_sys_write+0x7c/0x90 fs/read_write.c:652 __invoke_syscall arch/arm64/kernel/syscall.c:34 [inline] invoke_syscall+0x98/0x2b8 arch/arm64/kernel/syscall.c:48 el0_svc_common+0x130/0x23c arch/arm64/kernel/syscall.c:133 do_el0_svc+0x48/0x58 arch/arm64/kernel/syscall.c:152 el0_svc+0x54/0x168 arch/arm64/kernel/entry-common.c:712 el0t_64_sync_handler+0x84/0xfc arch/arm64/kernel/entry-common.c:730 el0t_64_sync+0x190/0x194 arch/arm64/kernel/entry.S:598Code: 97f85911 f94002da 91008356 d343fec8 (38796908)---[ end trace 0000000000000000 ]-------------------Code disassembly (best guess):   0:\t97f85911 \tbl\t0xffffffffffe16444   4:\tf94002da \tldr\tx26, [x22]   8:\t91008356 \tadd\tx22, x26, #0x20   c:\td343fec8 \tlsr\tx8, x22, #3* 10:\t38796908 \tldrb\tw8, [x8, x25] <-- trapping instruction",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-43898",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-43898"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-27",
+			"cve": {
+				"text": "CVE-2024-43898",
+				"href": "https://ubuntu.com/security/CVE-2024-43898",
+				"public": "20240827"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
