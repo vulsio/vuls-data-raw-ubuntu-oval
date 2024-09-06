@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-44951 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:serial: sc16is7xx: fix TX fifo corruptionSometimes, when a packet is received on channel A at almost the same timeas a packet is about to be transmitted on channel B, we observe with alogic analyzer that the received packet on channel A is transmitted onchannel B. In other words, the Tx buffer data on channel B is corruptedwith data from channel A.The problem appeared since commit 4409df5866b7 (\"serial: sc16is7xx: changeEFR lock to operate on each channels\"), which changed the EFR locking tooperate on each channel instead of chip-wise.This commit has introduced a regression, because the EFR lock is used notonly to protect the EFR registers access, but also, in a very obscure andundocumented way, to protect access to the data buffer, which is shared bythe Tx and Rx handlers, but also by each channel of the IC.Fix this regression first by switching to kfifo_out_linear_ptr() insc16is7xx_handle_tx() to eliminate the need for a shared Rx/Tx buffer.Secondly, replace the chip-wise Rx buffer with a separate Rx buffer foreach channel.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:serial: sc16is7xx: fix TX fifo corruptionSometimes, when a packet is received on channel A at almost the same timeas a packet is about to be transmitted on channel B, we observe with alogic analyzer that the received packet on channel A is transmitted onchannel B. In other words, the Tx buffer data on channel B is corruptedwith data from channel A.The problem appeared since commit 4409df5866b7 (\"serial: sc16is7xx: changeEFR lock to operate on each channels\"), which changed the EFR locking tooperate on each channel instead of chip-wise.This commit has introduced a regression, because the EFR lock is used notonly to protect the EFR registers access, but also, in a very obscure andundocumented way, to protect access to the data buffer, which is shared bythe Tx and Rx handlers, but also by each channel of the IC.Fix this regression first by switching to kfifo_out_linear_ptr() insc16is7xx_handle_tx() to eliminate the need for a shared Rx/Tx buffer.Secondly, replace the chip-wise Rx buffer with a separate Rx buffer foreach channel.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-44951` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000080",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1003.3')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-44964 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:idpf: fix memory leaks and crashes while performing a soft resetThe second tagged commit introduced a UAF, as it removed restoringq_vector->vport pointers after reinitializating the structures.This is due to that all queue allocation functions are performed herewith the new temporary vport structure and those functions rewritethe backpointers to the vport. Then, this new struct is freed andthe pointers start leading to nowhere.But generally speaking, the current logic is very fragile. It claimsto be more reliable when the system is low on memory, but in fact, itconsumes two times more memory as at the moment of running thisfunction, there are two vports allocated with their queues and vectors.Moreover, it claims to prevent the driver from running into \"bad state\",but in fact, any error during the rebuild leaves the old vport in thepartially allocated state.Finally, if the interface is down when the function is called, it alwaysallocates a new queue set, but when the user decides to enable theinterface later on, vport_open() allocates them once again, IOW there'sa clear memory leak here.Just don't allocate a new queue set when performing a reset, that solvescrashes and memory leaks. Readd the old queue number and reopen theinterface on rollback - that solves limbo states when the device is leftdisabled and/or without HW queues enabled.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:idpf: fix memory leaks and crashes while performing a soft resetThe second tagged commit introduced a UAF, as it removed restoringq_vector->vport pointers after reinitializating the structures.This is due to that all queue allocation functions are performed herewith the new temporary vport structure and those functions rewritethe backpointers to the vport. Then, this new struct is freed andthe pointers start leading to nowhere.But generally speaking, the current logic is very fragile. It claimsto be more reliable when the system is low on memory, but in fact, itconsumes two times more memory as at the moment of running thisfunction, there are two vports allocated with their queues and vectors.Moreover, it claims to prevent the driver from running into \"bad state\",but in fact, any error during the rebuild leaves the old vport in thepartially allocated state.Finally, if the interface is down when the function is called, it alwaysallocates a new queue set, but when the user decides to enable theinterface later on, vport_open() allocates them once again, IOW there'sa clear memory leak here.Just don't allocate a new queue set when performing a reset, that solvescrashes and memory leaks. Readd the old queue number and reopen theinterface on rollback - that solves limbo states when the device is leftdisabled and/or without HW queues enabled.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-44964` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 FIPS Compliant"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000080",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1003.3')."
 					}
 				]
 			}
