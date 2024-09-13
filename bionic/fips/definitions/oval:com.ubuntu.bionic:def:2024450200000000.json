@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024450200000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-45020 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Fix a kernel verifier crash in stacksafe()Daniel Hodges reported a kernel verifier crash when playing with sched-ext.Further investigation shows that the crash is due to invalid memory accessin stacksafe(). More specifically, it is the following code:    if (exact != NOT_EXACT &&        old->stack[spi].slot_type[i % BPF_REG_SIZE] !=        cur->stack[spi].slot_type[i % BPF_REG_SIZE])            return false;The 'i' iterates old->allocated_stack.If cur->allocated_stack < old->allocated_stack the out-of-boundaccess will happen.To fix the issue add 'i >= cur->allocated_stack' check such that ifthe condition is true, stacksafe() should fail. Otherwise,cur->stack[spi].slot_type[i % BPF_REG_SIZE] memory access is legal.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 18.04 FIPS Certified"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-45020",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-45020"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-09-12",
+			"cve": {
+				"text": "CVE-2024-45020",
+				"href": "https://ubuntu.com/security/CVE-2024-45020",
+				"public": "20240912"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

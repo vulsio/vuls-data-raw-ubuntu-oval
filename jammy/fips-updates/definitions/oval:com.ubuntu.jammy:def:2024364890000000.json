@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36489 on Ubuntu 22.04 FIPS Compliant (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: tls:fix missing memory barrier in tls_init In tls_init(), a write memorybarrier is missing, and store-store reordering may cause NULL dereferencein tls_{setsockopt,getsockopt}. CPU0 CPU1 ----- ----- // In tls_init() //In tls_ctx_create() ctx = kzalloc() ctx->sk_proto = READ_ONCE(sk->sk_prot)-(1) // In update_sk_prot() WRITE_ONCE(sk->sk_prot, tls_prots) -(2) // Insock_common_setsockopt() READ_ONCE(sk->sk_prot)->setsockopt() // Intls_{setsockopt,getsockopt}() ctx->sk_proto->setsockopt() -(3) In the abovescenario, when (1) and (2) are reordered, (3) can observe the NULL value ofctx->sk_proto, causing NULL dereference. To fix it, we rely onrcu_assign_pointer() which implies the release barrier semantic. By movingrcu_assign_pointer() after ctx->sk_proto is initialized, we can ensure thatctx->sk_proto are visible when changing sk->sk_prot.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: tls:fix missing memory barrier in tls_init In tls_init(), a write memorybarrier is missing, and store-store reordering may cause NULL dereferencein tls_{setsockopt,getsockopt}. CPU0 CPU1 ----- ----- // In tls_init() //In tls_ctx_create() ctx = kzalloc() ctx->sk_proto = READ_ONCE(sk->sk_prot)-(1) // In update_sk_prot() WRITE_ONCE(sk->sk_prot, tls_prots) -(2) // Insock_common_setsockopt() READ_ONCE(sk->sk_prot)->setsockopt() // Intls_{setsockopt,getsockopt}() ctx->sk_proto->setsockopt() -(3) In the abovescenario, when (1) and (2) are reordered, (3) can observe the NULL value ofctx->sk_proto, causing NULL dereference. To fix it, we rely onrcu_assign_pointer() which implies the release barrier semantic. By movingrcu_assign_pointer() after ctx->sk_proto is initialized, we can ensure thatctx->sk_proto are visible when changing sk->sk_prot.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36489` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-kvm - 5.15.0-1066.71\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-gke - 5.15.0-1066.72\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-ibm - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-nvidia - 5.15.0-1064.65\nlinux-image-unsigned-5.15.0-1064-nvidia-lowlatency - 5.15.0-1064.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-oracle - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-5.15.0-1062-raspi - 5.15.0-1062.65\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 FIPS Compliant"
@@ -24,11 +24,16 @@
 				"public": "20240621",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "6999-1"
+				"usns": "6999-1,7004-1,7005-1,7007-1,7008-1,7005-2"
 			},
 			"public_date_at_usn": "2024-06-21 11:15:00 UTC",
 			"ref": [
-				"https://ubuntu.com/security/notices/USN-6999-1"
+				"https://ubuntu.com/security/notices/USN-6999-1",
+				"https://ubuntu.com/security/notices/USN-7004-1",
+				"https://ubuntu.com/security/notices/USN-7005-1",
+				"https://ubuntu.com/security/notices/USN-7007-1",
+				"https://ubuntu.com/security/notices/USN-7008-1",
+				"https://ubuntu.com/security/notices/USN-7005-2"
 			]
 		}
 	},
@@ -39,8 +44,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000000",
-						"comment": "linux package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-122.132')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000000",
+						"comment": "linux package in jammy was vulnerable but has been fixed (note: '5.15.0-121.131')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
@@ -55,16 +60,16 @@
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
-						"comment": "linux-kvm package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1067.72')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000010",
+						"comment": "linux-kvm package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.71')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000010",
-						"comment": "linux-aws package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1070.76')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000020",
+						"comment": "linux-aws package in jammy was vulnerable but has been fixed (note: '5.15.0-1069.75')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
@@ -123,8 +128,8 @@
 						"comment": "linux-gcp-fips package in fips-updates/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1069.77+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
-						"comment": "linux-gcp package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1069.77')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000030",
+						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1068.76')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
@@ -139,20 +144,20 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
-						"comment": "linux-gke package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1067.73')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000040",
+						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.72')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000080",
-						"comment": "linux-gkeop package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1053.60')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000050",
+						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1052.59')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-ibm package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1063.66')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000060",
+						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.65')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
-						"comment": "linux-intel-iotg package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1065.71')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000070",
+						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1064.70')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
@@ -171,8 +176,8 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
-						"comment": "linux-nvidia package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1065.66')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000080",
+						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1064.65')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
@@ -183,8 +188,8 @@
 						"comment": "linux-nvidia-6.5 package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000060",
-						"comment": "linux-oracle package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1068.74')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000090",
+						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.73')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
@@ -207,8 +212,8 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
-						"comment": "linux-raspi package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1063.66')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000060",
+						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.65')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",

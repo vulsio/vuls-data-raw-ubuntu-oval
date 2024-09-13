@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2024359490000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-35949 on Ubuntu 22.04 LTS (jammy) - medium",
+		"title": "CVE-2024-35949 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:make sure that WRITTEN is set on all metadata blocks We previously wouldcall btrfs_check_leaf() if we had the check integrity code enabled, whichmeant that we could only run the extended leaf checks if we had WRITTEN seton the header flags. This leaves a gap in our checking, because we couldend up with corruption on disk where WRITTEN isn't set on the leaf, andthen the extended leaf checks don't get run which we rely on to validateall of the item pointers to make sure we don't access memory outside of theextent buffer. However, since 732fab95abe2 (\"btrfs: check-integrity: removeCONFIG_BTRFS_FS_CHECK_INTEGRITY option\") we no longer callbtrfs_check_leaf() from btrfs_mark_buffer_dirty(), which means we only evercall it on blocks that are being written out, and thus have WRITTEN set, orthat are being read in, which should have WRITTEN set. Add checks to makesure we have WRITTEN set appropriately, and then make sure__btrfs_check_leaf() always does the item checking. This will protect usfrom file systems that have been corrupted and no longer have WRITTEN seton some of the blocks. This was hit on a crafted image tweaking the WRITTENbit and reported by KASAN as out-of-bound access in the eb accessors. Theexample is a dir item at the end of an eb. [2.042] BTRFS warning (deviceloop1): bad eb member start: ptr 0x3fff start 30572544 member offset 16410size 2 [2.040] general protection fault, probably for non-canonical address0xe0009d1000000003: 0000 [#1] PREEMPT SMP KASAN NOPTI [2.537] KASAN: maybewild-memory-access in range [0x0005088000000018-0x000508800000001f] [2.729]CPU: 0 PID: 2587 Comm: mount Not tainted 6.8.2 #1 [2.729] Hardware name:QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014 [2.621]RIP: 0010:btrfs_get_16+0x34b/0x6d0 [2.621] RSP: 0018:ffff88810871fab8EFLAGS: 00000206 [2.621] RAX: 0000a11000000003 RBX: ffff888104ff8720 RCX:ffff88811b2288c0 [2.621] RDX: dffffc0000000000 RSI: ffffffff81dd8aca RDI:ffff88810871f748 [2.621] RBP: 000000000000401a R08: 0000000000000001 R09:ffffed10210e3ee9 [2.621] R10: ffff88810871f74f R11: 205d323430333737 R12:000000000000001a [2.621] R13: 000508800000001a R14: 1ffff110210e3f5d R15:ffffffff850011e8 [2.621] FS: 00007f56ea275840(0000)GS:ffff88811b200000(0000) knlGS:0000000000000000 [2.621] CS: 0010 DS: 0000ES: 0000 CR0: 0000000080050033 [2.621] CR2: 00007febd13b75c0 CR3:000000010bb50000 CR4: 00000000000006f0 [2.621] Call Trace: [2.621] <TASK>[2.621] ? show_regs+0x74/0x80 [2.621] ? die_addr+0x46/0xc0 [2.621] ?exc_general_protection+0x161/0x2a0 [2.621] ?asm_exc_general_protection+0x26/0x30 [2.621] ? btrfs_get_16+0x33a/0x6d0[2.621] ? btrfs_get_16+0x34b/0x6d0 [2.621] ? btrfs_get_16+0x33a/0x6d0[2.621] ? __pfx_btrfs_get_16+0x10/0x10 [2.621] ?__pfx_mutex_unlock+0x10/0x10 [2.621] btrfs_match_dir_item_name+0x101/0x1a0[2.621] btrfs_lookup_dir_item+0x1f3/0x280 [2.621] ?__pfx_btrfs_lookup_dir_item+0x10/0x10 [2.621] btrfs_get_tree+0xd25/0x1910 [copy more details from report ]",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS"
+			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
 		},
 		"reference": {
 			"source": "CVE",
@@ -44,15 +44,15 @@
 						"comment": "linux package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8, was needed')."
 					},
 					{
@@ -60,7 +60,7 @@
 						"comment": "linux-kvm package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -68,15 +68,15 @@
 						"comment": "linux-aws package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8, was needed')."
 					},
 					{
@@ -84,43 +84,47 @@
 						"comment": "linux-azure package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
 						"comment": "linux-azure-fde package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
+						"comment": "linux-bluefield package in jammy is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
 						"comment": "linux-gcp package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8, was needed')."
 					},
 					{
@@ -132,39 +136,39 @@
 						"comment": "linux-gkeop package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
 						"comment": "linux-ibm package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
 						"comment": "linux-intel-iotg package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
 						"comment": "linux-lowlatency package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
 						"comment": "linux-nvidia package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
 						"comment": "linux-nvidia-6.5 package in jammy is affected and needs fixing."
 					},
 					{
@@ -172,23 +176,23 @@
 						"comment": "linux-oracle package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
 						"comment": "linux-oracle-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
@@ -196,23 +200,23 @@
 						"comment": "linux-raspi package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
 						"comment": "linux-xilinx-zynqmp package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
 						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
 					}
 				]
