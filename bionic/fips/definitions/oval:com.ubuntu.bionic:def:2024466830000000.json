@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-46683 on Ubuntu 18.04 FIPS Certified (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/xe: prevent UAF around preempt fenceThe fence lock is part of the queue, therefore in the current designanything locking the fence should then also hold a ref to the queue toprevent the queue from being freed.However, currently it looks like we signal the fence and then drop thequeue ref, but if something is waiting on the fence, the waiter iskicked to wake up at some later point, where upon waking up it firstgrabs the lock before checking the fence state. But if we have alreadydropped the queue ref, then the lock might already be freed as part ofthe queue, leading to uaf.To prevent this, move the fence lock into the fence itself so we don'trun into lifetime issues. Alternative might be to have device levellock, or only release the queue in the fence release callback, howeverthat might require pushing to another worker to avoid locking issues.References: https://gitlab.freedesktop.org/drm/xe/kernel/-/issues/2454References: https://gitlab.freedesktop.org/drm/xe/kernel/-/issues/2342References: https://gitlab.freedesktop.org/drm/xe/kernel/-/issues/2020(cherry picked from commit 7116c35aacedc38be6d15bd21b2fc936eed0008b)",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/xe: prevent UAF around preempt fenceThe fence lock is part of the queue, therefore in the current designanything locking the fence should then also hold a ref to the queue toprevent the queue from being freed.However, currently it looks like we signal the fence and then drop thequeue ref, but if something is waiting on the fence, the waiter iskicked to wake up at some later point, where upon waking up it firstgrabs the lock before checking the fence state. But if we have alreadydropped the queue ref, then the lock might already be freed as part ofthe queue, leading to uaf.To prevent this, move the fence lock into the fence itself so we don'trun into lifetime issues. Alternative might be to have device levellock, or only release the queue in the fence release callback, howeverthat might require pushing to another worker to avoid locking issues.References: https://gitlab.freedesktop.org/drm/xe/kernel/-/issues/2454References: https://gitlab.freedesktop.org/drm/xe/kernel/-/issues/2342References: https://gitlab.freedesktop.org/drm/xe/kernel/-/issues/2020(cherry picked from commit 7116c35aacedc38be6d15bd21b2fc936eed0008b)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46683` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 FIPS Certified"
@@ -34,20 +34,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
-						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000000",
+						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2016200220000010",
+						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-gcp-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					}
 				]
 			}
