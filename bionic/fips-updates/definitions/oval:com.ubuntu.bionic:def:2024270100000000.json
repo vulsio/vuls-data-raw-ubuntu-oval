@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.bionic:def:2024270100000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-27010 on Ubuntu 18.04 FIPS Compliant (bionic) - medium",
+		"title": "CVE-2024-27010 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:net/sched: Fix mirred deadlock on device recursion When the mirred actionis used on a classful egress qdisc and a packet is mirrored or redirectedto self we hit a qdisc lock deadlock. See trace below. [..... other inforemoved for brevity....] [ 82.890906] [ 82.890906]============================================ [ 82.890906] WARNING: possiblerecursive locking detected [ 82.890906] 6.8.0-05205-g77fadd89fe2d-dirty#213 Tainted: G W [ 82.890906] --------------------------------------------[ 82.890906] ping/418 is trying to acquire lock: [ 82.890906]ffff888006994110 (&sch->q.lock){+.-.}-{3:3}, at:__dev_queue_xmit+0x1778/0x3550 [ 82.890906] [ 82.890906] but task isalready holding lock: [ 82.890906] ffff888006994110(&sch->q.lock){+.-.}-{3:3}, at: __dev_queue_xmit+0x1778/0x3550 [ 82.890906][ 82.890906] other info that might help us debug this: [ 82.890906]Possible unsafe locking scenario: [ 82.890906] [ 82.890906] CPU0 [82.890906] ---- [ 82.890906] lock(&sch->q.lock); [ 82.890906]lock(&sch->q.lock); [ 82.890906] [ 82.890906] *** DEADLOCK *** [ 82.890906][..... other info removed for brevity....] Example setup (eth0->eth0) torecreate tc qdisc add dev eth0 root handle 1: htb default 30 tc filter adddev eth0 handle 1: protocol ip prio 2 matchall \\ action mirred egressredirect dev eth0 Another example(eth0->eth1->eth0) to recreate tc qdiscadd dev eth0 root handle 1: htb default 30 tc filter add dev eth0 handle 1:protocol ip prio 2 matchall \\ action mirred egress redirect dev eth1 tcqdisc add dev eth1 root handle 1: htb default 30 tc filter add dev eth1handle 1: protocol ip prio 2 matchall \\ action mirred egress redirect deveth0 We fix this by adding an owner field (CPU id) to struct Qdisc setafter root qdisc is entered. When the softirq enters it a second time, ifthe qdisc owner is the same CPU, the packet is dropped to break the loop.",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 18.04 FIPS Compliant"
+			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -39,8 +39,116 @@
 				"operator": "OR",
 				"criterions": [
 					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
 						"comment": "linux-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",

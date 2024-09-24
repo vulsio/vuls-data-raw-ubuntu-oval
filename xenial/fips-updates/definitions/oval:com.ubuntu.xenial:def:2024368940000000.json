@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.xenial:def:2024368940000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-36894 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"title": "CVE-2024-36894 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved: usb:gadget: f_fs: Fix race between aio_cancel() and AIO request complete FFSbased applications can utilize the aio_cancel() callback to dequeue pendingUSB requests submitted to the UDC. There is a scenario where the FFSapplication issues an AIO cancel call, while the UDC is handling a softdisconnect. For a DWC3 based implementation, the callstack looks like thefollowing: DWC3 Gadget FFS Application dwc3_gadget_soft_disconnect() ...--> dwc3_stop_active_transfers() --> dwc3_gadget_giveback(-ESHUTDOWN) -->ffs_epfile_async_io_complete() ffs_aio_cancel() --> usb_ep_free_request()--> usb_ep_dequeue() There is currently no locking implemented between theAIO completion handler and AIO cancel, so the issue occurs if thecompletion routine is running in parallel to an AIO cancel call coming fromthe FFS application. As the completion call frees the USB request(io_data->req) the FFS application is also referencing it for theusb_ep_dequeue() call. This can lead to accessing a stale/hanging pointer.commit b566d38857fc (\"usb: gadget: f_fs: use io_data->status consistently\")relocated the usb_ep_free_request() into ffs_epfile_async_io_complete().However, in order to properly implement locking to mitigate this issue, thespinlock can't be added to ffs_epfile_async_io_complete(), asusb_ep_dequeue() (if successfully dequeuing a USB request) will call thefunction driver's completion handler in the same context. Hence, leadinginto a deadlock. Fix this issue by moving the usb_ep_free_request() back toffs_user_copy_worker(), and ensuring that it explicitly sets io_data->reqto NULL after freeing it within the ffs->eps_lock. This resolves the racecondition above, as the ffs_aio_cancel() routine will not continueattempting to dequeue a request that has already been freed, or theffs_user_copy_work() not freeing the USB request until the AIO cancel isdone referencing it. This fix depends on commit b566d38857fc (\"usb: gadget:f_fs: use io_data->status consistently\")",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 16.04 FIPS Compliant"
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -36,7 +36,9 @@
 				"https://ubuntu.com/security/notices/USN-7003-3",
 				"https://ubuntu.com/security/notices/USN-7007-1",
 				"https://ubuntu.com/security/notices/USN-7009-1",
-				"https://ubuntu.com/security/notices/USN-7019-1"
+				"https://ubuntu.com/security/notices/USN-7019-1",
+				"https://ubuntu.com/security/notices/USN-7007-2",
+				"https://ubuntu.com/security/notices/USN-7007-3"
 			]
 		}
 	},
@@ -47,8 +49,52 @@
 				"operator": "OR",
 				"criterions": [
 					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
 						"comment": "linux-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}

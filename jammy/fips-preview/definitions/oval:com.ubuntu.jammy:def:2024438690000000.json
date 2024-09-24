@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2024438690000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-43869 on Ubuntu 22.04 FIPS Undergoing Certification (jammy) - medium",
+		"title": "CVE-2024-43869 on Ubuntu Pro FIPS-preview 22.04 LTS (jammy) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:perf: Fix event leak upon exec and file releaseThe perf pending task work is never waited upon the matching eventrelease. In the case of a child event, released via free_event()directly, this can potentially result in a leaked event, such as in thefollowing scenario that doesn't even require a weak IRQ workimplementation to trigger:schedule()   prepare_task_switch()=======> <NMI>      perf_event_overflow()         event->pending_sigtrap = ...         irq_work_queue(&event->pending_irq)<======= </NMI>      perf_event_task_sched_out()          event_sched_out()              event->pending_sigtrap = 0;              atomic_long_inc_not_zero(&event->refcount)              task_work_add(&event->pending_task)   finish_lock_switch()=======> <IRQ>   perf_pending_irq()      //do nothing, rely on pending task work<======= </IRQ>begin_new_exec()   perf_event_exit_task()      perf_event_exit_event()         // If is child event         free_event()            WARN(atomic_long_cmpxchg(&event->refcount, 1, 0) != 1)            // event is leakedSimilar scenarios can also happen with perf_event_remove_on_exec() orsimply against concurrent perf_event_release().Fix this with synchonizing against the possibly remaining pending taskwork while freeing the event, just like is done with remaining pendingIRQ work. This means that the pending task callback neither need norshould hold a reference to the event, preventing it from ever beeingfreed.",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 FIPS Undergoing Certification"
+			"platform": "Ubuntu Pro FIPS-preview 22.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",

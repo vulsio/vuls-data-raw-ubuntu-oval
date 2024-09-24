@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.xenial:def:2022489310000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2022-48931 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:configfs: fix a race in configfs_{,un}register_subsystem()When configfs_register_subsystem() or configfs_unregister_subsystem()is executing link_group() or unlink_group(),it is possible that two processes add or delete list concurrently.Some unfortunate interleavings of them can cause kernel panic.One of cases is:A --> B --> C --> DA <-- B <-- C <-- D     delete list_head *B        |      delete list_head *C--------------------------------|-----------------------------------configfs_unregister_subsystem   |   configfs_unregister_subsystem  unlink_group                  |     unlink_group    unlink_obj                  |       unlink_obj      list_del_init             |         list_del_init        __list_del_entry        |           __list_del_entry          __list_del            |             __list_del            // next == C        |            next->prev = prev   |                                |               next->prev = prev            prev->next = next   |                                |                 // prev == B                                |                 prev->next = nextFix this by adding mutex when calling link_group() or unlink_group(),but parent configfs_subsystem is NULL when config_item is root.So I create a mutex configfs_subsystem_mutex.",
+		"title": "CVE-2022-48931 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:configfs: fix a race in configfs_{,un}register_subsystem()When configfs_register_subsystem() or configfs_unregister_subsystem()is executing link_group() or unlink_group(),it is possible that two processes add or delete list concurrently.Some unfortunate interleavings of them can cause kernel panic.One of cases is:A --> B --> C --> DA <-- B <-- C <-- D     delete list_head *B        |      delete list_head *C--------------------------------|-----------------------------------configfs_unregister_subsystem   |   configfs_unregister_subsystem  unlink_group                  |     unlink_group    unlink_obj                  |       unlink_obj      list_del_init             |         list_del_init        __list_del_entry        |           __list_del_entry          __list_del            |             __list_del            // next == C        |            next->prev = prev   |                                |               next->prev = prev            prev->next = next   |                                |                 // prev == B                                |                 prev->next = nextFix this by adding mutex when calling link_group() or unlink_group(),but parent configfs_subsystem is NULL when config_item is root.So I create a mutex configfs_subsystem_mutex.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48931` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-177-generic - 4.15.0-177.186~16.04.1\nlinux-image-unsigned-4.15.0-177-generic - 4.15.0-177.186~16.04.1\nlinux-image-unsigned-4.15.0-177-lowlatency - 4.15.0-177.186~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1128-aws - 4.15.0-1128.137~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1138-azure - 4.15.0-1138.151~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1122-gcp - 4.15.0-1122.136~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1093-oracle - 4.15.0-1093.102~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 16.04 FIPS Compliant"
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -34,8 +34,52 @@
 				"operator": "OR",
 				"criterions": [
 					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021264010000000",
+						"comment": "linux-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-177.186~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021264010000010",
+						"comment": "linux-aws-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-1128.137~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021264010000020",
+						"comment": "linux-azure package in xenial was vulnerable but has been fixed (note: '4.15.0-1138.151~16.04.1')."
+					},
+					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
 						"comment": "linux-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021264010000030",
+						"comment": "linux-gcp package in xenial was vulnerable but has been fixed (note: '4.15.0-1122.136~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021264010000040",
+						"comment": "linux-oracle package in xenial was vulnerable but has been fixed (note: '4.15.0-1093.102~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}

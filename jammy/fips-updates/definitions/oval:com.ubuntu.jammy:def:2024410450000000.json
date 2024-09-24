@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2024410450000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-41045 on Ubuntu 22.04 FIPS Compliant (jammy) - medium",
+		"title": "CVE-2024-41045 on Ubuntu Pro FIPS-updates 22.04 LTS (jammy) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Defer work in bpf_timer_cancel_and_freeCurrently, the same case as previous patch (two timer callbacks tryingto cancel each other) can be invoked through bpf_map_update_elem aswell, or more precisely, freeing map elements containing timers. Sincethis relies on hrtimer_cancel as well, it is prone to the same deadlocksituation as the previous patch.It would be sufficient to use hrtimer_try_to_cancel to fix this problem,as the timer cannot be enqueued after async_cancel_and_free. Onceasync_cancel_and_free has been done, the timer must be reinitializedbefore it can be armed again. The callback running in parallel trying toarm the timer will fail, and freeing bpf_hrtimer without waiting issufficient (given kfree_rcu), and bpf_timer_cb will returnHRTIMER_NORESTART, preventing the timer from being rearmed again.However, there exists a UAF scenario where the callback arms the timerbefore entering this function, such that if cancellation fails (due totimer callback invoking this routine, or the target timer callbackrunning concurrently). In such a case, if the timer expiration issignificantly far in the future, the RCU grace period expirationhappening before it will free the bpf_hrtimer state and along with itthe struct hrtimer, that is enqueued.Hence, it is clear cancellation needs to occur afterasync_cancel_and_free, and yet it cannot be done inline due to deadlockissues. We thus modify bpf_timer_cancel_and_free to defer work to theglobal workqueue, adding a work_struct alongside rcu_head (both used at_different_ points of time, so can share space).Update existing code comments to reflect the new state of affairs.",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 FIPS Compliant"
+			"platform": "Ubuntu Pro FIPS-updates 22.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",

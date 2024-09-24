@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.xenial:def:2024421050000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-42105 on Ubuntu 16.04 FIPS Certified (xenial) - medium",
+		"title": "CVE-2024-42105 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix inode number range checksPatch series \"nilfs2: fix potential issues related to reserved inodes\".This series fixes one use-after-free issue reported by syzbot, caused bynilfs2's internal inode being exposed in the namespace on a corruptedfilesystem, and a couple of flaws that cause problems if the startingnumber of non-reserved inodes written in the on-disk super block isintentionally (or corruptly) changed from its default value.This patch (of 3):In the current implementation of nilfs2, \"nilfs->ns_first_ino\", whichgives the first non-reserved inode number, is read from the superblock,but its lower limit is not checked.As a result, if a number that overlaps with the inode number range ofreserved inodes such as the root directory or metadata files is set in thesuper block parameter, the inode number test macros (NILFS_MDT_INODE andNILFS_VALID_INODE) will not function properly.In addition, these test macros use left bit-shift calculations using withthe inode number as the shift count via the BIT macro, but the result of ashift calculation that exceeds the bit width of an integer is undefined inthe C specification, so if \"ns_first_ino\" is set to a large value otherthan the default value NILFS_USER_INO (=11), the macros may potentiallymalfunction depending on the environment.Fix these issues by checking the lower bound of \"nilfs->ns_first_ino\" andby preventing bit shifts equal to or greater than the NILFS_USER_INOconstant in the inode number test macros.Also, change the type of \"ns_first_ino\" from signed integer to unsignedinteger to avoid the need for type casting in comparisons such as thelower bound check introduced this time.",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 16.04 FIPS Certified"
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -31,7 +31,9 @@
 				"https://ubuntu.com/security/notices/USN-7003-3",
 				"https://ubuntu.com/security/notices/USN-7007-1",
 				"https://ubuntu.com/security/notices/USN-7009-1",
-				"https://ubuntu.com/security/notices/USN-7019-1"
+				"https://ubuntu.com/security/notices/USN-7019-1",
+				"https://ubuntu.com/security/notices/USN-7007-2",
+				"https://ubuntu.com/security/notices/USN-7007-3"
 			]
 		}
 	},
@@ -42,8 +44,52 @@
 				"operator": "OR",
 				"criterions": [
 					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
 						"comment": "linux-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}

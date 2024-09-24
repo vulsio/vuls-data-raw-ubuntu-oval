@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.xenial:def:2021473960000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2021-47396 on Ubuntu 16.04 FIPS Compliant (xenial) - medium",
+		"title": "CVE-2021-47396 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:mac80211-hwsim: fix late beacon hrtimer handling Thomas explained inhttps://lore.kernel.org/r/87mtoeb4hb.ffs@tglx that our handling of thehrtimer here is wrong: If the timer fires late (e.g. due to vCPUscheduling, as reported by Dmitry/syzbot) then it tries to actually rearmthe timer at the next deadline, which might be in the past already: 1 2 3 NN+1 | | | ... | | ^ intended to fire here (1) ^ next deadline here (2) ^actually fired here The next time it fires, it's later, but will still tryto schedule for the next deadline (now 3), etc. until it catches up with N,but that might take a long time, causing stalls etc. Now, all of this issimulation, so we just have to fix it, but note that the behaviour is wrongeven per spec, since there's no value then in sending all those beaconsunaligned - they should be aligned to the TBTT (1, 2, 3, ... in thepicture), and if we're a bit (or a lot) late, then just resume at thatpoint. Therefore, change the code to use hrtimer_forward_now() which willensure that the next firing of the timer would be at N+1 (in the picture),i.e. the next interval point after the current time.",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 16.04 FIPS Compliant"
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -32,8 +32,52 @@
 				"operator": "OR",
 				"criterions": [
 					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
 						"comment": "linux-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}
