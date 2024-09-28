@@ -3,7 +3,7 @@
 	"id": "oval:com.ubuntu.xenial:def:2024438820000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-43882 on Ubuntu 16.04 LTS (xenial) - medium",
+		"title": "CVE-2024-43882 on Ubuntu 16.04 LTS (xenial) - high",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:exec: Fix ToCToU between perm check and set-uid/gid usageWhen opening a file for exec via do_filp_open(), permission checking isdone against the file's metadata at that moment, and on success, a filepointer is passed back. Much later in the execve() code path, the filemetadata (specifically mode, uid, and gid) is used to determine if/howto set the uid and gid. However, those values may have changed since thepermissions check, meaning the execution may gain unintended privileges.For example, if a file could change permissions from executable and notset-id:---------x 1 root root 16048 Aug  7 13:16 targetto set-id and non-executable:---S------ 1 root root 16048 Aug  7 13:16 targetit is possible to gain root privileges when execution should have beendisallowed.While this race condition is rare in real-world scenarios, it has beenobserved (and proven exploitable) when package managers are updatingthe setuid bits of installed programs. Such files start with beingworld-executable but then are adjusted to be group-exec with a set-uidbit. For example, \"chmod o-x,u+s target\" makes \"target\" executable onlyby uid \"root\" and gid \"cdrom\", while also becoming setuid-root:-rwxr-xr-x 1 root cdrom 16048 Aug  7 13:16 targetbecomes:-rwsr-xr-- 1 root cdrom 16048 Aug  7 13:16 targetBut racing the chmod means users without group \"cdrom\" membership canget the permission to execute \"target\" just before the chmod, and whenthe chmod finishes, the exec reaches brpm_fill_uid(), and performs thesetuid to root, violating the expressed authorization of \"only cdromgroup members can setuid to root\".Re-check that we still have execute permissions in case the metadatahas changed. It would be better to keep a copy from the perm-check time,but until we can do that refactoring, the least-bad option is to do afull inode_permission() call (under inode lock). It is understood thatthis is safe against dead-locks, but hardly optimal.",
 		"affected": {
 			"family": "unix",
@@ -15,7 +15,7 @@
 			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-43882"
 		},
 		"advisory": {
-			"severity": "Medium",
+			"severity": "High",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
 			"public_date": "2024-08-21 01:15:00 UTC",
 			"cve": {
@@ -35,35 +35,47 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux package in xenial is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-hwe package in xenial is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-kvm package in xenial is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-aws package in xenial is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-aws-hwe package in xenial is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-azure package in xenial is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-gcp package in xenial is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-oracle package in xenial is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}

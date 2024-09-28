@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-38588 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: ftrace:Fix possible use-after-free issue in ftrace_location() KASAN reports a bug:BUG: KASAN: use-after-free in ftrace_location+0x90/0x120 Read of size 8 ataddr ffff888141d40010 by task insmod/424 CPU: 8 PID: 424 Comm: insmodTainted: G W 6.9.0-rc2+ [...] Call Trace: <TASK> dump_stack_lvl+0x68/0xa0print_report+0xcf/0x610 kasan_report+0xb5/0xe0 ftrace_location+0x90/0x120register_kprobe+0x14b/0xa40 kprobe_init+0x2d/0xff0 [kprobe_example]do_one_initcall+0x8f/0x2d0 do_init_module+0x13a/0x3c0load_module+0x3082/0x33d0 init_module_from_file+0xd2/0x130__x64_sys_finit_module+0x306/0x440 do_syscall_64+0x68/0x140entry_SYSCALL_64_after_hwframe+0x71/0x79 The root cause is that, inlookup_rec(), ftrace record of some address is being searched in ftracepages of some module, but those ftrace pages at the same time is beingfreed in ftrace_release_mod() as the corresponding module is being deleted:CPU1 | CPU2 register_kprobes() { | delete_module() {check_kprobe_address_safe() { | arch_check_ftrace_location() { |ftrace_location() { | lookup_rec() // USE! | ftrace_release_mod() // Free!To fix this issue: 1. Hold rcu lock as accessing ftrace pages inftrace_location_range(); 2. Use ftrace_location_range() instead oflookup_rec() in ftrace_location(); 3. Call synchronize_rcu() before freeingany ftrace pages both inftrace_process_locs()/ftrace_release_mod()/ftrace_free_mem().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-38588` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131~20.04.1\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure - 5.15.0-1072.81~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70~20.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ftrace:Fix possible use-after-free issue in ftrace_location() KASAN reports a bug:BUG: KASAN: use-after-free in ftrace_location+0x90/0x120 Read of size 8 ataddr ffff888141d40010 by task insmod/424 CPU: 8 PID: 424 Comm: insmodTainted: G W 6.9.0-rc2+ [...] Call Trace: <TASK> dump_stack_lvl+0x68/0xa0print_report+0xcf/0x610 kasan_report+0xb5/0xe0 ftrace_location+0x90/0x120register_kprobe+0x14b/0xa40 kprobe_init+0x2d/0xff0 [kprobe_example]do_one_initcall+0x8f/0x2d0 do_init_module+0x13a/0x3c0load_module+0x3082/0x33d0 init_module_from_file+0xd2/0x130__x64_sys_finit_module+0x306/0x440 do_syscall_64+0x68/0x140entry_SYSCALL_64_after_hwframe+0x71/0x79 The root cause is that, inlookup_rec(), ftrace record of some address is being searched in ftracepages of some module, but those ftrace pages at the same time is beingfreed in ftrace_release_mod() as the corresponding module is being deleted:CPU1 | CPU2 register_kprobes() { | delete_module() {check_kprobe_address_safe() { | arch_check_ftrace_location() { |ftrace_location() { | lookup_rec() // USE! | ftrace_release_mod() // Free!To fix this issue: 1. Hold rcu lock as accessing ftrace pages inftrace_location_range(); 2. Use ftrace_location_range() instead oflookup_rec() in ftrace_location(); 3. Call synchronize_rcu() before freeingany ftrace pages both inftrace_process_locs()/ftrace_release_mod()/ftrace_free_mem().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-38588` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131~20.04.1\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure - 5.15.0-1072.81~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure-fde - 5.15.0-1072.81~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-ibm - 5.15.0-1062.65~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-121-lowlatency - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-lowlatency-64k - 5.15.0-121.131~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-oracle - 5.15.0-1067.73~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -21,7 +21,10 @@
 			"cve": {
 				"text": "CVE-2024-38588",
 				"href": "https://ubuntu.com/security/CVE-2024-38588",
-				"public": "20240619"
+				"public": "20240619",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+				"usns": "6949-1,6952-1,6955-1,6949-2,6952-2,7007-1,7009-1,7019-1,7007-2,7007-3,7009-2"
 			},
 			"public_date_at_usn": "2024-06-19 14:15:00 UTC",
 			"ref": [
@@ -32,7 +35,10 @@
 				"https://ubuntu.com/security/notices/USN-6952-2",
 				"https://ubuntu.com/security/notices/USN-7007-1",
 				"https://ubuntu.com/security/notices/USN-7009-1",
-				"https://ubuntu.com/security/notices/USN-7019-1"
+				"https://ubuntu.com/security/notices/USN-7019-1",
+				"https://ubuntu.com/security/notices/USN-7007-2",
+				"https://ubuntu.com/security/notices/USN-7007-3",
+				"https://ubuntu.com/security/notices/USN-7009-2"
 			]
 		}
 	},
@@ -111,8 +117,8 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and needs fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000030",
+						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1072.81~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000170",
@@ -135,7 +141,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000030",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000040",
 						"comment": "linux-gcp-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1068.76~20.04.1')."
 					},
 					{
@@ -151,7 +157,7 @@
 						"comment": "linux-gkeop package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000040",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000050",
 						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1052.59~20.04.1')."
 					},
 					{
@@ -159,15 +165,15 @@
 						"comment": "linux-ibm package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1062.65~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000060",
+						"comment": "linux-ibm-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1062.65~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000050",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000070",
 						"comment": "linux-intel-iotg-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1064.70~20.04.1')."
 					},
 					{
@@ -175,8 +181,8 @@
 						"comment": "linux-iot package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-121.131~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000000",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-121.131~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000070",
@@ -195,8 +201,8 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1067.73~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000080",
+						"comment": "linux-oracle-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1067.73~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",

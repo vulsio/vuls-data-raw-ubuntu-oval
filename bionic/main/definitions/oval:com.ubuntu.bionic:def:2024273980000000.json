@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-27398 on Ubuntu 18.04 LTS (bionic) - high",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:Bluetooth: Fix use-after-free bugs caused by sco_sock_timeout When the scoconnection is established and then, the sco socket is releasing,timeout_work will be scheduled to judge whether the sco disconnection istimeout. The sock will be deallocated later, but it is dereferenced againin sco_sock_timeout. As a result, the use-after-free bugs will happen. Theroot cause is shown below: Cleanup Thread | Worker Thread sco_sock_release| sco_sock_close | __sco_sock_close | sco_sock_set_timer |schedule_delayed_work | sco_sock_kill | (wait a time) sock_put(sk) //FREE |sco_sock_timeout | sock_hold(sk) //USE The KASAN report triggered by POC isshown below: [ 95.890016]================================================================== [95.890496] BUG: KASAN: slab-use-after-free in sco_sock_timeout+0x5e/0x1c0 [95.890755] Write of size 4 at addr ffff88800c388080 by task kworker/0:0/7... [ 95.890755] Workqueue: events sco_sock_timeout [ 95.890755] CallTrace: [ 95.890755] <TASK> [ 95.890755] dump_stack_lvl+0x45/0x110 [95.890755] print_address_description+0x78/0x390 [ 95.890755]print_report+0x11b/0x250 [ 95.890755] ? __virt_addr_valid+0xbe/0xf0 [95.890755] ? sco_sock_timeout+0x5e/0x1c0 [ 95.890755]kasan_report+0x139/0x170 [ 95.890755] ? update_load_avg+0xe5/0x9f0 [95.890755] ? sco_sock_timeout+0x5e/0x1c0 [ 95.890755]kasan_check_range+0x2c3/0x2e0 [ 95.890755] sco_sock_timeout+0x5e/0x1c0 [95.890755] process_one_work+0x561/0xc50 [ 95.890755]worker_thread+0xab2/0x13c0 [ 95.890755] ? pr_cont_work+0x490/0x490 [95.890755] kthread+0x279/0x300 [ 95.890755] ? pr_cont_work+0x490/0x490 [95.890755] ? kthread_blkcg+0xa0/0xa0 [ 95.890755] ret_from_fork+0x34/0x60 [95.890755] ? kthread_blkcg+0xa0/0xa0 [ 95.890755]ret_from_fork_asm+0x11/0x20 [ 95.890755] </TASK> [ 95.890755] [ 95.890755]Allocated by task 506: [ 95.890755] kasan_save_track+0x3f/0x70 [ 95.890755]__kasan_kmalloc+0x86/0x90 [ 95.890755] __kmalloc+0x17f/0x360 [ 95.890755]sk_prot_alloc+0xe1/0x1a0 [ 95.890755] sk_alloc+0x31/0x4e0 [ 95.890755]bt_sock_alloc+0x2b/0x2a0 [ 95.890755] sco_sock_create+0xad/0x320 [95.890755] bt_sock_create+0x145/0x320 [ 95.890755]__sock_create+0x2e1/0x650 [ 95.890755] __sys_socket+0xd0/0x280 [ 95.890755]__x64_sys_socket+0x75/0x80 [ 95.890755] do_syscall_64+0xc4/0x1b0 [95.890755] entry_SYSCALL_64_after_hwframe+0x67/0x6f [ 95.890755] [95.890755] Freed by task 506: [ 95.890755] kasan_save_track+0x3f/0x70 [95.890755] kasan_save_free_info+0x40/0x50 [ 95.890755]poison_slab_object+0x118/0x180 [ 95.890755] __kasan_slab_free+0x12/0x30 [95.890755] kfree+0xb2/0x240 [ 95.890755] __sk_destruct+0x317/0x410 [95.890755] sco_sock_release+0x232/0x280 [ 95.890755] sock_close+0xb2/0x210[ 95.890755] __fput+0x37f/0x770 [ 95.890755] task_work_run+0x1ae/0x210 [95.890755] get_signal+0xe17/0xf70 [ 95.890755]arch_do_signal_or_restart+0x3f/0x520 [ 95.890755]syscall_exit_to_user_mode+0x55/0x120 [ 95.890755] do_syscall_64+0xd1/0x1b0[ 95.890755] entry_SYSCALL_64_after_hwframe+0x67/0x6f [ 95.890755] [95.890755] The buggy address belongs to the object at ffff88800c388000 [95.890755] which belongs to the cache kmalloc-1k of size 1024 [ 95.890755]The buggy address is located 128 bytes inside of [ 95.890755] freed1024-byte region [ffff88800c388000, ffff88800c388400) [ 95.890755] [95.890755] The buggy address belongs to the physical page: [ 95.890755]page: refcount:1 mapcount:0 mapping:0000000000000000index:0xffff88800c38a800 pfn:0xc388 [ 95.890755] head: order:3entire_mapcount:0 nr_pages_mapped:0 pincount:0 [ 95.890755] ano---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27398` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-192-generic - 5.4.0-192.212~18.04.1\nlinux-image-unsigned-5.4.0-192-lowlatency - 5.4.0-192.212~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1130-aws - 5.4.0-1130.140~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1135-azure - 5.4.0-1135.142~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-gcp - 5.4.0-1134.143~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1077-ibm - 5.4.0-1077.82~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1129-oracle - 5.4.0-1129.138~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-1114-raspi - 5.4.0-1114.126~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:Bluetooth: Fix use-after-free bugs caused by sco_sock_timeout When the scoconnection is established and then, the sco socket is releasing,timeout_work will be scheduled to judge whether the sco disconnection istimeout. The sock will be deallocated later, but it is dereferenced againin sco_sock_timeout. As a result, the use-after-free bugs will happen. Theroot cause is shown below: Cleanup Thread | Worker Thread sco_sock_release| sco_sock_close | __sco_sock_close | sco_sock_set_timer |schedule_delayed_work | sco_sock_kill | (wait a time) sock_put(sk) //FREE |sco_sock_timeout | sock_hold(sk) //USE The KASAN report triggered by POC isshown below: [ 95.890016]================================================================== [95.890496] BUG: KASAN: slab-use-after-free in sco_sock_timeout+0x5e/0x1c0 [95.890755] Write of size 4 at addr ffff88800c388080 by task kworker/0:0/7... [ 95.890755] Workqueue: events sco_sock_timeout [ 95.890755] CallTrace: [ 95.890755] <TASK> [ 95.890755] dump_stack_lvl+0x45/0x110 [95.890755] print_address_description+0x78/0x390 [ 95.890755]print_report+0x11b/0x250 [ 95.890755] ? __virt_addr_valid+0xbe/0xf0 [95.890755] ? sco_sock_timeout+0x5e/0x1c0 [ 95.890755]kasan_report+0x139/0x170 [ 95.890755] ? update_load_avg+0xe5/0x9f0 [95.890755] ? sco_sock_timeout+0x5e/0x1c0 [ 95.890755]kasan_check_range+0x2c3/0x2e0 [ 95.890755] sco_sock_timeout+0x5e/0x1c0 [95.890755] process_one_work+0x561/0xc50 [ 95.890755]worker_thread+0xab2/0x13c0 [ 95.890755] ? pr_cont_work+0x490/0x490 [95.890755] kthread+0x279/0x300 [ 95.890755] ? pr_cont_work+0x490/0x490 [95.890755] ? kthread_blkcg+0xa0/0xa0 [ 95.890755] ret_from_fork+0x34/0x60 [95.890755] ? kthread_blkcg+0xa0/0xa0 [ 95.890755]ret_from_fork_asm+0x11/0x20 [ 95.890755] </TASK> [ 95.890755] [ 95.890755]Allocated by task 506: [ 95.890755] kasan_save_track+0x3f/0x70 [ 95.890755]__kasan_kmalloc+0x86/0x90 [ 95.890755] __kmalloc+0x17f/0x360 [ 95.890755]sk_prot_alloc+0xe1/0x1a0 [ 95.890755] sk_alloc+0x31/0x4e0 [ 95.890755]bt_sock_alloc+0x2b/0x2a0 [ 95.890755] sco_sock_create+0xad/0x320 [95.890755] bt_sock_create+0x145/0x320 [ 95.890755]__sock_create+0x2e1/0x650 [ 95.890755] __sys_socket+0xd0/0x280 [ 95.890755]__x64_sys_socket+0x75/0x80 [ 95.890755] do_syscall_64+0xc4/0x1b0 [95.890755] entry_SYSCALL_64_after_hwframe+0x67/0x6f [ 95.890755] [95.890755] Freed by task 506: [ 95.890755] kasan_save_track+0x3f/0x70 [95.890755] kasan_save_free_info+0x40/0x50 [ 95.890755]poison_slab_object+0x118/0x180 [ 95.890755] __kasan_slab_free+0x12/0x30 [95.890755] kfree+0xb2/0x240 [ 95.890755] __sk_destruct+0x317/0x410 [95.890755] sco_sock_release+0x232/0x280 [ 95.890755] sock_close+0xb2/0x210[ 95.890755] __fput+0x37f/0x770 [ 95.890755] task_work_run+0x1ae/0x210 [95.890755] get_signal+0xe17/0xf70 [ 95.890755]arch_do_signal_or_restart+0x3f/0x520 [ 95.890755]syscall_exit_to_user_mode+0x55/0x120 [ 95.890755] do_syscall_64+0xd1/0x1b0[ 95.890755] entry_SYSCALL_64_after_hwframe+0x67/0x6f [ 95.890755] [95.890755] The buggy address belongs to the object at ffff88800c388000 [95.890755] which belongs to the cache kmalloc-1k of size 1024 [ 95.890755]The buggy address is located 128 bytes inside of [ 95.890755] freed1024-byte region [ffff88800c388000, ffff88800c388400) [ 95.890755] [95.890755] The buggy address belongs to the physical page: [ 95.890755]page: refcount:1 mapcount:0 mapping:0000000000000000index:0xffff88800c38a800 pfn:0xc388 [ 95.890755] head: order:3entire_mapcount:0 nr_pages_mapped:0 pincount:0 [ 95.890755] ano---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27398` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-229-generic - 4.15.0-229.241\nlinux-image-unsigned-4.15.0-229-generic - 4.15.0-229.241\nlinux-image-unsigned-4.15.0-229-lowlatency - 4.15.0-229.241\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-192-generic - 5.4.0-192.212~18.04.1\nlinux-image-unsigned-5.4.0-192-lowlatency - 5.4.0-192.212~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1156-kvm - 4.15.0-1156.161\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1173-aws - 4.15.0-1173.186\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1130-aws - 5.4.0-1130.140~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1181-azure - 4.15.0-1181.196\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1135-azure - 5.4.0-1135.142~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1166-gcp - 4.15.0-1166.183\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-gcp - 5.4.0-1134.143~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1077-ibm - 5.4.0-1077.82~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1135-oracle - 4.15.0-1135.146\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1129-oracle - 5.4.0-1129.138~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-1114-raspi - 5.4.0-1114.126~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -42,7 +42,8 @@
 				"https://ubuntu.com/security/notices/USN-6950-4",
 				"https://ubuntu.com/security/notices/USN-6951-4",
 				"https://ubuntu.com/security/notices/USN-6979-1",
-				"https://ubuntu.com/security/notices/USN-7019-1"
+				"https://ubuntu.com/security/notices/USN-7019-1",
+				"https://ubuntu.com/security/notices/USN-7028-1"
 			]
 		}
 	},
@@ -53,8 +54,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
-						"comment": "linux package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-229.241')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471880000000",
+						"comment": "linux package in bionic was vulnerable but has been fixed (note: '4.15.0-229.241')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
@@ -65,12 +66,12 @@
 						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-192.212~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
-						"comment": "linux-kvm package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1156.161')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471880000020",
+						"comment": "linux-kvm package in bionic was vulnerable but has been fixed (note: '4.15.0-1156.161')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
-						"comment": "linux-aws package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1173.186')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471880000030",
+						"comment": "linux-aws package in bionic was vulnerable but has been fixed (note: '4.15.0-1173.186')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -89,8 +90,8 @@
 						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
-						"comment": "linux-azure-4.15 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1181.196')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471880000050",
+						"comment": "linux-azure-4.15 package in bionic was vulnerable but has been fixed (note: '4.15.0-1181.196')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
@@ -105,8 +106,8 @@
 						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
-						"comment": "linux-gcp-4.15 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1166.183')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471880000070",
+						"comment": "linux-gcp-4.15 package in bionic was vulnerable but has been fixed (note: '4.15.0-1166.183')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
@@ -133,8 +134,8 @@
 						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1077.82~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
-						"comment": "linux-oracle package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1135.146')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471880000100",
+						"comment": "linux-oracle package in bionic was vulnerable but has been fixed (note: '4.15.0-1135.146')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -151,6 +152,10 @@
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
 						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021471310000060",

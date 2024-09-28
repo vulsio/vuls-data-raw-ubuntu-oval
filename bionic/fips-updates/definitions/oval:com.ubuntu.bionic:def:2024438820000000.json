@@ -3,7 +3,7 @@
 	"id": "oval:com.ubuntu.bionic:def:2024438820000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-43882 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
+		"title": "CVE-2024-43882 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - high",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:exec: Fix ToCToU between perm check and set-uid/gid usageWhen opening a file for exec via do_filp_open(), permission checking isdone against the file's metadata at that moment, and on success, a filepointer is passed back. Much later in the execve() code path, the filemetadata (specifically mode, uid, and gid) is used to determine if/howto set the uid and gid. However, those values may have changed since thepermissions check, meaning the execution may gain unintended privileges.For example, if a file could change permissions from executable and notset-id:---------x 1 root root 16048 Aug  7 13:16 targetto set-id and non-executable:---S------ 1 root root 16048 Aug  7 13:16 targetit is possible to gain root privileges when execution should have beendisallowed.While this race condition is rare in real-world scenarios, it has beenobserved (and proven exploitable) when package managers are updatingthe setuid bits of installed programs. Such files start with beingworld-executable but then are adjusted to be group-exec with a set-uidbit. For example, \"chmod o-x,u+s target\" makes \"target\" executable onlyby uid \"root\" and gid \"cdrom\", while also becoming setuid-root:-rwxr-xr-x 1 root cdrom 16048 Aug  7 13:16 targetbecomes:-rwsr-xr-- 1 root cdrom 16048 Aug  7 13:16 targetBut racing the chmod means users without group \"cdrom\" membership canget the permission to execute \"target\" just before the chmod, and whenthe chmod finishes, the exec reaches brpm_fill_uid(), and performs thesetuid to root, violating the expressed authorization of \"only cdromgroup members can setuid to root\".Re-check that we still have execute permissions in case the metadatahas changed. It would be better to keep a copy from the perm-check time,but until we can do that refactoring, the least-bad option is to do afull inode_permission() call (under inode lock). It is understood thatthis is safe against dead-locks, but hardly optimal.",
 		"affected": {
 			"family": "unix",
@@ -15,7 +15,7 @@
 			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-43882"
 		},
 		"advisory": {
-			"severity": "Medium",
+			"severity": "High",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
 			"public_date": "2024-08-21 01:15:00 UTC",
 			"cve": {
@@ -35,7 +35,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
-						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
@@ -43,15 +43,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-hwe-5.4 package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
-						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-kvm package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-aws package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -63,7 +63,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
-						"comment": "linux-aws-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-aws-5.4 package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -71,7 +71,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
-						"comment": "linux-azure-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-azure-4.15 package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
@@ -79,23 +79,23 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-azure-5.4 package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
-						"comment": "linux-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-fips package in fips-updates/bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -103,7 +103,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
-						"comment": "linux-gcp-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-gcp-4.15 package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
@@ -111,7 +111,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-gcp-5.4 package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -127,11 +127,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-ibm-5.4 package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
-						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-oracle package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -143,7 +143,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-oracle-5.4 package in bionic is affected and needs fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -155,7 +155,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
-						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-raspi-5.4 package in bionic is affected and needs fixing."
 					}
 				]
 			}

@@ -1,0 +1,50 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024358180000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35818 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:LoongArch: Define the __io_aw() hook as mmiowb() Commitfb24ea52f78e0d595852e (\"drivers: Remove explicit invocations of mmiowb()\")remove all mmiowb() in drivers, but it says: \"NOTE: mmiowb() has only everguaranteed ordering in conjunction with spin_unlock(). However, pairingeach mmiowb() removal in this patch with the corresponding call tospin_unlock() is not at all trivial, so there is a small chance that thischange may regress any drivers incorrectly relying on mmiowb() to orderMMIO writes between CPUs using lock-free synchronisation.\" The mmio inradeon_ring_commit() is protected by a mutex rather than a spinlock, but inthe mutex fastpath it behaves similar to spinlock. We can add mmiowb()calls in the radeon driver but the maintainer says he doesn't like such aworkaround, and radeon is not the only example of mutex protected mmio. Sowe should extend the mmiowb tracking system from spinlock to mutex, andmaybe other locking primitives. This is not easy and error prone, so wesolve it in the architectural code, by simply defining the __io_aw() hookas mmiowb(). And we no longer need to override queued_spin_unlock() so usethe generic definition. Without this, we get such an error when run'glxgears' on weak ordering architectures such as LoongArch: radeon0000:04:00.0: ring 0 stalled for more than 10324msec radeon 0000:04:00.0:ring 3 stalled for more than 10240msec radeon 0000:04:00.0: GPU lockup(current fence id 0x000000000001f412 last fence id 0x000000000001f414 onring 3) radeon 0000:04:00.0: GPU lockup (current fence id0x000000000000f940 last fence id 0x000000000000f941 on ring 0) radeon0000:04:00.0: scheduling IB failed (-35). [drm:radeon_gem_va_ioctl[radeon]] *ERROR* Couldn't update BO_VA (-35) radeon 0000:04:00.0:scheduling IB failed (-35). [drm:radeon_gem_va_ioctl [radeon]] *ERROR*Couldn't update BO_VA (-35) radeon 0000:04:00.0: scheduling IB failed(-35). [drm:radeon_gem_va_ioctl [radeon]] *ERROR* Couldn't update BO_VA(-35) radeon 0000:04:00.0: scheduling IB failed (-35).[drm:radeon_gem_va_ioctl [radeon]] *ERROR* Couldn't update BO_VA (-35)radeon 0000:04:00.0: scheduling IB failed (-35). [drm:radeon_gem_va_ioctl[radeon]] *ERROR* Couldn't update BO_VA (-35) radeon 0000:04:00.0:scheduling IB failed (-35). [drm:radeon_gem_va_ioctl [radeon]] *ERROR*Couldn't update BO_VA (-35) radeon 0000:04:00.0: scheduling IB failed(-35). [drm:radeon_gem_va_ioctl [radeon]] *ERROR* Couldn't update BO_VA(-35)",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35818",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35818"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-17 14:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-35818",
+				"href": "https://ubuntu.com/security/CVE-2024-35818",
+				"public": "20240517"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

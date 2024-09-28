@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-41006 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:netrom: Fix a memory leak in nr_heartbeat_expiry()syzbot reported a memory leak in nr_create() [0].Commit 409db27e3a2e (\"netrom: Fix use-after-free of a listening socket.\")added sock_hold() to the nr_heartbeat_expiry() function, wherea) a socket has a SOCK_DESTROY flag orb) a listening socket has a SOCK_DEAD flag.But in the case \"a,\" when the SOCK_DESTROY flag is set, the file descriptorhas already been closed and the nr_release() function has been called.So it makes no sense to hold the reference count because no one willcall another nr_destroy_socket() and put it as in the case \"b.\"nr_connect  nr_establish_data_link    nr_start_heartbeatnr_release  switch (nr->state)  case NR_STATE_3    nr->state = NR_STATE_2    sock_set_flag(sk, SOCK_DESTROY);                        nr_rx_frame                          nr_process_rx_frame                            switch (nr->state)                            case NR_STATE_2                              nr_state2_machine()                                nr_disconnect()                                  nr_sk(sk)->state = NR_STATE_0                                  sock_set_flag(sk, SOCK_DEAD)                        nr_heartbeat_expiry                          switch (nr->state)                          case NR_STATE_0                            if (sock_flag(sk, SOCK_DESTROY) ||                               (sk->sk_state == TCP_LISTEN                                 && sock_flag(sk, SOCK_DEAD)))                               sock_hold()  // ( !!! )                               nr_destroy_socket()To fix the memory leak, let's call sock_hold() only for a listening socket.Found by InfoTeCS on behalf of Linux Verification Center(linuxtesting.org) with Syzkaller.[0]: https://syzkaller.appspot.com/bug?extid=d327a1f3b12e1e206c16\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41006` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-195-generic - 5.4.0-195.215\nlinux-image-5.4.0-195-generic-lpae - 5.4.0-195.215\nlinux-image-unsigned-5.4.0-195-generic - 5.4.0-195.215\nlinux-image-unsigned-5.4.0-195-lowlatency - 5.4.0-195.215\nNo subscription required\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131~20.04.1\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1120-kvm - 5.4.0-1120.128\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1132-aws - 5.4.0-1132.142\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1137-azure - 5.4.0-1137.144\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure - 5.15.0-1072.81~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1092-bluefield - 5.4.0-1092.99\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1136-gcp - 5.4.0-1136.145\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1099-gkeop - 5.4.0-1099.103\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1079-ibm - 5.4.0-1079.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1043-iot - 5.4.0-1043.44\nlinux-image-unsigned-5.4.0-1043-iot - 5.4.0-1043.44\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1131-oracle - 5.4.0-1131.140\nNo subscription required\n\nlinux-image-5.4.0-1051-xilinx-zynqmp - 5.4.0-1051.55\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netrom: Fix a memory leak in nr_heartbeat_expiry()syzbot reported a memory leak in nr_create() [0].Commit 409db27e3a2e (\"netrom: Fix use-after-free of a listening socket.\")added sock_hold() to the nr_heartbeat_expiry() function, wherea) a socket has a SOCK_DESTROY flag orb) a listening socket has a SOCK_DEAD flag.But in the case \"a,\" when the SOCK_DESTROY flag is set, the file descriptorhas already been closed and the nr_release() function has been called.So it makes no sense to hold the reference count because no one willcall another nr_destroy_socket() and put it as in the case \"b.\"nr_connect  nr_establish_data_link    nr_start_heartbeatnr_release  switch (nr->state)  case NR_STATE_3    nr->state = NR_STATE_2    sock_set_flag(sk, SOCK_DESTROY);                        nr_rx_frame                          nr_process_rx_frame                            switch (nr->state)                            case NR_STATE_2                              nr_state2_machine()                                nr_disconnect()                                  nr_sk(sk)->state = NR_STATE_0                                  sock_set_flag(sk, SOCK_DEAD)                        nr_heartbeat_expiry                          switch (nr->state)                          case NR_STATE_0                            if (sock_flag(sk, SOCK_DESTROY) ||                               (sk->sk_state == TCP_LISTEN                                 && sock_flag(sk, SOCK_DEAD)))                               sock_hold()  // ( !!! )                               nr_destroy_socket()To fix the memory leak, let's call sock_hold() only for a listening socket.Found by InfoTeCS on behalf of Linux Verification Center(linuxtesting.org) with Syzkaller.[0]: https://syzkaller.appspot.com/bug?extid=d327a1f3b12e1e206c16\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41006` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-195-generic - 5.4.0-195.215\nlinux-image-5.4.0-195-generic-lpae - 5.4.0-195.215\nlinux-image-unsigned-5.4.0-195-generic - 5.4.0-195.215\nlinux-image-unsigned-5.4.0-195-lowlatency - 5.4.0-195.215\nNo subscription required\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131~20.04.1\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1120-kvm - 5.4.0-1120.128\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1132-aws - 5.4.0-1132.142\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1137-azure - 5.4.0-1137.144\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure - 5.15.0-1072.81~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure-fde - 5.15.0-1072.81~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1092-bluefield - 5.4.0-1092.99\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1136-gcp - 5.4.0-1136.145\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1099-gkeop - 5.4.0-1099.103\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1079-ibm - 5.4.0-1079.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-ibm - 5.15.0-1062.65~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1043-iot - 5.4.0-1043.44\nlinux-image-unsigned-5.4.0-1043-iot - 5.4.0-1043.44\nNo subscription required\n\nlinux-image-unsigned-5.15.0-121-lowlatency - 5.15.0-121.131~20.04.1\nlinux-image-unsigned-5.15.0-121-lowlatency-64k - 5.15.0-121.131~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1131-oracle - 5.4.0-1131.140\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-oracle - 5.15.0-1067.73~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1116-raspi - 5.4.0-1116.128\nNo subscription required\n\nlinux-image-5.4.0-1051-xilinx-zynqmp - 5.4.0-1051.55\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240712",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "6999-1,7003-1,7003-2,7004-1,7005-1,7006-1,7003-3,7007-1,7008-1,7005-2,7009-1,7019-1"
+				"usns": "6999-1,7003-1,7003-2,7004-1,7005-1,7006-1,7003-3,7007-1,7008-1,7005-2,7009-1,7019-1,7007-2,6999-2,7007-3,7029-1,7009-2,7003-4"
 			},
 			"public_date_at_usn": "2024-07-12 13:15:00 UTC",
 			"ref": [
@@ -39,7 +39,13 @@
 				"https://ubuntu.com/security/notices/USN-7008-1",
 				"https://ubuntu.com/security/notices/USN-7005-2",
 				"https://ubuntu.com/security/notices/USN-7009-1",
-				"https://ubuntu.com/security/notices/USN-7019-1"
+				"https://ubuntu.com/security/notices/USN-7019-1",
+				"https://ubuntu.com/security/notices/USN-7007-2",
+				"https://ubuntu.com/security/notices/USN-6999-2",
+				"https://ubuntu.com/security/notices/USN-7007-3",
+				"https://ubuntu.com/security/notices/USN-7029-1",
+				"https://ubuntu.com/security/notices/USN-7009-2",
+				"https://ubuntu.com/security/notices/USN-7003-4"
 			]
 		}
 	},
@@ -118,8 +124,8 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and needs fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000030",
+						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1072.81~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2023528030000040",
@@ -142,7 +148,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000030",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000040",
 						"comment": "linux-gcp-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1068.76~20.04.1')."
 					},
 					{
@@ -158,7 +164,7 @@
 						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1099.103')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000040",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000050",
 						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1052.59~20.04.1')."
 					},
 					{
@@ -166,15 +172,15 @@
 						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1079.84')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000440",
-						"comment": "linux-ibm-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1062.65~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000060",
+						"comment": "linux-ibm-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1062.65~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000050",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000070",
 						"comment": "linux-intel-iotg-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1064.70~20.04.1')."
 					},
 					{
@@ -182,8 +188,8 @@
 						"comment": "linux-iot package in focal was vulnerable but has been fixed (note: '5.4.0-1043.44')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000330",
-						"comment": "linux-lowlatency-hwe-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-121.131~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000000",
+						"comment": "linux-lowlatency-hwe-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-121.131~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2023528030000080",
@@ -202,8 +208,8 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000390",
-						"comment": "linux-oracle-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1067.73~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022487720000080",
+						"comment": "linux-oracle-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1067.73~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
@@ -222,8 +228,8 @@
 						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000090",
-						"comment": "linux-raspi package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1116.128')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2023528030000090",
+						"comment": "linux-raspi package in focal was vulnerable but has been fixed (note: '5.4.0-1116.128')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
