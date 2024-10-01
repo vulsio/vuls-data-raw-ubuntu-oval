@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35814 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:swiotlb: Fix double-allocation of slots due to broken alignment handlingCommit bbb73a103fbb (\"swiotlb: fix a braino in the alignment check fix\"),which was a fix for commit 0eee5ae10256 (\"swiotlb: fix slot alignmentchecks\"), causes a functional regression with vsock in a virtual machineusing bouncing via a restricted DMA SWIOTLB pool. When virtio allocates thevirtqueues for the vsock device using dma_alloc_coherent(), the SWIOTLBsearch can return page-unaligned allocations if 'area->index' was leftunaligned by a previous allocation from the buffer: # Final address inbrackets is the SWIOTLB address returned to the caller | virtio-pci0000:00:07.0: orig_addr 0x0 alloc_size 0x2000, iotlb_align_mask 0x800stride 0x2: got slot 1645-1649/7168 (0x98326800) | virtio-pci 0000:00:07.0:orig_addr 0x0 alloc_size 0x2000, iotlb_align_mask 0x800 stride 0x2: gotslot 1649-1653/7168 (0x98328800) | virtio-pci 0000:00:07.0: orig_addr 0x0alloc_size 0x2000, iotlb_align_mask 0x800 stride 0x2: got slot1653-1657/7168 (0x9832a800) This ends badly (typically buffer corruptionand/or a hang) because swiotlb_alloc() is expecting a page-alignedallocation and so blindly returns a pointer to the 'struct page'corresponding to the allocation, therefore double-allocating the first half(2KiB slot) of the 4KiB page. Fix the problem by treating the allocationalignment separately to any additional alignment requirements from thedevice, using the maximum of the two as the stride to search the bufferslots and taking care to ensure a minimum of page-alignment for bufferslarger than a page. This also resolves swiotlb allocation failures occuringdue to the inclusion of ~PAGE_MASK in 'iotlb_align_mask' for largeallocations and resulting in alignment requirements exceedingswiotlb_max_mapping_size().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35814` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1021-intel-iot-realtime - 5.15.0-1021.26\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-5.15.0-1006-realtime - 5.15.0-1006.6\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:swiotlb: Fix double-allocation of slots due to broken alignment handlingCommit bbb73a103fbb (\"swiotlb: fix a braino in the alignment check fix\"),which was a fix for commit 0eee5ae10256 (\"swiotlb: fix slot alignmentchecks\"), causes a functional regression with vsock in a virtual machineusing bouncing via a restricted DMA SWIOTLB pool. When virtio allocates thevirtqueues for the vsock device using dma_alloc_coherent(), the SWIOTLBsearch can return page-unaligned allocations if 'area->index' was leftunaligned by a previous allocation from the buffer: # Final address inbrackets is the SWIOTLB address returned to the caller | virtio-pci0000:00:07.0: orig_addr 0x0 alloc_size 0x2000, iotlb_align_mask 0x800stride 0x2: got slot 1645-1649/7168 (0x98326800) | virtio-pci 0000:00:07.0:orig_addr 0x0 alloc_size 0x2000, iotlb_align_mask 0x800 stride 0x2: gotslot 1649-1653/7168 (0x98328800) | virtio-pci 0000:00:07.0: orig_addr 0x0alloc_size 0x2000, iotlb_align_mask 0x800 stride 0x2: got slot1653-1657/7168 (0x9832a800) This ends badly (typically buffer corruptionand/or a hang) because swiotlb_alloc() is expecting a page-alignedallocation and so blindly returns a pointer to the 'struct page'corresponding to the allocation, therefore double-allocating the first half(2KiB slot) of the 4KiB page. Fix the problem by treating the allocationalignment separately to any additional alignment requirements from thedevice, using the maximum of the two as the stride to search the bufferslots and taking care to ensure a minimum of page-alignment for bufferslarger than a page. This also resolves swiotlb allocation failures occuringdue to the inclusion of ~PAGE_MASK in 'iotlb_align_mask' for largeallocations and resulting in alignment requirements exceedingswiotlb_max_mapping_size().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35814` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -140,7 +140,7 @@
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
@@ -156,7 +156,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
@@ -168,7 +168,7 @@
 						"comment": "linux-nvidia-6.5 package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000110",
 						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.10')."
 					},
 					{
@@ -192,7 +192,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000120",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
@@ -208,16 +208,12 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
-						"comment": "linux-intel-iot-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1021.26')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
-						"comment": "linux-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.6')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
+						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
 					}
 				]
 			}
