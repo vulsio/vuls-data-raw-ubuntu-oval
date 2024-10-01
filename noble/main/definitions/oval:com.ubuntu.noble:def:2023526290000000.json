@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52629 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: sh:push-switch: Reorder cleanup operations to avoid use-after-free bug Theoriginal code puts flush_work() before timer_shutdown_sync() inswitch_drv_remove(). Although we use flush_work() to stop the worker, itcould be rescheduled in switch_timer(). As a result, a use-after-free bugcan occur. The details are shown below: (cpu 0) | (cpu 1)switch_drv_remove() | flush_work() | ... | switch_timer // timer |schedule_work(&psw->work) timer_shutdown_sync() | ... | switch_work_handler// worker kfree(psw) // free | | psw->state = 0 // use This patch putstimer_shutdown_sync() before flush_work() to mitigate the bugs. As aresult, the worker and timer will be stopped safely before the deallocateoperations.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52629` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic-64k - 6.6.0-14.14\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-aws - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-azure - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-gcp - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-14-lowlatency - 6.6.0-14.14.1\nlinux-image-unsigned-6.6.0-14-lowlatency-64k - 6.6.0-14.14.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-oracle - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-6.7.0-1001-raspi - 6.7.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: sh:push-switch: Reorder cleanup operations to avoid use-after-free bug Theoriginal code puts flush_work() before timer_shutdown_sync() inswitch_drv_remove(). Although we use flush_work() to stop the worker, itcould be rescheduled in switch_timer(). As a result, a use-after-free bugcan occur. The details are shown below: (cpu 0) | (cpu 1)switch_drv_remove() | flush_work() | ... | switch_timer // timer |schedule_work(&psw->work) timer_shutdown_sync() | ... | switch_work_handler// worker kfree(psw) // free | | psw->state = 0 // use This patch putstimer_shutdown_sync() before flush_work() to mitigate the bugs. As aresult, the worker and timer will be stopped safely before the deallocateoperations.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52629` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic-64k - 6.6.0-14.14\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-aws - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-azure - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-gcp - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-14-lowlatency - 6.6.0-14.14.1\nlinux-image-unsigned-6.6.0-14-lowlatency-64k - 6.6.0-14.14.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-oracle - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-6.7.0-1001-raspi - 6.7.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -64,7 +64,7 @@
 						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
 						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
@@ -84,20 +84,12 @@
 						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
 						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000090",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
 						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000100",
-						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000110",
-						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
 					}
 				]
 			}

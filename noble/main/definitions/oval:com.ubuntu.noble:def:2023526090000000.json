@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52609 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: binder:fix race between mmput() and do_exit() Task A callsbinder_update_page_range() to allocate and insert pages on a remote addressspace from Task B. For this, Task A pins the remote mm via mmget_not_zero()first. This can race with Task B do_exit() and the final mmput() refcountdecrement will come from Task A. Task A | Task B------------------+------------------ mmget_not_zero() | | do_exit() |exit_mm() | mmput() mmput() | exit_mmap() | remove_vma() | fput() | In thiscase, the work of ____fput() from Task B is queued up in Task A asTWA_RESUME. So in theory, Task A returns to userspace and the cleanup workgets executed. However, Task A instead sleep, waiting for a reply from TaskB that never comes (it's dead). This means the binder_deferred_release() isblocked until an unrelated binder event forces Task A to go back touserspace. All the associated death notifications will also be delayeduntil then. In order to fix this use mmput_async() that will schedule thework in the corresponding mm->async_put_work WQ instead of Task A.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52609` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-11-generic - 6.8.0-11.11\nlinux-image-unsigned-6.8.0-11-generic - 6.8.0-11.11\nlinux-image-unsigned-6.8.0-11-generic-64k - 6.8.0-11.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-aws - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-azure - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1002-gcp - 6.8.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-7-lowlatency - 6.8.0-7.7.1\nlinux-image-unsigned-6.8.0-7-lowlatency-64k - 6.8.0-7.7.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-oracle - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-6.8.0-1001-raspi - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: binder:fix race between mmput() and do_exit() Task A callsbinder_update_page_range() to allocate and insert pages on a remote addressspace from Task B. For this, Task A pins the remote mm via mmget_not_zero()first. This can race with Task B do_exit() and the final mmput() refcountdecrement will come from Task A. Task A | Task B------------------+------------------ mmget_not_zero() | | do_exit() |exit_mm() | mmput() mmput() | exit_mmap() | remove_vma() | fput() | In thiscase, the work of ____fput() from Task B is queued up in Task A asTWA_RESUME. So in theory, Task A returns to userspace and the cleanup workgets executed. However, Task A instead sleep, waiting for a reply from TaskB that never comes (it's dead). This means the binder_deferred_release() isblocked until an unrelated binder event forces Task A to go back touserspace. All the associated death notifications will also be delayeduntil then. In order to fix this use mmput_async() that will schedule thework in the corresponding mm->async_put_work WQ instead of Task A.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52609` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-11-generic - 6.8.0-11.11\nlinux-image-unsigned-6.8.0-11-generic - 6.8.0-11.11\nlinux-image-unsigned-6.8.0-11-generic-64k - 6.8.0-11.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-aws - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-azure - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1002-gcp - 6.8.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-7-lowlatency - 6.8.0-7.7.1\nlinux-image-unsigned-6.8.0-7-lowlatency-64k - 6.8.0-7.7.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-oracle - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-6.8.0-1001-raspi - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -64,7 +64,7 @@
 						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
 						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
@@ -84,20 +84,12 @@
 						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
 						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000090",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
 						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
-						"comment": "linux-raspi-realtime package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-2001.1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000110",
-						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
 					}
 				]
 			}

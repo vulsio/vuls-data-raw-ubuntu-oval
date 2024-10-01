@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47435 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: dm: fixmempool NULL pointer race when completing IO dm_io_dec_pending() callsend_io_acct() first and will then dec md in-flight pending count. But if atask is swapping DM table at same time this can result in a crash due tomempool->elements being NULL: task1 task2 do_resume ->do_suspend->dm_wait_for_completion bio_endio ->clone_endio ->dm_io_dec_pending->end_io_acct ->wakeup task1 ->dm_swap_table ->__bind ->__bind_mempools->bioset_exit ->mempool_exit ->free_io [ 67.330330] Unable to handle kernelNULL pointer dereference at virtual address 0000000000000000 ...... [67.330494] pstate: 80400085 (Nzcv daIf +PAN -UAO) [ 67.330510] pc :mempool_free+0x70/0xa0 [ 67.330515] lr : mempool_free+0x4c/0xa0 [67.330520] sp : ffffff8008013b20 [ 67.330524] x29: ffffff8008013b20 x28:0000000000000004 [ 67.330530] x27: ffffffa8c2ff40a0 x26: 00000000ffff1cc8 [67.330535] x25: 0000000000000000 x24: ffffffdada34c800 [ 67.330541] x23:0000000000000000 x22: ffffffdada34c800 [ 67.330547] x21: 00000000ffff1cc8x20: ffffffd9a1304d80 [ 67.330552] x19: ffffffdada34c970 x18:000000b312625d9c [ 67.330558] x17: 00000000002dcfbf x16: 00000000000006dd [67.330563] x15: 000000000093b41e x14: 0000000000000010 [ 67.330569] x13:0000000000007f7a x12: 0000000034155555 [ 67.330574] x11: 0000000000000001x10: 0000000000000001 [ 67.330579] x9 : 0000000000000000 x8 :0000000000000000 [ 67.330585] x7 : 0000000000000000 x6 : ffffff80148b5c1a [67.330590] x5 : ffffff8008013ae0 x4 : 0000000000000001 [ 67.330596] x3 :ffffff80080139c8 x2 : ffffff801083bab8 [ 67.330601] x1 : 0000000000000000x0 : ffffffdada34c970 [ 67.330609] Call trace: [ 67.330616]mempool_free+0x70/0xa0 [ 67.330627] bio_put+0xf8/0x110 [ 67.330638]dec_pending+0x13c/0x230 [ 67.330644] clone_endio+0x90/0x180 [ 67.330649]bio_endio+0x198/0x1b8 [ 67.330655] dec_pending+0x190/0x230 [ 67.330660]clone_endio+0x90/0x180 [ 67.330665] bio_endio+0x198/0x1b8 [ 67.330673]blk_update_request+0x214/0x428 [ 67.330683] scsi_end_request+0x2c/0x300 [67.330688] scsi_io_completion+0xa0/0x710 [ 67.330695]scsi_finish_command+0xd8/0x110 [ 67.330700] scsi_softirq_done+0x114/0x148 [67.330708] blk_done_softirq+0x74/0xd0 [ 67.330716] __do_softirq+0x18c/0x374[ 67.330724] irq_exit+0xb4/0xb8 [ 67.330732] __handle_domain_irq+0x84/0xc0[ 67.330737] gic_handle_irq+0x148/0x1b0 [ 67.330744] el1_irq+0xe8/0x190 [67.330753] lpm_cpuidle_enter+0x4f8/0x538 [ 67.330759]cpuidle_enter_state+0x1fc/0x398 [ 67.330764] cpuidle_enter+0x18/0x20 [67.330772] do_idle+0x1b4/0x290 [ 67.330778] cpu_startup_entry+0x20/0x28 [67.330786] secondary_start_kernel+0x160/0x170 Fix this by: 1) Establishingpointers to 'struct dm_io' members in dm_io_dec_pending() so that they maybe passed into end_io_acct() _after_ free_io() is called. 2) Movingend_io_acct() after free_io().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47435` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: dm: fixmempool NULL pointer race when completing IO dm_io_dec_pending() callsend_io_acct() first and will then dec md in-flight pending count. But if atask is swapping DM table at same time this can result in a crash due tomempool->elements being NULL: task1 task2 do_resume ->do_suspend->dm_wait_for_completion bio_endio ->clone_endio ->dm_io_dec_pending->end_io_acct ->wakeup task1 ->dm_swap_table ->__bind ->__bind_mempools->bioset_exit ->mempool_exit ->free_io [ 67.330330] Unable to handle kernelNULL pointer dereference at virtual address 0000000000000000 ...... [67.330494] pstate: 80400085 (Nzcv daIf +PAN -UAO) [ 67.330510] pc :mempool_free+0x70/0xa0 [ 67.330515] lr : mempool_free+0x4c/0xa0 [67.330520] sp : ffffff8008013b20 [ 67.330524] x29: ffffff8008013b20 x28:0000000000000004 [ 67.330530] x27: ffffffa8c2ff40a0 x26: 00000000ffff1cc8 [67.330535] x25: 0000000000000000 x24: ffffffdada34c800 [ 67.330541] x23:0000000000000000 x22: ffffffdada34c800 [ 67.330547] x21: 00000000ffff1cc8x20: ffffffd9a1304d80 [ 67.330552] x19: ffffffdada34c970 x18:000000b312625d9c [ 67.330558] x17: 00000000002dcfbf x16: 00000000000006dd [67.330563] x15: 000000000093b41e x14: 0000000000000010 [ 67.330569] x13:0000000000007f7a x12: 0000000034155555 [ 67.330574] x11: 0000000000000001x10: 0000000000000001 [ 67.330579] x9 : 0000000000000000 x8 :0000000000000000 [ 67.330585] x7 : 0000000000000000 x6 : ffffff80148b5c1a [67.330590] x5 : ffffff8008013ae0 x4 : 0000000000000001 [ 67.330596] x3 :ffffff80080139c8 x2 : ffffff801083bab8 [ 67.330601] x1 : 0000000000000000x0 : ffffffdada34c970 [ 67.330609] Call trace: [ 67.330616]mempool_free+0x70/0xa0 [ 67.330627] bio_put+0xf8/0x110 [ 67.330638]dec_pending+0x13c/0x230 [ 67.330644] clone_endio+0x90/0x180 [ 67.330649]bio_endio+0x198/0x1b8 [ 67.330655] dec_pending+0x190/0x230 [ 67.330660]clone_endio+0x90/0x180 [ 67.330665] bio_endio+0x198/0x1b8 [ 67.330673]blk_update_request+0x214/0x428 [ 67.330683] scsi_end_request+0x2c/0x300 [67.330688] scsi_io_completion+0xa0/0x710 [ 67.330695]scsi_finish_command+0xd8/0x110 [ 67.330700] scsi_softirq_done+0x114/0x148 [67.330708] blk_done_softirq+0x74/0xd0 [ 67.330716] __do_softirq+0x18c/0x374[ 67.330724] irq_exit+0xb4/0xb8 [ 67.330732] __handle_domain_irq+0x84/0xc0[ 67.330737] gic_handle_irq+0x148/0x1b0 [ 67.330744] el1_irq+0xe8/0x190 [67.330753] lpm_cpuidle_enter+0x4f8/0x538 [ 67.330759]cpuidle_enter_state+0x1fc/0x398 [ 67.330764] cpuidle_enter+0x18/0x20 [67.330772] do_idle+0x1b4/0x290 [ 67.330778] cpu_startup_entry+0x20/0x28 [67.330786] secondary_start_kernel+0x160/0x170 Fix this by: 1) Establishingpointers to 'struct dm_io' members in dm_io_dec_pending() so that they maybe passed into end_io_acct() _after_ free_io() is called. 2) Movingend_io_acct() after free_io().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47435` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,56 +32,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
 						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
 						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
 						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
 						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
 						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
 						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
 						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
 						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
 						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
 						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000090",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
 						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000100",
-						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000110",
-						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
 					}
 				]
 			}

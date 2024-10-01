@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-46933 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: usb:gadget: f_fs: Clear ffs_eventfd in ffs_data_clear. ffs_data_clear isindirectly called from both ffs_fs_kill_sb and ffs_ep0_release, so it endsup being called twice when userland closes ep0 and then unmounts f_fs. Ifuserland provided an eventfd along with function's USB descriptors, it endsup calling eventfd_ctx_put as many times, causing a refcount underflow.NULL-ify ffs_eventfd to prevent these extraneous eventfd_ctx_put calls.Also, set epfiles to NULL right after de-allocating it, for readability.For completeness, ffs_data_clear actually ends up being called thrice, thelast call being before the whole ffs structure gets freed, so when thisspecific sequence happens there is a second underflow happening (but notbeing reported): /sys/kernel/debug/tracing# modprobe usb_f_fs/sys/kernel/debug/tracing# echo ffs_data_clear > set_ftrace_filter/sys/kernel/debug/tracing# echo function > current_tracer/sys/kernel/debug/tracing# echo 1 > tracing_on (setup gadget, run and killfunction userland process, teardown gadget) /sys/kernel/debug/tracing# echo0 > tracing_on /sys/kernel/debug/tracing# cat trace smartcard-openp-436[000] ..... 1946.208786: ffs_data_clear <-ffs_data_closedsmartcard-openp-431 [000] ..... 1946.279147: ffs_data_clear<-ffs_data_closed smartcard-openp-431 [000] .n... 1946.905512:ffs_data_clear <-ffs_data_put Warning output corresponding to above trace:[ 1946.284139] WARNING: CPU: 0 PID: 431 at lib/refcount.c:28refcount_warn_saturate+0x110/0x15c [ 1946.293094] refcount_t: underflow;use-after-free. [ 1946.298164] Modules linked in: usb_f_ncm(E) u_ether(E)usb_f_fs(E) hci_uart(E) btqca(E) btrtl(E) btbcm(E) btintel(E) bluetooth(E)nls_ascii(E) nls_cp437(E) vfat(E) fat(E) bcm2835_v4l2(CE)bcm2835_mmal_vchiq(CE) videobuf2_vmalloc(E) videobuf2_memops(E)sha512_generic(E) videobuf2_v4l2(E) sha512_arm(E) videobuf2_common(E)videodev(E) cpufreq_dt(E) snd_bcm2835(CE) brcmfmac(E) mc(E) vc4(E) ctr(E)brcmutil(E) snd_soc_core(E) snd_pcm_dmaengine(E) drbg(E) snd_pcm(E)snd_timer(E) snd(E) soundcore(E) drm_kms_helper(E) cec(E) ansi_cprng(E)rc_core(E) syscopyarea(E) raspberrypi_cpufreq(E) sysfillrect(E)sysimgblt(E) cfg80211(E) max17040_battery(OE) raspberrypi_hwmon(E)fb_sys_fops(E) regmap_i2c(E) ecdh_generic(E) rfkill(E) ecc(E)bcm2835_rng(E) rng_core(E) vchiq(CE) leds_gpio(E) libcomposite(E) fuse(E)configfs(E) ip_tables(E) x_tables(E) autofs4(E) ext4(E) crc16(E) mbcache(E)jbd2(E) crc32c_generic(E) sdhci_iproc(E) sdhci_pltfm(E) sdhci(E) [1946.399633] CPU: 0 PID: 431 Comm: smartcard-openp Tainted: G C OE5.15.0-1-rpi #1 Debian 5.15.3-1 [ 1946.417950] Hardware name: BCM2835 [1946.425442] Backtrace: [ 1946.432048] [<c08d60a0>] (dump_backtrace) from[<c08d62ec>] (show_stack+0x20/0x24) [ 1946.448226] r7:00000009 r6:0000001cr5:c04a948c r4:c0a64e2c [ 1946.458412] [<c08d62cc>] (show_stack) from[<c08d9ae0>] (dump_stack+0x28/0x30) [ 1946.470380] [<c08d9ab8>](dump_stack) from [<c0123500>] (__warn+0xe8/0x154) [ 1946.482067]r5:c04a948c r4:c0a71dc8 [ 1946.490184] [<c0123418>] (__warn) from[<c08d6948>] (warn_slowpath_fmt+0xa0/0xe4) [ 1946.506758] r7:00000009r6:0000001c r5:c0a71dc8 r4:c0a71e04 [ 1946.517070] [<c08d68ac>](warn_slowpath_fmt) from [<c04a948c>] (refcount_warn_saturate+0x110/0x15c)[ 1946.535309] r8:c0100224 r7:c0dfcb84 r6:ffffffff r5:c3b84c00 r4:c24a17c0[ 1946.546708] [<c04a937c>] (refcount_warn_saturate) from [<c0380134>](eventfd_ctx_put+0x48/0x74) [ 1946.564476] [<c03800ec>] (eventfd_ctx_put)from [<bf5464e8>] (ffs_data_clear+0xd0/0x118 [usb_f_fs]) [ 1946.582664]r5:c3b84c00 r4:c2695b00 [ 1946.590668] [<bf546418>] (ffs_data_clear[usb_f_fs]) from [<bf547cc0>] (ffs_data_closed+0x9c/0x150 [usb_f_fs]) [1946.609608] r5:bf54d014 r4:c2695b00 [ 1946.617522] [<bf547c24>](ffs_data_closed [usb_f_fs]) from [<bf547da0>] (ffs_fs_kill_sb+0x2c/0x30[usb_f_fs]) [ 1946.636217] r7:c0dfcb ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46933` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: usb:gadget: f_fs: Clear ffs_eventfd in ffs_data_clear. ffs_data_clear isindirectly called from both ffs_fs_kill_sb and ffs_ep0_release, so it endsup being called twice when userland closes ep0 and then unmounts f_fs. Ifuserland provided an eventfd along with function's USB descriptors, it endsup calling eventfd_ctx_put as many times, causing a refcount underflow.NULL-ify ffs_eventfd to prevent these extraneous eventfd_ctx_put calls.Also, set epfiles to NULL right after de-allocating it, for readability.For completeness, ffs_data_clear actually ends up being called thrice, thelast call being before the whole ffs structure gets freed, so when thisspecific sequence happens there is a second underflow happening (but notbeing reported): /sys/kernel/debug/tracing# modprobe usb_f_fs/sys/kernel/debug/tracing# echo ffs_data_clear > set_ftrace_filter/sys/kernel/debug/tracing# echo function > current_tracer/sys/kernel/debug/tracing# echo 1 > tracing_on (setup gadget, run and killfunction userland process, teardown gadget) /sys/kernel/debug/tracing# echo0 > tracing_on /sys/kernel/debug/tracing# cat trace smartcard-openp-436[000] ..... 1946.208786: ffs_data_clear <-ffs_data_closedsmartcard-openp-431 [000] ..... 1946.279147: ffs_data_clear<-ffs_data_closed smartcard-openp-431 [000] .n... 1946.905512:ffs_data_clear <-ffs_data_put Warning output corresponding to above trace:[ 1946.284139] WARNING: CPU: 0 PID: 431 at lib/refcount.c:28refcount_warn_saturate+0x110/0x15c [ 1946.293094] refcount_t: underflow;use-after-free. [ 1946.298164] Modules linked in: usb_f_ncm(E) u_ether(E)usb_f_fs(E) hci_uart(E) btqca(E) btrtl(E) btbcm(E) btintel(E) bluetooth(E)nls_ascii(E) nls_cp437(E) vfat(E) fat(E) bcm2835_v4l2(CE)bcm2835_mmal_vchiq(CE) videobuf2_vmalloc(E) videobuf2_memops(E)sha512_generic(E) videobuf2_v4l2(E) sha512_arm(E) videobuf2_common(E)videodev(E) cpufreq_dt(E) snd_bcm2835(CE) brcmfmac(E) mc(E) vc4(E) ctr(E)brcmutil(E) snd_soc_core(E) snd_pcm_dmaengine(E) drbg(E) snd_pcm(E)snd_timer(E) snd(E) soundcore(E) drm_kms_helper(E) cec(E) ansi_cprng(E)rc_core(E) syscopyarea(E) raspberrypi_cpufreq(E) sysfillrect(E)sysimgblt(E) cfg80211(E) max17040_battery(OE) raspberrypi_hwmon(E)fb_sys_fops(E) regmap_i2c(E) ecdh_generic(E) rfkill(E) ecc(E)bcm2835_rng(E) rng_core(E) vchiq(CE) leds_gpio(E) libcomposite(E) fuse(E)configfs(E) ip_tables(E) x_tables(E) autofs4(E) ext4(E) crc16(E) mbcache(E)jbd2(E) crc32c_generic(E) sdhci_iproc(E) sdhci_pltfm(E) sdhci(E) [1946.399633] CPU: 0 PID: 431 Comm: smartcard-openp Tainted: G C OE5.15.0-1-rpi #1 Debian 5.15.3-1 [ 1946.417950] Hardware name: BCM2835 [1946.425442] Backtrace: [ 1946.432048] [<c08d60a0>] (dump_backtrace) from[<c08d62ec>] (show_stack+0x20/0x24) [ 1946.448226] r7:00000009 r6:0000001cr5:c04a948c r4:c0a64e2c [ 1946.458412] [<c08d62cc>] (show_stack) from[<c08d9ae0>] (dump_stack+0x28/0x30) [ 1946.470380] [<c08d9ab8>](dump_stack) from [<c0123500>] (__warn+0xe8/0x154) [ 1946.482067]r5:c04a948c r4:c0a71dc8 [ 1946.490184] [<c0123418>] (__warn) from[<c08d6948>] (warn_slowpath_fmt+0xa0/0xe4) [ 1946.506758] r7:00000009r6:0000001c r5:c0a71dc8 r4:c0a71e04 [ 1946.517070] [<c08d68ac>](warn_slowpath_fmt) from [<c04a948c>] (refcount_warn_saturate+0x110/0x15c)[ 1946.535309] r8:c0100224 r7:c0dfcb84 r6:ffffffff r5:c3b84c00 r4:c24a17c0[ 1946.546708] [<c04a937c>] (refcount_warn_saturate) from [<c0380134>](eventfd_ctx_put+0x48/0x74) [ 1946.564476] [<c03800ec>] (eventfd_ctx_put)from [<bf5464e8>] (ffs_data_clear+0xd0/0x118 [usb_f_fs]) [ 1946.582664]r5:c3b84c00 r4:c2695b00 [ 1946.590668] [<bf546418>] (ffs_data_clear[usb_f_fs]) from [<bf547cc0>] (ffs_data_closed+0x9c/0x150 [usb_f_fs]) [1946.609608] r5:bf54d014 r4:c2695b00 [ 1946.617522] [<bf547c24>](ffs_data_closed [usb_f_fs]) from [<bf547da0>] (ffs_fs_kill_sb+0x2c/0x30[usb_f_fs]) [ 1946.636217] r7:c0dfcb ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46933` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -39,56 +39,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
 						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
 						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
 						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
 						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
 						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
 						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
 						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
 						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
 						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
 						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000090",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
 						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000100",
-						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000110",
-						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
 					}
 				]
 			}

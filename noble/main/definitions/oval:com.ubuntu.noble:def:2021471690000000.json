@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47169 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: serial:rp2: use 'request_firmware' instead of 'request_firmware_nowait' In'rp2_probe', the driver registers 'rp2_uart_interrupt' then calls'rp2_fw_cb' through 'request_firmware_nowait'. In 'rp2_fw_cb', if thefirmware don't exists, function just return without initializing ports of'rp2_card'. But now the interrupt handler function has been registered, andwhen an interrupt comes, 'rp2_uart_interrupt' may access those ports thencausing NULL pointer dereference or other bugs. Because the driver doessome initialization work in 'rp2_fw_cb', in order to make the driver readyto handle interrupts, 'request_firmware' should be used instead ofasynchronous 'request_firmware_nowait'. This report reveals it: INFO:trying to register non-static key. the code is fine but needs lockdepannotation. turning off the locking correctness validator. CPU: 2 PID: 0Comm: swapper/2 Not tainted 4.19.177-gdba4159c14ef-dirty #45 Hardware name:QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014 Call Trace: <IRQ> __dump_stacklib/dump_stack.c:77 [inline] dump_stack+0xec/0x156 lib/dump_stack.c:118assign_lock_key kernel/locking/lockdep.c:727 [inline]register_lock_class+0x14e5/0x1ba0 kernel/locking/lockdep.c:753__lock_acquire+0x187/0x3750 kernel/locking/lockdep.c:3303lock_acquire+0x124/0x340 kernel/locking/lockdep.c:3907 __raw_spin_lockinclude/linux/spinlock_api_smp.h:142 [inline] _raw_spin_lock+0x32/0x50kernel/locking/spinlock.c:144 spin_lock include/linux/spinlock.h:329[inline] rp2_ch_interrupt drivers/tty/serial/rp2.c:466 [inline]rp2_asic_interrupt.isra.9+0x15d/0x990 drivers/tty/serial/rp2.c:493rp2_uart_interrupt+0x49/0xe0 drivers/tty/serial/rp2.c:504__handle_irq_event_percpu+0xfb/0x770 kernel/irq/handle.c:149handle_irq_event_percpu+0x79/0x150 kernel/irq/handle.c:189handle_irq_event+0xac/0x140 kernel/irq/handle.c:206handle_fasteoi_irq+0x232/0x5c0 kernel/irq/chip.c:725generic_handle_irq_desc include/linux/irqdesc.h:155 [inline]handle_irq+0x230/0x3a0 arch/x86/kernel/irq_64.c:87 do_IRQ+0xa7/0x1e0arch/x86/kernel/irq.c:247 common_interrupt+0xf/0xfarch/x86/entry/entry_64.S:670 </IRQ> RIP: 0010:native_safe_halt+0x28/0x30arch/x86/include/asm/irqflags.h:61 Code: 00 00 55 be 04 00 00 00 48 c7 c700 c2 2f 8c 48 89 e5 e8 fb 31 e7 f8 8b 05 75 af 8d 03 85 c0 7e 07 0f 00 2d8a 61 65 00 fb f4 <5d> c3 90 90 90 90 90 90 0f 1f 44 00 00 55 48 89 e5 4157 41 56 41 RSP: 0018:ffff88806b71fcc8 EFLAGS: 00000246 ORIG_RAX:ffffffffffffffde RAX: 0000000000000000 RBX: ffffffff8bde7e48 RCX:ffffffff88a21285 RDX: 0000000000000000 RSI: 0000000000000004 RDI:ffffffff8c2fc200 RBP: ffff88806b71fcc8 R08: fffffbfff185f840 R09:fffffbfff185f840 R10: 0000000000000001 R11: fffffbfff185f840 R12:0000000000000002 R13: ffffffff8bea18a0 R14: 0000000000000000 R15:0000000000000000 arch_safe_halt arch/x86/include/asm/paravirt.h:94 [inline]default_idle+0x6f/0x360 arch/x86/kernel/process.c:557arch_cpu_idle+0xf/0x20 arch/x86/kernel/process.c:548default_idle_call+0x3b/0x60 kernel/sched/idle.c:93 cpuidle_idle_callkernel/sched/idle.c:153 [inline] do_idle+0x2ab/0x3c0kernel/sched/idle.c:263 cpu_startup_entry+0xcb/0xe0 kernel/sched/idle.c:369start_secondary+0x3b8/0x4e0 arch/x86/kernel/smpboot.c:271secondary_startup_64+0xa4/0xb0 arch/x86/kernel/head_64.S:243 BUG: unable tohandle kernel NULL pointer dereference at 0000000000000010 PGD8000000056d27067 P4D 8000000056d27067 PUD 56d28067 PMD 0 Oops: 0000 [#1]PREEMPT SMP KASAN PTI CPU: 2 PID: 0 Comm: swapper/2 Not tainted4.19.177-gdba4159c14ef-dirty #45 Hardware name: QEMU Standard PC (Q35 +ICH9, 2009), BIOS rel-1.12.0-59- gc9ba5276e321-prebuilt.qemu.org 04/01/2014RIP: 0010:readl arch/x86/include/asm/io.h:59 [inline] RIP:0010:rp2_ch_interrupt drivers/tty/serial/rp2.c:472 [inline] RIP:0010:rp2_asic_interrupt.isra.9+0x181/0x990 drivers/tty/serial/rp2.c: 493 Co---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47169` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: serial:rp2: use 'request_firmware' instead of 'request_firmware_nowait' In'rp2_probe', the driver registers 'rp2_uart_interrupt' then calls'rp2_fw_cb' through 'request_firmware_nowait'. In 'rp2_fw_cb', if thefirmware don't exists, function just return without initializing ports of'rp2_card'. But now the interrupt handler function has been registered, andwhen an interrupt comes, 'rp2_uart_interrupt' may access those ports thencausing NULL pointer dereference or other bugs. Because the driver doessome initialization work in 'rp2_fw_cb', in order to make the driver readyto handle interrupts, 'request_firmware' should be used instead ofasynchronous 'request_firmware_nowait'. This report reveals it: INFO:trying to register non-static key. the code is fine but needs lockdepannotation. turning off the locking correctness validator. CPU: 2 PID: 0Comm: swapper/2 Not tainted 4.19.177-gdba4159c14ef-dirty #45 Hardware name:QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014 Call Trace: <IRQ> __dump_stacklib/dump_stack.c:77 [inline] dump_stack+0xec/0x156 lib/dump_stack.c:118assign_lock_key kernel/locking/lockdep.c:727 [inline]register_lock_class+0x14e5/0x1ba0 kernel/locking/lockdep.c:753__lock_acquire+0x187/0x3750 kernel/locking/lockdep.c:3303lock_acquire+0x124/0x340 kernel/locking/lockdep.c:3907 __raw_spin_lockinclude/linux/spinlock_api_smp.h:142 [inline] _raw_spin_lock+0x32/0x50kernel/locking/spinlock.c:144 spin_lock include/linux/spinlock.h:329[inline] rp2_ch_interrupt drivers/tty/serial/rp2.c:466 [inline]rp2_asic_interrupt.isra.9+0x15d/0x990 drivers/tty/serial/rp2.c:493rp2_uart_interrupt+0x49/0xe0 drivers/tty/serial/rp2.c:504__handle_irq_event_percpu+0xfb/0x770 kernel/irq/handle.c:149handle_irq_event_percpu+0x79/0x150 kernel/irq/handle.c:189handle_irq_event+0xac/0x140 kernel/irq/handle.c:206handle_fasteoi_irq+0x232/0x5c0 kernel/irq/chip.c:725generic_handle_irq_desc include/linux/irqdesc.h:155 [inline]handle_irq+0x230/0x3a0 arch/x86/kernel/irq_64.c:87 do_IRQ+0xa7/0x1e0arch/x86/kernel/irq.c:247 common_interrupt+0xf/0xfarch/x86/entry/entry_64.S:670 </IRQ> RIP: 0010:native_safe_halt+0x28/0x30arch/x86/include/asm/irqflags.h:61 Code: 00 00 55 be 04 00 00 00 48 c7 c700 c2 2f 8c 48 89 e5 e8 fb 31 e7 f8 8b 05 75 af 8d 03 85 c0 7e 07 0f 00 2d8a 61 65 00 fb f4 <5d> c3 90 90 90 90 90 90 0f 1f 44 00 00 55 48 89 e5 4157 41 56 41 RSP: 0018:ffff88806b71fcc8 EFLAGS: 00000246 ORIG_RAX:ffffffffffffffde RAX: 0000000000000000 RBX: ffffffff8bde7e48 RCX:ffffffff88a21285 RDX: 0000000000000000 RSI: 0000000000000004 RDI:ffffffff8c2fc200 RBP: ffff88806b71fcc8 R08: fffffbfff185f840 R09:fffffbfff185f840 R10: 0000000000000001 R11: fffffbfff185f840 R12:0000000000000002 R13: ffffffff8bea18a0 R14: 0000000000000000 R15:0000000000000000 arch_safe_halt arch/x86/include/asm/paravirt.h:94 [inline]default_idle+0x6f/0x360 arch/x86/kernel/process.c:557arch_cpu_idle+0xf/0x20 arch/x86/kernel/process.c:548default_idle_call+0x3b/0x60 kernel/sched/idle.c:93 cpuidle_idle_callkernel/sched/idle.c:153 [inline] do_idle+0x2ab/0x3c0kernel/sched/idle.c:263 cpu_startup_entry+0xcb/0xe0 kernel/sched/idle.c:369start_secondary+0x3b8/0x4e0 arch/x86/kernel/smpboot.c:271secondary_startup_64+0xa4/0xb0 arch/x86/kernel/head_64.S:243 BUG: unable tohandle kernel NULL pointer dereference at 0000000000000010 PGD8000000056d27067 P4D 8000000056d27067 PUD 56d28067 PMD 0 Oops: 0000 [#1]PREEMPT SMP KASAN PTI CPU: 2 PID: 0 Comm: swapper/2 Not tainted4.19.177-gdba4159c14ef-dirty #45 Hardware name: QEMU Standard PC (Q35 +ICH9, 2009), BIOS rel-1.12.0-59- gc9ba5276e321-prebuilt.qemu.org 04/01/2014RIP: 0010:readl arch/x86/include/asm/io.h:59 [inline] RIP:0010:rp2_ch_interrupt drivers/tty/serial/rp2.c:472 [inline] RIP:0010:rp2_asic_interrupt.isra.9+0x181/0x990 drivers/tty/serial/rp2.c: 493 Co---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47169` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,56 +32,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000000",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
 						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000010",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
 						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
 						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
 						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000020",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
 						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000060",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
 						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000070",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
 						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
 						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
 						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000080",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
 						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000090",
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
 						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000100",
-						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2016107230000110",
-						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
 					}
 				]
 			}
