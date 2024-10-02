@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47435 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: dm: fixmempool NULL pointer race when completing IO dm_io_dec_pending() callsend_io_acct() first and will then dec md in-flight pending count. But if atask is swapping DM table at same time this can result in a crash due tomempool->elements being NULL: task1 task2 do_resume ->do_suspend->dm_wait_for_completion bio_endio ->clone_endio ->dm_io_dec_pending->end_io_acct ->wakeup task1 ->dm_swap_table ->__bind ->__bind_mempools->bioset_exit ->mempool_exit ->free_io [ 67.330330] Unable to handle kernelNULL pointer dereference at virtual address 0000000000000000 ...... [67.330494] pstate: 80400085 (Nzcv daIf +PAN -UAO) [ 67.330510] pc :mempool_free+0x70/0xa0 [ 67.330515] lr : mempool_free+0x4c/0xa0 [67.330520] sp : ffffff8008013b20 [ 67.330524] x29: ffffff8008013b20 x28:0000000000000004 [ 67.330530] x27: ffffffa8c2ff40a0 x26: 00000000ffff1cc8 [67.330535] x25: 0000000000000000 x24: ffffffdada34c800 [ 67.330541] x23:0000000000000000 x22: ffffffdada34c800 [ 67.330547] x21: 00000000ffff1cc8x20: ffffffd9a1304d80 [ 67.330552] x19: ffffffdada34c970 x18:000000b312625d9c [ 67.330558] x17: 00000000002dcfbf x16: 00000000000006dd [67.330563] x15: 000000000093b41e x14: 0000000000000010 [ 67.330569] x13:0000000000007f7a x12: 0000000034155555 [ 67.330574] x11: 0000000000000001x10: 0000000000000001 [ 67.330579] x9 : 0000000000000000 x8 :0000000000000000 [ 67.330585] x7 : 0000000000000000 x6 : ffffff80148b5c1a [67.330590] x5 : ffffff8008013ae0 x4 : 0000000000000001 [ 67.330596] x3 :ffffff80080139c8 x2 : ffffff801083bab8 [ 67.330601] x1 : 0000000000000000x0 : ffffffdada34c970 [ 67.330609] Call trace: [ 67.330616]mempool_free+0x70/0xa0 [ 67.330627] bio_put+0xf8/0x110 [ 67.330638]dec_pending+0x13c/0x230 [ 67.330644] clone_endio+0x90/0x180 [ 67.330649]bio_endio+0x198/0x1b8 [ 67.330655] dec_pending+0x190/0x230 [ 67.330660]clone_endio+0x90/0x180 [ 67.330665] bio_endio+0x198/0x1b8 [ 67.330673]blk_update_request+0x214/0x428 [ 67.330683] scsi_end_request+0x2c/0x300 [67.330688] scsi_io_completion+0xa0/0x710 [ 67.330695]scsi_finish_command+0xd8/0x110 [ 67.330700] scsi_softirq_done+0x114/0x148 [67.330708] blk_done_softirq+0x74/0xd0 [ 67.330716] __do_softirq+0x18c/0x374[ 67.330724] irq_exit+0xb4/0xb8 [ 67.330732] __handle_domain_irq+0x84/0xc0[ 67.330737] gic_handle_irq+0x148/0x1b0 [ 67.330744] el1_irq+0xe8/0x190 [67.330753] lpm_cpuidle_enter+0x4f8/0x538 [ 67.330759]cpuidle_enter_state+0x1fc/0x398 [ 67.330764] cpuidle_enter+0x18/0x20 [67.330772] do_idle+0x1b4/0x290 [ 67.330778] cpu_startup_entry+0x20/0x28 [67.330786] secondary_start_kernel+0x160/0x170 Fix this by: 1) Establishingpointers to 'struct dm_io' members in dm_io_dec_pending() so that they maybe passed into end_io_acct() _after_ free_io() is called. 2) Movingend_io_acct() after free_io().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47435` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-214-generic - 4.15.0-191.202\nlinux-image-4.15.0-214-generic-lpae - 4.15.0-191.202\nlinux-image-4.15.0-214-lowlatency - 4.15.0-191.202\nlinux-image-unsigned-4.15.0-214-generic - 4.15.0-191.202\nlinux-image-unsigned-4.15.0-214-lowlatency - 4.15.0-191.202\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-152-generic - 5.4.0-124.140~18.04.1\nlinux-image-5.4.0-152-generic-lpae - 5.4.0-124.140~18.04.1\nlinux-image-5.4.0-152-lowlatency - 5.4.0-124.140~18.04.1\nlinux-image-unsigned-5.4.0-152-generic - 5.4.0-124.140~18.04.1\nlinux-image-unsigned-5.4.0-152-lowlatency - 5.4.0-124.140~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1143-kvm - 4.15.0-1125.130\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1159-aws - 4.15.0-1139.150\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1104-aws - 5.4.0-1083.90~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1168-azure - 4.15.0-1149.164\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1110-azure - 5.4.0-1089.94~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1153-gcp - 4.15.0-1134.150\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1107-gcp - 5.4.0-1086.94~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1051-ibm - 5.4.0-1031.35~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1122-oracle - 4.15.0-1104.115\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1103-oracle - 5.4.0-1081.89~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-1088-raspi - 5.4.0-1068.78~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: dm: fixmempool NULL pointer race when completing IO dm_io_dec_pending() callsend_io_acct() first and will then dec md in-flight pending count. But if atask is swapping DM table at same time this can result in a crash due tomempool->elements being NULL: task1 task2 do_resume ->do_suspend->dm_wait_for_completion bio_endio ->clone_endio ->dm_io_dec_pending->end_io_acct ->wakeup task1 ->dm_swap_table ->__bind ->__bind_mempools->bioset_exit ->mempool_exit ->free_io [ 67.330330] Unable to handle kernelNULL pointer dereference at virtual address 0000000000000000 ...... [67.330494] pstate: 80400085 (Nzcv daIf +PAN -UAO) [ 67.330510] pc :mempool_free+0x70/0xa0 [ 67.330515] lr : mempool_free+0x4c/0xa0 [67.330520] sp : ffffff8008013b20 [ 67.330524] x29: ffffff8008013b20 x28:0000000000000004 [ 67.330530] x27: ffffffa8c2ff40a0 x26: 00000000ffff1cc8 [67.330535] x25: 0000000000000000 x24: ffffffdada34c800 [ 67.330541] x23:0000000000000000 x22: ffffffdada34c800 [ 67.330547] x21: 00000000ffff1cc8x20: ffffffd9a1304d80 [ 67.330552] x19: ffffffdada34c970 x18:000000b312625d9c [ 67.330558] x17: 00000000002dcfbf x16: 00000000000006dd [67.330563] x15: 000000000093b41e x14: 0000000000000010 [ 67.330569] x13:0000000000007f7a x12: 0000000034155555 [ 67.330574] x11: 0000000000000001x10: 0000000000000001 [ 67.330579] x9 : 0000000000000000 x8 :0000000000000000 [ 67.330585] x7 : 0000000000000000 x6 : ffffff80148b5c1a [67.330590] x5 : ffffff8008013ae0 x4 : 0000000000000001 [ 67.330596] x3 :ffffff80080139c8 x2 : ffffff801083bab8 [ 67.330601] x1 : 0000000000000000x0 : ffffffdada34c970 [ 67.330609] Call trace: [ 67.330616]mempool_free+0x70/0xa0 [ 67.330627] bio_put+0xf8/0x110 [ 67.330638]dec_pending+0x13c/0x230 [ 67.330644] clone_endio+0x90/0x180 [ 67.330649]bio_endio+0x198/0x1b8 [ 67.330655] dec_pending+0x190/0x230 [ 67.330660]clone_endio+0x90/0x180 [ 67.330665] bio_endio+0x198/0x1b8 [ 67.330673]blk_update_request+0x214/0x428 [ 67.330683] scsi_end_request+0x2c/0x300 [67.330688] scsi_io_completion+0xa0/0x710 [ 67.330695]scsi_finish_command+0xd8/0x110 [ 67.330700] scsi_softirq_done+0x114/0x148 [67.330708] blk_done_softirq+0x74/0xd0 [ 67.330716] __do_softirq+0x18c/0x374[ 67.330724] irq_exit+0xb4/0xb8 [ 67.330732] __handle_domain_irq+0x84/0xc0[ 67.330737] gic_handle_irq+0x148/0x1b0 [ 67.330744] el1_irq+0xe8/0x190 [67.330753] lpm_cpuidle_enter+0x4f8/0x538 [ 67.330759]cpuidle_enter_state+0x1fc/0x398 [ 67.330764] cpuidle_enter+0x18/0x20 [67.330772] do_idle+0x1b4/0x290 [ 67.330778] cpu_startup_entry+0x20/0x28 [67.330786] secondary_start_kernel+0x160/0x170 Fix this by: 1) Establishingpointers to 'struct dm_io' members in dm_io_dec_pending() so that they maybe passed into end_io_acct() _after_ free_io() is called. 2) Movingend_io_acct() after free_io().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47435` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-191-generic - 4.15.0-191.202\nlinux-image-4.15.0-191-generic-lpae - 4.15.0-191.202\nlinux-image-4.15.0-191-lowlatency - 4.15.0-191.202\nlinux-image-unsigned-4.15.0-191-generic - 4.15.0-191.202\nlinux-image-unsigned-4.15.0-191-lowlatency - 4.15.0-191.202\nNo subscription required\n\nlinux-image-5.4.0-124-generic - 5.4.0-124.140~18.04.1\nlinux-image-5.4.0-124-generic-lpae - 5.4.0-124.140~18.04.1\nlinux-image-5.4.0-124-lowlatency - 5.4.0-124.140~18.04.1\nlinux-image-unsigned-5.4.0-124-generic - 5.4.0-124.140~18.04.1\nlinux-image-unsigned-5.4.0-124-lowlatency - 5.4.0-124.140~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1125-kvm - 4.15.0-1125.130\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1139-aws - 4.15.0-1139.150\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1083-aws - 5.4.0-1083.90~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1149-azure - 4.15.0-1149.164\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1089-azure - 5.4.0-1089.94~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1134-gcp - 4.15.0-1134.150\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1086-gcp - 5.4.0-1086.94~18.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1031-ibm - 5.4.0-1031.35~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1104-oracle - 4.15.0-1104.115\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1081-oracle - 5.4.0-1081.89~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1068-raspi - 5.4.0-1068.78~18.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000000",
-						"comment": "linux package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-191.202')."
+						"comment": "linux package in bionic was vulnerable but has been fixed (note: '4.15.0-191.202')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
@@ -41,15 +41,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000010",
-						"comment": "linux-hwe-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-124.140~18.04.1')."
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-124.140~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000020",
-						"comment": "linux-kvm package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1125.130')."
+						"comment": "linux-kvm package in bionic was vulnerable but has been fixed (note: '4.15.0-1125.130')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000030",
-						"comment": "linux-aws package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1139.150')."
+						"comment": "linux-aws package in bionic was vulnerable but has been fixed (note: '4.15.0-1139.150')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -61,7 +61,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000040",
-						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1083.90~18.04.1')."
+						"comment": "linux-aws-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1083.90~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -69,7 +69,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000050",
-						"comment": "linux-azure-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1149.164')."
+						"comment": "linux-azure-4.15 package in bionic was vulnerable but has been fixed (note: '4.15.0-1149.164')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
@@ -77,7 +77,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000060",
-						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1089.94~18.04.1')."
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1089.94~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
@@ -101,7 +101,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000070",
-						"comment": "linux-gcp-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1134.150')."
+						"comment": "linux-gcp-4.15 package in bionic was vulnerable but has been fixed (note: '4.15.0-1134.150')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
@@ -109,7 +109,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000080",
-						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1086.94~18.04.1')."
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1086.94~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -125,11 +125,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000090",
-						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1031.35~18.04.1')."
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1031.35~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000100",
-						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1104.115')."
+						"comment": "linux-oracle package in bionic was vulnerable but has been fixed (note: '4.15.0-1104.115')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -141,7 +141,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000110",
-						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1081.89~18.04.1')."
+						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1081.89~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -153,7 +153,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021474350000120",
-						"comment": "linux-raspi-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1068.78~18.04.1')."
+						"comment": "linux-raspi-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1068.78~18.04.1')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-46760 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: rtw88: usb: schedule rx work after everything is set upRight now it's possible to hit NULL pointer dereference inrtw_rx_fill_rx_status on hw object and/or its fields becauseinitialization routine can start getting USB replies beforertw_dev is fully setup.The stack trace looks like this:rtw_rx_fill_rx_statusrtw8821c_query_rx_descrtw_usb_rx_handler...queue_workrtw_usb_read_port_complete...usb_submit_urbrtw_usb_rx_resubmitrtw_usb_init_rxrtw_usb_probeSo while we do the async stuff rtw_usb_probe continues and callsrtw_register_hw, which does all kinds of initialization (e.g.via ieee80211_register_hw) that rtw_rx_fill_rx_status relies on.Fix this by moving the first usb_submit_urb after everythingis set up.For me, this bug manifested as:[    8.893177] rtw_8821cu 1-1:1.2: band wrong, packet dropped[    8.910904] rtw_8821cu 1-1:1.2: hw->conf.chandef.chan NULL inrtw_rx_fill_rx_statusbecause I'm using Larry's backport of rtw88 driver with the NULLchecks in rtw_rx_fill_rx_status.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: rtw88: usb: schedule rx work after everything is set upRight now it's possible to hit NULL pointer dereference inrtw_rx_fill_rx_status on hw object and/or its fields becauseinitialization routine can start getting USB replies beforertw_dev is fully setup.The stack trace looks like this:rtw_rx_fill_rx_statusrtw8821c_query_rx_descrtw_usb_rx_handler...queue_workrtw_usb_read_port_complete...usb_submit_urbrtw_usb_rx_resubmitrtw_usb_init_rxrtw_usb_probeSo while we do the async stuff rtw_usb_probe continues and callsrtw_register_hw, which does all kinds of initialization (e.g.via ieee80211_register_hw) that rtw_rx_fill_rx_status relies on.Fix this by moving the first usb_submit_urb after everythingis set up.For me, this bug manifested as:[    8.893177] rtw_8821cu 1-1:1.2: band wrong, packet dropped[    8.910904] rtw_8821cu 1-1:1.2: hw->conf.chandef.chan NULL inrtw_rx_fill_rx_statusbecause I'm using Larry's backport of rtw88 driver with the NULLchecks in rtw_rx_fill_rx_status.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46760` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -34,40 +34,40 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
 						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",

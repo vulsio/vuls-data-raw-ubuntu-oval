@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48869 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: gadgetfs: Fix race between mounting and unmountingThe syzbot fuzzer and Gerald Lee have identified a use-after-free bugin the gadgetfs driver, involving processes concurrently mounting andunmounting the gadgetfs filesystem.  In particular, gadgetfs_fill_super()can race with gadgetfs_kill_sb(), causing the latter to deallocatethe_device while the former is using it.  The output from KASAN says,in part:BUG: KASAN: use-after-free in instrument_atomic_read_writeinclude/linux/instrumented.h:102 [inline]BUG: KASAN: use-after-free in atomic_fetch_sub_releaseinclude/linux/atomic/atomic-instrumented.h:176 [inline]BUG: KASAN: use-after-free in __refcount_sub_and_testinclude/linux/refcount.h:272 [inline]BUG: KASAN: use-after-free in __refcount_dec_and_testinclude/linux/refcount.h:315 [inline]BUG: KASAN: use-after-free in refcount_dec_and_testinclude/linux/refcount.h:333 [inline]BUG: KASAN: use-after-free in put_dev drivers/usb/gadget/legacy/inode.c:159[inline]BUG: KASAN: use-after-free in gadgetfs_kill_sb+0x33/0x100drivers/usb/gadget/legacy/inode.c:2086Write of size 4 at addr ffff8880276d7840 by task syz-executor126/18689CPU: 0 PID: 18689 Comm: syz-executor126 Not tainted 6.1.0-syzkaller #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 10/26/2022Call Trace: <TASK>... atomic_fetch_sub_release include/linux/atomic/atomic-instrumented.h:176[inline] __refcount_sub_and_test include/linux/refcount.h:272 [inline] __refcount_dec_and_test include/linux/refcount.h:315 [inline] refcount_dec_and_test include/linux/refcount.h:333 [inline] put_dev drivers/usb/gadget/legacy/inode.c:159 [inline] gadgetfs_kill_sb+0x33/0x100 drivers/usb/gadget/legacy/inode.c:2086 deactivate_locked_super+0xa7/0xf0 fs/super.c:332 vfs_get_super fs/super.c:1190 [inline] get_tree_single+0xd0/0x160 fs/super.c:1207 vfs_get_tree+0x88/0x270 fs/super.c:1531 vfs_fsconfig_locked fs/fsopen.c:232 [inline]The simplest solution is to ensure that gadgetfs_fill_super() andgadgetfs_kill_sb() are serialized by making them both acquire a newmutex.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48869` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-4.15.0-214-generic-lpae - 4.13.0-16.19\nlinux-image-4.15.0-214-lowlatency - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-generic - 4.13.0-16.19\nlinux-image-unsigned-4.15.0-214-lowlatency - 4.13.0-16.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-152-generic - 5.4.0-146.163~18.04.1\nlinux-image-5.4.0-152-generic-lpae - 5.4.0-146.163~18.04.1\nlinux-image-5.4.0-152-lowlatency - 5.4.0-146.163~18.04.1\nlinux-image-unsigned-5.4.0-152-generic - 5.4.0-146.163~18.04.1\nlinux-image-unsigned-5.4.0-152-lowlatency - 5.4.0-146.163~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1143-kvm - 4.15.0-1002.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1159-aws - 4.15.0-1001.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1104-aws - 5.4.0-1099.107~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1168-azure - 4.15.0-1082.92\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1110-azure - 5.4.0-1105.111~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nlinux-image-unsigned-hmac-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1153-gcp - 4.15.0-1071.81\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1107-gcp - 5.4.0-1102.111~18.04.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1051-ibm - 5.4.0-1046.51~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1122-oracle - 4.15.0-1007.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1103-oracle - 5.4.0-1098.107~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-1088-raspi - 5.4.0-1082.93~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: gadgetfs: Fix race between mounting and unmountingThe syzbot fuzzer and Gerald Lee have identified a use-after-free bugin the gadgetfs driver, involving processes concurrently mounting andunmounting the gadgetfs filesystem.  In particular, gadgetfs_fill_super()can race with gadgetfs_kill_sb(), causing the latter to deallocatethe_device while the former is using it.  The output from KASAN says,in part:BUG: KASAN: use-after-free in instrument_atomic_read_writeinclude/linux/instrumented.h:102 [inline]BUG: KASAN: use-after-free in atomic_fetch_sub_releaseinclude/linux/atomic/atomic-instrumented.h:176 [inline]BUG: KASAN: use-after-free in __refcount_sub_and_testinclude/linux/refcount.h:272 [inline]BUG: KASAN: use-after-free in __refcount_dec_and_testinclude/linux/refcount.h:315 [inline]BUG: KASAN: use-after-free in refcount_dec_and_testinclude/linux/refcount.h:333 [inline]BUG: KASAN: use-after-free in put_dev drivers/usb/gadget/legacy/inode.c:159[inline]BUG: KASAN: use-after-free in gadgetfs_kill_sb+0x33/0x100drivers/usb/gadget/legacy/inode.c:2086Write of size 4 at addr ffff8880276d7840 by task syz-executor126/18689CPU: 0 PID: 18689 Comm: syz-executor126 Not tainted 6.1.0-syzkaller #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 10/26/2022Call Trace: <TASK>... atomic_fetch_sub_release include/linux/atomic/atomic-instrumented.h:176[inline] __refcount_sub_and_test include/linux/refcount.h:272 [inline] __refcount_dec_and_test include/linux/refcount.h:315 [inline] refcount_dec_and_test include/linux/refcount.h:333 [inline] put_dev drivers/usb/gadget/legacy/inode.c:159 [inline] gadgetfs_kill_sb+0x33/0x100 drivers/usb/gadget/legacy/inode.c:2086 deactivate_locked_super+0xa7/0xf0 fs/super.c:332 vfs_get_super fs/super.c:1190 [inline] get_tree_single+0xd0/0x160 fs/super.c:1207 vfs_get_tree+0x88/0x270 fs/super.c:1531 vfs_fsconfig_locked fs/fsopen.c:232 [inline]The simplest solution is to ensure that gadgetfs_fill_super() andgadgetfs_kill_sb() are serialized by making them both acquire a newmutex.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48869` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-146-generic - 5.4.0-146.163~18.04.1\nlinux-image-5.4.0-146-generic-lpae - 5.4.0-146.163~18.04.1\nlinux-image-5.4.0-146-lowlatency - 5.4.0-146.163~18.04.1\nlinux-image-unsigned-5.4.0-146-generic - 5.4.0-146.163~18.04.1\nlinux-image-unsigned-5.4.0-146-lowlatency - 5.4.0-146.163~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1099-aws - 5.4.0-1099.107~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1105-azure - 5.4.0-1105.111~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nlinux-image-unsigned-hmac-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1102-gcp - 5.4.0-1102.111~18.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1046-ibm - 5.4.0-1046.51~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1098-oracle - 5.4.0-1098.107~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1082-raspi - 5.4.0-1082.93~18.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
@@ -43,7 +43,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202136690000010",
-						"comment": "linux-hwe-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-146.163~18.04.1')."
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-146.163~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
@@ -63,7 +63,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202136690000040",
-						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1099.107~18.04.1')."
+						"comment": "linux-aws-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1099.107~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -79,7 +79,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202136690000060",
-						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1105.111~18.04.1')."
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1105.111~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201499000000000",
@@ -111,7 +111,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202136690000090",
-						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1102.111~18.04.2')."
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1102.111~18.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -127,7 +127,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202136690000150",
-						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1046.51~18.04.1')."
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1046.51~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000110",
@@ -143,7 +143,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202136690000110",
-						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1098.107~18.04.1')."
+						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1098.107~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -155,7 +155,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202136690000130",
-						"comment": "linux-raspi-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1082.93~18.04.1')."
+						"comment": "linux-raspi-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1082.93~18.04.1')."
 					}
 				]
 			}

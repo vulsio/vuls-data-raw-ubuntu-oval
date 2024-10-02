@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47350 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/mm: Fix lockup on kernel exec fault The powerpc kernel is notprepared to handle exec faults from kernel. Especially, the functionis_exec_fault() will return 'false' when an exec fault is taken by kernel,because the check is based on reading current->thread.regs->trap whichcontains the trap from user. For instance, when provoking a LKDTMEXEC_USERSPACE test, current->thread.regs->trap is set to SYSCALL trap(0xc00), and the fault taken by the kernel is not seen as an exec fault byset_access_flags_filter(). Commit d7df2443cd5f (\"powerpc/mm: Fix spurioussegfaults on radix with autonuma\") made it clear and handled it properly.But later on commit d3ca587404b3 (\"powerpc/mm: Fix reporting of kernelexecute faults\") removed that handling, introducing test based onerror_code. And here is the problem, because on the 603 all upper bits ofSRR1 get cleared when the TLB instruction miss handler bails out to ISI.Until commit cbd7e6ca0210 (\"powerpc/fault: Avoid heavysearch_exception_tables() verification\"), an exec fault from kernel at auserspace address was indirectly caught by the lack of entry for thataddress in the exception tables. But after that commit the kernel mainlyrelies on KUAP or on core mm handling to catch wrong user accesses. Herethe access is not wrong, so mm handles it. It is a minor fault becausePAGE_EXEC is not set, set_access_flags_filter() should set PAGE_EXEC andvoila. But as is_exec_fault() returns false as explained in the beginning,set_access_flags_filter() bails out without setting PAGE_EXEC flag, whichleads to a forever minor exec fault. As the kernel is not prepared tohandle such exec faults, the thing to do is to fire in bad_kernel_fault()for any exec fault taken by the kernel, as it was prior to commitd3ca587404b3.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47350` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-152-generic - 5.4.0-84.94~18.04.1\nlinux-image-5.4.0-152-generic-lpae - 5.4.0-84.94~18.04.1\nlinux-image-5.4.0-152-lowlatency - 5.4.0-84.94~18.04.1\nlinux-image-unsigned-5.4.0-152-generic - 5.4.0-84.94~18.04.1\nlinux-image-unsigned-5.4.0-152-lowlatency - 5.4.0-84.94~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1104-aws - 5.4.0-1056.59~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1110-azure - 5.4.0-1058.60~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1107-gcp - 5.4.0-1052.56~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1051-ibm - 5.4.0-1010.11~18.04.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1103-oracle - 5.4.0-1054.58~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-1088-raspi - 5.4.0-1043.47~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/mm: Fix lockup on kernel exec fault The powerpc kernel is notprepared to handle exec faults from kernel. Especially, the functionis_exec_fault() will return 'false' when an exec fault is taken by kernel,because the check is based on reading current->thread.regs->trap whichcontains the trap from user. For instance, when provoking a LKDTMEXEC_USERSPACE test, current->thread.regs->trap is set to SYSCALL trap(0xc00), and the fault taken by the kernel is not seen as an exec fault byset_access_flags_filter(). Commit d7df2443cd5f (\"powerpc/mm: Fix spurioussegfaults on radix with autonuma\") made it clear and handled it properly.But later on commit d3ca587404b3 (\"powerpc/mm: Fix reporting of kernelexecute faults\") removed that handling, introducing test based onerror_code. And here is the problem, because on the 603 all upper bits ofSRR1 get cleared when the TLB instruction miss handler bails out to ISI.Until commit cbd7e6ca0210 (\"powerpc/fault: Avoid heavysearch_exception_tables() verification\"), an exec fault from kernel at auserspace address was indirectly caught by the lack of entry for thataddress in the exception tables. But after that commit the kernel mainlyrelies on KUAP or on core mm handling to catch wrong user accesses. Herethe access is not wrong, so mm handles it. It is a minor fault becausePAGE_EXEC is not set, set_access_flags_filter() should set PAGE_EXEC andvoila. But as is_exec_fault() returns false as explained in the beginning,set_access_flags_filter() bails out without setting PAGE_EXEC flag, whichleads to a forever minor exec fault. As the kernel is not prepared tohandle such exec faults, the thing to do is to fire in bad_kernel_fault()for any exec fault taken by the kernel, as it was prior to commitd3ca587404b3.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47350` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-84-generic - 5.4.0-84.94~18.04.1\nlinux-image-5.4.0-84-generic-lpae - 5.4.0-84.94~18.04.1\nlinux-image-5.4.0-84-lowlatency - 5.4.0-84.94~18.04.1\nlinux-image-unsigned-5.4.0-84-generic - 5.4.0-84.94~18.04.1\nlinux-image-unsigned-5.4.0-84-lowlatency - 5.4.0-84.94~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1056-aws - 5.4.0-1056.59~18.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1058-azure - 5.4.0-1058.60~18.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1052-gcp - 5.4.0-1052.56~18.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1054-oracle - 5.4.0-1054.58~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1043-raspi - 5.4.0-1043.47~18.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -41,7 +41,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2020363110000000",
-						"comment": "linux-hwe-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-84.94~18.04.1')."
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-84.94~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
@@ -61,7 +61,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2020363110000010",
-						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1056.59~18.04.1')."
+						"comment": "linux-aws-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1056.59~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -77,7 +77,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2020363110000020",
-						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1058.60~18.04.1')."
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1058.60~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -93,7 +93,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2020265550000060",
-						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1052.56~18.04.1')."
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1052.56~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -125,7 +125,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2020363110000050",
-						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1054.58~18.04.1')."
+						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1054.58~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -137,7 +137,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2021225430000000",
-						"comment": "linux-raspi-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1043.47~18.04.1')."
+						"comment": "linux-raspi-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1043.47~18.04.1')."
 					}
 				]
 			}

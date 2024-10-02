@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48838 on Ubuntu Pro FIPS 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: gadget: Fix use-after-free bug by not setting udc->dev.driverThe syzbot fuzzer found a use-after-free bug:BUG: KASAN: use-after-free in dev_uevent+0x712/0x780drivers/base/core.c:2320Read of size 8 at addr ffff88802b934098 by task udevd/3689CPU: 2 PID: 3689 Comm: udevd Not tainted5.17.0-rc4-syzkaller-00229-g4f12b742eb2b #0Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.14.0-204/01/2014Call Trace: <TASK> __dump_stack lib/dump_stack.c:88 [inline] dump_stack_lvl+0xcd/0x134 lib/dump_stack.c:106 print_address_description.constprop.0.cold+0x8d/0x303mm/kasan/report.c:255 __kasan_report mm/kasan/report.c:442 [inline] kasan_report.cold+0x83/0xdf mm/kasan/report.c:459 dev_uevent+0x712/0x780 drivers/base/core.c:2320 uevent_show+0x1b8/0x380 drivers/base/core.c:2391 dev_attr_show+0x4b/0x90 drivers/base/core.c:2094Although the bug manifested in the driver core, the real cause was arace with the gadget core.  dev_uevent() does:\tif (dev->driver)\t\tadd_uevent_var(env, \"DRIVER=%s\", dev->driver->name);and between the test and the dereference of dev->driver, the gadgetcore sets dev->driver to NULL.The race wouldn't occur if the gadget core registered its devices ona real bus, using the standard synchronization techniques of thedriver core.  However, it's not necessary to make such a large changein order to fix this bug; all we need to do is make sure thatudc->dev.driver is always NULL.In fact, there is no reason for udc->dev.driver ever to be set toanything, let alone to the value it currently gets: the address of thegadget's driver.  After all, a gadget driver only knows how to managea gadget, not how to manage a UDC.This patch simply removes the statements in the gadget core that touchudc->dev.driver.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48838` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-214-generic - 4.15.0-184.194\nlinux-image-4.15.0-214-generic-lpae - 4.15.0-184.194\nlinux-image-4.15.0-214-lowlatency - 4.15.0-184.194\nlinux-image-unsigned-4.15.0-214-generic - 4.15.0-184.194\nlinux-image-unsigned-4.15.0-214-lowlatency - 4.15.0-184.194\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-152-generic - 5.4.0-117.132~18.04.1\nlinux-image-5.4.0-152-generic-lpae - 5.4.0-117.132~18.04.1\nlinux-image-5.4.0-152-lowlatency - 5.4.0-117.132~18.04.1\nlinux-image-unsigned-5.4.0-152-generic - 5.4.0-117.132~18.04.1\nlinux-image-unsigned-5.4.0-152-lowlatency - 5.4.0-117.132~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1143-kvm - 4.15.0-1119.123\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1159-aws - 4.15.0-1133.143\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1104-aws - 5.4.0-1078.84~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1168-azure - 4.15.0-1142.156\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1110-azure - 5.4.0-1083.87~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1153-gcp - 4.15.0-1127.142\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1107-gcp - 5.4.0-1078.84~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1051-ibm - 5.4.0-1028.32~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1122-oracle - 4.15.0-1098.108\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1103-oracle - 5.4.0-1076.83~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-5.4.0-1088-raspi - 5.4.0-1065.75~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: gadget: Fix use-after-free bug by not setting udc->dev.driverThe syzbot fuzzer found a use-after-free bug:BUG: KASAN: use-after-free in dev_uevent+0x712/0x780drivers/base/core.c:2320Read of size 8 at addr ffff88802b934098 by task udevd/3689CPU: 2 PID: 3689 Comm: udevd Not tainted5.17.0-rc4-syzkaller-00229-g4f12b742eb2b #0Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.14.0-204/01/2014Call Trace: <TASK> __dump_stack lib/dump_stack.c:88 [inline] dump_stack_lvl+0xcd/0x134 lib/dump_stack.c:106 print_address_description.constprop.0.cold+0x8d/0x303mm/kasan/report.c:255 __kasan_report mm/kasan/report.c:442 [inline] kasan_report.cold+0x83/0xdf mm/kasan/report.c:459 dev_uevent+0x712/0x780 drivers/base/core.c:2320 uevent_show+0x1b8/0x380 drivers/base/core.c:2391 dev_attr_show+0x4b/0x90 drivers/base/core.c:2094Although the bug manifested in the driver core, the real cause was arace with the gadget core.  dev_uevent() does:\tif (dev->driver)\t\tadd_uevent_var(env, \"DRIVER=%s\", dev->driver->name);and between the test and the dereference of dev->driver, the gadgetcore sets dev->driver to NULL.The race wouldn't occur if the gadget core registered its devices ona real bus, using the standard synchronization techniques of thedriver core.  However, it's not necessary to make such a large changein order to fix this bug; all we need to do is make sure thatudc->dev.driver is always NULL.In fact, there is no reason for udc->dev.driver ever to be set toanything, let alone to the value it currently gets: the address of thegadget's driver.  After all, a gadget driver only knows how to managea gadget, not how to manage a UDC.This patch simply removes the statements in the gadget core that touchudc->dev.driver.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48838` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-184-generic - 4.15.0-184.194\nlinux-image-4.15.0-184-generic-lpae - 4.15.0-184.194\nlinux-image-4.15.0-184-lowlatency - 4.15.0-184.194\nlinux-image-unsigned-4.15.0-184-generic - 4.15.0-184.194\nlinux-image-unsigned-4.15.0-184-lowlatency - 4.15.0-184.194\nNo subscription required\n\nlinux-image-5.4.0-117-generic - 5.4.0-117.132~18.04.1\nlinux-image-5.4.0-117-generic-lpae - 5.4.0-117.132~18.04.1\nlinux-image-5.4.0-117-lowlatency - 5.4.0-117.132~18.04.1\nlinux-image-unsigned-5.4.0-117-generic - 5.4.0-117.132~18.04.1\nlinux-image-unsigned-5.4.0-117-lowlatency - 5.4.0-117.132~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1119-kvm - 4.15.0-1119.123\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1133-aws - 4.15.0-1133.143\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1078-aws - 5.4.0-1078.84~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1142-azure - 4.15.0-1142.156\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1083-azure - 5.4.0-1083.87~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1127-gcp - 4.15.0-1127.142\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1078-gcp - 5.4.0-1078.84~18.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1028-ibm - 5.4.0-1028.32~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1098-oracle - 4.15.0-1098.108\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1076-oracle - 5.4.0-1076.83~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1065-raspi - 5.4.0-1065.75~18.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 18.04 LTS"
@@ -40,7 +40,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000000",
-						"comment": "linux package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-184.194')."
+						"comment": "linux package in bionic was vulnerable but has been fixed (note: '4.15.0-184.194')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
@@ -48,15 +48,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000010",
-						"comment": "linux-hwe-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-117.132~18.04.1')."
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-117.132~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000020",
-						"comment": "linux-kvm package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1119.123')."
+						"comment": "linux-kvm package in bionic was vulnerable but has been fixed (note: '4.15.0-1119.123')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000030",
-						"comment": "linux-aws package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1133.143')."
+						"comment": "linux-aws package in bionic was vulnerable but has been fixed (note: '4.15.0-1133.143')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -68,7 +68,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000040",
-						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1078.84~18.04.1')."
+						"comment": "linux-aws-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1078.84~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -76,7 +76,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000050",
-						"comment": "linux-azure-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1142.156')."
+						"comment": "linux-azure-4.15 package in bionic was vulnerable but has been fixed (note: '4.15.0-1142.156')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
@@ -84,7 +84,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000060",
-						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1083.87~18.04.1')."
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1083.87~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
@@ -108,7 +108,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000080",
-						"comment": "linux-gcp-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1127.142')."
+						"comment": "linux-gcp-4.15 package in bionic was vulnerable but has been fixed (note: '4.15.0-1127.142')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
@@ -116,7 +116,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000040",
-						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1078.84~18.04.1')."
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1078.84~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -132,11 +132,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000140",
-						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1028.32~18.04.1')."
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1028.32~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:2018103220000070",
-						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1098.108')."
+						"comment": "linux-oracle package in bionic was vulnerable but has been fixed (note: '4.15.0-1098.108')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -148,7 +148,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000100",
-						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1076.83~18.04.1')."
+						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1076.83~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -160,7 +160,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:202137720000120",
-						"comment": "linux-raspi-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1065.75~18.04.1')."
+						"comment": "linux-raspi-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1065.75~18.04.1')."
 					}
 				]
 			}
