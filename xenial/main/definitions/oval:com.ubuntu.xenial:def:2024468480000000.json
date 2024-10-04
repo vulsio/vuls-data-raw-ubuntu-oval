@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024468480000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-46848 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:perf/x86/intel: Limit the period on HaswellRunning the ltp test cve-2015-3290 concurrently reports the followingwarnings.perfevents: irq loop stuck!  WARNING: CPU: 31 PID: 32438 at arch/x86/events/intel/core.c:3174  intel_pmu_handle_irq+0x285/0x370  Call Trace:   <NMI>   ? __warn+0xa4/0x220   ? intel_pmu_handle_irq+0x285/0x370   ? __report_bug+0x123/0x130   ? intel_pmu_handle_irq+0x285/0x370   ? __report_bug+0x123/0x130   ? intel_pmu_handle_irq+0x285/0x370   ? report_bug+0x3e/0xa0   ? handle_bug+0x3c/0x70   ? exc_invalid_op+0x18/0x50   ? asm_exc_invalid_op+0x1a/0x20   ? irq_work_claim+0x1e/0x40   ? intel_pmu_handle_irq+0x285/0x370   perf_event_nmi_handler+0x3d/0x60   nmi_handle+0x104/0x330Thanks to Thomas Gleixner's analysis, the issue is caused by the lowinitial period (1) of the frequency estimation algorithm, which triggersthe defects of the HW, specifically erratum HSW11 and HSW143. (For thedetails, please refer https://lore.kernel.org/lkml/87plq9l5d2.ffs@tglx/)The HSW11 requires a period larger than 100 for the INST_RETIRED.ALLevent, but the initial period in the freq mode is 1. The erratum is thesame as the BDM11, which has been supported in the kernel. A minimumperiod of 128 is enforced as well on HSW.HSW143 is regarding that the fixed counter 1 may overcount 32 with theHyper-Threading is enabled. However, based on the test, the hardwarehas more issues than it tells. Besides the fixed counter 1, the message'interrupt took too long' can be observed on any counter which was armedwith a period < 32 and two events expired in the same NMI. A minimumperiod of 32 is enforced for the rest of the events.The recommended workaround code of the HSW143 is not implemented.Because it only addresses the issue for the fixed counter. It bringsextra overhead through extra MSR writing. No related overcounting issuehas been reported so far.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-46848",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-46848"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-09-27 13:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-46848",
+				"href": "https://ubuntu.com/security/CVE-2024-46848",
+				"public": "20240927"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
