@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-39479 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/i915/hwmon: Get rid of devmWhen both hwmon and hwmon drvdata (on which hwmon depends) are devicemanaged resources, the expectation, on device unbind, is that hwmon will bereleased before drvdata. However, in i915 there are two separate codepaths, which both release either drvdata or hwmon and either can bereleased before the other. These code paths (for device unbind) are asfollows (see also the bug referenced below):Call Trace:release_nodes+0x11/0x70devres_release_group+0xb2/0x110component_unbind_all+0x8d/0xa0component_del+0xa5/0x140intel_pxp_tee_component_fini+0x29/0x40 [i915]intel_pxp_fini+0x33/0x80 [i915]i915_driver_remove+0x4c/0x120 [i915]i915_pci_remove+0x19/0x30 [i915]pci_device_remove+0x32/0xa0device_release_driver_internal+0x19c/0x200unbind_store+0x9c/0xb0andCall Trace:release_nodes+0x11/0x70devres_release_all+0x8a/0xc0device_unbind_cleanup+0x9/0x70device_release_driver_internal+0x1c1/0x200unbind_store+0x9c/0xb0This means that in i915, if use devm, we cannot gurantee that hwmon willalways be released before drvdata. Which means that we have a uaf if hwmonsysfs is accessed when drvdata has been released but hwmon hasn't.The only way out of this seems to be do get rid of devm_ and release/freeeverything explicitly during device unbind.v2: Change commit message and other minor code changesv3: Cleanup from i915_hwmon_register on error (Armin Wolf)v4: Eliminate potential static analyzer warning (Rodrigo)    Eliminate fetch_and_zero (Jani)v5: Restore previous logic for ddat_gt->hwmon_dev error return (Andi)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-39479` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/i915/hwmon: Get rid of devmWhen both hwmon and hwmon drvdata (on which hwmon depends) are devicemanaged resources, the expectation, on device unbind, is that hwmon will bereleased before drvdata. However, in i915 there are two separate codepaths, which both release either drvdata or hwmon and either can bereleased before the other. These code paths (for device unbind) are asfollows (see also the bug referenced below):Call Trace:release_nodes+0x11/0x70devres_release_group+0xb2/0x110component_unbind_all+0x8d/0xa0component_del+0xa5/0x140intel_pxp_tee_component_fini+0x29/0x40 [i915]intel_pxp_fini+0x33/0x80 [i915]i915_driver_remove+0x4c/0x120 [i915]i915_pci_remove+0x19/0x30 [i915]pci_device_remove+0x32/0xa0device_release_driver_internal+0x19c/0x200unbind_store+0x9c/0xb0andCall Trace:release_nodes+0x11/0x70devres_release_all+0x8a/0xc0device_unbind_cleanup+0x9/0x70device_release_driver_internal+0x1c1/0x200unbind_store+0x9c/0xb0This means that in i915, if use devm, we cannot gurantee that hwmon willalways be released before drvdata. Which means that we have a uaf if hwmonsysfs is accessed when drvdata has been released but hwmon hasn't.The only way out of this seems to be do get rid of devm_ and release/freeeverything explicitly during device unbind.v2: Change commit message and other minor code changesv3: Cleanup from i915_hwmon_register on error (Armin Wolf)v4: Eliminate potential static analyzer warning (Rodrigo)    Eliminate fetch_and_zero (Jani)v5: Restore previous logic for ddat_gt->hwmon_dev error return (Andi)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-39479` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1021-intel-iot-realtime - 5.15.0-1021.26\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-5.15.0-1006-realtime - 5.15.0-1006.6\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -145,7 +145,7 @@
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
@@ -161,7 +161,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8, was needs-triage')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000100",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
@@ -173,7 +173,7 @@
 						"comment": "linux-nvidia-6.5 package in jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000120",
 						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.10')."
 					},
 					{
@@ -197,7 +197,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
@@ -213,12 +213,16 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000150",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
-						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"comment": "linux-intel-iot-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1021.26')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
+						"comment": "linux-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.6')."
 					}
 				]
 			}
