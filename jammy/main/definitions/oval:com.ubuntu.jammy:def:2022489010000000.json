@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2022489010000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2022-48901 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: do not start relocation until in progress drops are doneWe hit a bug with a recovering relocation on mount for one of our filesystems in production.  I reproduced this locally by injecting errorsinto snapshot delete with balance running at the same time.  Thispresented as an error while looking up an extent item  WARNING: CPU: 5 PID: 1501 at fs/btrfs/extent-tree.c:866lookup_inline_extent_backref+0x647/0x680  CPU: 5 PID: 1501 Comm: btrfs-balance Not tainted 5.16.0-rc8+ #8  RIP: 0010:lookup_inline_extent_backref+0x647/0x680  RSP: 0018:ffffae0a023ab960 EFLAGS: 00010202  RAX: 0000000000000001 RBX: 0000000000000000 RCX: 0000000000000000  RDX: 0000000000000000 RSI: 000000000000000c RDI: 0000000000000000  RBP: ffff943fd2a39b60 R08: 0000000000000000 R09: 0000000000000001  R10: 0001434088152de0 R11: 0000000000000000 R12: 0000000001d05000  R13: ffff943fd2a39b60 R14: ffff943fdb96f2a0 R15: ffff9442fc923000  FS:  0000000000000000(0000) GS:ffff944e9eb40000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 00007f1157b1fca8 CR3: 000000010f092000 CR4: 0000000000350ee0  Call Trace:   <TASK>   insert_inline_extent_backref+0x46/0xd0   __btrfs_inc_extent_ref.isra.0+0x5f/0x200   ? btrfs_merge_delayed_refs+0x164/0x190   __btrfs_run_delayed_refs+0x561/0xfa0   ? btrfs_search_slot+0x7b4/0xb30   ? btrfs_update_root+0x1a9/0x2c0   btrfs_run_delayed_refs+0x73/0x1f0   ? btrfs_update_root+0x1a9/0x2c0   btrfs_commit_transaction+0x50/0xa50   ? btrfs_update_reloc_root+0x122/0x220   prepare_to_merge+0x29f/0x320   relocate_block_group+0x2b8/0x550   btrfs_relocate_block_group+0x1a6/0x350   btrfs_relocate_chunk+0x27/0xe0   btrfs_balance+0x777/0xe60   balance_kthread+0x35/0x50   ? btrfs_balance+0xe60/0xe60   kthread+0x16b/0x190   ? set_kthread_struct+0x40/0x40   ret_from_fork+0x22/0x30   </TASK>Normally snapshot deletion and relocation are excluded from running atthe same time by the fs_info->cleaner_mutex.  However if we had apending balance waiting to get the ->cleaner_mutex, and a snapshotdeletion was running, and then the box crashed, we would come up in astate where we have a half deleted snapshot.Again, in the normal case the snapshot deletion needs to complete beforerelocation can start, but in this case relocation could very well startbefore the snapshot deletion completes, as we simply add the root to thedead roots list and wait for the next time the cleaner runs to clean upthe snapshot.Fix this by setting a bit on the fs_info if we have any DEAD_ROOT's thathad a pending drop_progress key.  If they do then we know we were in themiddle of the drop operation and set a flag on the fs_info.  Thenbalance can wait until this flag is cleared to start up again.If there are DEAD_ROOT's that don't have a drop_progress set then we'resafe to start balance right away as we'll be properly protected by thecleaner_mutex.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48901` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-23-generic - 5.15.0-23.23\nlinux-image-5.15.0-23-generic-lpae - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-generic - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-generic-64k - 5.15.0-23.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-kvm - 5.15.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-aws - 5.15.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-azure - 5.15.0-1002.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gcp - 5.15.0-1003.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-23-lowlatency - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-lowlatency-64k - 5.15.0-23.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-oracle - 5.15.0-1002.4\nNo subscription required\n\nlinux-image-5.15.0-1004-raspi - 5.15.0-1004.4\nlinux-image-5.15.0-1004-raspi-nolpae - 5.15.0-1004.4\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1021-intel-iot-realtime - 5.15.0-1021.26\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-5.15.0-1006-realtime - 5.15.0-1006.6\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"title": "CVE-2022-48901 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: do not start relocation until in progress drops are doneWe hit a bug with a recovering relocation on mount for one of our filesystems in production.  I reproduced this locally by injecting errorsinto snapshot delete with balance running at the same time.  Thispresented as an error while looking up an extent item  WARNING: CPU: 5 PID: 1501 at fs/btrfs/extent-tree.c:866lookup_inline_extent_backref+0x647/0x680  CPU: 5 PID: 1501 Comm: btrfs-balance Not tainted 5.16.0-rc8+ #8  RIP: 0010:lookup_inline_extent_backref+0x647/0x680  RSP: 0018:ffffae0a023ab960 EFLAGS: 00010202  RAX: 0000000000000001 RBX: 0000000000000000 RCX: 0000000000000000  RDX: 0000000000000000 RSI: 000000000000000c RDI: 0000000000000000  RBP: ffff943fd2a39b60 R08: 0000000000000000 R09: 0000000000000001  R10: 0001434088152de0 R11: 0000000000000000 R12: 0000000001d05000  R13: ffff943fd2a39b60 R14: ffff943fdb96f2a0 R15: ffff9442fc923000  FS:  0000000000000000(0000) GS:ffff944e9eb40000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 00007f1157b1fca8 CR3: 000000010f092000 CR4: 0000000000350ee0  Call Trace:   <TASK>   insert_inline_extent_backref+0x46/0xd0   __btrfs_inc_extent_ref.isra.0+0x5f/0x200   ? btrfs_merge_delayed_refs+0x164/0x190   __btrfs_run_delayed_refs+0x561/0xfa0   ? btrfs_search_slot+0x7b4/0xb30   ? btrfs_update_root+0x1a9/0x2c0   btrfs_run_delayed_refs+0x73/0x1f0   ? btrfs_update_root+0x1a9/0x2c0   btrfs_commit_transaction+0x50/0xa50   ? btrfs_update_reloc_root+0x122/0x220   prepare_to_merge+0x29f/0x320   relocate_block_group+0x2b8/0x550   btrfs_relocate_block_group+0x1a6/0x350   btrfs_relocate_chunk+0x27/0xe0   btrfs_balance+0x777/0xe60   balance_kthread+0x35/0x50   ? btrfs_balance+0xe60/0xe60   kthread+0x16b/0x190   ? set_kthread_struct+0x40/0x40   ret_from_fork+0x22/0x30   </TASK>Normally snapshot deletion and relocation are excluded from running atthe same time by the fs_info->cleaner_mutex.  However if we had apending balance waiting to get the ->cleaner_mutex, and a snapshotdeletion was running, and then the box crashed, we would come up in astate where we have a half deleted snapshot.Again, in the normal case the snapshot deletion needs to complete beforerelocation can start, but in this case relocation could very well startbefore the snapshot deletion completes, as we simply add the root to thedead roots list and wait for the next time the cleaner runs to clean upthe snapshot.Fix this by setting a bit on the fs_info if we have any DEAD_ROOT's thathad a pending drop_progress key.  If they do then we know we were in themiddle of the drop operation and set a flag on the fs_info.  Thenbalance can wait until this flag is cleared to start up again.If there are DEAD_ROOT's that don't have a drop_progress set then we'resafe to start balance right away as we'll be properly protected by thecleaner_mutex.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48901` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-23-generic - 5.15.0-23.23\nlinux-image-5.15.0-23-generic-lpae - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-generic - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-generic-64k - 5.15.0-23.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-kvm - 5.15.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-aws - 5.15.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-azure - 5.15.0-1002.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1011-bluefield - 5.15.0-1011.13\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.15.0-1003-gcp - 5.15.0-1003.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-23-lowlatency - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-lowlatency-64k - 5.15.0-23.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-oracle - 5.15.0-1002.4\nNo subscription required\n\nlinux-image-5.15.0-1004-raspi - 5.15.0-1004.4\nlinux-image-5.15.0-1004-raspi-nolpae - 5.15.0-1004.4\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS"
+			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
 		},
 		"reference": {
 			"source": "CVE",
@@ -38,15 +38,15 @@
 						"comment": "linux package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-23.23')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
 					},
 					{
@@ -54,7 +54,7 @@
 						"comment": "linux-kvm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -62,15 +62,15 @@
 						"comment": "linux-aws package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
@@ -78,15 +78,15 @@
 						"comment": "linux-azure package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
@@ -94,27 +94,31 @@
 						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
+						"comment": "linux-bluefield package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1011.13')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2021264010000040",
 						"comment": "linux-gcp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
@@ -122,7 +126,7 @@
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
@@ -130,7 +134,7 @@
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
@@ -138,15 +142,15 @@
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-23.23')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
@@ -154,7 +158,7 @@
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
@@ -166,23 +170,23 @@
 						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
 						"comment": "linux-oracle-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
@@ -190,28 +194,24 @@
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
-						"comment": "linux-intel-iot-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1021.26')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
-						"comment": "linux-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.6')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
+						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
 					}
 				]
 			}
