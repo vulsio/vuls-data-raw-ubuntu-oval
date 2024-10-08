@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2022489020000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2022-48902 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: do not WARN_ON() if we have PageError setWhenever we do any extent buffer operations we callassert_eb_page_uptodate() to complain loudly if we're operating on annon-uptodate page.  Our overnight tests caught this warning earlier thisweek  WARNING: CPU: 1 PID: 553508 at fs/btrfs/extent_io.c:6849assert_eb_page_uptodate+0x3f/0x50  CPU: 1 PID: 553508 Comm: kworker/u4:13 Tainted: G        W5.17.0-rc3+ #564  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.13.0-2.fc3204/01/2014  Workqueue: btrfs-cache btrfs_work_helper  RIP: 0010:assert_eb_page_uptodate+0x3f/0x50  RSP: 0018:ffffa961440a7c68 EFLAGS: 00010246  RAX: 0017ffffc0002112 RBX: ffffe6e74453f9c0 RCX: 0000000000001000  RDX: ffffe6e74467c887 RSI: ffffe6e74453f9c0 RDI: ffff8d4c5efc2fc0  RBP: 0000000000000d56 R08: ffff8d4d4a224000 R09: 0000000000000000  R10: 00015817fa9d1ef0 R11: 000000000000000c R12: 00000000000007b1  R13: ffff8d4c5efc2fc0 R14: 0000000001500000 R15: 0000000001cb1000  FS:  0000000000000000(0000) GS:ffff8d4dbbd00000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 00007ff31d3448d8 CR3: 0000000118be8004 CR4: 0000000000370ee0  Call Trace:   extent_buffer_test_bit+0x3f/0x70   free_space_test_bit+0xa6/0xc0   load_free_space_tree+0x1f6/0x470   caching_thread+0x454/0x630   ? rcu_read_lock_sched_held+0x12/0x60   ? rcu_read_lock_sched_held+0x12/0x60   ? rcu_read_lock_sched_held+0x12/0x60   ? lock_release+0x1f0/0x2d0   btrfs_work_helper+0xf2/0x3e0   ? lock_release+0x1f0/0x2d0   ? finish_task_switch.isra.0+0xf9/0x3a0   process_one_work+0x26d/0x580   ? process_one_work+0x580/0x580   worker_thread+0x55/0x3b0   ? process_one_work+0x580/0x580   kthread+0xf0/0x120   ? kthread_complete_and_exit+0x20/0x20   ret_from_fork+0x1f/0x30This was partially fixed by c2e39305299f01 (\"btrfs: clear extent bufferuptodate when we fail to write it\"), however all that fix did was keepus from finding extent buffers after a failed writeout.  It didn't keepus from continuing to use a buffer that we already had found.In this case we're searching the commit root to cache the block group,so we can start committing the transaction and switch the commit rootand then start writing.  After the switch we can look up an extentbuffer that hasn't been written yet and start processing that blockgroup.  Then we fail to write that block out and clear Uptodate on thepage, and then we start spewing these errors.Normally we're protected by the tree lock to a certain degree here.  Ifwe read a block we have that block read locked, and we block the writerfrom locking the block before we submit it for the write.  However thisisn't necessarily fool proof because the read could happen before we dothe submit_bio and after we locked and unlocked the extent buffer.Also in this particular case we have path->skip_locking set, so thatwon't save us here.  We'll simply get a block that was valid when weread it, but became invalid while we were using it.What we really want is to catch the case where we've \"read\" a block butit's not marked Uptodate.  On read we ClearPageError(), so if we're!Uptodate and !Error we know we didn't do the right thing for readingthe page.Fix this by checking !Uptodate && !Error, this way we will not complainif our buffer gets invalidated while we're using it, and we'll maintainthe spirit of the check which is to make sure we have a fully in-cacheblock while we're messing with it.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48902` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-23-generic - 5.15.0-23.23\nlinux-image-5.15.0-23-generic-lpae - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-generic - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-generic-64k - 5.15.0-23.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-kvm - 5.15.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-aws - 5.15.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-azure - 5.15.0-1002.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1011-bluefield - 5.15.0-1011.13\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.15.0-1003-gcp - 5.15.0-1003.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-23-lowlatency - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-lowlatency-64k - 5.15.0-23.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-oracle - 5.15.0-1002.4\nNo subscription required\n\nlinux-image-5.15.0-1004-raspi - 5.15.0-1004.4\nlinux-image-5.15.0-1004-raspi-nolpae - 5.15.0-1004.4\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"title": "CVE-2022-48902 on Ubuntu 22.04 LTS (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: do not WARN_ON() if we have PageError setWhenever we do any extent buffer operations we callassert_eb_page_uptodate() to complain loudly if we're operating on annon-uptodate page.  Our overnight tests caught this warning earlier thisweek  WARNING: CPU: 1 PID: 553508 at fs/btrfs/extent_io.c:6849assert_eb_page_uptodate+0x3f/0x50  CPU: 1 PID: 553508 Comm: kworker/u4:13 Tainted: G        W5.17.0-rc3+ #564  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.13.0-2.fc3204/01/2014  Workqueue: btrfs-cache btrfs_work_helper  RIP: 0010:assert_eb_page_uptodate+0x3f/0x50  RSP: 0018:ffffa961440a7c68 EFLAGS: 00010246  RAX: 0017ffffc0002112 RBX: ffffe6e74453f9c0 RCX: 0000000000001000  RDX: ffffe6e74467c887 RSI: ffffe6e74453f9c0 RDI: ffff8d4c5efc2fc0  RBP: 0000000000000d56 R08: ffff8d4d4a224000 R09: 0000000000000000  R10: 00015817fa9d1ef0 R11: 000000000000000c R12: 00000000000007b1  R13: ffff8d4c5efc2fc0 R14: 0000000001500000 R15: 0000000001cb1000  FS:  0000000000000000(0000) GS:ffff8d4dbbd00000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 00007ff31d3448d8 CR3: 0000000118be8004 CR4: 0000000000370ee0  Call Trace:   extent_buffer_test_bit+0x3f/0x70   free_space_test_bit+0xa6/0xc0   load_free_space_tree+0x1f6/0x470   caching_thread+0x454/0x630   ? rcu_read_lock_sched_held+0x12/0x60   ? rcu_read_lock_sched_held+0x12/0x60   ? rcu_read_lock_sched_held+0x12/0x60   ? lock_release+0x1f0/0x2d0   btrfs_work_helper+0xf2/0x3e0   ? lock_release+0x1f0/0x2d0   ? finish_task_switch.isra.0+0xf9/0x3a0   process_one_work+0x26d/0x580   ? process_one_work+0x580/0x580   worker_thread+0x55/0x3b0   ? process_one_work+0x580/0x580   kthread+0xf0/0x120   ? kthread_complete_and_exit+0x20/0x20   ret_from_fork+0x1f/0x30This was partially fixed by c2e39305299f01 (\"btrfs: clear extent bufferuptodate when we fail to write it\"), however all that fix did was keepus from finding extent buffers after a failed writeout.  It didn't keepus from continuing to use a buffer that we already had found.In this case we're searching the commit root to cache the block group,so we can start committing the transaction and switch the commit rootand then start writing.  After the switch we can look up an extentbuffer that hasn't been written yet and start processing that blockgroup.  Then we fail to write that block out and clear Uptodate on thepage, and then we start spewing these errors.Normally we're protected by the tree lock to a certain degree here.  Ifwe read a block we have that block read locked, and we block the writerfrom locking the block before we submit it for the write.  However thisisn't necessarily fool proof because the read could happen before we dothe submit_bio and after we locked and unlocked the extent buffer.Also in this particular case we have path->skip_locking set, so thatwon't save us here.  We'll simply get a block that was valid when weread it, but became invalid while we were using it.What we really want is to catch the case where we've \"read\" a block butit's not marked Uptodate.  On read we ClearPageError(), so if we're!Uptodate and !Error we know we didn't do the right thing for readingthe page.Fix this by checking !Uptodate && !Error, this way we will not complainif our buffer gets invalidated while we're using it, and we'll maintainthe spirit of the check which is to make sure we have a fully in-cacheblock while we're messing with it.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48902` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-23-generic - 5.15.0-23.23\nlinux-image-5.15.0-23-generic-lpae - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-generic - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-generic-64k - 5.15.0-23.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-kvm - 5.15.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-aws - 5.15.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-azure - 5.15.0-1002.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gcp - 5.15.0-1003.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-23-lowlatency - 5.15.0-23.23\nlinux-image-unsigned-5.15.0-23-lowlatency-64k - 5.15.0-23.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-oracle - 5.15.0-1002.4\nNo subscription required\n\nlinux-image-5.15.0-1004-raspi - 5.15.0-1004.4\nlinux-image-5.15.0-1004-raspi-nolpae - 5.15.0-1004.4\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
+			"platform": "Ubuntu 22.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -38,15 +38,15 @@
 						"comment": "linux package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-23.23')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
 					},
 					{
@@ -54,7 +54,7 @@
 						"comment": "linux-kvm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -62,15 +62,15 @@
 						"comment": "linux-aws package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
@@ -78,15 +78,15 @@
 						"comment": "linux-azure package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
@@ -94,31 +94,27 @@
 						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
-						"comment": "linux-bluefield package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1011.13')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2021264010000040",
 						"comment": "linux-gcp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
@@ -126,7 +122,7 @@
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
@@ -134,7 +130,7 @@
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
@@ -142,27 +138,27 @@
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-23.23')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000100",
 						"comment": "linux-nvidia-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1004.4')."
 					},
 					{
@@ -170,23 +166,23 @@
 						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
 						"comment": "linux-oracle-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
@@ -194,23 +190,23 @@
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
 						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
 					}
 				]
