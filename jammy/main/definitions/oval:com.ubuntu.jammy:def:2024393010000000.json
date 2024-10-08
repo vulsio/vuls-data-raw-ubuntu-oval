@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2024393010000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-39301 on Ubuntu 22.04 LTS (jammy) - medium",
+		"title": "CVE-2024-39301 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:net/9p: fix uninit-value in p9_client_rpc()Syzbot with the help of KMSAN reported the following error:BUG: KMSAN: uninit-value in trace_9p_client_resinclude/trace/events/9p.h:146 [inline]BUG: KMSAN: uninit-value in p9_client_rpc+0x1314/0x1340 net/9p/client.c:754 trace_9p_client_res include/trace/events/9p.h:146 [inline] p9_client_rpc+0x1314/0x1340 net/9p/client.c:754 p9_client_create+0x1551/0x1ff0 net/9p/client.c:1031 v9fs_session_init+0x1b9/0x28e0 fs/9p/v9fs.c:410 v9fs_mount+0xe2/0x12b0 fs/9p/vfs_super.c:122 legacy_get_tree+0x114/0x290 fs/fs_context.c:662 vfs_get_tree+0xa7/0x570 fs/super.c:1797 do_new_mount+0x71f/0x15e0 fs/namespace.c:3352 path_mount+0x742/0x1f20 fs/namespace.c:3679 do_mount fs/namespace.c:3692 [inline] __do_sys_mount fs/namespace.c:3898 [inline] __se_sys_mount+0x725/0x810 fs/namespace.c:3875 __x64_sys_mount+0xe4/0x150 fs/namespace.c:3875 do_syscall_64+0xd5/0x1f0 entry_SYSCALL_64_after_hwframe+0x6d/0x75Uninit was created at: __alloc_pages+0x9d6/0xe70 mm/page_alloc.c:4598 __alloc_pages_node include/linux/gfp.h:238 [inline] alloc_pages_node include/linux/gfp.h:261 [inline] alloc_slab_page mm/slub.c:2175 [inline] allocate_slab mm/slub.c:2338 [inline] new_slab+0x2de/0x1400 mm/slub.c:2391 ___slab_alloc+0x1184/0x33d0 mm/slub.c:3525 __slab_alloc mm/slub.c:3610 [inline] __slab_alloc_node mm/slub.c:3663 [inline] slab_alloc_node mm/slub.c:3835 [inline] kmem_cache_alloc+0x6d3/0xbe0 mm/slub.c:3852 p9_tag_alloc net/9p/client.c:278 [inline] p9_client_prepare_req+0x20a/0x1770 net/9p/client.c:641 p9_client_rpc+0x27e/0x1340 net/9p/client.c:688 p9_client_create+0x1551/0x1ff0 net/9p/client.c:1031 v9fs_session_init+0x1b9/0x28e0 fs/9p/v9fs.c:410 v9fs_mount+0xe2/0x12b0 fs/9p/vfs_super.c:122 legacy_get_tree+0x114/0x290 fs/fs_context.c:662 vfs_get_tree+0xa7/0x570 fs/super.c:1797 do_new_mount+0x71f/0x15e0 fs/namespace.c:3352 path_mount+0x742/0x1f20 fs/namespace.c:3679 do_mount fs/namespace.c:3692 [inline] __do_sys_mount fs/namespace.c:3898 [inline] __se_sys_mount+0x725/0x810 fs/namespace.c:3875 __x64_sys_mount+0xe4/0x150 fs/namespace.c:3875 do_syscall_64+0xd5/0x1f0 entry_SYSCALL_64_after_hwframe+0x6d/0x75If p9_check_errors() fails early in p9_client_rpc(), req->rc.tagwill not be properly initialized. However, trace_9p_client_res()ends up trying to print it out anyway before p9_client_rpc()finishes.Fix this issue by assigning default values to p9_fcall fieldssuch as 'tag' and (just in case KMSAN unearths something new) 'id'during the tag allocation stage.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-39301` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-kvm - 5.15.0-1066.71\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure - 5.15.0-1072.81\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure-fde - 5.15.0-1072.81.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-gke - 5.15.0-1066.72\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-ibm - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-121-lowlatency - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-lowlatency-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-nvidia - 5.15.0-1064.65\nlinux-image-unsigned-5.15.0-1064-nvidia-lowlatency - 5.15.0-1064.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-oracle - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-5.15.0-1062-raspi - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-5.15.0-1035-xilinx-zynqmp - 5.15.0-1035.39\nNo subscription required",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS"
+			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
 		},
 		"reference": {
 			"source": "CVE",
@@ -61,15 +61,15 @@
 						"comment": "linux package in jammy was vulnerable but has been fixed (note: '5.15.0-121.131')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8, was needed')."
 					},
 					{
@@ -77,7 +77,7 @@
 						"comment": "linux-kvm package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.71')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -85,15 +85,15 @@
 						"comment": "linux-aws package in jammy was vulnerable but has been fixed (note: '5.15.0-1069.75')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8, was needed')."
 					},
 					{
@@ -101,15 +101,15 @@
 						"comment": "linux-azure package in jammy was vulnerable but has been fixed (note: '5.15.0-1072.81')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8, was needed')."
 					},
 					{
@@ -117,27 +117,31 @@
 						"comment": "linux-azure-fde package in jammy was vulnerable but has been fixed (note: '5.15.0-1072.81.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
+						"comment": "linux-bluefield package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1052.54')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000050",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1068.76')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8, was needed')."
 					},
 					{
@@ -161,15 +165,15 @@
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-121.131')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8, was needed')."
 					},
 					{
@@ -177,11 +181,11 @@
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1064.65')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
 						"comment": "linux-nvidia-6.5 package in jammy is affected and needs fixing."
 					},
 					{
@@ -189,23 +193,23 @@
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.73')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
 						"comment": "linux-oracle-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
@@ -213,15 +217,15 @@
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.65')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
@@ -229,7 +233,7 @@
 						"comment": "linux-xilinx-zynqmp package in jammy was vulnerable but has been fixed (note: '5.15.0-1035.39')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
 						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
 					}
 				]
