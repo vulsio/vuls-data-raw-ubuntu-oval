@@ -1,0 +1,95 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024269060000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26906 on Ubuntu 16.04 LTS (xenial) - low",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: x86/mm:Disallow vsyscall page read for copy_from_kernel_nofault() When trying touse copy_from_kernel_nofault() to read vsyscall page through a bpf program,the following oops was reported: BUG: unable to handle page fault foraddress: ffffffffff600000 #PF: supervisor read access in kernel mode #PF:error_code(0x0000) - not-present page PGD 3231067 P4D 3231067 PUD 3233067PMD 3235067 PTE 0 Oops: 0000 [#1] PREEMPT SMP PTI CPU: 1 PID: 20390 Comm:test_progs ...... 6.7.0+ #58 Hardware name: QEMU Standard PC (i440FX +PIIX, 1996) ...... RIP: 0010:copy_from_kernel_nofault+0x6f/0x110 ......Call Trace: <TASK> ? copy_from_kernel_nofault+0x6f/0x110bpf_probe_read_kernel+0x1d/0x50bpf_prog_2061065e56845f08_do_probe_read+0x51/0x8d trace_call_bpf+0xc5/0x1c0perf_call_bpf_enter.isra.0+0x69/0xb0 perf_syscall_enter+0x13e/0x200syscall_trace_enter+0x188/0x1c0 do_syscall_64+0xb5/0xe0entry_SYSCALL_64_after_hwframe+0x6e/0x76 </TASK> ...... ---[ end trace0000000000000000 ]--- The oops is triggered when: 1) A bpf program usesbpf_probe_read_kernel() to read from the vsyscall page and invokescopy_from_kernel_nofault() which in turn calls __get_user_asm(). 2) Becausethe vsyscall page address is not readable from kernel space, a page faultexception is triggered accordingly. 3) handle_page_fault() considers thevsyscall page address as a user space address instead of a kernel spaceaddress. This results in the fix-up setup by bpf not being applied and apage_fault_oops() is invoked due to SMAP. Considering handle_page_fault()has already considered the vsyscall page address as a userspace address,fix the problem by disallowing vsyscall page read forcopy_from_kernel_nofault().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26906` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26906",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26906"
+		},
+		"advisory": {
+			"severity": "Low",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-17 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26906",
+				"href": "https://ubuntu.com/security/CVE-2024-26906",
+				"public": "20240417"
+			},
+			"public_date_at_usn": "2024-04-17 11:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6820-1",
+				"https://ubuntu.com/security/notices/USN-6821-1",
+				"https://ubuntu.com/security/notices/USN-6821-2",
+				"https://ubuntu.com/security/notices/USN-6828-1",
+				"https://ubuntu.com/security/notices/USN-6820-2",
+				"https://ubuntu.com/security/notices/USN-6821-3",
+				"https://ubuntu.com/security/notices/USN-6821-4",
+				"https://ubuntu.com/security/notices/USN-6871-1",
+				"https://ubuntu.com/security/notices/USN-6892-1",
+				"https://ubuntu.com/security/notices/USN-6919-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

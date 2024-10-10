@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023527710000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52771 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cxl/port: Fix delete_endpoint() vs parent unregistration race The CXLsubsystem, at cxl_mem ->probe() time, establishes a lineage of ports(struct cxl_port objects) between an endpoint and the root of a CXLtopology. Each port including the endpoint port is attached to the cxl_portdriver. Given that setup, it follows that when either any port in thatlineage goes through a cxl_port ->remove() event, or the memdev goesthrough a cxl_mem ->remove() event. The hierarchy below the removed port,or the entire hierarchy if the memdev is removed needs to come down. Thedelete_endpoint() callback is careful to check whether it is being calledto tear down the hierarchy, or if it is only being called to teardown thememdev because an ancestor port is going through ->remove(). That careneeds to take the device_lock() of the endpoint's parent. Which requires 2bugs to be fixed: 1/ A reference on the parent is needed to preventuse-after-free scenarios like this signature: BUG: spinlock bad magic onCPU#0, kworker/u56:0/11 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009),BIOS edk2-20230524-3.fc38 05/24/2023 Workqueue: cxl_port detach_memdev[cxl_core] RIP: 0010:spin_bug+0x65/0xa0 Call Trace:do_raw_spin_lock+0x69/0xa0 __mutex_lock+0x695/0xb80delete_endpoint+0xad/0x150 [cxl_core] devres_release_all+0xb8/0x110device_unbind_cleanup+0xe/0x70 device_release_driver_internal+0x1d2/0x210detach_memdev+0x15/0x20 [cxl_core] process_one_work+0x1e3/0x4c0worker_thread+0x1dd/0x3d0 2/ In the case of RCH topologies, the parentdevice that needs to be locked is not always @port->dev as returned bycxl_mem_find_port(), use endpoint->dev.parent instead.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52771` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-2.16\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-lowlatency - 4.8.0-39.42~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1004.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1001.10\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1102-aws - 4.15.0-1030.31~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1114-azure - 4.11.0-1009.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1099-gcp - 4.10.0-1004.4\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-oracle - 4.15.0-1007.9~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52771",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52771"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52771",
+				"href": "https://ubuntu.com/security/CVE-2023-52771",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

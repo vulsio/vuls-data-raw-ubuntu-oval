@@ -1,0 +1,105 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024359700000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35970 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:af_unix: Clear stale u->oob_skb. syzkaller started to report deadlock ofunix_gc_lock after commit 4090fa373f0e (\"af_unix: Replace garbagecollection algorithm.\"), but it just uncovers the bug that has been theresince commit 314001f0bf92 (\"af_unix: Add OOB support\"). The repro basicallydoes the following. from socket import * from array import array c1, c2 =socketpair(AF_UNIX, SOCK_STREAM) c1.sendmsg([b'a'], [(SOL_SOCKET,SCM_RIGHTS, array(\"i\", [c2.fileno()]))], MSG_OOB) c2.recv(1) # blocked asno normal data in recv queue c2.close() # done async and unblock recv()c1.close() # done async and trigger GC A socket sends its file descriptorto itself as OOB data and tries to receive normal data, but finally recv()fails due to async close(). The problem here is wrong handling of OOB skbin manage_oob(). When recvmsg() is called without MSG_OOB, manage_oob() iscalled to check if the peeked skb is OOB skb. In such a case, manage_oob()pops it out of the receive queue but does not clear unix_sock(sk)->oob_skb.This is wrong in terms of uAPI. Let's say we send \"hello\" with MSG_OOB, and\"world\" without MSG_OOB. The 'o' is handled as OOB data. When recv() iscalled twice without MSG_OOB, the OOB data should be lost. >>> from socketimport * >>> c1, c2 = socketpair(AF_UNIX, SOCK_STREAM, 0) >>>c1.send(b'hello', MSG_OOB) # 'o' is OOB data 5 >>> c1.send(b'world') 5 >>>c2.recv(5) # OOB data is not received b'hell' >>> c2.recv(5) # OOB date isskipped b'world' >>> c2.recv(5, MSG_OOB) # This should return an error b'o'In the same situation, TCP actually returns -EINVAL for the last recv().Also, if we do not clear unix_sk(sk)->oob_skb, unix_poll() always setEPOLLPRI even though the data has passed through by previous recv(). Toavoid these issues, we must clear unix_sk(sk)->oob_skb when dequeuing itfrom recv queue. The reason why the old GC did not trigger the deadlock isbecause the old GC relied on the receive queue to detect the loop. When itis triggered, the socket with OOB data is marked as GC candidate becausefile refcount == inflight count (1). However, after traversing all inflightsockets, the socket still has a positive inflight count (1), thus thesocket is excluded from candidates. Then, the old GC lose the chance togarbage-collect the socket. With the old GC, the repro continues to createtrue garbage that will never be freed nor detected by kmemleak as it'slinked to the global inflight list. That's why we couldn't even notice theissue.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35970` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic - 6.8.0-38.38\nlinux-image-unsigned-6.8.0-38-generic-64k - 6.8.0-38.38\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1011-aws - 6.8.0-1011.12\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-azure - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gcp - 6.8.0-1010.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1006-gke - 6.8.0-1006.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-ibm - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-38-lowlatency - 6.8.0-38.38.1\nlinux-image-unsigned-6.8.0-38-lowlatency-64k - 6.8.0-38.38.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oracle - 6.8.0-1008.8\nlinux-image-unsigned-6.8.0-1008-oracle-64k - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-6.8.0-1007-raspi - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-oem - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-intel - 6.8.0-1007.14\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35970",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35970"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20 10:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-35970",
+				"href": "https://ubuntu.com/security/CVE-2024-35970",
+				"public": "20240520"
+			},
+			"public_date_at_usn": "2024-05-20 10:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6893-1",
+				"https://ubuntu.com/security/notices/USN-6898-1",
+				"https://ubuntu.com/security/notices/USN-6893-2",
+				"https://ubuntu.com/security/notices/USN-6898-2",
+				"https://ubuntu.com/security/notices/USN-6898-3",
+				"https://ubuntu.com/security/notices/USN-6893-3",
+				"https://ubuntu.com/security/notices/USN-6898-4",
+				"https://ubuntu.com/security/notices/USN-6917-1",
+				"https://ubuntu.com/security/notices/USN-6919-1",
+				"https://ubuntu.com/security/notices/USN-6918-1",
+				"https://ubuntu.com/security/notices/USN-6927-1",
+				"https://ubuntu.com/security/notices/USN-7019-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000000",
+						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-38.38')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000060",
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1011.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000010",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000020",
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1010.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000030",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1006.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000040",
+						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-38.38.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
+						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000050",
+						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022380960000020",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000060",
+						"comment": "linux-intel package in noble was vulnerable but has been fixed (note: '6.8.0-1007.14')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-2006.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.1-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

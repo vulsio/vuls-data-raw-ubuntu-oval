@@ -1,0 +1,56 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024449520000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-44952 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:driver core: Fix uevent_show() vs driver detach raceuevent_show() wants to de-reference dev->driver->name. There is no cleanway for a device attribute to de-reference dev->driver unless thatattribute is defined via (struct device_driver).dev_groups. Instead, theanti-pattern of taking the device_lock() in the attribute handler risksdeadlocks with code paths that remove device attributes while holdingthe lock.This deadlock is typically invisible to lockdep given the device_lock()is marked lockdep_set_novalidate_class(), but some subsystems allocate alocal lockdep key for @dev->mutex to reveal reports of the form: ====================================================== WARNING: possible circular locking dependency detected 6.10.0-rc7+ #275 Tainted: G           OE    N ------------------------------------------------------ modprobe/2374 is trying to acquire lock: ffff8c2270070de0 (kn->active#6){++++}-{0:0}, at:__kernfs_remove+0xde/0x220 but task is already holding lock: ffff8c22016e88f8 (&cxl_root_key){+.+.}-{3:3}, at:device_release_driver_internal+0x39/0x210 which lock already depends on the new lock. the existing dependency chain (in reverse order) is: -> #1 (&cxl_root_key){+.+.}-{3:3}:        __mutex_lock+0x99/0xc30        uevent_show+0xac/0x130        dev_attr_show+0x18/0x40        sysfs_kf_seq_show+0xac/0xf0        seq_read_iter+0x110/0x450        vfs_read+0x25b/0x340        ksys_read+0x67/0xf0        do_syscall_64+0x75/0x190        entry_SYSCALL_64_after_hwframe+0x76/0x7e -> #0 (kn->active#6){++++}-{0:0}:        __lock_acquire+0x121a/0x1fa0        lock_acquire+0xd6/0x2e0        kernfs_drain+0x1e9/0x200        __kernfs_remove+0xde/0x220        kernfs_remove_by_name_ns+0x5e/0xa0        device_del+0x168/0x410        device_unregister+0x13/0x60        devres_release_all+0xb8/0x110        device_unbind_cleanup+0xe/0x70        device_release_driver_internal+0x1c7/0x210        driver_detach+0x47/0x90        bus_remove_driver+0x6c/0xf0        cxl_acpi_exit+0xc/0x11 [cxl_acpi]        __do_sys_delete_module.isra.0+0x181/0x260        do_syscall_64+0x75/0x190        entry_SYSCALL_64_after_hwframe+0x76/0x7eThe observation though is that driver objects are typically much longerlived than device objects. It is reasonable to perform locklessde-reference of a @driver pointer even if it is racing detach from adevice. Given the infrequency of driver unregistration, usesynchronize_rcu() in module_remove_driver() to close any potentialraces.  It is potentially overkill to suffer synchronize_rcu() just tohandle the rare module removal racing uevent_show() event.Thanks to Tetsuo Handa for the debug analysis of the syzbot report [1].\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-44952` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-44952",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-44952"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-09-04 19:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-44952",
+				"href": "https://ubuntu.com/security/CVE-2024-44952",
+				"public": "20240904",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

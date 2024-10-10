@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021472880000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47288 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: media:ngene: Fix out-of-bounds bug in ngene_command_config_free_buf() Fix an11-year old bug in ngene_command_config_free_buf() while addressing thefollowing warnings caught with -Warray-bounds:arch/alpha/include/asm/string.h:22:16: warning: '__builtin_memcpy' offset[12, 16] from the object at 'com' is out of the bounds of referencedsubobject 'config' with type 'unsigned char' at offset 10 [-Warray-bounds]arch/x86/include/asm/string_32.h:182:25: warning: '__builtin_memcpy' offset[12, 16] from the object at 'com' is out of the bounds of referencedsubobject 'config' with type 'unsigned char' at offset 10 [-Warray-bounds]The problem is that the original code is trying to copy 6 bytes of datainto a one-byte size member _config_ of the wrong structueFW_CONFIGURE_BUFFERS, in a single call to memcpy(). This causes alegitimate compiler warning because memcpy() overruns the length of&com.cmd.ConfigureBuffers.config. It seems that the right structure isFW_CONFIGURE_FREE_BUFFERS, instead, because it contains 6 more membersapart from the header _hdr_. Also, the name of the functionngene_command_config_free_buf() suggests that the actual intention is toConfigureFreeBuffers, instead of ConfigureBuffers (which takes place in thefunction ngene_command_config_buf(), above). Fix this by enclosing those 6members of struct FW_CONFIGURE_FREE_BUFFERS into new struct config, and use&com.cmd.ConfigureFreeBuffers.config as the destination address, instead of&com.cmd.ConfigureBuffers.config, when calling memcpy(). This also helpswith the ongoing efforts to globally enable -Warray-bounds and get uscloser to being able to tighten the FORTIFY_SOURCE routines on memcpy().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47288` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-159-generic - 4.15.0-159.167~16.04.1\nlinux-image-unsigned-4.15.0-159-generic - 4.15.0-159.167~16.04.1\nlinux-image-unsigned-4.15.0-159-lowlatency - 4.15.0-159.167~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1112-aws - 4.15.0-1112.119~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1124-azure - 4.15.0-1124.137~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1109-gcp - 4.15.0-1109.123~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1081-oracle - 4.15.0-1081.89~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47288",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47288"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47288",
+				"href": "https://ubuntu.com/security/CVE-2021-47288",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202109200000000",
+						"comment": "linux-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-159.167~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202109200000010",
+						"comment": "linux-aws-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-1112.119~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202109200000020",
+						"comment": "linux-azure package in xenial was vulnerable but has been fixed (note: '4.15.0-1124.137~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips/xenial is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202109200000030",
+						"comment": "linux-gcp package in xenial was vulnerable but has been fixed (note: '4.15.0-1109.123~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202109200000040",
+						"comment": "linux-oracle package in xenial was vulnerable but has been fixed (note: '4.15.0-1081.89~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

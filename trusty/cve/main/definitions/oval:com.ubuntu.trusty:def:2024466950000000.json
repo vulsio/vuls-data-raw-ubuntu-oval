@@ -1,0 +1,56 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024466950000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-46695 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:selinux,smack: don't bypass permissions check in inode_setsecctx hookMarek Gresko reports that the root user on an NFS client is able tochange the security labels on files on an NFS filesystem that isexported with root squashing enabled.The end of the kerneldoc comment for __vfs_setxattr_noperm() states: *  This function requires the caller to lock the inode's i_mutex before it *  is executed. It also assumes that the caller will make the appropriate *  permission checks.nfsd_setattr() does do permissions checking via fh_verify() andnfsd_permission(), but those don't do all the same permissions checksthat are done by security_inode_setxattr() and its related LSM hooks do.Since nfsd_setattr() is the only consumer of security_inode_setsecctx(),simplest solution appears to be to replace the call to__vfs_setxattr_noperm() with a call to __vfs_setxattr_locked().  Thisfixes the above issue and has the added benefit of causing nfsd torecall conflicting delegations on a file when a client tries to changeits security label.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-46695",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-46695"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-09-13 06:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-46695",
+				"href": "https://ubuntu.com/security/CVE-2024-46695",
+				"public": "20240913",
+				"cvss_score": "4.4",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:H/UI:N/S:U/C:N/I:H/A:N"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,44 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.focal:def:2023425030000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-42503 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
+		"description": "Improper Input Validation, Uncontrolled Resource Consumption vulnerabilityin Apache Commons Compress in TAR parsing.This issue affects Apache CommonsCompress: from 1.22 before 1.24.0. Users are recommended to upgrade toversion 1.24.0, which fixes the issue. A third party can create a malformedTAR file by manipulating file modification times headers, which when parsedwith Apache Commons Compress, will cause a denial of service issue via CPUconsumption. In version 1.22 of Apache Commons Compress, support was addedfor file modification times with higher precision (issue # COMPRESS-612[1]). The format for the PAX extended headers carrying this data consistsof two numbers separated by a period [2], indicating seconds and subsecondprecision (for example “1647221103.5998539”). The impacted fields are“atime”, “ctime”, “mtime” and “LIBARCHIVE.creationtime”. No inputvalidation is performed prior to the parsing of header values. Parsing ofthese numbers uses the BigDecimal [3] class from the JDK which has apublicly known algorithmic complexity issue when doing operations on largenumbers, causing denial of service (see issue # JDK-6560193 [4]). A thirdparty can manipulate file time headers in a TAR file by placing a numberwith a very long fraction (300,000 digits) or a number with exponentnotation (such as “9e9999999”) within a file modification time header, andthe parsing of files with these headers will take hours instead of seconds,leading to a denial of service via exhaustion of CPU resources. This issueis similar to CVE-2012-2098 [5]. [1]:https://issues.apache.org/jira/browse/COMPRESS-612 [2]:https://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_05[3]: https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html[4]: https://bugs.openjdk.org/browse/JDK-6560193 [5]:https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2012-2098 Onlyapplications using CompressorStreamFactory class (with auto-detection offile types), TarArchiveInputStream and TarFile classes to parse TAR filesare impacted. Since this code was introduced in v1.22, only that versionand later versions are impacted.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-42503",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-42503"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2023 Canonical Ltd.",
+			"public_date": "2023-09-14 08:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-42503",
+				"href": "https://ubuntu.com/security/CVE-2023-42503",
+				"public": "20230914",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201813240000000",
+						"comment": "libcommons-compress-java package in focal is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

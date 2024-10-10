@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021470890000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47089 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: kfence:fix memory leak when cat kfence objects Hulk robot reported a kmemleakproblem: unreferenced object 0xffff93d1d8cc02e8 (size 248): comm \"cat\", pid23327, jiffies 4624670141 (age 495992.217s) hex dump (first 32 bytes): 0040 85 19 d4 93 ff ff 00 10 00 00 00 00 00 00 .@.............. 00 00 00 0000 00 00 00 00 00 00 00 00 00 00 00 ................ backtrace:seq_open+0x2a/0x80 full_proxy_open+0x167/0x1e0 do_dentry_open+0x1e1/0x3a0path_openat+0x961/0xa20 do_filp_open+0xae/0x120 do_sys_openat2+0x216/0x2f0do_sys_open+0x57/0x80 do_syscall_64+0x33/0x40entry_SYSCALL_64_after_hwframe+0x44/0xa9 unreferenced object0xffff93d419854000 (size 4096): comm \"cat\", pid 23327, jiffies 4624670141(age 495992.217s) hex dump (first 32 bytes): 6b 66 65 6e 63 65 2d 23 32 3530 3a 20 30 78 30 kfence-#250: 0x0 30 30 30 30 30 30 30 37 35 34 62 64 6131 32 2d 0000000754bda12- backtrace: seq_read_iter+0x313/0x440seq_read+0x14b/0x1a0 full_proxy_read+0x56/0x80 vfs_read+0xa5/0x1b0ksys_read+0xa0/0xf0 do_syscall_64+0x33/0x40entry_SYSCALL_64_after_hwframe+0x44/0xa9 I find that we can easilyreproduce this problem with the following commands: cat/sys/kernel/debug/kfence/objects echo scan > /sys/kernel/debug/kmemleak cat/sys/kernel/debug/kmemleak The leaked memory is allocated in the stackbelow: do_syscall_64 do_sys_open do_dentry_open full_proxy_open seq_open---> alloc seq_file vfs_read full_proxy_read seq_read seq_read_itertraverse ---> alloc seq_buf And it should have been released in thefollowing process: do_syscall_64 syscall_exit_to_user_modeexit_to_user_mode_prepare task_work_run ____fput __fput full_proxy_release---> free here However, the release function corresponding tofile_operations is not implemented in kfence. As a result, a memory leakoccurs. Therefore, the solution to this problem is to implement thecorresponding release function.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47089` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-2.16\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-lowlatency - 4.8.0-39.42~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1004.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1001.10\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1102-aws - 4.15.0-1030.31~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1114-azure - 4.11.0-1009.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1099-gcp - 4.10.0-1004.4\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-oracle - 4.15.0-1007.9~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47089",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47089"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-04 18:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47089",
+				"href": "https://ubuntu.com/security/CVE-2021-47089",
+				"public": "20240304"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

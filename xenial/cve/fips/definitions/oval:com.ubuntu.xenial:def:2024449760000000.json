@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024449760000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-44976 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ata: pata_macio: Fix DMA table overflowKolbjørn and Jonáš reported that their 32-bit PowerMacs were crashingin pata-macio since commit 09fe2bfa6b83 (\"ata: pata_macio: Fixmax_segment_size with PAGE_SIZE == 64K\").For example:  kernel BUG at drivers/ata/pata_macio.c:544!  Oops: Exception in kernel mode, sig: 5 [#1]  BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 DEBUG_PAGEALLOC PowerMac  ...  NIP pata_macio_qc_prep+0xf4/0x190  LR  pata_macio_qc_prep+0xfc/0x190  Call Trace:    0xc1421660 (unreliable)    ata_qc_issue+0x14c/0x2d4    __ata_scsi_queuecmd+0x200/0x53c    ata_scsi_queuecmd+0x50/0xe0    scsi_queue_rq+0x788/0xb1c    __blk_mq_issue_directly+0x58/0xf4    blk_mq_plug_issue_direct+0x8c/0x1b4    blk_mq_flush_plug_list.part.0+0x584/0x5e0    __blk_flush_plug+0xf8/0x194    __submit_bio+0x1b8/0x2e0    submit_bio_noacct_nocheck+0x230/0x304    btrfs_work_helper+0x200/0x338    process_one_work+0x1a8/0x338    worker_thread+0x364/0x4c0    kthread+0x100/0x104    start_kernel_thread+0x10/0x14That commit increased max_segment_size to 64KB, with the justificationthat the SCSI core was already using that size when PAGE_SIZE == 64KB,and that there was existing logic to split over-sized requests.However with a sufficiently large request, the splitting logic causeseach sg to be split into two commands in the DMA table, leading tooverflow of the DMA table, triggering the BUG_ON().With default settings the bug doesn't trigger, because the request sizeis limited by max_sectors_kb == 1280, however max_sectors_kb can beincreased, and apparently some distros do that by default using udevrules.Fix the bug for 4KB kernels by reverting to the old max_segment_size.For 64KB kernels the sg_tablesize needs to be halved, to allow for thepossibility that each sg will be split into two.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-44976` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-2.16\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-lowlatency - 4.8.0-39.42~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1004.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1001.10\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1102-aws - 4.15.0-1030.31~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1114-azure - 4.11.0-1009.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1099-gcp - 4.10.0-1004.4\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-oracle - 4.15.0-1007.9~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-44976",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-44976"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-09-04 20:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-44976",
+				"href": "https://ubuntu.com/security/CVE-2024-44976",
+				"public": "20240904"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201592890000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

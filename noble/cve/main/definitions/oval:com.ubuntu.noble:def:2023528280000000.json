@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2023528280000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52828 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:Detect IP == ksym.end as part of BPF program Now that bpf_throw kfunc isthe first such call instruction that has noreturn semantics within theverifier, this also kicks in dead code elimination in unprecedented ways.For one, any instruction following a bpf_throw call will never be marked asseen. Moreover, if a callchain ends up throwing, any instructions after thecall instruction to the eventually throwing subprog in callers will alsonever be marked as seen. The tempting way to fix this would be to emitextra 'int3' instructions which bump the jited_len of a program, and ensurethat during runtime when a program throws, we can discover its boundarieseven if the call instruction to bpf_throw (or to subprogs that alwaysthrow) is emitted as the final instruction in the program. An example ofsuch a program would be this: do_something(): ... r0 = 0 exit foo(): r1 = 0call bpf_throw r0 = 0 exit bar(cond): if r1 != 0 goto pc+2 calldo_something exit call foo r0 = 0 // Never seen by verifier exit //main(ctx): r1 = ... call bar r0 = 0 exit Here, if we do end up throwing,the stacktrace would be the following: bpf_throw foo bar main In bar, thefinal instruction emitted will be the call to foo, as such, the returnaddress will be the subsequent instruction (which the JIT emits as int3 onx86). This will end up lying outside the jited_len of the program, thus,when unwinding, we will fail to discover the return address as belonging toany program and end up in a panic due to the unreliable stack unwinding ofBPF programs that we never expect. To remedy this case, makebpf_prog_ksym_find treat IP == ksym.end as part of the BPF program, so thatis_bpf_text_address returns true when such a case occurs, and we are ableto unwind reliably when the final instruction ends up being a callinstruction.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52828` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic - 6.6.0-14.14\nlinux-image-unsigned-6.6.0-14-generic-64k - 6.6.0-14.14\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-aws - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-azure - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-gcp - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-14-lowlatency - 6.6.0-14.14.1\nlinux-image-unsigned-6.6.0-14-lowlatency-64k - 6.6.0-14.14.1\nNo subscription required\n\nlinux-image-unsigned-6.6.0-1001-oracle - 6.6.0-1001.1\nNo subscription required\n\nlinux-image-6.7.0-1001-raspi - 6.7.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52828",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52828"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52828",
+				"href": "https://ubuntu.com/security/CVE-2023-52828",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-14.14')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000030",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-14.14.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000010",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.6.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000040",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					}
+				]
+			}
+		]
+	}
+}

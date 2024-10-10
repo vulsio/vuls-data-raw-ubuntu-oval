@@ -1,0 +1,98 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024369610000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36961 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:thermal/debugfs: Fix two locking issues with thermal zone debug With thecurrent thermal zone locking arrangement in the debugfs code, user spacecan open the \"mitigations\" file for a thermal zone before the zone'sdebugfs pointer is set which will result in a NULL pointer dereference intze_seq_start(). Moreover, thermal_debug_tz_remove() is not called underthe thermal zone lock, so it can run in parallel with the other functionsaccessing the thermal zone's struct thermal_debugfs object. Then, it mayclear tz->debugfs after one of those functions has checked it and thestruct thermal_debugfs object may be freed prematurely. To address thefirst problem, pass a pointer to the thermal zone's struct thermal_debugfsobject to debugfs_create_file() in thermal_debug_tz_add() and maketze_seq_start(), tze_seq_next(), tze_seq_stop(), and tze_seq_show()retrieve it from s->private instead of a pointer to the thermal zoneobject. This will ensure that tz_debugfs will be valid across the\"mitigations\" file accesses until thermal_debugfs_remove_id() called bythermal_debug_tz_remove() removes that file. To address the second problem,use tz->lock in thermal_debug_tz_remove() around the tz->debugfs valuecheck (in case the same thermal zone is removed at the same time in twodifferent threads) and its reset to NULL. Cc :6.8+ <stable@vger.kernel.org># 6.8+\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36961` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-40-generic - 6.8.0-40.40\nlinux-image-unsigned-6.8.0-40-generic - 6.8.0-40.40\nlinux-image-unsigned-6.8.0-40-generic-64k - 6.8.0-40.40\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1013-aws - 6.8.0-1013.14\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1012-azure - 6.8.0-1012.14\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1012-gcp - 6.8.0-1012.13\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-gke - 6.8.0-1008.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-ibm - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-40-lowlatency - 6.8.0-40.40.1\nlinux-image-unsigned-6.8.0-40-lowlatency-64k - 6.8.0-40.40.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-oracle - 6.8.0-1010.10\nlinux-image-unsigned-6.8.0-1010-oracle-64k - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-6.8.0-1009-raspi - 6.8.0-1009.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-oem - 6.8.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1009.16\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36961",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36961"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-03 08:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36961",
+				"href": "https://ubuntu.com/security/CVE-2024-36961",
+				"public": "20240603"
+			},
+			"public_date_at_usn": "2024-06-03 08:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6949-1",
+				"https://ubuntu.com/security/notices/USN-6952-1",
+				"https://ubuntu.com/security/notices/USN-6955-1",
+				"https://ubuntu.com/security/notices/USN-6949-2",
+				"https://ubuntu.com/security/notices/USN-6952-2"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528820000000",
+						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-40.40')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528820000010",
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1013.14')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528820000020",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1012.14')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528820000030",
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1012.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528820000040",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1008.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000010",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528820000050",
+						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-40.40.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000010",
+						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528820000060",
+						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1009.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023526990000010",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528820000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1009.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-2008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.1-1006.6')."
+					}
+				]
+			}
+		]
+	}
+}

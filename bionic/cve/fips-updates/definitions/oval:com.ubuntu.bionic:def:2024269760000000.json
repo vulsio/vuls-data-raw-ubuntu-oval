@@ -1,0 +1,183 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024269760000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26976 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: KVM:Always flush async #PF workqueue when vCPU is being destroyed Always flushthe per-vCPU async #PF workqueue when a vCPU is clearing its completionqueue, e.g. when a VM and all its vCPUs is being destroyed. KVM must ensurethat none of its workqueue callbacks is running when the last reference tothe KVM _module_ is put. Gifting a reference to the associated VM preventsthe workqueue callback from dereferencing freed vCPU/VM memory, but doesnot prevent the KVM module from being unloaded before the callbackcompletes. Drop the misguided VM refcount gifting, as calling kvm_put_kvm()from async_pf_execute() if kvm_put_kvm() flushes the async #PF workqueuewill result in deadlock. async_pf_execute() can't return untilkvm_put_kvm() finishes, and kvm_put_kvm() can't return untilasync_pf_execute() finishes: WARNING: CPU: 8 PID: 251 atvirt/kvm/kvm_main.c:1435 kvm_put_kvm+0x2d/0x320 [kvm] Modules linked in:vhost_net vhost vhost_iotlb tap kvm_intel kvm irqbypass CPU: 8 PID: 251Comm: kworker/8:1 Tainted: G W 6.6.0-rc1-e7af8d17224a-x86/gmem-vm #119Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 0.0.0 02/06/2015Workqueue: events async_pf_execute [kvm] RIP: 0010:kvm_put_kvm+0x2d/0x320[kvm] Call Trace: <TASK> async_pf_execute+0x198/0x260 [kvm]process_one_work+0x145/0x2d0 worker_thread+0x27e/0x3a0 kthread+0xba/0xe0ret_from_fork+0x2d/0x50 ret_from_fork_asm+0x11/0x20 </TASK> ---[ end trace0000000000000000 ]--- INFO: task kworker/8:1:251 blocked for more than 120seconds. Tainted: G W 6.6.0-rc1-e7af8d17224a-x86/gmem-vm #119 \"echo 0 >/proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:kworker/8:1 state:D stack:0 pid:251 ppid:2 flags:0x00004000 Workqueue:events async_pf_execute [kvm] Call Trace: <TASK> __schedule+0x33f/0xa40schedule+0x53/0xc0 schedule_timeout+0x12a/0x140__wait_for_common+0x8d/0x1d0 __flush_work.isra.0+0x19f/0x2c0kvm_clear_async_pf_completion_queue+0x129/0x190 [kvm]kvm_arch_destroy_vm+0x78/0x1b0 [kvm] kvm_put_kvm+0x1c1/0x320 [kvm]async_pf_execute+0x198/0x260 [kvm] process_one_work+0x145/0x2d0worker_thread+0x27e/0x3a0 kthread+0xba/0xe0 ret_from_fork+0x2d/0x50ret_from_fork_asm+0x11/0x20 </TASK> Ifkvm_clear_async_pf_completion_queue() actually flushes the workqueue, thenthere's no need to gift async_pf_execute() a reference because allinvocations of async_pf_execute() will be forced to complete before thevCPU and its VM are destroyed/freed. And that in turn fixes the moduleunloading bug as __fput() won't do module_put() on the last vCPU referenceuntil the vCPU has been freed, e.g. if closing the vCPU file also puts thelast reference to the KVM module. Note that kvm_check_async_pf_completion()may also take the work item off the completion queue and so also needs toflush the work queue, as the work will not be seen bykvm_clear_async_pf_completion_queue(). Waiting on the workqueue couldtheoretically delay a vCPU due to waiting for the work to complete, butthat's a very, very small chance, and likely a very small delay.kvm_arch_async_page_present_queued() unconditionally makes a new request,i.e. will effectively delay entering the guest, so the remaining work isreally just: trace_kvm_async_pf_completed(addr, cr2_or_gpa);__kvm_vcpu_wake_up(vcpu); mmput(mm); and mmput() can't drop the lastreference to the page tables if the vCPU is still alive, i.e. the vCPUwon't get stuck tearing down page tables. Add a helper to do the flushing,specifically to deal with \"wakeup all\" work items, as they aren't actuallywork items, i.e. are never placed in a workqueue. Trying to flush a bogusworkqueue entry rightly makes __flush_work() complain (kudos to whoeveradded that sanity check). Note, commit 5f6de5cbebee (\"KVM: Prevent moduleexit until al ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26976` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209~18.04.1\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1133-azure - 5.4.0-1133.140~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1132-gcp - 5.4.0-1132.141~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1075-ibm - 5.4.0-1075.80~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1127-oracle - 5.4.0-1127.136~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26976",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26976"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-01 06:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26976",
+				"href": "https://ubuntu.com/security/CVE-2024-26976",
+				"public": "20240501"
+			},
+			"public_date_at_usn": "2024-05-01 06:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6816-1",
+				"https://ubuntu.com/security/notices/USN-6817-1",
+				"https://ubuntu.com/security/notices/USN-6817-2",
+				"https://ubuntu.com/security/notices/USN-6817-3",
+				"https://ubuntu.com/security/notices/USN-6878-1",
+				"https://ubuntu.com/security/notices/USN-6896-1",
+				"https://ubuntu.com/security/notices/USN-6898-1",
+				"https://ubuntu.com/security/notices/USN-6896-2",
+				"https://ubuntu.com/security/notices/USN-6898-2",
+				"https://ubuntu.com/security/notices/USN-6896-3",
+				"https://ubuntu.com/security/notices/USN-6898-3",
+				"https://ubuntu.com/security/notices/USN-6896-4",
+				"https://ubuntu.com/security/notices/USN-6896-5",
+				"https://ubuntu.com/security/notices/USN-6898-4",
+				"https://ubuntu.com/security/notices/USN-6917-1",
+				"https://ubuntu.com/security/notices/USN-6919-1",
+				"https://ubuntu.com/security/notices/USN-6927-1",
+				"https://ubuntu.com/security/notices/USN-7019-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000000",
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-189.209~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1128.138~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000010",
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1133.140~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
+						"comment": "linux-fips package in fips-updates/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471880000110",
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1132.141~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2020278200000010",
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1075.80~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000020",
+						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1127.136~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1112.124~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips-updates/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips-updates/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and needs fixing."
+					}
+				]
+			}
+		]
+	}
+}

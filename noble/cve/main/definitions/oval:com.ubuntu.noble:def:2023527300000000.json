@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2023527300000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52730 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mmc:sdio: fix possible resource leaks in some error paths If sdio_add_func() orsdio_init_func() fails, sdio_remove_func() can not release the resources,because the sdio function is not presented in these two cases, it won'tcall of_node_put() or put_device(). To fix these leaks, makesdio_func_present() only control whether device_del() needs to be called ornot, then always call of_node_put() and put_device(). In error case insdio_init_func(), the reference of 'card->dev' is not get, to avoidredundant put in sdio_free_func_cis(), move the get_device() tosdio_alloc_func() and put_device() to sdio_release_func(), it can keep theget/put function be balanced. Without this patch, while doing fault injecttest, it can get the following leak reports, after this fix, the leak isgone. unreferenced object 0xffff888112514000 (size 2048): comm\"kworker/3:2\", pid 65, jiffies 4294741614 (age 124.774s) hex dump (first 32bytes): 00 e0 6f 12 81 88 ff ff 60 58 8d 06 81 88 ff ff ..o.....`X...... 1040 51 12 81 88 ff ff 10 40 51 12 81 88 ff ff .@Q......@Q..... backtrace:[<000000009e5931da>] kmalloc_trace+0x21/0x110 [<000000002f839ccb>]mmc_alloc_card+0x38/0xb0 [mmc_core] [<0000000004adcbf6>]mmc_sdio_init_card+0xde/0x170 [mmc_core] [<000000007538fea0>]mmc_attach_sdio+0xcb/0x1b0 [mmc_core] [<00000000d4fdeba7>]mmc_rescan+0x54a/0x640 [mmc_core] unreferenced object 0xffff888112511000(size 2048): comm \"kworker/3:2\", pid 65, jiffies 4294741623 (age 124.766s)hex dump (first 32 bytes): 00 40 51 12 81 88 ff ff e0 58 8d 06 81 88 ff ff.@Q......X...... 10 10 51 12 81 88 ff ff 10 10 51 12 81 88 ff ff..Q.......Q..... backtrace: [<000000009e5931da>] kmalloc_trace+0x21/0x110[<00000000fcbe706c>] sdio_alloc_func+0x35/0x100 [mmc_core][<00000000c68f4b50>] mmc_attach_sdio.cold.18+0xb1/0x395 [mmc_core][<00000000d4fdeba7>] mmc_rescan+0x54a/0x640 [mmc_core]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52730` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52730",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52730"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52730",
+				"href": "https://ubuntu.com/security/CVE-2023-52730",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					}
+				]
+			}
+		]
+	}
+}

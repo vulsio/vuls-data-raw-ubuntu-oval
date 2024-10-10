@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021473660000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47366 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: afs:Fix corruption in reads at fpos 2G-4G from an OpenAFS server AFS-3 has twodata fetch RPC variants, FS.FetchData and FS.FetchData64, and Linux's afsclient switches between them when talking to a non-YFS server if the readsize, the file position or the sum of the two have the upper 32 bits set ofthe 64-bit value. This is a problem, however, since the file position andlength fields of FS.FetchData are *signed* 32-bit values. Fix this bycapturing the capability bits obtained from the fileserver when it's sentan FS.GetCapabilities RPC, rather than just discarding them, and thenpicking out the VICED_CAPABILITY_64BITFILES flag. This can then be used todecide whether to use FS.FetchData or FS.FetchData64 - and alsoFS.StoreData or FS.StoreData64 - rather than using upper_32_bits() toswitch on the parameter values. This capabilities flag could also be usedto limit the maximum size of the file, but all servers must be checked forthat. Note that the issue does not exist with FS.StoreData - that uses*unsigned* 32-bit values. It's also not a problem with Auristor servers asits YFS.FetchData64 op uses unsigned 64-bit values. This can be tested bycloning a git repo through an OpenAFS client to an OpenAFS server and thendoing \"git status\" on it from a Linux afs client[1]. Provided the clone hasa pack file that's in the 2G-4G range, the git status will show errorslike: error: packfile.git/objects/pack/pack-5e813c51d12b6847bbc0fcd97c2bca66da50079c.pack doesnot match index error: packfile.git/objects/pack/pack-5e813c51d12b6847bbc0fcd97c2bca66da50079c.pack doesnot match index This can be observed in the server's FileLog with somethinglike the following appearing: Sun Aug 29 19:31:39 2021 SRXAFS_FetchData,Fid = 2303380852.491776.3263114, Host 192.168.11.201:7001, Id 1001 Sun Aug29 19:31:39 2021 CheckRights: len=0, for host=192.168.11.201:7001 Sun Aug29 19:31:39 2021 FetchData_RXStyle: Pos 18446744071815340032, Len 3154 SunAug 29 19:31:39 2021 FetchData_RXStyle: file size 2400758866 ... Sun Aug 2919:31:40 2021 SRXAFS_FetchData returns 5 Note the file position of18446744071815340032. This is the requested file position sign-extended.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47366",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47366"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47366",
+				"href": "https://ubuntu.com/security/CVE-2021-47366",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips-updates/xenial is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

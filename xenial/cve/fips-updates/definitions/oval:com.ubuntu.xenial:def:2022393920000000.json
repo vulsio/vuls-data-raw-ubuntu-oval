@@ -1,0 +1,48 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2022393920000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-39392 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "Wasmtime is a standalone runtime for WebAssembly. Prior to version 2.0.2,there is a bug in Wasmtime's implementation of its pooling instanceallocator when the allocator is configured to give WebAssembly instances amaximum of zero pages of memory. In this configuration, the virtual memorymapping for WebAssembly memories did not meet the compiler-requiredconfiguration requirements for safely executing WebAssembly modules.Wasmtime's default settings require virtual memory page faults to indicatethat wasm reads/writes are out-of-bounds, but the pooling allocator'sconfiguration would not create an appropriate virtual memory mapping forthis meaning out of bounds reads/writes can successfully read/write memoryunrelated to the wasm sandbox within range of the base address of thememory mapping created by the pooling allocator. This bug is not applicablewith the default settings of the `wasmtime` crate. This bug can only betriggered by setting `InstanceLimits::memory_pages` to zero. This isexpected to be a very rare configuration since this means that wasm modulescannot allocate any pages of linear memory. All wasm modules produced byall current toolchains are highly likely to use linear memory, so it'sexpected to be unlikely that this configuration is set to zero by anyproduction embedding of Wasmtime. This bug has been patched and usersshould upgrade to Wasmtime 2.0.2. This bug can be worked around byincreasing the `memory_pages` allotment when configuring the poolingallocator to a value greater than zero. If an embedding wishes to stillprevent memory from actually being used then the `Store::limiter` methodcan be used to dynamically disallow growth of memory beyond 0 bytes large.Note that the default `memory_pages` value is greater than zero.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-39392",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-39392"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2022 Canonical Ltd.",
+			"public_date": "2022-11-10 20:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-39392",
+				"href": "https://ubuntu.com/security/CVE-2022-39392",
+				"public": "20221110",
+				"cvss_score": "7.4",
+				"cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201361670000000",
+						"comment": "firefox: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201361670000010",
+						"comment": "thunderbird: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

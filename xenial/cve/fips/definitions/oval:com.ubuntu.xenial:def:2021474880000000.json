@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021474880000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47488 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: cgroup:Fix memory leak caused by missing cgroup_bpf_offline When enablingCONFIG_CGROUP_BPF, kmemleak can be observed by running the command asbelow: $mount -t cgroup -o none,name=foo cgroup cgroup/ $umount cgroup/unreferenced object 0xc3585c40 (size 64): comm \"mount\", pid 425, jiffies4294959825 (age 31.990s) hex dump (first 32 bytes): 01 00 00 80 84 8c 28 c000 00 00 00 00 00 00 00 ......(......... 00 00 00 00 00 00 00 00 6c 43 a0c3 00 00 00 00 ........lC...... backtrace: [<e95a2f9e>]cgroup_bpf_inherit+0x44/0x24c [<1f03679c>] cgroup_setup_root+0x174/0x37c[<ed4b0ac5>] cgroup1_get_tree+0x2c0/0x4a0 [<f85b12fd>]vfs_get_tree+0x24/0x108 [<f55aec5c>] path_mount+0x384/0x988 [<e2d5e9cd>]do_mount+0x64/0x9c [<208c9cfe>] sys_mount+0xfc/0x1f4 [<06dd06e0>]ret_fast_syscall+0x0/0x48 [<a8308cb3>] 0xbeb4daa8 This is because thatsince the commit 2b0d3d3e4fcf (\"percpu_ref: reduce memory footprint ofpercpu_ref in fast path\") root_cgrp->bpf.refcnt.data is allocated by thefunction percpu_ref_init in cgroup_bpf_inherit which is called bycgroup_setup_root when mounting, but not freed along with root_cgrp whenumounting. Adding cgroup_bpf_offline which calls percpu_ref_kill tocgroup_kill_sb can free root_cgrp->bpf.refcnt.data in umount path. Thispatch also fixes the commit 4bfc0bb2c60e (\"bpf: decouple the lifetime ofcgroup_bpf from cgroup itself\"). A cgroup_bpf_offline is needed to do acleanup that frees the resources which are allocated by cgroup_bpf_inheritin cgroup_setup_root. And inside cgroup_bpf_offline, cgroup_get() is at thebeginning and cgroup_put is at the end of cgroup_bpf_release which iscalled by cgroup_bpf_offline. So cgroup_bpf_offline can keep the balance ofcgroup's refcount.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47488` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47488",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47488"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-22 09:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47488",
+				"href": "https://ubuntu.com/security/CVE-2021-47488",
+				"public": "20240522"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201592890000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

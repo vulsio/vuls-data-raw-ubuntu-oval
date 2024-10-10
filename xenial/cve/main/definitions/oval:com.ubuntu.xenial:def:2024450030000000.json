@@ -1,0 +1,82 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024450030000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-45003 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:vfs: Don't evict inode under the inode lru traversing contextThe inode reclaiming process(See function prune_icache_sb) collects allreclaimable inodes and mark them with I_FREEING flag at first, at thattime, other processes will be stuck if they try getting these inodes(See function find_inode_fast), then the reclaiming process destroy theinodes by function dispose_list(). Some filesystems(eg. ext4 withea_inode feature, ubifs with xattr) may do inode lookup in the inodeevicting callback function, if the inode lookup is operated under theinode lru traversing context, deadlock problems may happen.Case 1: In function ext4_evict_inode(), the ea inode lookup could happen        if ea_inode feature is enabled, the lookup process will be stuck\tunder the evicting context like this: 1. File A has inode i_reg and an ea inode i_ea 2. getfattr(A, xattr_buf) // i_ea is added into lru // lru->i_ea 3. Then, following three processes running like this:    PA                              PB echo 2 > /proc/sys/vm/drop_caches  shrink_slab   prune_dcache_sb   // i_reg is added into lru, lru->i_ea->i_reg   prune_icache_sb    list_lru_walk_one     inode_lru_isolate      i_ea->i_state |= I_FREEING // set inode state     inode_lru_isolate      __iget(i_reg)      spin_unlock(&i_reg->i_lock)      spin_unlock(lru_lock)                                     rm file A                                      i_reg->nlink = 0      iput(i_reg) // i_reg->nlink is 0, do evict       ext4_evict_inode        ext4_xattr_delete_inode         ext4_xattr_inode_dec_ref_all          ext4_xattr_inode_iget           ext4_iget(i_ea->i_ino)            iget_locked             find_inode_fast              __wait_on_freeing_inode(i_ea) ----? AA deadlock    dispose_list // cannot be executed by prune_icache_sb     wake_up_bit(&i_ea->i_state)Case 2: In deleted inode writing function ubifs_jnl_write_inode(), file        deleting process holds BASEHD's wbuf->io_mutex while getting the\txattr inode, which could race with inode reclaiming process(The        reclaiming process could try locking BASEHD's wbuf->io_mutex in\tinode evicting function), then an ABBA deadlock problem would\thappen as following: 1. File A has inode ia and a xattr(with inode ixa), regular file B has    inode ib and a xattr. 2. getfattr(A, xattr_buf) // ixa is added into lru // lru->ixa 3. Then, following three processes running like this:        PA                PB                        PC                echo 2 > /proc/sys/vm/drop_caches                 shrink_slab                  prune_dcache_sb                  // ib and ia are added into lru, lru->ixa->ib->ia                  prune_icache_sb                   list_lru_walk_one                    inode_lru_isolate                     ixa->i_state |= I_FREEING // set inode state                    inode_lru_isolate                     __iget(ib)                     spin_unlock(&ib->i_lock)                     spin_unlock(lru_lock)                                                   rm file B                                                    ib->nlink = 0 rm file A  iput(ia)   ubifs_evict_inode(ia)    ubifs_jnl_delete_inode(ia)     ubifs_jnl_write_inode(ia)      make_reservation(BASEHD) // Lock wbuf->io_mutex      ubifs_iget(ixa->i_ino)       iget_locked        find_inode_fast         __wait_on_freeing_inode(ixa)          |          iput(ib) // ib->nlink is 0, do evict          |           ubifs_evict_inode          |            ubifs_jnl_delete_inode(ib)          ?             ubifs_jnl_write_inode     ABBA deadlock ?-----make_reservation(BASEHD)                   dispose_list // cannot be executed by prune_icache_sb                    wake_up_bit(&ixa->i_state)Fix the possible deadlock by using new inode state flag I_LRU_ISOLATINGto pin the inode in memory while inode_lru_isolate(---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45003` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-45003",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-45003"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-09-04 20:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-45003",
+				"href": "https://ubuntu.com/security/CVE-2024-45003",
+				"public": "20240904"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

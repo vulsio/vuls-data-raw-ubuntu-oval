@@ -1,0 +1,100 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024422320000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42232 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:libceph: fix race between delayed_work() and ceph_monc_stop()The way the delayed work is handled in ceph_monc_stop() is prone toraces with mon_fault() and possibly also finish_hunting().  Both ofthese can requeue the delayed work which wouldn't be canceled by any ofthe following code in case that happens after cancel_delayed_work_sync()runs -- __close_session() doesn't mess with the delayed work in orderto avoid interfering with the hunting interval logic.  This part wasmissed in commit b5d91704f53e (\"libceph: behave in mon_fault() ifcur_mon < 0\") and use-after-free can still ensue on monc and objectsthat hang off of it, with monc->auth and monc->monmap beingparticularly susceptible to quickly being reused.To fix this:- clear monc->cur_mon and monc->hunting as part of closing the session  in ceph_monc_stop()- bail from delayed_work() if monc->cur_mon is cleared, similar to how  it's done in mon_fault() and finish_hunting() (based on monc->hunting)- call cancel_delayed_work_sync() after the session is closed",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42232",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42232"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-07 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-42232",
+				"href": "https://ubuntu.com/security/CVE-2024-42232",
+				"public": "20240807",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "7003-1,7003-2,7006-1,7003-3,7007-1,7009-1,7019-1,7007-2,7007-3,7009-2,7003-4,7003-5"
+			},
+			"public_date_at_usn": "2024-08-07 16:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-7003-1",
+				"https://ubuntu.com/security/notices/USN-7003-2",
+				"https://ubuntu.com/security/notices/USN-7006-1",
+				"https://ubuntu.com/security/notices/USN-7003-3",
+				"https://ubuntu.com/security/notices/USN-7007-1",
+				"https://ubuntu.com/security/notices/USN-7009-1",
+				"https://ubuntu.com/security/notices/USN-7019-1",
+				"https://ubuntu.com/security/notices/USN-7007-2",
+				"https://ubuntu.com/security/notices/USN-7007-3",
+				"https://ubuntu.com/security/notices/USN-7009-2",
+				"https://ubuntu.com/security/notices/USN-7003-4",
+				"https://ubuntu.com/security/notices/USN-7003-5"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,94 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021469550000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-46955 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:openvswitch: fix stack OOB read while fragmenting IPv4 packets runningopenvswitch on kernels built with KASAN, it's possible to see the followingsplat while testing fragmentation of IPv4 packets: BUG: KASAN:stack-out-of-bounds in ip_do_fragment+0x1b03/0x1f60 Read of size 1 at addrffff888112fc713c by task handler2/1367 CPU: 0 PID: 1367 Comm: handler2 Nottainted 5.12.0-rc6+ #418 Hardware name: Red Hat KVM, BIOS1.11.1-4.module+el8.1.0+4066+0f1aadab 04/01/2014 Call Trace:dump_stack+0x92/0xc1 print_address_description.constprop.7+0x1a/0x150kasan_report.cold.13+0x7f/0x111 ip_do_fragment+0x1b03/0x1f60ovs_fragment+0x5bf/0x840 [openvswitch] do_execute_actions+0x1bd5/0x2400[openvswitch] ovs_execute_actions+0xc8/0x3d0 [openvswitch]ovs_packet_cmd_execute+0xa39/0x1150 [openvswitch]genl_family_rcv_msg_doit.isra.15+0x227/0x2d0 genl_rcv_msg+0x287/0x490netlink_rcv_skb+0x120/0x380 genl_rcv+0x24/0x40 netlink_unicast+0x439/0x630netlink_sendmsg+0x719/0xbf0 sock_sendmsg+0xe2/0x110____sys_sendmsg+0x5ba/0x890 ___sys_sendmsg+0xe9/0x160__sys_sendmsg+0xd3/0x170 do_syscall_64+0x33/0x40entry_SYSCALL_64_after_hwframe+0x44/0xae RIP: 0033:0x7f957079db07 Code: c366 90 41 54 41 89 d4 55 48 89 f5 53 89 fb 48 83 ec 10 e8 eb ec ff ff 44 89e2 48 89 ee 89 df 41 89 c0 b8 2e 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 3544 89 c7 48 89 44 24 08 e8 24 ed ff ff 48 RSP: 002b:00007f956ce35a50EFLAGS: 00000293 ORIG_RAX: 000000000000002e RAX: ffffffffffffffda RBX:0000000000000019 RCX: 00007f957079db07 RDX: 0000000000000000 RSI:00007f956ce35ae0 RDI: 0000000000000019 RBP: 00007f956ce35ae0 R08:0000000000000000 R09: 00007f9558006730 R10: 0000000000000000 R11:0000000000000293 R12: 0000000000000000 R13: 00007f956ce37308 R14:00007f956ce35f80 R15: 00007f956ce35ae0 The buggy address belongs to thepage: page:00000000af2a1d93 refcount:0 mapcount:0 mapping:0000000000000000index:0x0 pfn:0x112fc7 flags: 0x17ffffc0000000() raw: 0017ffffc00000000000000000000000 dead000000000122 0000000000000000 raw: 00000000000000000000000000000000 00000000ffffffff 0000000000000000 page dumped because:kasan: bad access detected addr ffff888112fc713c is located in stack oftask handler2/1367 at offset 180 in frame: ovs_fragment+0x0/0x840[openvswitch] this frame has 2 objects: [32, 144) 'ovs_dst' [192, 424)'ovs_rt' Memory state around the buggy address: ffff888112fc7000: f3 00 0000 00 00 00 00 00 00 00 00 00 00 00 00 ffff888112fc7080: 00 f1 f1 f1 f1 0000 00 00 00 00 00 00 00 00 00 >ffff888112fc7100: 00 00 00 f2 f2 f2 f2 f2 f200 00 00 00 00 00 00 ^ ffff888112fc7180: 00 00 00 00 00 00 00 00 00 00 0000 00 00 00 00 ffff888112fc7200: 00 00 00 00 00 00 f2 f2 f2 00 00 00 00 0000 00 for IPv4 packets, ovs_fragment() uses a temporary struct dst_entry.Then, in the following call graph: ip_do_fragment() ip_skb_dst_mtu()ip_dst_mtu_maybe_forward() ip_mtu_locked() the pointer to struct dst_entryis used as pointer to struct rtable: this turns the access to structmembers like rt_mtu_locked into an OOB read in the stack. Fix this changingthe temporary variable used for IPv4 packets in ovs_fragment(), similarlyto what is done for IPv6 few lines below.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46955` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-253-generic - 4.4.0-253.287\nlinux-image-unsigned-4.4.0-253-generic - 4.4.0-253.287\nlinux-image-unsigned-4.4.0-253-lowlatency - 4.4.0-253.287\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-151-generic - 4.15.0-151.157~16.04.1\nlinux-image-unsigned-4.15.0-151-generic - 4.15.0-151.157~16.04.1\nlinux-image-unsigned-4.15.0-151-lowlatency - 4.15.0-151.157~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1131-kvm - 4.4.0-1131.141\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1168-aws - 4.4.0-1168.183\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1109-aws - 4.15.0-1109.116~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1121-azure - 4.15.0-1121.134~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1106-gcp - 4.15.0-1106.120~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1078-oracle - 4.15.0-1078.86~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-46955",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-46955"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-27 19:04:00 UTC",
+			"cve": {
+				"text": "CVE-2021-46955",
+				"href": "https://ubuntu.com/security/CVE-2021-46955",
+				"public": "20240227"
+			},
+			"public_date_at_usn": "2024-02-27 19:04:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6739-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2019251620000000",
+						"comment": "linux package in xenial was vulnerable but has been fixed (note: '4.4.0-253.287')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2020245860000000",
+						"comment": "linux-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-151.157~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2019251620000020",
+						"comment": "linux-kvm package in xenial was vulnerable but has been fixed (note: '4.4.0-1131.141')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2019251620000030",
+						"comment": "linux-aws package in xenial was vulnerable but has been fixed (note: '4.4.0-1168.183')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2020245860000010",
+						"comment": "linux-aws-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-1109.116~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2020245860000020",
+						"comment": "linux-azure package in xenial was vulnerable but has been fixed (note: '4.15.0-1121.134~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips-updates/xenial is affected. An update containing the fix has been completed and is pending publication (note: '4.4.0-1100.107')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2020245860000030",
+						"comment": "linux-gcp package in xenial was vulnerable but has been fixed (note: '4.15.0-1106.120~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2020245860000040",
+						"comment": "linux-oracle package in xenial was vulnerable but has been fixed (note: '4.15.0-1078.86~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000020",
+						"comment": "linux-snapdragon: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

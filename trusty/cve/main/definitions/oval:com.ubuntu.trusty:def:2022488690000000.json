@@ -1,0 +1,56 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2022488690000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48869 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: gadgetfs: Fix race between mounting and unmountingThe syzbot fuzzer and Gerald Lee have identified a use-after-free bugin the gadgetfs driver, involving processes concurrently mounting andunmounting the gadgetfs filesystem.  In particular, gadgetfs_fill_super()can race with gadgetfs_kill_sb(), causing the latter to deallocatethe_device while the former is using it.  The output from KASAN says,in part:BUG: KASAN: use-after-free in instrument_atomic_read_writeinclude/linux/instrumented.h:102 [inline]BUG: KASAN: use-after-free in atomic_fetch_sub_releaseinclude/linux/atomic/atomic-instrumented.h:176 [inline]BUG: KASAN: use-after-free in __refcount_sub_and_testinclude/linux/refcount.h:272 [inline]BUG: KASAN: use-after-free in __refcount_dec_and_testinclude/linux/refcount.h:315 [inline]BUG: KASAN: use-after-free in refcount_dec_and_testinclude/linux/refcount.h:333 [inline]BUG: KASAN: use-after-free in put_dev drivers/usb/gadget/legacy/inode.c:159[inline]BUG: KASAN: use-after-free in gadgetfs_kill_sb+0x33/0x100drivers/usb/gadget/legacy/inode.c:2086Write of size 4 at addr ffff8880276d7840 by task syz-executor126/18689CPU: 0 PID: 18689 Comm: syz-executor126 Not tainted 6.1.0-syzkaller #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 10/26/2022Call Trace: <TASK>... atomic_fetch_sub_release include/linux/atomic/atomic-instrumented.h:176[inline] __refcount_sub_and_test include/linux/refcount.h:272 [inline] __refcount_dec_and_test include/linux/refcount.h:315 [inline] refcount_dec_and_test include/linux/refcount.h:333 [inline] put_dev drivers/usb/gadget/legacy/inode.c:159 [inline] gadgetfs_kill_sb+0x33/0x100 drivers/usb/gadget/legacy/inode.c:2086 deactivate_locked_super+0xa7/0xf0 fs/super.c:332 vfs_get_super fs/super.c:1190 [inline] get_tree_single+0xd0/0x160 fs/super.c:1207 vfs_get_tree+0x88/0x270 fs/super.c:1531 vfs_fsconfig_locked fs/fsopen.c:232 [inline]The simplest solution is to ensure that gadgetfs_fill_super() andgadgetfs_kill_sb() are serialized by making them both acquire a newmutex.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48869` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48869",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48869"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-21 07:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48869",
+				"href": "https://ubuntu.com/security/CVE-2022-48869",
+				"public": "20240821",
+				"cvss_score": "4.7",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,62 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024360010000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36001 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: netfs:Fix the pre-flush when appending to a file in writethrough mode Innetfs_perform_write(), when the file is marked NETFS_ICTX_WRITETHROUGH orO_*SYNC or RWF_*SYNC was specified, write-through caching is performed on abuffered file. When setting up for write-through, we flush any conflictingwrites in the region and wait for the write to complete, failing if there'sa write error to return. The issue arises if we're writing at or above theEOF position because we skip the flush and - more importantly - the wait.This becomes a problem if there's a partial folio at the end of the filethat is being written out and we want to make a write to it too. Both thealready-running write and the write we start both want to clear thewriteback mark, but whoever is second causes a warning looking somethinglike: ------------[ cut here ]------------ R=00000012: folio 11 is notunder writeback WARNING: CPU: 34 PID: 654 at fs/netfs/write_collect.c:105... CPU: 34 PID: 654 Comm: kworker/u386:27 Tainted: G S ... ... Workqueue:events_unbound netfs_write_collection_worker ... RIP:0010:netfs_writeback_lookup_folio Fix this by making the flush-and-waitunconditional. It will do nothing if there are no folios in the pagecacheand will return quickly if there are no folios in the region specified.Further, move the WBC attachment above the flush call as the flush is goingto attach a WBC and detach it again if it is not present - and since weneed one anyway we might as well share it.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36001` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36001",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36001"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-20 10:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36001",
+				"href": "https://ubuntu.com/security/CVE-2024-36001",
+				"public": "20240520"
+			},
+			"public_date_at_usn": "2024-05-20 10:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6949-1",
+				"https://ubuntu.com/security/notices/USN-6952-1",
+				"https://ubuntu.com/security/notices/USN-6955-1",
+				"https://ubuntu.com/security/notices/USN-6949-2",
+				"https://ubuntu.com/security/notices/USN-6952-2"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

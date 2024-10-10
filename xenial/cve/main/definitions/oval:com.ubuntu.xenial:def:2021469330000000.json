@@ -1,0 +1,93 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021469330000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-46933 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: usb:gadget: f_fs: Clear ffs_eventfd in ffs_data_clear. ffs_data_clear isindirectly called from both ffs_fs_kill_sb and ffs_ep0_release, so it endsup being called twice when userland closes ep0 and then unmounts f_fs. Ifuserland provided an eventfd along with function's USB descriptors, it endsup calling eventfd_ctx_put as many times, causing a refcount underflow.NULL-ify ffs_eventfd to prevent these extraneous eventfd_ctx_put calls.Also, set epfiles to NULL right after de-allocating it, for readability.For completeness, ffs_data_clear actually ends up being called thrice, thelast call being before the whole ffs structure gets freed, so when thisspecific sequence happens there is a second underflow happening (but notbeing reported): /sys/kernel/debug/tracing# modprobe usb_f_fs/sys/kernel/debug/tracing# echo ffs_data_clear > set_ftrace_filter/sys/kernel/debug/tracing# echo function > current_tracer/sys/kernel/debug/tracing# echo 1 > tracing_on (setup gadget, run and killfunction userland process, teardown gadget) /sys/kernel/debug/tracing# echo0 > tracing_on /sys/kernel/debug/tracing# cat trace smartcard-openp-436[000] ..... 1946.208786: ffs_data_clear <-ffs_data_closedsmartcard-openp-431 [000] ..... 1946.279147: ffs_data_clear<-ffs_data_closed smartcard-openp-431 [000] .n... 1946.905512:ffs_data_clear <-ffs_data_put Warning output corresponding to above trace:[ 1946.284139] WARNING: CPU: 0 PID: 431 at lib/refcount.c:28refcount_warn_saturate+0x110/0x15c [ 1946.293094] refcount_t: underflow;use-after-free. [ 1946.298164] Modules linked in: usb_f_ncm(E) u_ether(E)usb_f_fs(E) hci_uart(E) btqca(E) btrtl(E) btbcm(E) btintel(E) bluetooth(E)nls_ascii(E) nls_cp437(E) vfat(E) fat(E) bcm2835_v4l2(CE)bcm2835_mmal_vchiq(CE) videobuf2_vmalloc(E) videobuf2_memops(E)sha512_generic(E) videobuf2_v4l2(E) sha512_arm(E) videobuf2_common(E)videodev(E) cpufreq_dt(E) snd_bcm2835(CE) brcmfmac(E) mc(E) vc4(E) ctr(E)brcmutil(E) snd_soc_core(E) snd_pcm_dmaengine(E) drbg(E) snd_pcm(E)snd_timer(E) snd(E) soundcore(E) drm_kms_helper(E) cec(E) ansi_cprng(E)rc_core(E) syscopyarea(E) raspberrypi_cpufreq(E) sysfillrect(E)sysimgblt(E) cfg80211(E) max17040_battery(OE) raspberrypi_hwmon(E)fb_sys_fops(E) regmap_i2c(E) ecdh_generic(E) rfkill(E) ecc(E)bcm2835_rng(E) rng_core(E) vchiq(CE) leds_gpio(E) libcomposite(E) fuse(E)configfs(E) ip_tables(E) x_tables(E) autofs4(E) ext4(E) crc16(E) mbcache(E)jbd2(E) crc32c_generic(E) sdhci_iproc(E) sdhci_pltfm(E) sdhci(E) [1946.399633] CPU: 0 PID: 431 Comm: smartcard-openp Tainted: G C OE5.15.0-1-rpi #1 Debian 5.15.3-1 [ 1946.417950] Hardware name: BCM2835 [1946.425442] Backtrace: [ 1946.432048] [<c08d60a0>] (dump_backtrace) from[<c08d62ec>] (show_stack+0x20/0x24) [ 1946.448226] r7:00000009 r6:0000001cr5:c04a948c r4:c0a64e2c [ 1946.458412] [<c08d62cc>] (show_stack) from[<c08d9ae0>] (dump_stack+0x28/0x30) [ 1946.470380] [<c08d9ab8>](dump_stack) from [<c0123500>] (__warn+0xe8/0x154) [ 1946.482067]r5:c04a948c r4:c0a71dc8 [ 1946.490184] [<c0123418>] (__warn) from[<c08d6948>] (warn_slowpath_fmt+0xa0/0xe4) [ 1946.506758] r7:00000009r6:0000001c r5:c0a71dc8 r4:c0a71e04 [ 1946.517070] [<c08d68ac>](warn_slowpath_fmt) from [<c04a948c>] (refcount_warn_saturate+0x110/0x15c)[ 1946.535309] r8:c0100224 r7:c0dfcb84 r6:ffffffff r5:c3b84c00 r4:c24a17c0[ 1946.546708] [<c04a937c>] (refcount_warn_saturate) from [<c0380134>](eventfd_ctx_put+0x48/0x74) [ 1946.564476] [<c03800ec>] (eventfd_ctx_put)from [<bf5464e8>] (ffs_data_clear+0xd0/0x118 [usb_f_fs]) [ 1946.582664]r5:c3b84c00 r4:c2695b00 [ 1946.590668] [<bf546418>] (ffs_data_clear[usb_f_fs]) from [<bf547cc0>] (ffs_data_closed+0x9c/0x150 [usb_f_fs]) [1946.609608] r5:bf54d014 r4:c2695b00 [ 1946.617522] [<bf547c24>](ffs_data_closed [usb_f_fs]) from [<bf547da0>] (ffs_fs_kill_sb+0x2c/0x30[usb_f_fs]) [ 1946.636217] r7:c0dfcb ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-46933` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-257-generic - 4.4.0-257.291\nlinux-image-unsigned-4.4.0-257-generic - 4.4.0-257.291\nlinux-image-unsigned-4.4.0-257-lowlatency - 4.4.0-257.291\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-173-generic - 4.15.0-173.182~16.04.1\nlinux-image-unsigned-4.15.0-173-generic - 4.15.0-173.182~16.04.1\nlinux-image-unsigned-4.15.0-173-lowlatency - 4.15.0-173.182~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1135-kvm - 4.4.0-1135.145\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1172-aws - 4.4.0-1172.187\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1124-aws - 4.15.0-1124.133~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1134-azure - 4.15.0-1134.147~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1119-gcp - 4.15.0-1119.133~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1090-oracle - 4.15.0-1090.99~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-46933",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-46933"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-27 10:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-46933",
+				"href": "https://ubuntu.com/security/CVE-2021-46933",
+				"public": "20240227",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "6938-1"
+			},
+			"public_date_at_usn": "2024-02-27 10:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6938-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021469320000000",
+						"comment": "linux package in xenial was vulnerable but has been fixed (note: '4.4.0-257.291')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202135060000000",
+						"comment": "linux-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-173.182~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021469320000010",
+						"comment": "linux-kvm package in xenial was vulnerable but has been fixed (note: '4.4.0-1135.145')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021469320000020",
+						"comment": "linux-aws package in xenial was vulnerable but has been fixed (note: '4.4.0-1172.187')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202135060000010",
+						"comment": "linux-aws-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-1124.133~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202135060000020",
+						"comment": "linux-azure package in xenial was vulnerable but has been fixed (note: '4.15.0-1134.147~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202135060000030",
+						"comment": "linux-gcp package in xenial was vulnerable but has been fixed (note: '4.15.0-1119.133~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202135060000040",
+						"comment": "linux-oracle package in xenial was vulnerable but has been fixed (note: '4.15.0-1090.99~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000020",
+						"comment": "linux-snapdragon: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

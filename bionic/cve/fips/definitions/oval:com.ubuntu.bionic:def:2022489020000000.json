@@ -1,0 +1,164 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2022489020000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48902 on Ubuntu Pro FIPS 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: do not WARN_ON() if we have PageError setWhenever we do any extent buffer operations we callassert_eb_page_uptodate() to complain loudly if we're operating on annon-uptodate page.  Our overnight tests caught this warning earlier thisweek  WARNING: CPU: 1 PID: 553508 at fs/btrfs/extent_io.c:6849assert_eb_page_uptodate+0x3f/0x50  CPU: 1 PID: 553508 Comm: kworker/u4:13 Tainted: G        W5.17.0-rc3+ #564  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.13.0-2.fc3204/01/2014  Workqueue: btrfs-cache btrfs_work_helper  RIP: 0010:assert_eb_page_uptodate+0x3f/0x50  RSP: 0018:ffffa961440a7c68 EFLAGS: 00010246  RAX: 0017ffffc0002112 RBX: ffffe6e74453f9c0 RCX: 0000000000001000  RDX: ffffe6e74467c887 RSI: ffffe6e74453f9c0 RDI: ffff8d4c5efc2fc0  RBP: 0000000000000d56 R08: ffff8d4d4a224000 R09: 0000000000000000  R10: 00015817fa9d1ef0 R11: 000000000000000c R12: 00000000000007b1  R13: ffff8d4c5efc2fc0 R14: 0000000001500000 R15: 0000000001cb1000  FS:  0000000000000000(0000) GS:ffff8d4dbbd00000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 00007ff31d3448d8 CR3: 0000000118be8004 CR4: 0000000000370ee0  Call Trace:   extent_buffer_test_bit+0x3f/0x70   free_space_test_bit+0xa6/0xc0   load_free_space_tree+0x1f6/0x470   caching_thread+0x454/0x630   ? rcu_read_lock_sched_held+0x12/0x60   ? rcu_read_lock_sched_held+0x12/0x60   ? rcu_read_lock_sched_held+0x12/0x60   ? lock_release+0x1f0/0x2d0   btrfs_work_helper+0xf2/0x3e0   ? lock_release+0x1f0/0x2d0   ? finish_task_switch.isra.0+0xf9/0x3a0   process_one_work+0x26d/0x580   ? process_one_work+0x580/0x580   worker_thread+0x55/0x3b0   ? process_one_work+0x580/0x580   kthread+0xf0/0x120   ? kthread_complete_and_exit+0x20/0x20   ret_from_fork+0x1f/0x30This was partially fixed by c2e39305299f01 (\"btrfs: clear extent bufferuptodate when we fail to write it\"), however all that fix did was keepus from finding extent buffers after a failed writeout.  It didn't keepus from continuing to use a buffer that we already had found.In this case we're searching the commit root to cache the block group,so we can start committing the transaction and switch the commit rootand then start writing.  After the switch we can look up an extentbuffer that hasn't been written yet and start processing that blockgroup.  Then we fail to write that block out and clear Uptodate on thepage, and then we start spewing these errors.Normally we're protected by the tree lock to a certain degree here.  Ifwe read a block we have that block read locked, and we block the writerfrom locking the block before we submit it for the write.  However thisisn't necessarily fool proof because the read could happen before we dothe submit_bio and after we locked and unlocked the extent buffer.Also in this particular case we have path->skip_locking set, so thatwon't save us here.  We'll simply get a block that was valid when weread it, but became invalid while we were using it.What we really want is to catch the case where we've \"read\" a block butit's not marked Uptodate.  On read we ClearPageError(), so if we're!Uptodate and !Error we know we didn't do the right thing for readingthe page.Fix this by checking !Uptodate && !Error, this way we will not complainif our buffer gets invalidated while we're using it, and we'll maintainthe spirit of the check which is to make sure we have a fully in-cacheblock while we're messing with it.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48902",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48902"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-22 02:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48902",
+				"href": "https://ubuntu.com/security/CVE-2022-48902",
+				"public": "20240822",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
+						"comment": "linux-fips package in fips/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					}
+				]
+			}
+		]
+	}
+}

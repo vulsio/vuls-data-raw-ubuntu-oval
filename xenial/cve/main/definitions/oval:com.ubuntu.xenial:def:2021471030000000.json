@@ -1,0 +1,82 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021471030000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47103 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: inet:fully convert sk->sk_rx_dst to RCU rules syzbot reported various issuesaround early demux, one being included in this changelog [1] sk->sk_rx_dstis using RCU protection without clearly documenting it. And followingsequences in tcp_v4_do_rcv()/tcp_v6_do_rcv() are not following standard RCUrules. [a] dst_release(dst); [b] sk->sk_rx_dst = NULL; They look wrongbecause a delete operation of RCU protected pointer is supposed to clearthe pointer before the call_rcu()/synchronize_rcu() guarding actual memoryfreeing. In some cases indeed, dst could be freed before [b] is done. Wecould cheat by clearing sk_rx_dst before calling dst_release(), but thisseems the right time to stick to standard RCU annotations and debuggingfacilities. [1] BUG: KASAN: use-after-free in dst_checkinclude/net/dst.h:470 [inline] BUG: KASAN: use-after-free intcp_v4_early_demux+0x95b/0x960 net/ipv4/tcp_ipv4.c:1792 Read of size 2 ataddr ffff88807f1cb73a by task syz-executor.5/9204 CPU: 0 PID: 9204 Comm:syz-executor.5 Not tainted 5.16.0-rc5-syzkaller #0 Hardware name: GoogleGoogle Compute Engine/Google Compute Engine, BIOS Google 01/01/2011 CallTrace: <TASK> __dump_stack lib/dump_stack.c:88 [inline]dump_stack_lvl+0xcd/0x134 lib/dump_stack.c:106print_address_description.constprop.0.cold+0x8d/0x320 mm/kasan/report.c:247__kasan_report mm/kasan/report.c:433 [inline] kasan_report.cold+0x83/0xdfmm/kasan/report.c:450 dst_check include/net/dst.h:470 [inline]tcp_v4_early_demux+0x95b/0x960 net/ipv4/tcp_ipv4.c:1792ip_rcv_finish_core.constprop.0+0x15de/0x1e80 net/ipv4/ip_input.c:340ip_list_rcv_finish.constprop.0+0x1b2/0x6e0 net/ipv4/ip_input.c:583ip_sublist_rcv net/ipv4/ip_input.c:609 [inline] ip_list_rcv+0x34e/0x490net/ipv4/ip_input.c:644 __netif_receive_skb_list_ptype net/core/dev.c:5508[inline] __netif_receive_skb_list_core+0x549/0x8e0 net/core/dev.c:5556__netif_receive_skb_list net/core/dev.c:5608 [inline]netif_receive_skb_list_internal+0x75e/0xd80 net/core/dev.c:5699gro_normal_list net/core/dev.c:5853 [inline] gro_normal_listnet/core/dev.c:5849 [inline] napi_complete_done+0x1f1/0x880net/core/dev.c:6590 virtqueue_napi_complete drivers/net/virtio_net.c:339[inline] virtnet_poll+0xca2/0x11b0 drivers/net/virtio_net.c:1557__napi_poll+0xaf/0x440 net/core/dev.c:7023 napi_poll net/core/dev.c:7090[inline] net_rx_action+0x801/0xb40 net/core/dev.c:7177__do_softirq+0x29b/0x9c2 kernel/softirq.c:558 invoke_softirqkernel/softirq.c:432 [inline] __irq_exit_rcu+0x123/0x180kernel/softirq.c:637 irq_exit_rcu+0x5/0x20 kernel/softirq.c:649common_interrupt+0x52/0xc0 arch/x86/kernel/irq.c:240asm_common_interrupt+0x1e/0x40 arch/x86/include/asm/idtentry.h:629 RIP:0033:0x7f5e972bfd57 Code: 39 d1 73 14 0f 1f 80 00 00 00 00 48 8b 50 f8 4883 e8 08 48 39 ca 77 f3 48 39 c3 73 3e 48 89 13 48 8b 50 f8 48 89 38 49 8b0e <48> 8b 3e 48 83 c3 08 48 83 c6 08 eb bc 48 39 d1 72 9e 48 39 d0 73 RSP:002b:00007fff8a413210 EFLAGS: 00000283 RAX: 00007f5e97108990 RBX:00007f5e97108338 RCX: ffffffff81d3aa45 RDX: ffffffff81d3aa45 RSI:00007f5e97108340 RDI: ffffffff81d3aa45 RBP: 00007f5e97107eb8 R08:00007f5e97108d88 R09: 0000000093c2e8d9 R10: 0000000000000000 R11:0000000000000000 R12: 00007f5e97107eb0 R13: 00007f5e97108338 R14:00007f5e97107ea8 R15: 0000000000000019 </TASK> Allocated by task 13:kasan_save_stack+0x1e/0x50 mm/kasan/common.c:38 kasan_set_trackmm/kasan/common.c:46 [inline] set_alloc_info mm/kasan/common.c:434 [inline]__kasan_slab_alloc+0x90/0xc0 mm/kasan/common.c:467 kasan_slab_allocinclude/linux/kasan.h:259 [inline] slab_post_alloc_hook mm/slab.h:519[inline] slab_alloc_node mm/slub.c:3234 [inline] slab_alloc mm/slub.c:3242[inline] kmem_cache_alloc+0x202/0x3a0 mm/slub.c:3247 dst_alloc+0x146/0x1f0net/core/dst.c:92 rt_dst_alloc+0x73/0x430 net/ipv4/route.c:1613ip_route_input_slow+0x1817/0x3a20 net/ipv4/route.c:234 ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47103` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-206-generic - 4.15.0-206.217~16.04.1\nlinux-image-unsigned-4.15.0-206-generic - 4.15.0-206.217~16.04.1\nlinux-image-unsigned-4.15.0-206-lowlatency - 4.15.0-206.217~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1151-aws - 4.15.0-1151.164~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1162-azure - 4.15.0-1162.177~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1146-gcp - 4.15.0-1146.162~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1115-oracle - 4.15.0-1115.126~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47103",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47103"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-04 18:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47103",
+				"href": "https://ubuntu.com/security/CVE-2021-47103",
+				"public": "20240304"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021471030000000",
+						"comment": "linux-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-206.217~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021471030000010",
+						"comment": "linux-aws-hwe package in xenial was vulnerable but has been fixed (note: '4.15.0-1151.164~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:202136690000020",
+						"comment": "linux-azure package in xenial was vulnerable but has been fixed (note: '4.15.0-1162.177~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021471030000020",
+						"comment": "linux-gcp package in xenial was vulnerable but has been fixed (note: '4.15.0-1146.162~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:2021471030000030",
+						"comment": "linux-oracle package in xenial was vulnerable but has been fixed (note: '4.15.0-1115.126~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

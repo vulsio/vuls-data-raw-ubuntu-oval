@@ -1,0 +1,98 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023526090000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52609 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: binder:fix race between mmput() and do_exit() Task A callsbinder_update_page_range() to allocate and insert pages on a remote addressspace from Task B. For this, Task A pins the remote mm via mmget_not_zero()first. This can race with Task B do_exit() and the final mmput() refcountdecrement will come from Task A. Task A | Task B------------------+------------------ mmget_not_zero() | | do_exit() |exit_mm() | mmput() mmput() | exit_mmap() | remove_vma() | fput() | In thiscase, the work of ____fput() from Task B is queued up in Task A asTWA_RESUME. So in theory, Task A returns to userspace and the cleanup workgets executed. However, Task A instead sleep, waiting for a reply from TaskB that never comes (it's dead). This means the binder_deferred_release() isblocked until an unrelated binder event forces Task A to go back touserspace. All the associated death notifications will also be delayeduntil then. In order to fix this use mmput_async() that will schedule thework in the corresponding mm->async_put_work WQ instead of Task A.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52609",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52609"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-18 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52609",
+				"href": "https://ubuntu.com/security/CVE-2023-52609",
+				"public": "20240318"
+			},
+			"public_date_at_usn": "2024-03-18 11:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6725-1",
+				"https://ubuntu.com/security/notices/USN-6726-1",
+				"https://ubuntu.com/security/notices/USN-6725-2",
+				"https://ubuntu.com/security/notices/USN-6726-2",
+				"https://ubuntu.com/security/notices/USN-6726-3",
+				"https://ubuntu.com/security/notices/USN-6818-1",
+				"https://ubuntu.com/security/notices/USN-6819-1",
+				"https://ubuntu.com/security/notices/USN-6818-2",
+				"https://ubuntu.com/security/notices/USN-6819-2",
+				"https://ubuntu.com/security/notices/USN-6819-3",
+				"https://ubuntu.com/security/notices/USN-6818-3",
+				"https://ubuntu.com/security/notices/USN-6818-4",
+				"https://ubuntu.com/security/notices/USN-6819-4"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

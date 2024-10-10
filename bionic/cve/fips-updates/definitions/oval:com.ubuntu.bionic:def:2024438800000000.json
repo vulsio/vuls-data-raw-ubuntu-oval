@@ -1,0 +1,162 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024438800000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-43880 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mlxsw: spectrum_acl_erp: Fix object nesting warningACLs in Spectrum-2 and newer ASICs can reside in the algorithmic TCAM(A-TCAM) or in the ordinary circuit TCAM (C-TCAM). The former cancontain more ACLs (i.e., tc filters), but the number of masks in eachregion (i.e., tc chain) is limited.In order to mitigate the effects of the above limitation, the deviceallows filters to share a single mask if their masks only differ in upto 8 consecutive bits. For example, dst_ip/25 can be represented usingdst_ip/24 with a delta of 1 bit. The C-TCAM does not have a limit on thenumber of masks being used (and therefore does not support maskaggregation), but can contain a limited number of filters.The driver uses the \"objagg\" library to perform the mask aggregation bypassing it objects that consist of the filter's mask and whether thefilter is to be inserted into the A-TCAM or the C-TCAM since filters indifferent TCAMs cannot share a mask.The set of created objects is dependent on the insertion order of thefilters and is not necessarily optimal. Therefore, the driver willperiodically ask the library to compute a more optimal set (\"hints\") bylooking at all the existing objects.When the library asks the driver whether two objects can be aggregatedthe driver only compares the provided masks and ignores the A-TCAM /C-TCAM indication. This is the right thing to do since the goal is tomove as many filters as possible to the A-TCAM. The driver also forbidstwo identical masks from being aggregated since this can only happen ifone was intentionally put in the C-TCAM to avoid a conflict in theA-TCAM.The above can result in the following set of hints:H1: {mask X, A-TCAM} -> H2: {mask Y, A-TCAM} // X is Y + deltaH3: {mask Y, C-TCAM} -> H4: {mask Z, A-TCAM} // Y is Z + deltaAfter getting the hints from the library the driver will start migratingfilters from one region to another while consulting the computed hintsand instructing the device to perform a lookup in both regions duringthe transition.Assuming a filter with mask X is being migrated into the A-TCAM in thenew region, the hints lookup will return H1. Since H2 is the parent ofH1, the library will try to find the object associated with it andcreate it if necessary in which case another hints lookup (recursive)will be performed. This hints lookup for {mask Y, A-TCAM} will eitherreturn H2 or H3 since the driver passes the library an object comparisonfunction that ignores the A-TCAM / C-TCAM indication.This can eventually lead to nested objects which are not supported bythe library [1].Fix by removing the object comparison function from both the driver andthe library as the driver was the only user. That way the lookup willonly return exact matches.I do not have a reliable reproducer that can reproduce the issue in atimely manner, but before the fix the issue would reproduce in severalminutes and with the fix it does not reproduce in over an hour.Note that the current usefulness of the hints is limited because theyinclude the C-TCAM indication and represent aggregation that cannotactually happen. This will be addressed in net-next.[1]WARNING: CPU: 0 PID: 153 at lib/objagg.c:170objagg_obj_parent_assign+0xb5/0xd0Modules linked in:CPU: 0 PID: 153 Comm: kworker/0:18 Not tainted6.9.0-rc6-custom-g70fbc2c1c38b #42Hardware name: Mellanox Technologies Ltd. MSN3700C/VMOD0008, BIOS 5.1110/10/2018Workqueue: mlxsw_core mlxsw_sp_acl_tcam_vregion_rehash_workRIP: 0010:objagg_obj_parent_assign+0xb5/0xd0[...]Call Trace: <TASK> __objagg_obj_get+0x2bb/0x580 objagg_obj_get+0xe/0x80 mlxsw_sp_acl_erp_mask_get+0xb5/0xf0 mlxsw_sp_acl_atcam_entry_add+0xe8/0x3c0 mlxsw_sp_acl_tcam_entry_create+0x5e/0xa0 mlxsw_sp_acl_tcam_vchunk_migrate_one+0x16b/0x270 mlxsw_sp_acl_tcam_vregion_rehash_work+0xbe/0x510 process_one_work+0x151/0x370\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-43880` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nlinux-image-unsigned-hmac-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-43880",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-43880"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-21 01:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-43880",
+				"href": "https://ubuntu.com/security/CVE-2024-43880",
+				"public": "20240821"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000000",
+						"comment": "linux package in bionic, is related to the CVE in some way and has been fixed (note: '4.13.0-16.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-200.220~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-kvm package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-aws package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000010",
+						"comment": "linux-azure-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1082.92')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201499000000000",
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1027.32')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201499000000010",
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201499000000020",
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2013.14')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000040",
+						"comment": "linux-gcp-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1071.81')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000110",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					}
+				]
+			}
+		]
+	}
+}

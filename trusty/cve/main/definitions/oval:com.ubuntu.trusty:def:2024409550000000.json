@@ -1,0 +1,67 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024409550000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-40955 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ext4: fix slab-out-of-bounds in ext4_mb_find_good_group_avg_frag_lists()We can trigger a slab-out-of-bounds with the following commands:    mkfs.ext4 -F /dev/$disk 10G    mount /dev/$disk /tmp/test    echo 2147483647 > /sys/fs/ext4/$disk/mb_group_prealloc    echo test > /tmp/test/file && sync==================================================================BUG: KASAN: slab-out-of-bounds inext4_mb_find_good_group_avg_frag_lists+0x8a/0x200 [ext4]Read of size 8 at addr ffff888121b9d0f0 by task kworker/u2:0/11CPU: 0 PID: 11 Comm: kworker/u2:0 Tainted: GL 6.7.0-next-20240118 #521Call Trace: dump_stack_lvl+0x2c/0x50 kasan_report+0xb6/0xf0 ext4_mb_find_good_group_avg_frag_lists+0x8a/0x200 [ext4] ext4_mb_regular_allocator+0x19e9/0x2370 [ext4] ext4_mb_new_blocks+0x88a/0x1370 [ext4] ext4_ext_map_blocks+0x14f7/0x2390 [ext4] ext4_map_blocks+0x569/0xea0 [ext4] ext4_do_writepages+0x10f6/0x1bc0 [ext4][...]==================================================================The flow of issue triggering is as follows:// Set s_mb_group_prealloc to 2147483647 via sysfsext4_mb_new_blocks  ext4_mb_normalize_request    ext4_mb_normalize_group_request      ac->ac_g_ex.fe_len = EXT4_SB(sb)->s_mb_group_prealloc  ext4_mb_regular_allocator    ext4_mb_choose_next_group      ext4_mb_choose_next_group_best_avail        mb_avg_fragment_size_order          order = fls(len) - 2 = 29        ext4_mb_find_good_group_avg_frag_lists          frag_list = &sbi->s_mb_avg_fragment_size[order]          if (list_empty(frag_list)) // Trigger SOOB!At 4k block size, the length of the s_mb_avg_fragment_size list is 14,but an oversized s_mb_group_prealloc is set, causing slab-out-of-boundsto be triggered by an attempt to access an element at index 29.Add a new attr_id attr_clusters_in_group with values in the range[0, sbi->s_clusters_per_group] and declare mb_group_prealloc asthat type to fix the issue. In addition avoid returning an orderfrom mb_avg_fragment_size_order() greater than MB_NUM_ORDERS(sb)and reduce some useless loops.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40955` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-40955",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-40955"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-12 13:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-40955",
+				"href": "https://ubuntu.com/security/CVE-2024-40955",
+				"public": "20240712",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "6999-1,7004-1,7005-1,7008-1,7005-2,6999-2,7029-1"
+			},
+			"public_date_at_usn": "2024-07-12 13:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6999-1",
+				"https://ubuntu.com/security/notices/USN-7004-1",
+				"https://ubuntu.com/security/notices/USN-7005-1",
+				"https://ubuntu.com/security/notices/USN-7008-1",
+				"https://ubuntu.com/security/notices/USN-7005-2",
+				"https://ubuntu.com/security/notices/USN-6999-2",
+				"https://ubuntu.com/security/notices/USN-7029-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

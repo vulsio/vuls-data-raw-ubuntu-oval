@@ -1,0 +1,64 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024409530000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-40953 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: Fix a data race on last_boosted_vcpu in kvm_vcpu_on_spin()Use {READ,WRITE}_ONCE() to access kvm->last_boosted_vcpu to ensure theloads and stores are atomic.  In the extremely unlikely scenario thecompiler tears the stores, it's theoretically possible for KVM to attemptto get a vCPU using an out-of-bounds index, e.g. if the write is splitinto multiple 8-bit stores, and is paired with a 32-bit load on a VM with257 vCPUs:  CPU0                              CPU1  last_boosted_vcpu = 0xff;                                    (last_boosted_vcpu = 0x100)                                    last_boosted_vcpu[15:8] = 0x01;  i = (last_boosted_vcpu = 0x1ff)                                    last_boosted_vcpu[7:0] = 0x00;  vcpu = kvm->vcpu_array[0x1ff];As detected by KCSAN:  BUG: KCSAN: data-race in kvm_vcpu_on_spin [kvm] / kvm_vcpu_on_spin [kvm]  write to 0xffffc90025a92344 of 4 bytes by task 4340 on cpu 16:  kvm_vcpu_on_spin (arch/x86/kvm/../../../virt/kvm/kvm_main.c:4112) kvm  handle_pause (arch/x86/kvm/vmx/vmx.c:5929) kvm_intel  vmx_handle_exit (arch/x86/kvm/vmx/vmx.c:?\t\t arch/x86/kvm/vmx/vmx.c:6606) kvm_intel  vcpu_run (arch/x86/kvm/x86.c:11107 arch/x86/kvm/x86.c:11211) kvm  kvm_arch_vcpu_ioctl_run (arch/x86/kvm/x86.c:?) kvm  kvm_vcpu_ioctl (arch/x86/kvm/../../../virt/kvm/kvm_main.c:?) kvm  __se_sys_ioctl (fs/ioctl.c:52 fs/ioctl.c:904 fs/ioctl.c:890)  __x64_sys_ioctl (fs/ioctl.c:890)  x64_sys_call (arch/x86/entry/syscall_64.c:33)  do_syscall_64 (arch/x86/entry/common.c:?)  entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)  read to 0xffffc90025a92344 of 4 bytes by task 4342 on cpu 4:  kvm_vcpu_on_spin (arch/x86/kvm/../../../virt/kvm/kvm_main.c:4069) kvm  handle_pause (arch/x86/kvm/vmx/vmx.c:5929) kvm_intel  vmx_handle_exit (arch/x86/kvm/vmx/vmx.c:?\t\t\tarch/x86/kvm/vmx/vmx.c:6606) kvm_intel  vcpu_run (arch/x86/kvm/x86.c:11107 arch/x86/kvm/x86.c:11211) kvm  kvm_arch_vcpu_ioctl_run (arch/x86/kvm/x86.c:?) kvm  kvm_vcpu_ioctl (arch/x86/kvm/../../../virt/kvm/kvm_main.c:?) kvm  __se_sys_ioctl (fs/ioctl.c:52 fs/ioctl.c:904 fs/ioctl.c:890)  __x64_sys_ioctl (fs/ioctl.c:890)  x64_sys_call (arch/x86/entry/syscall_64.c:33)  do_syscall_64 (arch/x86/entry/common.c:?)  entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)  value changed: 0x00000012 -> 0x00000000",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-40953",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-40953"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-12 13:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-40953",
+				"href": "https://ubuntu.com/security/CVE-2024-40953",
+				"public": "20240712"
+			},
+			"public_date_at_usn": "2024-07-12 13:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6999-1",
+				"https://ubuntu.com/security/notices/USN-7004-1",
+				"https://ubuntu.com/security/notices/USN-7005-1",
+				"https://ubuntu.com/security/notices/USN-7008-1",
+				"https://ubuntu.com/security/notices/USN-7005-2",
+				"https://ubuntu.com/security/notices/USN-6999-2",
+				"https://ubuntu.com/security/notices/USN-7029-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					}
+				]
+			}
+		]
+	}
+}

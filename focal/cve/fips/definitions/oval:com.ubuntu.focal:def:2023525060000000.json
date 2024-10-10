@@ -1,0 +1,134 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.focal:def:2023525060000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52506 on Ubuntu Pro FIPS 20.04 LTS (focal) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:LoongArch: Set all reserved memblocks on Node#0 at initialization Aftercommit 61167ad5fecdea (\"mm: pass nid to reserve_bootmem_region()\") we get apanic if DEFERRED_STRUCT_PAGE_INIT is enabled: [ 0.000000] CPU 0 Unable tohandle kernel paging request at virtual address 0000000000002b82, era ==90000000040e3f28, ra == 90000000040e3f18 [ 0.000000] Oops[#1]: [ 0.000000]CPU: 0 PID: 0 Comm: swapper Not tainted 6.5.0+ #733 [ 0.000000] pc90000000040e3f28 ra 90000000040e3f18 tp 90000000046f4000 sp90000000046f7c90 [ 0.000000] a0 0000000000000001 a1 0000000000200000 a20000000000000040 a3 90000000046f7ca0 [ 0.000000] a4 90000000046f7ca4 a50000000000000000 a6 90000000046f7c38 a7 0000000000000000 [ 0.000000] t00000000000000002 t1 9000000004b00ac8 t2 90000000040e3f18 t390000000040f0800 [ 0.000000] t4 00000000000f0000 t5 80000000ffffe07e t60000000000000003 t7 900000047fff5e20 [ 0.000000] t8 aaaaaaaaaaaaaaab u00000000000000018 s9 0000000000000000 s0 fffffefffe000000 [ 0.000000] s10000000000000000 s2 0000000000000080 s3 0000000000000040 s40000000000000000 [ 0.000000] s5 0000000000000000 s6 fffffefffe000000 s7900000000470b740 s8 9000000004ad4000 [ 0.000000] ra: 90000000040e3f18reserve_bootmem_region+0xec/0x21c [ 0.000000] ERA: 90000000040e3f28reserve_bootmem_region+0xfc/0x21c [ 0.000000] CRMD: 000000b0 (PLV0 -IE -DA+PG DACF=CC DACM=CC -WE) [ 0.000000] PRMD: 00000000 (PPLV0 -PIE -PWE) [0.000000] EUEN: 00000000 (-FPE -SXE -ASXE -BTE) [ 0.000000] ECFG: 00070800(LIE=11 VS=7) [ 0.000000] ESTAT: 00010800 [PIL] (IS=11 ECode=1 EsubCode=0)[ 0.000000] BADV: 0000000000002b82 [ 0.000000] PRID: 0014d000(Loongson-64bit, Loongson-3A6000) [ 0.000000] Modules linked in: [0.000000] Process swapper (pid: 0, threadinfo=(____ptrval____),task=(____ptrval____)) [ 0.000000] Stack : 00000000000000009000000002eb5430 0000003a00000020 90000000045ccd00 [ 0.000000]900000000470e000 90000000002c1918 0000000000000000 9000000004110780 [0.000000] 00000000fe6c0000 0000000480000000 9000000004b4e3689000000004110748 [ 0.000000] 0000000000000000 900000000421ca849000000004620000 9000000004564970 [ 0.000000] 90000000046f7d789000000002cc9f70 90000000002c1918 900000000470e000 [ 0.000000]9000000004564970 90000000040bc0e0 90000000046f7d78 0000000000000000 [0.000000] 0000000000004000 90000000045ccd00 000000000000000090000000002c1918 [ 0.000000] 90000000002c1900 900000000470b7009000000004b4df78 9000000004620000 [ 0.000000] 90000000046200a890000000046200a8 0000000000000000 9000000004218b2c [ 0.000000]9000000004270008 0000000000000001 0000000000000000 90000000045ccd00 [0.000000] ... [ 0.000000] Call Trace: [ 0.000000] [<90000000040e3f28>]reserve_bootmem_region+0xfc/0x21c [ 0.000000] [<900000000421ca84>]memblock_free_all+0x114/0x350 [ 0.000000] [<9000000004218b2c>]mm_core_init+0x138/0x3cc [ 0.000000] [<9000000004200e38>]start_kernel+0x488/0x7a4 [ 0.000000] [<90000000040df0d8>]kernel_entry+0xd8/0xdc [ 0.000000] [ 0.000000] Code: 02eb21ad 00410f4c380c31ac <262b818d> 6800b70d 02c1c196 0015001c 57fe4bb1 260002cd The reasonis early memblock_reserve() in memblock_init() set node id to MAX_NUMNODES,making NODE_DATA(nid) a NULL dereference in the call chainreserve_bootmem_region() -> init_reserved_page(). After memblock_init(),those late calls of memblock_reserve() operate on subregions of memblock.memory regions. As a result, these reserved regions will be set to thecorrect node at the first iteration of memmap_init_reserved_pages(). So setall reserved memblocks on Node#0 at initialization can avoid this panic.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 20.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52506",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52506"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-02 22:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52506",
+				"href": "https://ubuntu.com/security/CVE-2023-52506",
+				"public": "20240302"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000100",
+						"comment": "linux-hwe-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000180",
+						"comment": "linux-hwe-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000260",
+						"comment": "linux-hwe-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000130",
+						"comment": "linux-aws-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000190",
+						"comment": "linux-aws-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000270",
+						"comment": "linux-aws-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000140",
+						"comment": "linux-azure-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000200",
+						"comment": "linux-azure-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000310",
+						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
+						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000150",
+						"comment": "linux-gcp-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000230",
+						"comment": "linux-gcp-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000290",
+						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000030",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000370",
+						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
+						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000160",
+						"comment": "linux-oracle-5.8: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000210",
+						"comment": "linux-oracle-5.11: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000280",
+						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000080",
+						"comment": "linux-oem-5.6: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-5.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000110",
+						"comment": "linux-oem-5.10: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-5.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201585530000000",
+						"comment": "linux-oem-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-5.14')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000240",
+						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
+					}
+				]
+			}
+		]
+	}
+}

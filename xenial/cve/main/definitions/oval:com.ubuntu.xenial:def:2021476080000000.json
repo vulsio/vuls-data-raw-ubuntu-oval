@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2021476080000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47608 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:Fix kernel address leakage in atomic fetch The change in commit37086bfdc737 (\"bpf: Propagate stack bounds to registers in atomics w/BPF_FETCH\") around check_mem_access() handling is buggy since this wouldallow for unprivileged users to leak kernel pointers. For example, anatomic fetch/and with -1 on a stack destination which holds a spilledpointer will migrate the spilled register type into a scalar, which canthen be exported out of the program (since scalar != pointer) by dumping itinto a map value. The original implementation of XADD was preventing thissituation by using a double call to check_mem_access() one with BPF_READand a subsequent one with BPF_WRITE, in both cases passing -1 as aplaceholder value instead of register as per XADD semantics since it didn'tcontain a value fetch. The BPF_READ also included a check incheck_stack_read_fixed_off() which rejects the program if the stack slot isof __is_pointer_value() if dst_regno < 0. The latter is to distinguishwhether we're dealing with a regular stack spill/ fill or some arithmeticaloperation which is disallowed on non-scalars, see also 6e7e63cbb023 (\"bpf:Forbid XADD on spilled pointers for unprivileged users\") for more contexton check_mem_access() and its handling of placeholder value -1. Oneminimally intrusive option to fix the leak is for the BPF_FETCH case toinitially check the BPF_READ case via check_mem_access() with -1 asregister, followed by the actual load case with non-negative load_reg topropagate stack bounds to registers.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47608` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-2.16\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-lowlatency - 4.8.0-39.42~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1004.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1001.10\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1102-aws - 4.15.0-1030.31~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1114-azure - 4.11.0-1009.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1099-gcp - 4.10.0-1004.4\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-oracle - 4.15.0-1007.9~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47608",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47608"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-19 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47608",
+				"href": "https://ubuntu.com/security/CVE-2021-47608",
+				"public": "20240619"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

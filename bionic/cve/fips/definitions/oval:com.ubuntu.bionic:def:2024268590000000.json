@@ -1,0 +1,185 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024268590000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26859 on Ubuntu Pro FIPS 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/bnx2x: Prevent access to a freed page in page_pool Fix race conditionleading to system crash during EEH error handling During EEH errorrecovery, the bnx2x driver's transmit timeout logic could cause a racecondition when handling reset tasks. The bnx2x_tx_timeout() schedules resettasks via bnx2x_sp_rtnl_task(), which ultimately leads tobnx2x_nic_unload(). In bnx2x_nic_unload() SGEs are freed usingbnx2x_free_rx_sge_range(). However, this could overlap with the EEHdriver's attempt to reset the device using bnx2x_io_slot_reset(), whichalso tries to free SGEs. This race condition can result in system crashesdue to accessing freed memory locations in bnx2x_free_rx_sge() 799 staticinline void bnx2x_free_rx_sge(struct bnx2x *bp, 800 struct bnx2x_fastpath*fp, u16 index) 801 { 802 struct sw_rx_page *sw_buf =&fp->rx_page_ring[index]; 803 struct page *page = sw_buf->page; .... wheresw_buf was set to NULL after the call to dma_unmap_page() by the precedingthread. EEH: Beginning: 'slot_reset' PCI 0011:01:00.0#10000: EEH: Invokingbnx2x->slot_reset() bnx2x: [bnx2x_io_slot_reset:14228(eth1)]IO slot resetinitializing... bnx2x 0011:01:00.0: enabling device (0140 -> 0142) bnx2x:[bnx2x_io_slot_reset:14244(eth1)]IO slot reset --> driver unload Kernelattempted to read user page (0) - exploit attempt? (uid: 0) BUG: KernelNULL pointer dereference on read at 0x00000000 Faulting instructionaddress: 0xc0080000025065fc Oops: Kernel access of bad area, sig: 11 [#1]..... Call Trace: [c000000003c67a20] [c00800000250658c]bnx2x_io_slot_reset+0x204/0x610 [bnx2x] (unreliable) [c000000003c67af0][c0000000000518a8] eeh_report_reset+0xb8/0xf0 [c000000003c67b60][c000000000052130] eeh_pe_report+0x180/0x550 [c000000003c67c70][c00000000005318c] eeh_handle_normal_event+0x84c/0xa60 [c000000003c67d50][c000000000053a84] eeh_event_handler+0xf4/0x170 [c000000003c67da0][c000000000194c58] kthread+0x1c8/0x1d0 [c000000003c67e10][c00000000000cf64] ret_from_kernel_thread+0x5c/0x64 To solve this issue, weneed to verify page pool allocations before freeing.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26859` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209~18.04.1\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1133-azure - 5.4.0-1133.140~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1132-gcp - 5.4.0-1132.141~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1075-ibm - 5.4.0-1075.80~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1127-oracle - 5.4.0-1127.136~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26859",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26859"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-17 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26859",
+				"href": "https://ubuntu.com/security/CVE-2024-26859",
+				"public": "20240417"
+			},
+			"public_date_at_usn": "2024-04-17 11:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6816-1",
+				"https://ubuntu.com/security/notices/USN-6817-1",
+				"https://ubuntu.com/security/notices/USN-6820-1",
+				"https://ubuntu.com/security/notices/USN-6821-1",
+				"https://ubuntu.com/security/notices/USN-6821-2",
+				"https://ubuntu.com/security/notices/USN-6817-2",
+				"https://ubuntu.com/security/notices/USN-6828-1",
+				"https://ubuntu.com/security/notices/USN-6820-2",
+				"https://ubuntu.com/security/notices/USN-6821-3",
+				"https://ubuntu.com/security/notices/USN-6817-3",
+				"https://ubuntu.com/security/notices/USN-6821-4",
+				"https://ubuntu.com/security/notices/USN-6871-1",
+				"https://ubuntu.com/security/notices/USN-6878-1",
+				"https://ubuntu.com/security/notices/USN-6892-1",
+				"https://ubuntu.com/security/notices/USN-6896-1",
+				"https://ubuntu.com/security/notices/USN-6896-2",
+				"https://ubuntu.com/security/notices/USN-6896-3",
+				"https://ubuntu.com/security/notices/USN-6896-4",
+				"https://ubuntu.com/security/notices/USN-6896-5",
+				"https://ubuntu.com/security/notices/USN-6919-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000000",
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-189.209~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1128.138~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000010",
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1133.140~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
+						"comment": "linux-fips package in fips/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021471880000110",
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1132.141~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2020278200000010",
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1075.80~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022486270000020",
+						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1127.136~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1112.124~18.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and needs fixing."
+					}
+				]
+			}
+		]
+	}
+}

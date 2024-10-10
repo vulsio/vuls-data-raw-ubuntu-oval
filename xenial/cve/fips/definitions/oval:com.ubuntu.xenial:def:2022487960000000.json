@@ -1,0 +1,76 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2022487960000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48796 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:iommu: Fix potential use-after-free during probeKasan has reported the following use after free on dev->iommu.when a device probe fails and it is in process of freeing dev->iommuin dev_iommu_free function, a deferred_probe_work_func runs in paralleland tries to access dev->iommu->fwspec in of_iommu_configure path thuscausing use after free.BUG: KASAN: use-after-free in of_iommu_configure+0xb4/0x4a4Read of size 8 at addr ffffff87a2f1acb8 by task kworker/u16:2/153Workqueue: events_unbound deferred_probe_work_funcCall trace: dump_backtrace+0x0/0x33c show_stack+0x18/0x24 dump_stack_lvl+0x16c/0x1e0 print_address_description+0x84/0x39c __kasan_report+0x184/0x308 kasan_report+0x50/0x78 __asan_load8+0xc0/0xc4 of_iommu_configure+0xb4/0x4a4 of_dma_configure_id+0x2fc/0x4d4 platform_dma_configure+0x40/0x5c really_probe+0x1b4/0xb74 driver_probe_device+0x11c/0x228 __device_attach_driver+0x14c/0x304 bus_for_each_drv+0x124/0x1b0 __device_attach+0x25c/0x334 device_initial_probe+0x24/0x34 bus_probe_device+0x78/0x134 deferred_probe_work_func+0x130/0x1a8 process_one_work+0x4c8/0x970 worker_thread+0x5c8/0xaec kthread+0x1f8/0x220 ret_from_fork+0x10/0x18Allocated by task 1: ____kasan_kmalloc+0xd4/0x114 __kasan_kmalloc+0x10/0x1c kmem_cache_alloc_trace+0xe4/0x3d4 __iommu_probe_device+0x90/0x394 probe_iommu_group+0x70/0x9c bus_for_each_dev+0x11c/0x19c bus_iommu_probe+0xb8/0x7d4 bus_set_iommu+0xcc/0x13c arm_smmu_bus_init+0x44/0x130 [arm_smmu] arm_smmu_device_probe+0xb88/0xc54 [arm_smmu] platform_drv_probe+0xe4/0x13c really_probe+0x2c8/0xb74 driver_probe_device+0x11c/0x228 device_driver_attach+0xf0/0x16c __driver_attach+0x80/0x320 bus_for_each_dev+0x11c/0x19c driver_attach+0x38/0x48 bus_add_driver+0x1dc/0x3a4 driver_register+0x18c/0x244 __platform_driver_register+0x88/0x9c init_module+0x64/0xff4 [arm_smmu] do_one_initcall+0x17c/0x2f0 do_init_module+0xe8/0x378 load_module+0x3f80/0x4a40 __se_sys_finit_module+0x1a0/0x1e4 __arm64_sys_finit_module+0x44/0x58 el0_svc_common+0x100/0x264 do_el0_svc+0x38/0xa4 el0_svc+0x20/0x30 el0_sync_handler+0x68/0xac el0_sync+0x160/0x180Freed by task 1: kasan_set_track+0x4c/0x84 kasan_set_free_info+0x28/0x4c ____kasan_slab_free+0x120/0x15c __kasan_slab_free+0x18/0x28 slab_free_freelist_hook+0x204/0x2fc kfree+0xfc/0x3a4 __iommu_probe_device+0x284/0x394 probe_iommu_group+0x70/0x9c bus_for_each_dev+0x11c/0x19c bus_iommu_probe+0xb8/0x7d4 bus_set_iommu+0xcc/0x13c arm_smmu_bus_init+0x44/0x130 [arm_smmu] arm_smmu_device_probe+0xb88/0xc54 [arm_smmu] platform_drv_probe+0xe4/0x13c really_probe+0x2c8/0xb74 driver_probe_device+0x11c/0x228 device_driver_attach+0xf0/0x16c __driver_attach+0x80/0x320 bus_for_each_dev+0x11c/0x19c driver_attach+0x38/0x48 bus_add_driver+0x1dc/0x3a4 driver_register+0x18c/0x244 __platform_driver_register+0x88/0x9c init_module+0x64/0xff4 [arm_smmu] do_one_initcall+0x17c/0x2f0 do_init_module+0xe8/0x378 load_module+0x3f80/0x4a40 __se_sys_finit_module+0x1a0/0x1e4 __arm64_sys_finit_module+0x44/0x58 el0_svc_common+0x100/0x264 do_el0_svc+0x38/0xa4 el0_svc+0x20/0x30 el0_sync_handler+0x68/0xac el0_sync+0x160/0x180Fix this by setting dev->iommu to NULL first andthen freeing dev_iommu structure in dev_iommu_freefunction.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48796` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-generic - 4.4.0-2.16\nlinux-image-unsigned-4.4.0-211-lowlatency - 4.4.0-2.16\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-generic - 4.8.0-39.42~16.04.1\nlinux-image-unsigned-4.15.0-143-lowlatency - 4.8.0-39.42~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1094-kvm - 4.4.0-1004.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1129-aws - 4.4.0-1001.10\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1102-aws - 4.15.0-1030.31~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1114-azure - 4.11.0-1009.9\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1099-gcp - 4.10.0-1004.4\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-oracle - 4.15.0-1007.9~16.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48796",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48796"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-16 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48796",
+				"href": "https://ubuntu.com/security/CVE-2022-48796",
+				"public": "20240716",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201592890000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,56 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2022489210000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48921 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:sched/fair: Fix fault in reweight_entitySyzbot found a GPF in reweight_entity. This has been bisected tocommit 4ef0c5c6b5ba (\"kernel/sched: Fix sched_fork() access an invalidsched_task_group\")There is a race between sched_post_fork() and setpriority(PRIO_PGRP)within a thread group that causes a null-ptr-deref inreweight_entity() in CFS. The scenario is that the main process spawnsnumber of new threads, which then call setpriority(PRIO_PGRP, 0, -20),wait, and exit.  For each of the new threads the copy_process() getsinvoked, which adds the new task_struct and calls sched_post_fork()for it.In the above scenario there is a possibility thatsetpriority(PRIO_PGRP) and set_one_prio() will be called for a threadin the group that is just being created by copy_process(), and forwhich the sched_post_fork() has not been executed yet. This willtrigger a null pointer dereference in reweight_entity(), as it willtry to access the run queue pointer, which hasn't been set.Before the mentioned change the cfs_rq pointer for the task  has beenset in sched_fork(), which is called much earlier in copy_process(),before the new task is added to the thread_group.  Now it is done inthe sched_post_fork(), which is called after that.  To fix the issuethe remove the update_load param from the update_load param() functionand call reweight_task() only if the task flag doesn't have theTASK_NEW flag set.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48921` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-3.13.0-173-generic-lpae - 3.11.0-12.19\nlinux-image-3.13.0-173-lowlatency - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500 - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-e500mc - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc-smp - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-emb - 3.11.0-12.19\nlinux-image-3.13.0-173-powerpc64-smp - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-generic - 3.11.0-12.19\nlinux-image-unsigned-3.13.0-173-lowlatency - 3.11.0-12.19\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-164-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-164-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-unsigned-4.4.0-164-generic - 4.4.0-13.29~14.04.1\nlinux-image-unsigned-4.4.0-164-lowlatency - 4.4.0-13.29~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.4.0-1054-aws - 4.4.0-1002.2\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1059-azure - 4.15.0-1023.24~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48921",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48921"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-22 02:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48921",
+				"href": "https://ubuntu.com/security/CVE-2022-48921",
+				"public": "20240822",
+				"cvss_score": "4.7",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

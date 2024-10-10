@@ -1,0 +1,92 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2023528850000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52885 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:SUNRPC: Fix UAF in svc_tcp_listen_data_ready()After the listener svc_sock is freed, and before invoking svc_tcp_accept()for the established child sock, there is a window that the newsockretaining a freed listener svc_sock in sk_user_data which cloning fromparent. In the race window, if data is received on the newsock, we willobserve use-after-free report in svc_tcp_listen_data_ready().Reproduce by two tasks:1. while :; do rpc.nfsd 0 ; rpc.nfsd; done2. while :; do echo \"\" | ncat -4 127.0.0.1 2049 ; doneKASAN report:  ==================================================================  BUG: KASAN: slab-use-after-free in svc_tcp_listen_data_ready+0x1cf/0x1f0[sunrpc]  Read of size 8 at addr ffff888139d96228 by task nc/102553  CPU: 7 PID: 102553 Comm: nc Not tainted 6.3.0+ #18  Hardware name: VMware, Inc. VMware Virtual Platform/440BX DesktopReference Platform, BIOS 6.00 11/12/2020  Call Trace:   <IRQ>   dump_stack_lvl+0x33/0x50   print_address_description.constprop.0+0x27/0x310   print_report+0x3e/0x70   kasan_report+0xae/0xe0   svc_tcp_listen_data_ready+0x1cf/0x1f0 [sunrpc]   tcp_data_queue+0x9f4/0x20e0   tcp_rcv_established+0x666/0x1f60   tcp_v4_do_rcv+0x51c/0x850   tcp_v4_rcv+0x23fc/0x2e80   ip_protocol_deliver_rcu+0x62/0x300   ip_local_deliver_finish+0x267/0x350   ip_local_deliver+0x18b/0x2d0   ip_rcv+0x2fb/0x370   __netif_receive_skb_one_core+0x166/0x1b0   process_backlog+0x24c/0x5e0   __napi_poll+0xa2/0x500   net_rx_action+0x854/0xc90   __do_softirq+0x1bb/0x5de   do_softirq+0xcb/0x100   </IRQ>   <TASK>   ...   </TASK>  Allocated by task 102371:   kasan_save_stack+0x1e/0x40   kasan_set_track+0x21/0x30   __kasan_kmalloc+0x7b/0x90   svc_setup_socket+0x52/0x4f0 [sunrpc]   svc_addsock+0x20d/0x400 [sunrpc]   __write_ports_addfd+0x209/0x390 [nfsd]   write_ports+0x239/0x2c0 [nfsd]   nfsctl_transaction_write+0xac/0x110 [nfsd]   vfs_write+0x1c3/0xae0   ksys_write+0xed/0x1c0   do_syscall_64+0x38/0x90   entry_SYSCALL_64_after_hwframe+0x72/0xdc  Freed by task 102551:   kasan_save_stack+0x1e/0x40   kasan_set_track+0x21/0x30   kasan_save_free_info+0x2a/0x50   __kasan_slab_free+0x106/0x190   __kmem_cache_free+0x133/0x270   svc_xprt_free+0x1e2/0x350 [sunrpc]   svc_xprt_destroy_all+0x25a/0x440 [sunrpc]   nfsd_put+0x125/0x240 [nfsd]   nfsd_svc+0x2cb/0x3c0 [nfsd]   write_threads+0x1ac/0x2a0 [nfsd]   nfsctl_transaction_write+0xac/0x110 [nfsd]   vfs_write+0x1c3/0xae0   ksys_write+0xed/0x1c0   do_syscall_64+0x38/0x90   entry_SYSCALL_64_after_hwframe+0x72/0xdcFix the UAF by simply doing nothing in svc_tcp_listen_data_ready()if state != TCP_LISTEN, that will avoid dereferencing svsk for allchild socket.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52885` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52885",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52885"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-14 08:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52885",
+				"href": "https://ubuntu.com/security/CVE-2023-52885",
+				"public": "20240714",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					}
+				]
+			}
+		]
+	}
+}

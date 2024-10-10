@@ -1,0 +1,100 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024369380000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36938 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf,skmsg: Fix NULL pointer dereference in sk_psock_skb_ingress_enqueue FixNULL pointer data-races in sk_psock_skb_ingress_enqueue() which syzbotreported [1]. [1] BUG: KCSAN: data-race in sk_psock_drop /sk_psock_skb_ingress_enqueue write to 0xffff88814b3278b8 of 8 bytes by task10724 on cpu 1: sk_psock_stop_verdict net/core/skmsg.c:1257 [inline]sk_psock_drop+0x13e/0x1f0 net/core/skmsg.c:843 sk_psock_putinclude/linux/skmsg.h:459 [inline] sock_map_close+0x1a7/0x260net/core/sock_map.c:1648 unix_release+0x4b/0x80 net/unix/af_unix.c:1048__sock_release net/socket.c:659 [inline] sock_close+0x68/0x150net/socket.c:1421 __fput+0x2c1/0x660 fs/file_table.c:422__fput_sync+0x44/0x60 fs/file_table.c:507 __do_sys_close fs/open.c:1556[inline] __se_sys_close+0x101/0x1b0 fs/open.c:1541__x64_sys_close+0x1f/0x30 fs/open.c:1541 do_syscall_64+0xd3/0x1d0entry_SYSCALL_64_after_hwframe+0x6d/0x75 read to 0xffff88814b3278b8 of 8bytes by task 10713 on cpu 0: sk_psock_data_ready include/linux/skmsg.h:464[inline] sk_psock_skb_ingress_enqueue+0x32d/0x390 net/core/skmsg.c:555sk_psock_skb_ingress_self+0x185/0x1e0 net/core/skmsg.c:606sk_psock_verdict_apply net/core/skmsg.c:1008 [inline]sk_psock_verdict_recv+0x3e4/0x4a0 net/core/skmsg.c:1202 unix_read_skbnet/unix/af_unix.c:2546 [inline] unix_stream_read_skb+0x9e/0xf0net/unix/af_unix.c:2682 sk_psock_verdict_data_ready+0x77/0x220net/core/skmsg.c:1223 unix_stream_sendmsg+0x527/0x860net/unix/af_unix.c:2339 sock_sendmsg_nosec net/socket.c:730 [inline]__sock_sendmsg+0x140/0x180 net/socket.c:745 ____sys_sendmsg+0x312/0x410net/socket.c:2584 ___sys_sendmsg net/socket.c:2638 [inline]__sys_sendmsg+0x1e9/0x280 net/socket.c:2667 __do_sys_sendmsgnet/socket.c:2676 [inline] __se_sys_sendmsg net/socket.c:2674 [inline]__x64_sys_sendmsg+0x46/0x50 net/socket.c:2674 do_syscall_64+0xd3/0x1d0entry_SYSCALL_64_after_hwframe+0x6d/0x75 value changed: 0xffffffff83d7feb0-> 0x0000000000000000 Reported by Kernel Concurrency Sanitizer on: CPU: 0PID: 10713 Comm: syz-executor.4 Tainted: G W6.8.0-syzkaller-08951-gfe46a7dd189e #0 Hardware name: Google Google ComputeEngine/Google Compute Engine, BIOS Google 02/29/2024 Prior to this, commit4cd12c6065df (\"bpf, sockmap: Fix NULL pointer dereference insk_psock_verdict_data_ready()\") fixed one NULL pointer similarly due to noprotection of saved_data_ready. Here is another different caller causingthe same issue because of the same reason. So we should protect it withsk_callback_lock read lock because the writer side in the sk_psock_drop()uses \"write_lock_bh(&sk->sk_callback_lock);\". To avoid errors that couldhappen in future, I move those two pairs of lock into thesk_psock_data_ready(), which is suggested by John Fastabend.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36938` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36938",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36938"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-30 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36938",
+				"href": "https://ubuntu.com/security/CVE-2024-36938",
+				"public": "20240530",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "6949-1,6950-1,6952-1,6955-1,6956-1,6957-1,6950-2,6950-3,6949-2,6952-2,6950-4,7019-1"
+			},
+			"public_date_at_usn": "2024-05-30 16:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6949-1",
+				"https://ubuntu.com/security/notices/USN-6950-1",
+				"https://ubuntu.com/security/notices/USN-6952-1",
+				"https://ubuntu.com/security/notices/USN-6955-1",
+				"https://ubuntu.com/security/notices/USN-6956-1",
+				"https://ubuntu.com/security/notices/USN-6957-1",
+				"https://ubuntu.com/security/notices/USN-6950-2",
+				"https://ubuntu.com/security/notices/USN-6950-3",
+				"https://ubuntu.com/security/notices/USN-6949-2",
+				"https://ubuntu.com/security/notices/USN-6952-2",
+				"https://ubuntu.com/security/notices/USN-6950-4",
+				"https://ubuntu.com/security/notices/USN-7019-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}
