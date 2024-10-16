@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2022488350000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2022-48835 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:scsi: mpt3sas: Page fault in reply q processingA page fault was encountered in mpt3sas on a LUN reset error path:[  145.763216] mpt3sas_cm1: Task abort tm failed:handle(0x0002),timeout(30) tr_method(0x0) smid(3) msix_index(0)[  145.778932] scsi 1:0:0:0: task abort: FAILED scmd(0x0000000024ba29a2)[  145.817307] scsi 1:0:0:0: attempting device reset!scmd(0x0000000024ba29a2)[  145.827253] scsi 1:0:0:0: [sg1] tag#2 CDB: Receive Diagnostic 1c 01 01ff fc 00[  145.837617] scsi target1:0:0: handle(0x0002),sas_address(0x500605b0000272b9), phy(0)[  145.848598] scsi target1:0:0: enclosure logical id(0x500605b0000272b8),slot(0)[  149.858378] mpt3sas_cm1: Poll ReplyDescriptor queues for completion ofsmid(0), task_type(0x05), handle(0x0002)[  149.875202] BUG: unable to handle page fault for address:00000007fffc445d[  149.885617] #PF: supervisor read access in kernel mode[  149.894346] #PF: error_code(0x0000) - not-present page[  149.903123] PGD 0 P4D 0[  149.909387] Oops: 0000 [#1] PREEMPT SMP NOPTI[  149.917417] CPU: 24 PID: 3512 Comm: scsi_eh_1 Kdump: loaded Tainted: G S        O      5.10.89-altav-1 #1[  149.934327] Hardware name: DDN           200NVX2             /200NVX2-MB         , BIOS ATHG2.2.02.01 09/10/2021[  149.951871] RIP: 0010:_base_process_reply_queue+0x4b/0x900 [mpt3sas][  149.961889] Code: 0f 84 22 02 00 00 8d 48 01 49 89 fd 48 8d 57 38 f0 0fb1 4f 38 0f 85 d8 01 00 00 49 8b 45 10 45 31 e4 41 8b 55 0c 48 8d 1c d0<0f> b6 03 83 e0 0f 3c 0f 0f 85 a2 00 00 00 e9 e6 01 00 00 0f b7 ee[  149.991952] RSP: 0018:ffffc9000f1ebcb8 EFLAGS: 00010246[  150.000937] RAX: 0000000000000055 RBX: 00000007fffc445d RCX:000000002548f071[  150.011841] RDX: 00000000ffff8881 RSI: 0000000000000001 RDI:ffff888125ed50d8[  150.022670] RBP: 0000000000000000 R08: 0000000000000000 R09:c0000000ffff7fff[  150.033445] R10: ffffc9000f1ebb68 R11: ffffc9000f1ebb60 R12:0000000000000000[  150.044204] R13: ffff888125ed50d8 R14: 0000000000000080 R15:34cdc00034cdea80[  150.054963] FS:  0000000000000000(0000) GS:ffff88dfaf200000(0000)knlGS:0000000000000000[  150.066715] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[  150.076078] CR2: 00000007fffc445d CR3: 000000012448a006 CR4:0000000000770ee0[  150.086887] DR0: 0000000000000000 DR1: 0000000000000000 DR2:0000000000000000[  150.097670] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:0000000000000400[  150.108323] PKRU: 55555554[  150.114690] Call Trace:[  150.120497]  ? printk+0x48/0x4a[  150.127049]  mpt3sas_scsih_issue_tm.cold.114+0x2e/0x2b3 [mpt3sas][  150.136453]  mpt3sas_scsih_issue_locked_tm+0x86/0xb0 [mpt3sas][  150.145759]  scsih_dev_reset+0xea/0x300 [mpt3sas][  150.153891]  scsi_eh_ready_devs+0x541/0x9e0 [scsi_mod][  150.162206]  ? __scsi_host_match+0x20/0x20 [scsi_mod][  150.170406]  ? scsi_try_target_reset+0x90/0x90 [scsi_mod][  150.178925]  ? blk_mq_tagset_busy_iter+0x45/0x60[  150.186638]  ? scsi_try_target_reset+0x90/0x90 [scsi_mod][  150.195087]  scsi_error_handler+0x3a5/0x4a0 [scsi_mod][  150.203206]  ? __schedule+0x1e9/0x610[  150.209783]  ? scsi_eh_get_sense+0x210/0x210 [scsi_mod][  150.217924]  kthread+0x12e/0x150[  150.224041]  ? kthread_worker_fn+0x130/0x130[  150.231206]  ret_from_fork+0x1f/0x30This is caused by mpt3sas_base_sync_reply_irqs() using an invalid reply_qpointer outside of the list_for_each_entry() loop. At the end of the fulllist traversal the pointer is invalid.Move the _base_process_reply_queue() call inside of the loop.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48835` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-35-generic - 5.15.0-35.36\nlinux-image-5.15.0-35-generic-lpae - 5.15.0-35.36\nlinux-image-unsigned-5.15.0-35-generic - 5.15.0-35.36\nlinux-image-unsigned-5.15.0-35-generic-64k - 5.15.0-35.36\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-kvm - 5.15.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1009-aws - 5.15.0-1009.11\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-azure - 5.15.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1011-bluefield - 5.15.0-1011.13\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-gcp - 6.5.0-1010.10~22.04.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gke - 5.15.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-ibm - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-intel-iotg - 5.15.0-1008.11\nNo subscription required\n\nlinux-image-unsigned-5.15.0-35-lowlatency - 5.15.0-35.36\nlinux-image-unsigned-5.15.0-35-lowlatency-64k - 5.15.0-35.36\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1013-oracle - 6.5.0-1013.13~22.04.4\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1003-oem - 6.5.0-1003.3\nNo subscription required\n\nlinux-image-5.15.0-1011-raspi - 5.15.0-1011.13\nlinux-image-5.15.0-1011-raspi-nolpae - 5.15.0-1011.13\nNo subscription required\n\nlinux-image-6.5.0-1007-starfive - 6.5.0-1007.8~22.04.1\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"title": "CVE-2022-48835 on Ubuntu 22.04 LTS (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:scsi: mpt3sas: Page fault in reply q processingA page fault was encountered in mpt3sas on a LUN reset error path:[  145.763216] mpt3sas_cm1: Task abort tm failed:handle(0x0002),timeout(30) tr_method(0x0) smid(3) msix_index(0)[  145.778932] scsi 1:0:0:0: task abort: FAILED scmd(0x0000000024ba29a2)[  145.817307] scsi 1:0:0:0: attempting device reset!scmd(0x0000000024ba29a2)[  145.827253] scsi 1:0:0:0: [sg1] tag#2 CDB: Receive Diagnostic 1c 01 01ff fc 00[  145.837617] scsi target1:0:0: handle(0x0002),sas_address(0x500605b0000272b9), phy(0)[  145.848598] scsi target1:0:0: enclosure logical id(0x500605b0000272b8),slot(0)[  149.858378] mpt3sas_cm1: Poll ReplyDescriptor queues for completion ofsmid(0), task_type(0x05), handle(0x0002)[  149.875202] BUG: unable to handle page fault for address:00000007fffc445d[  149.885617] #PF: supervisor read access in kernel mode[  149.894346] #PF: error_code(0x0000) - not-present page[  149.903123] PGD 0 P4D 0[  149.909387] Oops: 0000 [#1] PREEMPT SMP NOPTI[  149.917417] CPU: 24 PID: 3512 Comm: scsi_eh_1 Kdump: loaded Tainted: G S        O      5.10.89-altav-1 #1[  149.934327] Hardware name: DDN           200NVX2             /200NVX2-MB         , BIOS ATHG2.2.02.01 09/10/2021[  149.951871] RIP: 0010:_base_process_reply_queue+0x4b/0x900 [mpt3sas][  149.961889] Code: 0f 84 22 02 00 00 8d 48 01 49 89 fd 48 8d 57 38 f0 0fb1 4f 38 0f 85 d8 01 00 00 49 8b 45 10 45 31 e4 41 8b 55 0c 48 8d 1c d0<0f> b6 03 83 e0 0f 3c 0f 0f 85 a2 00 00 00 e9 e6 01 00 00 0f b7 ee[  149.991952] RSP: 0018:ffffc9000f1ebcb8 EFLAGS: 00010246[  150.000937] RAX: 0000000000000055 RBX: 00000007fffc445d RCX:000000002548f071[  150.011841] RDX: 00000000ffff8881 RSI: 0000000000000001 RDI:ffff888125ed50d8[  150.022670] RBP: 0000000000000000 R08: 0000000000000000 R09:c0000000ffff7fff[  150.033445] R10: ffffc9000f1ebb68 R11: ffffc9000f1ebb60 R12:0000000000000000[  150.044204] R13: ffff888125ed50d8 R14: 0000000000000080 R15:34cdc00034cdea80[  150.054963] FS:  0000000000000000(0000) GS:ffff88dfaf200000(0000)knlGS:0000000000000000[  150.066715] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[  150.076078] CR2: 00000007fffc445d CR3: 000000012448a006 CR4:0000000000770ee0[  150.086887] DR0: 0000000000000000 DR1: 0000000000000000 DR2:0000000000000000[  150.097670] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:0000000000000400[  150.108323] PKRU: 55555554[  150.114690] Call Trace:[  150.120497]  ? printk+0x48/0x4a[  150.127049]  mpt3sas_scsih_issue_tm.cold.114+0x2e/0x2b3 [mpt3sas][  150.136453]  mpt3sas_scsih_issue_locked_tm+0x86/0xb0 [mpt3sas][  150.145759]  scsih_dev_reset+0xea/0x300 [mpt3sas][  150.153891]  scsi_eh_ready_devs+0x541/0x9e0 [scsi_mod][  150.162206]  ? __scsi_host_match+0x20/0x20 [scsi_mod][  150.170406]  ? scsi_try_target_reset+0x90/0x90 [scsi_mod][  150.178925]  ? blk_mq_tagset_busy_iter+0x45/0x60[  150.186638]  ? scsi_try_target_reset+0x90/0x90 [scsi_mod][  150.195087]  scsi_error_handler+0x3a5/0x4a0 [scsi_mod][  150.203206]  ? __schedule+0x1e9/0x610[  150.209783]  ? scsi_eh_get_sense+0x210/0x210 [scsi_mod][  150.217924]  kthread+0x12e/0x150[  150.224041]  ? kthread_worker_fn+0x130/0x130[  150.231206]  ret_from_fork+0x1f/0x30This is caused by mpt3sas_base_sync_reply_irqs() using an invalid reply_qpointer outside of the list_for_each_entry() loop. At the end of the fulllist traversal the pointer is invalid.Move the _base_process_reply_queue() call inside of the loop.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48835` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-35-generic - 5.15.0-35.36\nlinux-image-5.15.0-35-generic-lpae - 5.15.0-35.36\nlinux-image-unsigned-5.15.0-35-generic - 5.15.0-35.36\nlinux-image-unsigned-5.15.0-35-generic-64k - 5.15.0-35.36\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-kvm - 5.15.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1009-aws - 5.15.0-1009.11\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-azure - 5.15.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-gcp - 6.5.0-1010.10~22.04.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gke - 5.15.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-ibm - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-intel-iotg - 5.15.0-1008.11\nNo subscription required\n\nlinux-image-unsigned-5.15.0-35-lowlatency - 5.15.0-35.36\nlinux-image-unsigned-5.15.0-35-lowlatency-64k - 5.15.0-35.36\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1013-oracle - 6.5.0-1013.13~22.04.4\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1003-oem - 6.5.0-1003.3\nNo subscription required\n\nlinux-image-5.15.0-1011-raspi - 5.15.0-1011.13\nlinux-image-5.15.0-1011-raspi-nolpae - 5.15.0-1011.13\nNo subscription required\n\nlinux-image-6.5.0-1007-starfive - 6.5.0-1007.8~22.04.1\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1021-intel-iot-realtime - 5.15.0-1021.26\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
+			"platform": "Ubuntu 22.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -38,15 +38,15 @@
 						"comment": "linux package in jammy was vulnerable but has been fixed (note: '5.15.0-35.36')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
 					},
 					{
@@ -54,7 +54,7 @@
 						"comment": "linux-kvm package in jammy was vulnerable but has been fixed (note: '5.15.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -62,11 +62,11 @@
 						"comment": "linux-aws package in jammy was vulnerable but has been fixed (note: '5.15.0-1009.11')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
@@ -78,11 +78,11 @@
 						"comment": "linux-azure package in jammy was vulnerable but has been fixed (note: '5.15.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
@@ -94,27 +94,23 @@
 						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
-						"comment": "linux-bluefield package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1011.13')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:202201680000040",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1006.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
@@ -126,7 +122,7 @@
 						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1006.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
@@ -134,7 +130,7 @@
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:202201680000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:202201680000090",
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1008.11')."
 					},
 					{
@@ -142,15 +138,15 @@
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-35.36')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
@@ -158,7 +154,7 @@
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
@@ -174,15 +170,15 @@
 						"comment": "linux-oracle-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1013.13~22.04.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
 					},
 					{
@@ -190,15 +186,15 @@
 						"comment": "linux-oem-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:202201680000070",
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1011.13')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
@@ -206,12 +202,16 @@
 						"comment": "linux-starfive-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.8~22.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000150",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					},
 					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"comment": "linux-intel-iot-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1021.26')."
+					},
+					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
-						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
+						"comment": "linux-realtime package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1014.14')."
 					}
 				]
 			}

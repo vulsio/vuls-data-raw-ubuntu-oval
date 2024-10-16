@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2021470410000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2021-47041 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:nvmet-tcp: fix incorrect locking in state_change sk callback We are notchanging anything in the TCP connection state so we should not take awrite_lock but rather a read lock. This caused a deadlock when runningnvmet-tcp and nvme-tcp on the same system, where state_change callbacks onthe host and on the controller side have causal relationship and madelockdep report on this with blktests: ================================WARNING: inconsistent lock state 5.12.0-rc3 #1 Tainted: G I-------------------------------- inconsistent {IN-SOFTIRQ-W} ->{SOFTIRQ-ON-R} usage. nvme/1324 [HC0[0]:SC0[0]:HE1:SE1] takes:ffff888363151000 (clock-AF_INET){++-?}-{2:2}, at:nvme_tcp_state_change+0x21/0x150 [nvme_tcp] {IN-SOFTIRQ-W} state wasregistered at: __lock_acquire+0x79b/0x18d0 lock_acquire+0x1ca/0x480_raw_write_lock_bh+0x39/0x80 nvmet_tcp_state_change+0x21/0x170 [nvmet_tcp]tcp_fin+0x2a8/0x780 tcp_data_queue+0xf94/0x1f20tcp_rcv_established+0x6ba/0x1f00 tcp_v4_do_rcv+0x502/0x760tcp_v4_rcv+0x257e/0x3430 ip_protocol_deliver_rcu+0x69/0x6a0ip_local_deliver_finish+0x1e2/0x2f0 ip_local_deliver+0x1a2/0x420ip_rcv+0x4fb/0x6b0 __netif_receive_skb_one_core+0x162/0x1b0process_backlog+0x1ff/0x770 __napi_poll.constprop.0+0xa9/0x5c0net_rx_action+0x7b3/0xb30 __do_softirq+0x1f0/0x940 do_softirq+0xa1/0xd0__local_bh_enable_ip+0xd8/0x100 ip_finish_output2+0x6b7/0x18a0__ip_queue_xmit+0x706/0x1aa0 __tcp_transmit_skb+0x2068/0x2e20tcp_write_xmit+0xc9e/0x2bb0 __tcp_push_pending_frames+0x92/0x310inet_shutdown+0x158/0x300 __nvme_tcp_stop_queue+0x36/0x270 [nvme_tcp]nvme_tcp_stop_queue+0x87/0xb0 [nvme_tcp]nvme_tcp_teardown_admin_queue+0x69/0xe0 [nvme_tcp]nvme_do_delete_ctrl+0x100/0x10c [nvme_core] nvme_sysfs_delete.cold+0x8/0xd[nvme_core] kernfs_fop_write_iter+0x2c7/0x460 new_sync_write+0x36c/0x610vfs_write+0x5c0/0x870 ksys_write+0xf9/0x1d0 do_syscall_64+0x33/0x40entry_SYSCALL_64_after_hwframe+0x44/0xae irq event stamp: 10687 hardirqslast enabled at (10687): [<ffffffff9ec376bd>]_raw_spin_unlock_irqrestore+0x2d/0x40 hardirqs last disabled at (10686):[<ffffffff9ec374d8>] _raw_spin_lock_irqsave+0x68/0x90 softirqs last enabledat (10684): [<ffffffff9f000608>] __do_softirq+0x608/0x940 softirqs lastdisabled at (10649): [<ffffffff9cdedd31>] do_softirq+0xa1/0xd0 other infothat might help us debug this: Possible unsafe locking scenario: CPU0 ----lock(clock-AF_INET); <Interrupt> lock(clock-AF_INET); *** DEADLOCK *** 5locks held by nvme/1324: #0: ffff8884a01fe470 (sb_writers#4){.+.+}-{0:0},at: ksys_write+0xf9/0x1d0 #1: ffff8886e435c090 (&of->mutex){+.+.}-{3:3},at: kernfs_fop_write_iter+0x216/0x460 #2: ffff888104d90c38(kn->active#255){++++}-{0:0}, at: kernfs_remove_self+0x22d/0x330 #3:ffff8884634538d0 (&queue->queue_lock){+.+.}-{3:3}, at:nvme_tcp_stop_queue+0x52/0xb0 [nvme_tcp] #4: ffff888363150d30(sk_lock-AF_INET){+.+.}-{0:0}, at: inet_shutdown+0x59/0x300 stackbacktrace: CPU: 26 PID: 1324 Comm: nvme Tainted: G I 5.12.0-rc3 #1 Hardwarename: Dell Inc. PowerEdge R640/06NR82, BIOS 2.10.0 11/12/2020 Call Trace:dump_stack+0x93/0xc2 mark_lock_irq.cold+0x2c/0xb3 ?verify_lock_unused+0x390/0x390 ? stack_trace_consume_entry+0x160/0x160 ?lock_downgrade+0x100/0x100 ? save_trace+0x88/0x5e0 ?_raw_spin_unlock_irqrestore+0x2d/0x40 mark_lock+0x530/0x1470 ?mark_lock_irq+0x1d10/0x1d10 ? enqueue_timer+0x660/0x660mark_usage+0x215/0x2a0 __lock_acquire+0x79b/0x18d0 ?tcp_schedule_loss_probe.part.0+0x38c/0x520 lock_acquire+0x1ca/0x480 ?nvme_tcp_state_change+0x21/0x150 [nvme_tcp] ? rcu_read_unlock+0x40/0x40 ?tcp_mtu_probe+0x1ae0/0x1ae0 ? kmalloc_reserve+0xa0/0xa0 ?sysfs_file_ops+0x170/0x170 _raw_read_lock+0x3d/0xa0 ?nvme_tcp_state_change+0x21/0x150 [nvme_tcp]nvme_tcp_state_change+0x21/0x150 [nvme_tcp] ? sysfs_file_ops---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47041` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic-64k - 6.5.0-14.14~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1011-bluefield - 5.15.0-1011.13\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-gcp - 6.5.0-1010.10~22.04.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-6.5.0-14-lowlatency - 6.5.0-14.14.1~22.04.1\nlinux-image-unsigned-6.5.0-14-lowlatency-64k - 6.5.0-14.14.1~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1003-oem - 6.5.0-1003.3\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-6.5.0-1007-starfive - 6.5.0-1007.8~22.04.1\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1013-oracle - 6.5.0-1013.13~22.04.4\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required",
+		"title": "CVE-2021-47041 on Ubuntu 22.04 LTS (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nvmet-tcp: fix incorrect locking in state_change sk callback We are notchanging anything in the TCP connection state so we should not take awrite_lock but rather a read lock. This caused a deadlock when runningnvmet-tcp and nvme-tcp on the same system, where state_change callbacks onthe host and on the controller side have causal relationship and madelockdep report on this with blktests: ================================WARNING: inconsistent lock state 5.12.0-rc3 #1 Tainted: G I-------------------------------- inconsistent {IN-SOFTIRQ-W} ->{SOFTIRQ-ON-R} usage. nvme/1324 [HC0[0]:SC0[0]:HE1:SE1] takes:ffff888363151000 (clock-AF_INET){++-?}-{2:2}, at:nvme_tcp_state_change+0x21/0x150 [nvme_tcp] {IN-SOFTIRQ-W} state wasregistered at: __lock_acquire+0x79b/0x18d0 lock_acquire+0x1ca/0x480_raw_write_lock_bh+0x39/0x80 nvmet_tcp_state_change+0x21/0x170 [nvmet_tcp]tcp_fin+0x2a8/0x780 tcp_data_queue+0xf94/0x1f20tcp_rcv_established+0x6ba/0x1f00 tcp_v4_do_rcv+0x502/0x760tcp_v4_rcv+0x257e/0x3430 ip_protocol_deliver_rcu+0x69/0x6a0ip_local_deliver_finish+0x1e2/0x2f0 ip_local_deliver+0x1a2/0x420ip_rcv+0x4fb/0x6b0 __netif_receive_skb_one_core+0x162/0x1b0process_backlog+0x1ff/0x770 __napi_poll.constprop.0+0xa9/0x5c0net_rx_action+0x7b3/0xb30 __do_softirq+0x1f0/0x940 do_softirq+0xa1/0xd0__local_bh_enable_ip+0xd8/0x100 ip_finish_output2+0x6b7/0x18a0__ip_queue_xmit+0x706/0x1aa0 __tcp_transmit_skb+0x2068/0x2e20tcp_write_xmit+0xc9e/0x2bb0 __tcp_push_pending_frames+0x92/0x310inet_shutdown+0x158/0x300 __nvme_tcp_stop_queue+0x36/0x270 [nvme_tcp]nvme_tcp_stop_queue+0x87/0xb0 [nvme_tcp]nvme_tcp_teardown_admin_queue+0x69/0xe0 [nvme_tcp]nvme_do_delete_ctrl+0x100/0x10c [nvme_core] nvme_sysfs_delete.cold+0x8/0xd[nvme_core] kernfs_fop_write_iter+0x2c7/0x460 new_sync_write+0x36c/0x610vfs_write+0x5c0/0x870 ksys_write+0xf9/0x1d0 do_syscall_64+0x33/0x40entry_SYSCALL_64_after_hwframe+0x44/0xae irq event stamp: 10687 hardirqslast enabled at (10687): [<ffffffff9ec376bd>]_raw_spin_unlock_irqrestore+0x2d/0x40 hardirqs last disabled at (10686):[<ffffffff9ec374d8>] _raw_spin_lock_irqsave+0x68/0x90 softirqs last enabledat (10684): [<ffffffff9f000608>] __do_softirq+0x608/0x940 softirqs lastdisabled at (10649): [<ffffffff9cdedd31>] do_softirq+0xa1/0xd0 other infothat might help us debug this: Possible unsafe locking scenario: CPU0 ----lock(clock-AF_INET); <Interrupt> lock(clock-AF_INET); *** DEADLOCK *** 5locks held by nvme/1324: #0: ffff8884a01fe470 (sb_writers#4){.+.+}-{0:0},at: ksys_write+0xf9/0x1d0 #1: ffff8886e435c090 (&of->mutex){+.+.}-{3:3},at: kernfs_fop_write_iter+0x216/0x460 #2: ffff888104d90c38(kn->active#255){++++}-{0:0}, at: kernfs_remove_self+0x22d/0x330 #3:ffff8884634538d0 (&queue->queue_lock){+.+.}-{3:3}, at:nvme_tcp_stop_queue+0x52/0xb0 [nvme_tcp] #4: ffff888363150d30(sk_lock-AF_INET){+.+.}-{0:0}, at: inet_shutdown+0x59/0x300 stackbacktrace: CPU: 26 PID: 1324 Comm: nvme Tainted: G I 5.12.0-rc3 #1 Hardwarename: Dell Inc. PowerEdge R640/06NR82, BIOS 2.10.0 11/12/2020 Call Trace:dump_stack+0x93/0xc2 mark_lock_irq.cold+0x2c/0xb3 ?verify_lock_unused+0x390/0x390 ? stack_trace_consume_entry+0x160/0x160 ?lock_downgrade+0x100/0x100 ? save_trace+0x88/0x5e0 ?_raw_spin_unlock_irqrestore+0x2d/0x40 mark_lock+0x530/0x1470 ?mark_lock_irq+0x1d10/0x1d10 ? enqueue_timer+0x660/0x660mark_usage+0x215/0x2a0 __lock_acquire+0x79b/0x18d0 ?tcp_schedule_loss_probe.part.0+0x38c/0x520 lock_acquire+0x1ca/0x480 ?nvme_tcp_state_change+0x21/0x150 [nvme_tcp] ? rcu_read_unlock+0x40/0x40 ?tcp_mtu_probe+0x1ae0/0x1ae0 ? kmalloc_reserve+0xa0/0xa0 ?sysfs_file_ops+0x170/0x170 _raw_read_lock+0x3d/0xa0 ?nvme_tcp_state_change+0x21/0x150 [nvme_tcp]nvme_tcp_state_change+0x21/0x150 [nvme_tcp] ? sysfs_file_ops---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47041` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic - 6.5.0-14.14~22.04.1\nlinux-image-unsigned-6.5.0-14-generic-64k - 6.5.0-14.14~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-gcp - 6.5.0-1010.10~22.04.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-6.5.0-14-lowlatency - 6.5.0-14.14.1~22.04.1\nlinux-image-unsigned-6.5.0-14-lowlatency-64k - 6.5.0-14.14.1~22.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1003-oem - 6.5.0-1003.3\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-6.5.0-1007-starfive - 6.5.0-1007.8~22.04.1\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1013-oracle - 6.5.0-1013.13~22.04.4\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1021-intel-iot-realtime - 5.15.0-1021.26\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-5.15.0-1006-realtime - 5.15.0-1006.6\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
+			"platform": "Ubuntu 22.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -40,11 +40,11 @@
 						"comment": "linux package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-19.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
@@ -56,7 +56,7 @@
 						"comment": "linux-kvm package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -64,11 +64,11 @@
 						"comment": "linux-aws package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
@@ -80,11 +80,11 @@
 						"comment": "linux-azure package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1006.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
@@ -96,27 +96,23 @@
 						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
-						"comment": "linux-bluefield package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1011.13')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000010",
 						"comment": "linux-gcp package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
@@ -128,7 +124,7 @@
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
@@ -136,7 +132,7 @@
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
@@ -144,11 +140,11 @@
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
@@ -160,7 +156,7 @@
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
@@ -168,15 +164,15 @@
 						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5, was needs-triage')."
 					},
 					{
@@ -188,11 +184,11 @@
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
@@ -200,7 +196,7 @@
 						"comment": "linux-starfive-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.8~22.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000150",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					},
 					{
@@ -212,8 +208,12 @@
 						"comment": "linux-nvidia-6.5 package in jammy, is related to the CVE in some way and has been fixed (note: '6.5.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
-						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"comment": "linux-intel-iot-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1021.26')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
+						"comment": "linux-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.6')."
 					}
 				]
 			}
