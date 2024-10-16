@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2023528490000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52849 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cxl/mem: Fix shutdown order Ira reports that removing cxl_mock_mem causes acrash with the following trace: BUG: kernel NULL pointer dereference,address: 0000000000000044 [..] RIP: 0010:cxl_region_decode_reset+0x7f/0x180[cxl_core] [..] Call Trace: <TASK> cxl_region_detach+0xe8/0x210 [cxl_core]cxl_decoder_kill_region+0x27/0x40 [cxl_core] cxld_unregister+0x29/0x40[cxl_core] devres_release_all+0xb8/0x110 device_unbind_cleanup+0xe/0x70device_release_driver_internal+0x1d2/0x210 bus_remove_device+0xd7/0x150device_del+0x155/0x3e0 device_unregister+0x13/0x60devm_release_action+0x4d/0x90 ? __pfx_unregister_port+0x10/0x10 [cxl_core]delete_endpoint+0x121/0x130 [cxl_core] devres_release_all+0xb8/0x110device_unbind_cleanup+0xe/0x70 device_release_driver_internal+0x1d2/0x210bus_remove_device+0xd7/0x150 device_del+0x155/0x3e0 ?lock_release+0x142/0x290 cdev_device_del+0x15/0x50cxl_memdev_unregister+0x54/0x70 [cxl_core] This crash is due to theclearing out the cxl_memdev's driver context (@cxlds) before the subsystemis done with it. This is ultimately due to the region(s), that this memdevis a member, being torn down and expecting to be able to de-reference@cxlds, like here: static int cxl_region_decode_reset(struct cxl_region*cxlr, int count) ... if (cxlds->rcd) goto endpoint_reset; ... Fix it bykeeping the driver context valid until memdev-device unregistration, andsubsequently the entire stack of related dependencies, unwinds.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52849` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52849",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52849"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 16:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52849",
+				"href": "https://ubuntu.com/security/CVE-2023-52849",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

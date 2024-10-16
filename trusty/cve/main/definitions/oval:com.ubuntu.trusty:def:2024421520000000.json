@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-42152 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:nvmet: fix a possible leak when destroy a ctrl during qp establishmentIn nvmet_sq_destroy we capture sq->ctrl early and if it is non-NULL weknow that a ctrl was allocated (in the admin connect request handler)and we need to release pending AERs, clear ctrl->sqs and sq->ctrl(for nvme-loop primarily), and drop the final reference on the ctrl.However, a small window is possible where nvmet_sq_destroy starts (asa result of the client giving up and disconnecting) concurrently withthe nvme admin connect cmd (which may be in an early stage). But *before*kill_and_confirm of sq->ref (i.e. the admin connect managed to get an sqlive reference). In this case, sq->ctrl was allocated however after it wascaptured in a local variable in nvmet_sq_destroy.This prevented the final reference drop on the ctrl.Solve this by re-capturing the sq->ctrl after all inflight request hascompleted, where for sure sq->ctrl reference is final, and move forwardbased on that.This issue was observed in an environment with many hosts connectingmultiple ctrls simoutanuosly, creating a delay in allocating a ctrlleading up to this race window.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42152` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nvmet: fix a possible leak when destroy a ctrl during qp establishmentIn nvmet_sq_destroy we capture sq->ctrl early and if it is non-NULL weknow that a ctrl was allocated (in the admin connect request handler)and we need to release pending AERs, clear ctrl->sqs and sq->ctrl(for nvme-loop primarily), and drop the final reference on the ctrl.However, a small window is possible where nvmet_sq_destroy starts (asa result of the client giving up and disconnecting) concurrently withthe nvme admin connect cmd (which may be in an early stage). But *before*kill_and_confirm of sq->ref (i.e. the admin connect managed to get an sqlive reference). In this case, sq->ctrl was allocated however after it wascaptured in a local variable in nvmet_sq_destroy.This prevented the final reference drop on the ctrl.Solve this by re-capturing the sq->ctrl after all inflight request hascompleted, where for sure sq->ctrl reference is final, and move forwardbased on that.This issue was observed in an environment with many hosts connectingmultiple ctrls simoutanuosly, creating a delay in allocating a ctrlleading up to this race window.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42152` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -48,12 +48,12 @@
 						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",

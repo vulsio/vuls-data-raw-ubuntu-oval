@@ -1,0 +1,68 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024439110000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-43911 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: mac80211: fix NULL dereference at band check in starting tx basessionIn MLD connection, link_data/link_conf are dynamically allocated. Theydon't point to vif->bss_conf. So, there will be no chanreq assigned tovif->bss_conf and then the chan will be NULL. Tweak the code to checkht_supported/vht_supported/has_he/has_eht on sta deflink.Crash log (with rtw89 version under MLO development):[ 9890.526087] BUG: kernel NULL pointer dereference, address:0000000000000000[ 9890.526102] #PF: supervisor read access in kernel mode[ 9890.526105] #PF: error_code(0x0000) - not-present page[ 9890.526109] PGD 0 P4D 0[ 9890.526114] Oops: 0000 [#1] PREEMPT SMP PTI[ 9890.526119] CPU: 2 PID: 6367 Comm: kworker/u16:2 Kdump: loaded Tainted:G           OE      6.9.0 #1[ 9890.526123] Hardware name: LENOVO 2356AD1/2356AD1, BIOS G7ETB3WW (2.73 )11/28/2018[ 9890.526126] Workqueue: phy2 rtw89_core_ba_work [rtw89_core][ 9890.526203] RIP: 0010:ieee80211_start_tx_ba_session(net/mac80211/agg-tx.c:618 (discriminator 1)) mac80211[ 9890.526279] Code: f7 e8 d5 93 3e ea 48 83 c4 28 89 d8 5b 41 5c 41 5d 415e 41 5f 5d c3 cc cc cc cc 49 8b 84 24 e0 f1 ff ff 48 8b 80 90 1b 00 00<83> 38 03 0f 84 37 fe ff ff bb ea ff ff ff eb cc 49 8b 84 24 10 f3All code========   0:\tf7 e8                \timul   %eax   2:\td5                   \t(bad)   3:\t93                   \txchg   %eax,%ebx   4:\t3e ea                \tds (bad)   6:\t48 83 c4 28          \tadd    $0x28,%rsp   a:\t89 d8                \tmov    %ebx,%eax   c:\t5b                   \tpop    %rbx   d:\t41 5c                \tpop    %r12   f:\t41 5d                \tpop    %r13  11:\t41 5e                \tpop    %r14  13:\t41 5f                \tpop    %r15  15:\t5d                   \tpop    %rbp  16:\tc3                   \tretq  17:\tcc                   \tint3  18:\tcc                   \tint3  19:\tcc                   \tint3  1a:\tcc                   \tint3  1b:\t49 8b 84 24 e0 f1 ff \tmov    -0xe20(%r12),%rax  22:\tff  23:\t48 8b 80 90 1b 00 00 \tmov    0x1b90(%rax),%rax  2a:*\t83 38 03             \tcmpl   $0x3,(%rax)\t\t<-- trapping instruction  2d:\t0f 84 37 fe ff ff    \tje     0xfffffffffffffe6a  33:\tbb ea ff ff ff       \tmov    $0xffffffea,%ebx  38:\teb cc                \tjmp    0x6  3a:\t49                   \trex.WB  3b:\t8b                   \t.byte 0x8b  3c:\t84 24 10             \ttest   %ah,(%rax,%rdx,1)  3f:\tf3                   \trepzCode starting with the faulting instruction===========================================   0:\t83 38 03             \tcmpl   $0x3,(%rax)   3:\t0f 84 37 fe ff ff    \tje     0xfffffffffffffe40   9:\tbb ea ff ff ff       \tmov    $0xffffffea,%ebx   e:\teb cc                \tjmp    0xffffffffffffffdc  10:\t49                   \trex.WB  11:\t8b                   \t.byte 0x8b  12:\t84 24 10             \ttest   %ah,(%rax,%rdx,1)  15:\tf3                   \trepz[ 9890.526285] RSP: 0018:ffffb8db09013d68 EFLAGS: 00010246[ 9890.526291] RAX: 0000000000000000 RBX: 0000000000000000 RCX:ffff9308e0d656c8[ 9890.526295] RDX: 0000000000000000 RSI: ffffffffab99460b RDI:ffffffffab9a7685[ 9890.526300] RBP: ffffb8db09013db8 R08: 0000000000000000 R09:0000000000000873[ 9890.526304] R10: ffff9308e0d64800 R11: 0000000000000002 R12:ffff9308e5ff6e70[ 9890.526308] R13: ffff930952500e20 R14: ffff9309192a8c00 R15:0000000000000000[ 9890.526313] FS:  0000000000000000(0000) GS:ffff930b4e700000(0000)knlGS:0000000000000000[ 9890.526316] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[ 9890.526318] CR2: 0000000000000000 CR3: 0000000391c58005 CR4:00000000001706f0[ 9890.526321] Call Trace:[ 9890.526324]  <TASK>[ 9890.526327] ? show_regs (arch/x86/kernel/dumpstack.c:479)[ 9890.526335] ? __die (arch/x86/kernel/dumpstack.c:421arch/x86/kernel/dumpstack.c:434)[ 9890.526340] ? page_fault_oops (arch/x86/mm/fault.c:713)[ 9890.526347] ? search_module_extables (kernel/module/main.c:3256(discriminator---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-43911` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-43911",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-43911"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-26 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-43911",
+				"href": "https://ubuntu.com/security/CVE-2024-43911",
+				"public": "20240826",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

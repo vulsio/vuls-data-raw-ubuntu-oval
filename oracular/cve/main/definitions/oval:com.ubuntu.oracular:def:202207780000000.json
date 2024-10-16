@@ -1,0 +1,55 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:202207780000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-0778 on Ubuntu 24.10 (oracular) - high",
+		"description": "The BN_mod_sqrt() function, which computes a modular square root, containsa bug that can cause it to loop forever for non-prime moduli. Internallythis function is used when parsing certificates that contain elliptic curvepublic keys in compressed form or explicit elliptic curve parameters with abase point encoded in compressed form. It is possible to trigger theinfinite loop by crafting a certificate that has invalid explicit curveparameters. Since certificate parsing happens prior to verification of thecertificate signature, any process that parses an externally suppliedcertificate may thus be subject to a denial of service attack. The infiniteloop can also be reached when parsing crafted private keys as they cancontain explicit elliptic curve parameters. Thus vulnerable situationsinclude: - TLS clients consuming server certificates - TLS serversconsuming client certificates - Hosting providers taking certificates orprivate keys from customers - Certificate authorities parsing certificationrequests from subscribers - Anything else which parses ASN.1 elliptic curveparameters Also any other applications that use the BN_mod_sqrt() where theattacker can control the parameter values are vulnerable to this DoS issue.In the OpenSSL 1.0.2 version the public key is not parsed during initialparsing of the certificate which makes it slightly harder to trigger theinfinite loop. However any operation which requires the public key from thecertificate will trigger the infinite loop. In particular the attacker canuse a self-signed certificate to trigger the loop during verification ofthe certificate signature. This issue affects OpenSSL versions 1.0.2, 1.1.1and 3.0. It was addressed in the releases of 1.1.1n and 3.0.2 on the 15thMarch 2022. Fixed in OpenSSL 3.0.2 (Affected 3.0.0,3.0.1). Fixed in OpenSSL1.1.1n (Affected 1.1.1-1.1.1m). Fixed in OpenSSL 1.0.2zd (Affected1.0.2-1.0.2zc).\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-0778` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlibssl3t64 - 3.0.2-0ubuntu1\nopenssl - 3.0.2-0ubuntu1\nNo subscription required\n\nefi-shell-aa64 - 2022.11-2\nefi-shell-arm - 2022.11-2\nefi-shell-ia32 - 2022.11-2\nefi-shell-riscv64 - 2022.11-2\nefi-shell-x64 - 2022.11-2\novmf - 2022.11-2\novmf-ia32 - 2022.11-2\nqemu-efi-aarch64 - 2022.11-2\nqemu-efi-arm - 2022.11-2\nqemu-efi-riscv64 - 2022.11-2\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-0778",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-0778"
+		},
+		"advisory": {
+			"severity": "High",
+			"rights": "Copyright (C) 2022 Canonical Ltd.",
+			"public_date": "2022-03-15",
+			"cve": {
+				"text": "CVE-2022-0778",
+				"href": "https://ubuntu.com/security/CVE-2022-0778",
+				"public": "20220315",
+				"cvss_score": "7.5",
+				"cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "5328-1,5328-2,6457-1"
+			},
+			"public_date_at_usn": "2022-03-15",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-5328-1",
+				"https://ubuntu.com/security/notices/USN-5328-2",
+				"https://ubuntu.com/security/notices/USN-6457-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:202207780000000",
+						"comment": "openssl package in oracular was vulnerable but has been fixed (note: '3.0.2-0ubuntu1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:202137120000000",
+						"comment": "edk2 package in oracular, is related to the CVE in some way and has been fixed (note: '2022.11-2')."
+					}
+				]
+			}
+		]
+	}
+}

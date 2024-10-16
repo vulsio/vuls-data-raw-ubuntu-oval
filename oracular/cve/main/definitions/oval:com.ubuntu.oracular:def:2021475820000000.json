@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2021475820000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47582 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: USB:core: Make do_proc_control() and do_proc_bulk() killable TheUSBDEVFS_CONTROL and USBDEVFS_BULK ioctls invoke usb_start_wait_urb(),which contains an uninterruptible wait with a user-specified timeout value.If timeout value is very large and the device being accessed does notrespond in a reasonable amount of time, the kernel will complain about\"Task X blocked for more than N seconds\", as found in testing by syzbot:INFO: task syz-executor.0:8700 blocked for more than 143 seconds. Nottainted 5.14.0-rc7-syzkaller #0 \"echo 0 >/proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:syz-executor.0 state:D stack:23192 pid: 8700 ppid: 8455flags:0x00004004 Call Trace: context_switch kernel/sched/core.c:4681[inline] __schedule+0xc07/0x11f0 kernel/sched/core.c:5938schedule+0x14b/0x210 kernel/sched/core.c:6017 schedule_timeout+0x98/0x2f0kernel/time/timer.c:1857 do_wait_for_common+0x2da/0x480kernel/sched/completion.c:85 __wait_for_commonkernel/sched/completion.c:106 [inline] wait_for_commonkernel/sched/completion.c:117 [inline]wait_for_completion_timeout+0x46/0x60 kernel/sched/completion.c:157usb_start_wait_urb+0x167/0x550 drivers/usb/core/message.c:63do_proc_bulk+0x978/0x1080 drivers/usb/core/devio.c:1236 proc_bulkdrivers/usb/core/devio.c:1273 [inline] usbdev_do_ioctldrivers/usb/core/devio.c:2547 [inline] usbdev_ioctl+0x3441/0x6b10drivers/usb/core/devio.c:2713 ... To fix this problem, this patch replacesusbfs's calls to usb_control_msg() and usb_bulk_msg() with special-purposecode that does essentially the same thing (as recommended in the commentfor usb_start_wait_urb()), except that it always uses a killable wait andit uses GFP_KERNEL rather than GFP_NOIO.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47582` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47582",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47582"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-19 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47582",
+				"href": "https://ubuntu.com/security/CVE-2021-47582",
+				"public": "20240619"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

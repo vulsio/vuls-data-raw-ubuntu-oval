@@ -1,0 +1,79 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024274150000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-27415 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: bridge: confirm multicast packets before passing them up thestack conntrack nf_confirm logic cannot handle cloned skbs referencing thesame nf_conn entry, which will happen for multicast (broadcast) frames onbridges. Example: macvlan0 | br0 / \\ ethX ethY ethX (or Y) receives a L2multicast or broadcast packet containing an IP packet, flow is not yet inconntrack table. 1. skb passes through bridge and fake-ip(br_netfilter)Prerouting. -> skb->_nfct now references a unconfirmed entry2. skb is broad/mcast packet. bridge now passes clones out on each bridgeinterface. 3. skb gets passed up the stack. 4. In macvlan case, macvlandriver retains clone(s) of the mcast skb and schedules a work queue to sendthem out on the lower devices. The clone skb->_nfct is not a copy, it isthe same entry as the original skb. The macvlan rx handler then returnsRX_HANDLER_PASS. 5. Normal conntrack hooks (in NF_INET_LOCAL_IN) confirmthe orig skb. The Macvlan broadcast worker and normal confirm path willrace. This race will not happen if step 2 already confirmed a clone. Inthat case later steps perform skb_clone() with skb->_nfct already confirmed(in hash table). This works fine. But such confirmation won't happen wheneb/ip/nftables rules dropped the packets before they reached the nf_confirmstep in postrouting. Pablo points out that nf_conntrack_bridge doesn'tallow use of stateful nat, so we can safely discard the nf_conn entry andlet inet call conntrack again. This doesn't work for bridge netfilter: skbcould have a nat transformation. Also bridge nf prevents re-invocation ofinet prerouting via 'sabotage_in' hook. Work around this problem byexplicit confirmation of the entry at LOCAL_IN time, before upper layer hasa chance to clone the unconfirmed entry. The downside is that this disablesNAT and conntrack helpers. Alternative fix would be to add locking to allcode parts that deal with unconfirmed packets, but even if that could bedone in a sane way this opens up other problems, for example: -m physdev--physdev-out eth0 -j SNAT --snat-to 1.2.3.4 -m physdev --physdev-out eth1-j SNAT --snat-to 1.2.3.5 For multicast case, only one of such conflictingmappings will be created, conntrack only handles 1:1 NAT mappings. Usersshould set create a setup that explicitly marks such traffic NOTRACK(conntrack bypass) to avoid this, but we cannot auto-bypass them, rulesetmight have accept rules for untracked traffic already, so user-visiblebehaviour would change.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-27415` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-27415",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-27415"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-17 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-27415",
+				"href": "https://ubuntu.com/security/CVE-2024-27415",
+				"public": "20240517"
+			},
+			"public_date_at_usn": "2024-05-17 12:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6820-1",
+				"https://ubuntu.com/security/notices/USN-6821-1",
+				"https://ubuntu.com/security/notices/USN-6821-2",
+				"https://ubuntu.com/security/notices/USN-6828-1",
+				"https://ubuntu.com/security/notices/USN-6820-2",
+				"https://ubuntu.com/security/notices/USN-6821-3",
+				"https://ubuntu.com/security/notices/USN-6821-4",
+				"https://ubuntu.com/security/notices/USN-6871-1",
+				"https://ubuntu.com/security/notices/USN-6892-1",
+				"https://ubuntu.com/security/notices/USN-6919-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

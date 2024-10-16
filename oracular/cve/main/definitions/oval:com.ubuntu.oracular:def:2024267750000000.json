@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024267750000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26775 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: aoe:avoid potential deadlock at set_capacity Move set_capacity() outside of thesection procected by (&d->lock). To avoid possible interrupt unsafe lockingscenario: CPU0 CPU1 ---- ---- [1] lock(&bdev->bd_size_lock);local_irq_disable(); [2] lock(&d->lock); [3] lock(&bdev->bd_size_lock);<Interrupt> [4] lock(&d->lock); *** DEADLOCK *** Where[1](&bdev->bd_size_lock) hold by zram_add()->set_capacity().[2]lock(&d->lock) hold by aoeblk_gdalloc(). And aoeblk_gdalloc() is tryingto acquire [3](&bdev->bd_size_lock) at set_capacity() call. In thissituation an attempt to acquire [4]lock(&d->lock) from aoecmd_cfg_rsp()will lead to deadlock. So the simplest solution is breaking lock dependency[2](&d->lock) -> [3](&bdev->bd_size_lock) by moving set_capacity() outside.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26775` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26775",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26775"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-03 17:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26775",
+				"href": "https://ubuntu.com/security/CVE-2024-26775",
+				"public": "20240403"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

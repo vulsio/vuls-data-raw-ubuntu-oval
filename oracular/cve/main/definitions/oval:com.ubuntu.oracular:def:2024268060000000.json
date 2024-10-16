@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024268060000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26806 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: spi:cadence-qspi: remove system-wide suspend helper calls from runtime PM hooksThe ->runtime_suspend() and ->runtime_resume() callbacks are not expectedto call spi_controller_suspend() and spi_controller_resume(). Remove callsto those in the cadence-qspi driver. Those helpers have two rolescurrently: - They stop/start the queue, including dealing with the kworker.- They toggle the SPI controller SPI_CONTROLLER_SUSPENDED flag. It requiresacquiring ctlr->bus_lock_mutex. Step one is irrelevant because cadence-qspiis not queued. Step two however has two implications: - A deadlock occurs,because ->runtime_resume() is called in a context where the lock is alreadytaken (in the ->exec_op() callback, where the usage count is incremented).- It would disallow all operations once the device is auto-suspended. Hereis a brief call tree highlighting the mutex deadlock: spi_mem_exec_op() ...spi_mem_access_start() mutex_lock(&ctlr->bus_lock_mutex)cqspi_exec_mem_op() pm_runtime_resume_and_get() cqspi_resume()spi_controller_resume() mutex_lock(&ctlr->bus_lock_mutex) ...spi_mem_access_end() mutex_unlock(&ctlr->bus_lock_mutex) ...\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26806` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26806",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26806"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-04 09:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26806",
+				"href": "https://ubuntu.com/security/CVE-2024-26806",
+				"public": "20240404"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

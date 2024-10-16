@@ -1,0 +1,95 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024269230000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26923 on Ubuntu 24.10 (oracular) - high",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:af_unix: Fix garbage collector racing against connect() Garbage collectordoes not take into account the risk of embryo getting enqueued during thegarbage collection. If such embryo has a peer that carries SCM_RIGHTS, twoconsecutive passes of scan_children() may see a different set of children.Leading to an incorrectly elevated inflight count, and then a danglingpointer within the gc_inflight_list. sockets are AF_UNIX/SOCK_STREAM S isan unconnected socket L is a listening in-flight socket bound to addr, notin fdtable V's fd will be passed via sendmsg(), gets inflight count bumpedconnect(S, addr) sendmsg(S, [V]); close(V) __unix_gc() ----------------------------------------- ----------- NS = unix_create1() skb1 =sock_wmalloc(NS) L = unix_find_other(addr) unix_state_lock(L) unix_peer(S)= NS // V count=1 inflight=0 NS = unix_peer(S) skb2 = sock_alloc()skb_queue_tail(NS, skb2[V]) // V became in-flight // V count=2 inflight=1close(V) // V count=1 inflight=1 // GC candidate condition met for u ingc_inflight_list: if (total_refs == inflight_refs) add u to gc_candidates// gc_candidates={L, V} for u in gc_candidates: scan_children(u,dec_inflight) // embryo (skb1) was not // reachable from L yet, so V's //inflight remains unchanged __skb_queue_tail(L, skb1) unix_state_unlock(L)for u in gc_candidates: if (u.inflight) scan_children(u,inc_inflight_move_tail) // V count=1 inflight=2 (!) If there is aGC-candidate listening socket, lock/unlock its state. This makes GC waituntil the end of any ongoing connect() to that socket. After flipping thelock, a possibly SCM-laden embryo is already enqueued. And if there isanother embryo coming, it can not possibly carry SCM_RIGHTS. At this point,unix_inflight() can not happen because unix_gc_lock is already taken.Inflight graph remains unaffected.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26923` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26923",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26923"
+		},
+		"advisory": {
+			"severity": "High",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-25 06:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26923",
+				"href": "https://ubuntu.com/security/CVE-2024-26923",
+				"public": "20240425"
+			},
+			"public_date_at_usn": "2024-04-25 06:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6893-1",
+				"https://ubuntu.com/security/notices/USN-6895-1",
+				"https://ubuntu.com/security/notices/USN-6896-1",
+				"https://ubuntu.com/security/notices/USN-6898-1",
+				"https://ubuntu.com/security/notices/USN-6893-2",
+				"https://ubuntu.com/security/notices/USN-6895-2",
+				"https://ubuntu.com/security/notices/USN-6896-2",
+				"https://ubuntu.com/security/notices/USN-6898-2",
+				"https://ubuntu.com/security/notices/USN-6900-1",
+				"https://ubuntu.com/security/notices/USN-6896-3",
+				"https://ubuntu.com/security/notices/USN-6895-3",
+				"https://ubuntu.com/security/notices/USN-6898-3",
+				"https://ubuntu.com/security/notices/USN-6896-4",
+				"https://ubuntu.com/security/notices/USN-6896-5",
+				"https://ubuntu.com/security/notices/USN-6893-3",
+				"https://ubuntu.com/security/notices/USN-6898-4",
+				"https://ubuntu.com/security/notices/USN-6917-1",
+				"https://ubuntu.com/security/notices/USN-6919-1",
+				"https://ubuntu.com/security/notices/USN-6918-1",
+				"https://ubuntu.com/security/notices/USN-6926-1",
+				"https://ubuntu.com/security/notices/USN-6927-1",
+				"https://ubuntu.com/security/notices/USN-6938-1",
+				"https://ubuntu.com/security/notices/USN-6926-2",
+				"https://ubuntu.com/security/notices/USN-6895-4",
+				"https://ubuntu.com/security/notices/USN-6926-3",
+				"https://ubuntu.com/security/notices/USN-7019-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

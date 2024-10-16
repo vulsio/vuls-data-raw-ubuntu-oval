@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2023524990000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52499 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:powerpc/47x: Fix 47x syscall return crash Eddie reported that newer kernelswere crashing during boot on his 476 FSP2 system: kernel tried to executeuser page (b7ee2000) - exploit attempt? (uid: 0) BUG: Unable to handlekernel instruction fetch Faulting instruction address: 0xb7ee2000 Oops:Kernel access of bad area, sig: 11 [#1] BE PAGE_SIZE=4K FSP-2 Moduleslinked in: CPU: 0 PID: 61 Comm: mount Not tainted 6.1.55-d23900f.ppcnf-fsp2#1 Hardware name: ibm,fsp2 476fpe 0x7ff520c0 FSP-2 NIP: b7ee2000 LR:8c008000 CTR: 00000000 REGS: bffebd83 TRAP: 0400 Not tainted(6.1.55-d23900f.ppcnf-fs p2) MSR: 00000030 <IR,DR> CR: 00001000 XER:20000000 GPR00: c00110ac bffebe63 bffebe7e bffebe88 8c008000 0000100000000d12 b7ee2000 GPR08: 00000033 00000000 00000000 c139df10 482248241016c314 10160000 00000000 GPR16: 10160000 10160000 00000008 0000000010160000 00000000 10160000 1017f5b0 GPR24: 1017fa50 1017f4f0 1017fa501017f740 1017f630 00000000 00000000 1017f4f0 NIP [b7ee2000] 0xb7ee2000 LR[8c008000] 0x8c008000 Call Trace: Instruction dump: XXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX ---[ end trace0000000000000000 ]--- The problem is in ret_from_syscall where the checkfor icache_44x_need_flush is done. When the flush is needed the code jumpsout-of-line to do the flush, and then intends to jump back to continue thesyscall return. However the branch back to label 1b doesn't return to thecorrect location, instead branching back just prior to the return touserspace, causing bogus register values to be used by the rfi. Thebreakage was introduced by commit 6f76a01173cc (\"powerpc/syscall: implementsystem call entry/exit logic in C for PPC32\") which inadvertently removedthe \"1\" label and reused it elsewhere. Fix it by adding named local labelsin the correct locations. Note that the return label needs to be outsidethe ifdef so that CONFIG_PPC_47x=n compiles.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52499` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52499",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52499"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-02 22:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52499",
+				"href": "https://ubuntu.com/security/CVE-2023-52499",
+				"public": "20240302"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

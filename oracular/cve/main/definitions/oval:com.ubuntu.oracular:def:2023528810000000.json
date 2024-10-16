@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2023528810000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52881 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: tcp: donot accept ACK of bytes we never sent This patch is based on a detailedreport and ideas from Yepeng Pan and Christian Rossow. ACK seq validationis currently following RFC 5961 5.2 guidelines: The ACK value is consideredacceptable only if it is in the range of ((SND.UNA - MAX.SND.WND) <=SEG.ACK <= SND.NXT). All incoming segments whose ACK value doesn't satisfythe above condition MUST be discarded and an ACK sent back. It needs to benoted that RFC 793 on page 72 (fifth check) says: \"If the ACK is aduplicate (SEG.ACK < SND.UNA), it can be ignored. If the ACK acknowledgessomething not yet sent (SEG.ACK > SND.NXT) then send an ACK, drop thesegment, and return\". The \"ignored\" above implies that the processing ofthe incoming data segment continues, which means the ACK value is treatedas acceptable. This mitigation makes the ACK check more stringent since anyACK < SND.UNA wouldn't be accepted, instead only ACKs that are in the range((SND.UNA - MAX.SND.WND) <= SEG.ACK <= SND.NXT) get through. This can berefined for new (and possibly spoofed) flows, by not accepting ACK forbytes that were never sent. This greatly improves TCP security at a littlecost. I added a Fixes: tag to make sure this patch will reach stable trees,even if the 'blamed' patch was adhering to the RFC. tp->bytes_acked wasadded in linux-4.2 Following packetdrill test (courtesy of Yepeng Pan)shows the issue at hand: 0 socket(..., SOCK_STREAM, IPPROTO_TCP) = 3 +0setsockopt(3, SOL_SOCKET, SO_REUSEADDR, [1], 4) = 0 +0 bind(3, ..., ...) =0 +0 listen(3, 1024) = 0 // ---------------- Handshake -------------------// // when window scale is set to 14 the window size can be extended to //65535 * (2^14) = 1073725440. Linux would accept an ACK packet // with acknumber in (Server_ISN+1-1073725440. Server_ISN+1) // ,though this acknumber acknowledges some data never // sent by the server. +0 < S 0:0(0)win 65535 <mss 1400,nop,wscale 14> +0 > S. 0:0(0) ack 1 <...> +0 < . 1:1(0)ack 1 win 65535 +0 accept(3, ..., ...) = 4 // For the establishedconnection, we send an ACK packet, // the ack packet uses ack number 1 -1073725300 + 2^32, // where 2^32 is used to wrap around. // Note: we used1073725300 instead of 1073725440 to avoid possible // edge cases. // 1 -1073725300 + 2^32 = 3221241997 // Oops, old kernels happily accept thispacket. +0 < . 1:1001(1000) ack 3221241997 win 65535 // After the kernelfix the following will be replaced by a challenge ACK, // and priormalicious frame would be dropped. +0 > . 1:1(0) ack 1001\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52881` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52881",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52881"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-29 11:16:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52881",
+				"href": "https://ubuntu.com/security/CVE-2023-52881",
+				"public": "20240529"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

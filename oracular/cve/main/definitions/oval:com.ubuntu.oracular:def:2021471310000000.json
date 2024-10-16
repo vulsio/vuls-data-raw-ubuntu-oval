@@ -1,0 +1,73 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2021471310000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47131 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/tls: Fix use-after-free after the TLS device goes down and up When anetdev with active TLS offload goes down, tls_device_down is called to stopthe offload and tear down the TLS context. However, the socket stays alive,and it still points to the TLS context, which is now deallocated. If anetdev goes up, while the connection is still active, and the data flowresumes after a number of TCP retransmissions, it will lead to ause-after-free of the TLS context. This commit addresses this bug bykeeping the context alive until its normal destruction, and implements thenecessary fallbacks, so that the connection can resume in software(non-offloaded) kTLS mode. On the TX side tls_sw_fallback is used toencrypt all packets. The RX side already has all the necessary fallbacks,because receiving non-decrypted packets is supported. The thing needed onthe RX side is to block resync requests, which are normally produced afterreceiving non-decrypted packets. The necessary synchronization isimplemented for a graceful teardown: first the fallbacks are deployed, thenthe driver resources are released (it used to be possible to have atls_dev_resync after tls_dev_del). A new flag called TLS_RX_DEV_DEGRADED isadded to indicate the fallback mode. It's used to skip the RX resync logiccompletely, as it becomes useless, and some objects may be released (forexample, resync_async, which is allocated and freed by the driver).\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47131` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47131",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47131"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-15 21:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47131",
+				"href": "https://ubuntu.com/security/CVE-2021-47131",
+				"public": "20240315"
+			},
+			"public_date_at_usn": "2024-03-15 21:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6924-1",
+				"https://ubuntu.com/security/notices/USN-6924-2",
+				"https://ubuntu.com/security/notices/USN-6953-1",
+				"https://ubuntu.com/security/notices/USN-6979-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

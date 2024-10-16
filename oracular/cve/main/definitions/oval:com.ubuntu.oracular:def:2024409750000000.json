@@ -1,0 +1,76 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024409750000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-40975 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:platform/x86: x86-android-tablets: Unregister devices in reverse orderNot all subsystems support a device getting removed while there arestill consumers of the device with a reference to the device.One example of this is the regulator subsystem. If a regulator getsunregistered while there are still drivers holding a referencea WARN() at drivers/regulator/core.c:5829 triggers, e.g.: WARNING: CPU: 1 PID: 1587 at drivers/regulator/core.c:5829regulator_unregister Hardware name: Intel Corp. VALLEYVIEW C0 PLATFORM/BYT-T FFD8, BIOSBLADE_21.X64.0005.R00.1504101516 FFD8_X64_R_2015_04_10_1516 04/10/2015 RIP: 0010:regulator_unregister Call Trace:  <TASK>  regulator_unregister  devres_release_group  i2c_device_remove  device_release_driver_internal  bus_remove_device  device_del  device_unregister  x86_android_tablet_removeOn the Lenovo Yoga Tablet 2 series the bq24190 charger chip also providesa 5V boost converter output for powering USB devices connected to the microUSB port, the bq24190-charger driver exports this as a Vbus regulator.On the 830 (8\") and 1050 (\"10\") models this regulator is controlled bya platform_device and x86_android_tablet_remove() removes platform_device-sbefore i2c_clients so the consumer gets removed first.But on the 1380 (13\") model there is a lc824206xa micro-USB switchconnected over I2C and the extcon driver for that controls the regulator.The bq24190 i2c-client *must* be registered first, because that createsthe regulator with the lc824206xa listed as its consumer. If the regulatorhas not been registered yet the lc824206xa driver will end up gettinga dummy regulator.Since in this case both the regulator provider and consumer are I2Cdevices, the only way to ensure that the consumer is unregistered firstis to unregister the I2C devices in reverse order of in which they werecreated.For consistency and to avoid similar problems in the future changex86_android_tablet_remove() to unregister all device types in reverseorder.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40975` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-40975",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-40975"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-12 13:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-40975",
+				"href": "https://ubuntu.com/security/CVE-2024-40975",
+				"public": "20240712"
+			},
+			"public_date_at_usn": "2024-07-12 13:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6999-1",
+				"https://ubuntu.com/security/notices/USN-7004-1",
+				"https://ubuntu.com/security/notices/USN-7005-1",
+				"https://ubuntu.com/security/notices/USN-7008-1",
+				"https://ubuntu.com/security/notices/USN-7005-2",
+				"https://ubuntu.com/security/notices/USN-6999-2",
+				"https://ubuntu.com/security/notices/USN-7029-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024438760000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-43876 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:PCI: rcar: Demote WARN() to dev_warn_ratelimited() in rcar_pcie_wakeup()Avoid large backtrace, it is sufficient to warn the user that there hasbeen a link problem. Either the link has failed and the system is in needof maintenance, or the link continues to work and user has been informed.The message from the warning can be looked up in the sources.This makes an actual link issue less verbose.First of all, this controller has a limitation in that the controllerdriver has to assist the hardware with transition to L1 link state bywriting L1IATN to PMCTRL register, the L1 and L0 link state switchingis not fully automatic on this controller.In case of an ASMedia ASM1062 PCIe SATA controller which does not supportASPM, on entry to suspend or during platform pm_test, the SATA controllerenters D3hot state and the link enters L1 state. If the SATA controllerwakes up before rcar_pcie_wakeup() was called and returns to D0, the linkreturns to L0 before the controller driver even started its transition toL1 link state. At this point, the SATA controller did send an PM_ENTER_L1DLLP to the PCIe controller and the PCIe controller received it, and thePCIe controller did set PMSR PMEL1RX bit.Once rcar_pcie_wakeup() is called, if the link is already back in L0 stateand PMEL1RX bit is set, the controller driver has no way to determine ifit should perform the link transition to L1 state, or treat the link as ifit is in L0 state. Currently the driver attempts to perform the transitionto L1 link state unconditionally, which in this specific case fails with aPMSR L1FAEG poll timeout, however the link still works as it is alreadyback in L0 state.Reduce this warning verbosity. In case the link is really broken, thercar_pcie_config_access() would fail, otherwise it will succeed and anysystem with this controller and ASM1062 can suspend without generatinga backtrace.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-43876` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-43876",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-43876"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-21 01:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-43876",
+				"href": "https://ubuntu.com/security/CVE-2024-43876",
+				"public": "20240821"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

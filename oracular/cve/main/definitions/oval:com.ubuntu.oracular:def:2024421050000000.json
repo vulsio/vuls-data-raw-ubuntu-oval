@@ -1,0 +1,81 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024421050000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42105 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix inode number range checksPatch series \"nilfs2: fix potential issues related to reserved inodes\".This series fixes one use-after-free issue reported by syzbot, caused bynilfs2's internal inode being exposed in the namespace on a corruptedfilesystem, and a couple of flaws that cause problems if the startingnumber of non-reserved inodes written in the on-disk super block isintentionally (or corruptly) changed from its default value.This patch (of 3):In the current implementation of nilfs2, \"nilfs->ns_first_ino\", whichgives the first non-reserved inode number, is read from the superblock,but its lower limit is not checked.As a result, if a number that overlaps with the inode number range ofreserved inodes such as the root directory or metadata files is set in thesuper block parameter, the inode number test macros (NILFS_MDT_INODE andNILFS_VALID_INODE) will not function properly.In addition, these test macros use left bit-shift calculations using withthe inode number as the shift count via the BIT macro, but the result of ashift calculation that exceeds the bit width of an integer is undefined inthe C specification, so if \"ns_first_ino\" is set to a large value otherthan the default value NILFS_USER_INO (=11), the macros may potentiallymalfunction depending on the environment.Fix these issues by checking the lower bound of \"nilfs->ns_first_ino\" andby preventing bit shifts equal to or greater than the NILFS_USER_INOconstant in the inode number test macros.Also, change the type of \"ns_first_ino\" from signed integer to unsignedinteger to avoid the need for type casting in comparisons such as thelower bound check introduced this time.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42105` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42105",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42105"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-30 08:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-42105",
+				"href": "https://ubuntu.com/security/CVE-2024-42105",
+				"public": "20240730"
+			},
+			"public_date_at_usn": "2024-07-30 08:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-7003-1",
+				"https://ubuntu.com/security/notices/USN-7003-2",
+				"https://ubuntu.com/security/notices/USN-7006-1",
+				"https://ubuntu.com/security/notices/USN-7003-3",
+				"https://ubuntu.com/security/notices/USN-7007-1",
+				"https://ubuntu.com/security/notices/USN-7009-1",
+				"https://ubuntu.com/security/notices/USN-7019-1",
+				"https://ubuntu.com/security/notices/USN-7007-2",
+				"https://ubuntu.com/security/notices/USN-7007-3",
+				"https://ubuntu.com/security/notices/USN-7009-2",
+				"https://ubuntu.com/security/notices/USN-7003-4",
+				"https://ubuntu.com/security/notices/USN-7003-5"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

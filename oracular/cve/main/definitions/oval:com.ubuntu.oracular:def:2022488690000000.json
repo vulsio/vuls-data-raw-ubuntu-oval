@@ -1,0 +1,68 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2022488690000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48869 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: gadgetfs: Fix race between mounting and unmountingThe syzbot fuzzer and Gerald Lee have identified a use-after-free bugin the gadgetfs driver, involving processes concurrently mounting andunmounting the gadgetfs filesystem.  In particular, gadgetfs_fill_super()can race with gadgetfs_kill_sb(), causing the latter to deallocatethe_device while the former is using it.  The output from KASAN says,in part:BUG: KASAN: use-after-free in instrument_atomic_read_writeinclude/linux/instrumented.h:102 [inline]BUG: KASAN: use-after-free in atomic_fetch_sub_releaseinclude/linux/atomic/atomic-instrumented.h:176 [inline]BUG: KASAN: use-after-free in __refcount_sub_and_testinclude/linux/refcount.h:272 [inline]BUG: KASAN: use-after-free in __refcount_dec_and_testinclude/linux/refcount.h:315 [inline]BUG: KASAN: use-after-free in refcount_dec_and_testinclude/linux/refcount.h:333 [inline]BUG: KASAN: use-after-free in put_dev drivers/usb/gadget/legacy/inode.c:159[inline]BUG: KASAN: use-after-free in gadgetfs_kill_sb+0x33/0x100drivers/usb/gadget/legacy/inode.c:2086Write of size 4 at addr ffff8880276d7840 by task syz-executor126/18689CPU: 0 PID: 18689 Comm: syz-executor126 Not tainted 6.1.0-syzkaller #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 10/26/2022Call Trace: <TASK>... atomic_fetch_sub_release include/linux/atomic/atomic-instrumented.h:176[inline] __refcount_sub_and_test include/linux/refcount.h:272 [inline] __refcount_dec_and_test include/linux/refcount.h:315 [inline] refcount_dec_and_test include/linux/refcount.h:333 [inline] put_dev drivers/usb/gadget/legacy/inode.c:159 [inline] gadgetfs_kill_sb+0x33/0x100 drivers/usb/gadget/legacy/inode.c:2086 deactivate_locked_super+0xa7/0xf0 fs/super.c:332 vfs_get_super fs/super.c:1190 [inline] get_tree_single+0xd0/0x160 fs/super.c:1207 vfs_get_tree+0x88/0x270 fs/super.c:1531 vfs_fsconfig_locked fs/fsopen.c:232 [inline]The simplest solution is to ensure that gadgetfs_fill_super() andgadgetfs_kill_sb() are serialized by making them both acquire a newmutex.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48869` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48869",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48869"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-21 07:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48869",
+				"href": "https://ubuntu.com/security/CVE-2022-48869",
+				"public": "20240821",
+				"cvss_score": "4.7",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,79 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024392910000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-39291 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/amdgpu: Fix buffer size in gfx_v9_4_3_init_ cp_compute_microcode() andrlc_microcode() The function gfx_v9_4_3_init_microcode in gfx_v9_4_3.c wasgenerating about potential truncation of output when using the snprintffunction. The issue was due to the size of the buffer 'ucode_prefix' beingtoo small to accommodate the maximum possible length of the string beingwritten into it. The string being written is \"amdgpu/%s_mec.bin\" or\"amdgpu/%s_rlc.bin\", where %s is replaced by the value of 'chip_name'. Thelength of this string without the %s is 16 characters. The warning messageindicated that 'chip_name' could be up to 29 characters long, resulting ina total of 45 characters, which exceeds the buffer size of 30 characters.To resolve this issue, the size of the 'ucode_prefix' buffer has beenreduced from 30 to 15. This ensures that the maximum possible length of thestring being written into the buffer will not exceed its size, thuspreventing potential buffer overflow and truncation issues. Fixes the belowwith gcc W=1: drivers/gpu/drm/amd/amdgpu/gfx_v9_4_3.c: In function‘gfx_v9_4_3_early_init’: drivers/gpu/drm/amd/amdgpu/gfx_v9_4_3.c:379:52:warning: ‘%s’ directive output may be truncated writing up to 29 bytes intoa region of size 23 [-Wformat-truncation=] 379 | snprintf(fw_name,sizeof(fw_name), \"amdgpu/%s_rlc.bin\", chip_name); | ^~ ...... 439 | r =gfx_v9_4_3_init_rlc_microcode(adev, ucode_prefix); | ~~~~~~~~~~~~drivers/gpu/drm/amd/amdgpu/gfx_v9_4_3.c:379:9: note: ‘snprintf’ outputbetween 16 and 45 bytes into a destination of size 30 379 |snprintf(fw_name, sizeof(fw_name), \"amdgpu/%s_rlc.bin\", chip_name); |^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~drivers/gpu/drm/amd/amdgpu/gfx_v9_4_3.c:413:52: warning: ‘%s’ directiveoutput may be truncated writing up to 29 bytes into a region of size 23[-Wformat-truncation=] 413 | snprintf(fw_name, sizeof(fw_name),\"amdgpu/%s_mec.bin\", chip_name); | ^~ ...... 443 | r =gfx_v9_4_3_init_cp_compute_microcode(adev, ucode_prefix); | ~~~~~~~~~~~~drivers/gpu/drm/amd/amdgpu/gfx_v9_4_3.c:413:9: note: ‘snprintf’ outputbetween 16 and 45 bytes into a destination of size 30 413 |snprintf(fw_name, sizeof(fw_name), \"amdgpu/%s_mec.bin\", chip_name); |^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-39291` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-39291",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-39291"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-24 14:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-39291",
+				"href": "https://ubuntu.com/security/CVE-2024-39291",
+				"public": "20240624",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+				"usns": "6999-1,7004-1,7005-1,7008-1,7005-2,6999-2,7029-1"
+			},
+			"public_date_at_usn": "2024-06-24 14:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6999-1",
+				"https://ubuntu.com/security/notices/USN-7004-1",
+				"https://ubuntu.com/security/notices/USN-7005-1",
+				"https://ubuntu.com/security/notices/USN-7008-1",
+				"https://ubuntu.com/security/notices/USN-7005-2",
+				"https://ubuntu.com/security/notices/USN-6999-2",
+				"https://ubuntu.com/security/notices/USN-7029-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

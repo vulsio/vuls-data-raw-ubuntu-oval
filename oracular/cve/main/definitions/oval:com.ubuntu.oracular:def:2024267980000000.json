@@ -1,0 +1,84 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024267980000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26798 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: fbcon:always restore the old font data in fbcon_do_set_font() Commit a5a923038d70(fbdev: fbcon: Properly revert changes when vc_resize() failed) startedrestoring old font data upon failure (of vc_resize()). But it performs soonly for user fonts. It means that the \"system\"/internal fonts are notrestored at all. So in result, the very first call to fbcon_do_set_font()performs no restore at all upon failing vc_resize(). This can be reproducedby Syzkaller to crash the system on the next invocation of font_get(). It'srather hard to hit the allocation failure in vc_resize() on the firstfont_set(), but not impossible. Esp. if fault injection is used to aid theexecution/failure. It was demonstrated by Sirius: BUG: unable to handlepage fault for address: fffffffffffffff8 #PF: supervisor read access inkernel mode #PF: error_code(0x0000) - not-present page PGD cb7b067 P4Dcb7b067 PUD cb7d067 PMD 0 Oops: 0000 [#1] PREEMPT SMP KASAN CPU: 1 PID:8007 Comm: poc Not tainted 6.7.0-g9d1694dc91ce #20 Hardware name: QEMUStandard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014 RIP:0010:fbcon_get_font+0x229/0x800 drivers/video/fbdev/core/fbcon.c:2286 CallTrace: <TASK> con_font_get drivers/tty/vt/vt.c:4558 [inline]con_font_op+0x1fc/0xf20 drivers/tty/vt/vt.c:4673 vt_k_ioctldrivers/tty/vt/vt_ioctl.c:474 [inline] vt_ioctl+0x632/0x2ec0drivers/tty/vt/vt_ioctl.c:752 tty_ioctl+0x6f8/0x1570drivers/tty/tty_io.c:2803 vfs_ioctl fs/ioctl.c:51 [inline] ... So restorethe font data in any case, not only for user fonts. Note the later 'if' isnow protected by 'old_userfont' and not 'old_data' as the latter is alwaysset now. (And it is supposed to be non-NULL. Otherwise we would see the bugabove again.)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26798` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26798",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26798"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-04 09:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26798",
+				"href": "https://ubuntu.com/security/CVE-2024-26798",
+				"public": "20240404"
+			},
+			"public_date_at_usn": "2024-04-04 09:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6820-1",
+				"https://ubuntu.com/security/notices/USN-6821-1",
+				"https://ubuntu.com/security/notices/USN-6821-2",
+				"https://ubuntu.com/security/notices/USN-6828-1",
+				"https://ubuntu.com/security/notices/USN-6820-2",
+				"https://ubuntu.com/security/notices/USN-6821-3",
+				"https://ubuntu.com/security/notices/USN-6821-4",
+				"https://ubuntu.com/security/notices/USN-6871-1",
+				"https://ubuntu.com/security/notices/USN-6892-1",
+				"https://ubuntu.com/security/notices/USN-6895-1",
+				"https://ubuntu.com/security/notices/USN-6895-2",
+				"https://ubuntu.com/security/notices/USN-6900-1",
+				"https://ubuntu.com/security/notices/USN-6895-3",
+				"https://ubuntu.com/security/notices/USN-6919-1",
+				"https://ubuntu.com/security/notices/USN-6895-4"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

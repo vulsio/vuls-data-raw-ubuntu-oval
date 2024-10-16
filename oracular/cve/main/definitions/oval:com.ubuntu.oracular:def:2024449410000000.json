@@ -1,0 +1,68 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024449410000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-44941 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: fix to cover read extent cache access with locksyzbot reports a f2fs bug as below:BUG: KASAN: slab-use-after-free in sanity_check_extent_cache+0x370/0x410fs/f2fs/extent_cache.c:46Read of size 4 at addr ffff8880739ab220 by task syz-executor200/5097CPU: 0 PID: 5097 Comm: syz-executor200 Not tainted 6.9.0-rc6-syzkaller #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 03/27/2024Call Trace: <TASK> __dump_stack lib/dump_stack.c:88 [inline] dump_stack_lvl+0x241/0x360 lib/dump_stack.c:114 print_address_description mm/kasan/report.c:377 [inline] print_report+0x169/0x550 mm/kasan/report.c:488 kasan_report+0x143/0x180 mm/kasan/report.c:601 sanity_check_extent_cache+0x370/0x410 fs/f2fs/extent_cache.c:46 do_read_inode fs/f2fs/inode.c:509 [inline] f2fs_iget+0x33e1/0x46e0 fs/f2fs/inode.c:560 f2fs_nfs_get_inode+0x74/0x100 fs/f2fs/super.c:3237 generic_fh_to_dentry+0x9f/0xf0 fs/libfs.c:1413 exportfs_decode_fh_raw+0x152/0x5f0 fs/exportfs/expfs.c:444 exportfs_decode_fh+0x3c/0x80 fs/exportfs/expfs.c:584 do_handle_to_path fs/fhandle.c:155 [inline] handle_to_path fs/fhandle.c:210 [inline] do_handle_open+0x495/0x650 fs/fhandle.c:226 do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0xf5/0x240 arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x77/0x7fWe missed to cover sanity_check_extent_cache() w/ extent cache lock,so, below race case may happen, result in use after free issue.- f2fs_iget - do_read_inode  - f2fs_init_read_extent_tree  : add largest extent entry in to cache\t\t\t\t\t- shrink\t\t\t\t\t - f2fs_shrink_read_extent_tree\t\t\t\t\t  - __shrink_extent_tree\t\t\t\t\t   - __detach_extent_node\t\t\t\t\t   : drop largest extent entry  - sanity_check_extent_cache  : access et->largest w/o locklet's refactor sanity_check_extent_cache() to avoid extent cache accessand call it before f2fs_init_read_extent_tree() to fix this issue.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-44941` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-44941",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-44941"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-26 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-44941",
+				"href": "https://ubuntu.com/security/CVE-2024-44941",
+				"public": "20240826",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,82 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2023526090000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52609 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: binder:fix race between mmput() and do_exit() Task A callsbinder_update_page_range() to allocate and insert pages on a remote addressspace from Task B. For this, Task A pins the remote mm via mmget_not_zero()first. This can race with Task B do_exit() and the final mmput() refcountdecrement will come from Task A. Task A | Task B------------------+------------------ mmget_not_zero() | | do_exit() |exit_mm() | mmput() mmput() | exit_mmap() | remove_vma() | fput() | In thiscase, the work of ____fput() from Task B is queued up in Task A asTWA_RESUME. So in theory, Task A returns to userspace and the cleanup workgets executed. However, Task A instead sleep, waiting for a reply from TaskB that never comes (it's dead). This means the binder_deferred_release() isblocked until an unrelated binder event forces Task A to go back touserspace. All the associated death notifications will also be delayeduntil then. In order to fix this use mmput_async() that will schedule thework in the corresponding mm->async_put_work WQ instead of Task A.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52609` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52609",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52609"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-18 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52609",
+				"href": "https://ubuntu.com/security/CVE-2023-52609",
+				"public": "20240318"
+			},
+			"public_date_at_usn": "2024-03-18 11:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6725-1",
+				"https://ubuntu.com/security/notices/USN-6726-1",
+				"https://ubuntu.com/security/notices/USN-6725-2",
+				"https://ubuntu.com/security/notices/USN-6726-2",
+				"https://ubuntu.com/security/notices/USN-6726-3",
+				"https://ubuntu.com/security/notices/USN-6818-1",
+				"https://ubuntu.com/security/notices/USN-6819-1",
+				"https://ubuntu.com/security/notices/USN-6818-2",
+				"https://ubuntu.com/security/notices/USN-6819-2",
+				"https://ubuntu.com/security/notices/USN-6819-3",
+				"https://ubuntu.com/security/notices/USN-6818-3",
+				"https://ubuntu.com/security/notices/USN-6818-4",
+				"https://ubuntu.com/security/notices/USN-6819-4"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

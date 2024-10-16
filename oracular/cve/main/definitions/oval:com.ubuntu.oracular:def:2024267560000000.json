@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024267560000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26756 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: md:Don't register sync_thread for reshape directly Currently, if reshape isinterrupted, then reassemble the array will register sync_thread directlyfrom pers->run(), in this case 'MD_RECOVERY_RUNNING' is set directly,however, there is no guarantee that md_do_sync() will be executed, hencestop_sync_thread() will hang because 'MD_RECOVERY_RUNNING' can't becleared. Last patch make sure that md_do_sync() will set MD_RECOVERY_DONE,however, following hang can still be triggered by dm-raid testshell/lvconvert-raid-reshape.sh occasionally: [root@fedora ~]# cat/proc/1982/stack [<0>] stop_sync_thread+0x1ab/0x270 [md_mod] [<0>]md_frozen_sync_thread+0x5c/0xa0 [md_mod] [<0>] raid_presuspend+0x1e/0x70[dm_raid] [<0>] dm_table_presuspend_targets+0x40/0xb0 [dm_mod] [<0>]__dm_destroy+0x2a5/0x310 [dm_mod] [<0>] dm_destroy+0x16/0x30 [dm_mod] [<0>]dev_remove+0x165/0x290 [dm_mod] [<0>] ctl_ioctl+0x4bb/0x7b0 [dm_mod] [<0>]dm_ctl_ioctl+0x11/0x20 [dm_mod] [<0>] vfs_ioctl+0x21/0x60 [<0>]__x64_sys_ioctl+0xb9/0xe0 [<0>] do_syscall_64+0xc6/0x230 [<0>]entry_SYSCALL_64_after_hwframe+0x6c/0x74 Meanwhile mddev->recovery is:MD_RECOVERY_RUNNING | MD_RECOVERY_INTR | MD_RECOVERY_RESHAPE |MD_RECOVERY_FROZEN Fix this problem by remove the code to registersync_thread directly from raid10 and raid5. And let md_check_recovery() toregister sync_thread.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26756` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26756",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26756"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-03 17:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26756",
+				"href": "https://ubuntu.com/security/CVE-2024-26756",
+				"public": "20240403"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

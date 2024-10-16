@@ -1,0 +1,73 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024358730000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-35873 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: riscv:Fix vector state restore in rt_sigreturn() The RISC-V Vector specificationstates in \"Appendix D: Calling Convention for Vector State\" [1] that\"Executing a system call causes all caller-saved vector registers (v0-v31,vl, vtype) and vstart to become unspecified.\". In the RISC-V kernel this iscalled \"discarding the vstate\". Returning from a signal handler via thert_sigreturn() syscall, vector discard is also performed. However, this isnot an issue since the vector state should be restored from the sigcontext,and therefore not care about the vector discard. The \"live state\" is theactual vector register in the running context, and the \"vstate\" is thevector state of the task. A dirty live state, means that the vstate andlive state are not in synch. When vectorized user_from_copy() wasintroduced, an bug sneaked in at the restoration code, related to thediscard of the live state. An example when this go wrong: 1. A userlandapplication is executing vector code 2. The application receives a signal,and the signal handler is entered. 3. The application returns from thesignal handler, using the rt_sigreturn() syscall. 4. The live vector stateis discarded upon entering the rt_sigreturn(), and the live state is markedas \"dirty\", indicating that the live state need to be synchronized with thecurrent vstate. 5. rt_sigreturn() restores the vstate, except the Vectorregisters, from the sigcontext 6. rt_sigreturn() restores the Vectorregisters, from the sigcontext, and now the vectorized user_from_copy() isused. The dirty live state from the discard is saved to the vstate, makingthe vstate corrupt. 7. rt_sigreturn() returns to the application, whichcrashes due to corrupted vstate. Note that the vectorized user_from_copy()is invoked depending on the value of CONFIG_RISCV_ISA_V_UCOPY_THRESHOLD.Default is 768, which means that vlen has to be larger than 128b for thisbug to trigger. The fix is simply to mark the live state as non-dirty/cleanprior performing the vstate restore.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35873` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-35873",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-35873"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-19 09:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-35873",
+				"href": "https://ubuntu.com/security/CVE-2024-35873",
+				"public": "20240519"
+			},
+			"public_date_at_usn": "2024-05-19 09:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6893-1",
+				"https://ubuntu.com/security/notices/USN-6893-2",
+				"https://ubuntu.com/security/notices/USN-6893-3",
+				"https://ubuntu.com/security/notices/USN-6918-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

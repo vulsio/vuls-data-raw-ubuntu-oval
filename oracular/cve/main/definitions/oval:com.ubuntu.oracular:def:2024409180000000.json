@@ -1,0 +1,76 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024409180000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-40918 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:parisc: Try to fix random segmentation faults in package buildsPA-RISC systems with PA8800 and PA8900 processors have had problemswith random segmentation faults for many years.  Systems with earlierprocessors are much more stable.Systems with PA8800 and PA8900 processors have a large L2 cache whichneeds per page flushing for decent performance when a large range isflushed. The combined cache in these systems is also more sensitive tonon-equivalent aliases than the caches in earlier systems.The majority of random segmentation faults that I have looked atappear to be memory corruption in memory allocated using mmap andmalloc.My first attempt at fixing the random faults didn't work. Onreviewing the cache code, I realized that there were two issueswhich the existing code didn't handle correctly. Both relateto cache move-in. Another issue is that the present bit in PTEsis racy.1) PA-RISC caches have a mind of their own and they can speculativelyload data and instructions for a page as long as there is a entry inthe TLB for the page which allows move-in. TLBs are local to eachCPU. Thus, the TLB entry for a page must be purged before flushingthe page. This is particularly important on SMP systems.In some of the flush routines, the flush routine would be calledand then the TLB entry would be purged. This was because the flushroutine needed the TLB entry to do the flush.2) My initial approach to trying the fix the random faults was totry and use flush_cache_page_if_present for all flush operations.This actually made things worse and led to a couple of hardwarelockups. It finally dawned on me that some lines weren't beingflushed because the pte check code was racy. This resulted inrandom inequivalent mappings to physical pages.The __flush_cache_page tmpalias flush sets up its own TLB entryand it doesn't need the existing TLB entry. As long as we can findthe pte pointer for the vm page, we can get the pfn and physicaladdress of the page. We can also purge the TLB entry for the pagebefore doing the flush. Further, __flush_cache_page uses a specialTLB entry that inhibits cache move-in.When switching page mappings, we need to ensure that lines areremoved from the cache.  It is not sufficient to just flush thelines to memory as they may come back.This made it clear that we needed to implement all the requiredflush operations using tmpalias routines. This includes flushesfor user and kernel pages.After modifying the code to use tmpalias flushes, it became clearthat the random segmentation faults were not fully resolved. Thefrequency of faults was worse on systems with a 64 MB L2 (PA8900)and systems with more CPUs (rp4440).The warning that I added to flush_cache_page_if_present to detectpages that couldn't be flushed triggered frequently on some systems.Helge and I looked at the pages that couldn't be flushed and foundthat the PTE was either cleared or for a swap page. Ignoring pagesthat were swapped out seemed okay but pages with cleared PTEs seemedproblematic.I looked at routines related to pte_clear and noticed ptep_clear_flush.The default implementation just flushes the TLB entry. However, it wasobvious that on parisc we need to flush the cache page as well. Ifwe don't flush the cache page, stale lines will be left in the cacheand cause random corruption. Once a PTE is cleared, there is no wayto find the physical address associated with the PTE and flush theassociated page at a later time.I implemented an updated change with a parisc specific version ofptep_clear_flush. It fixed the random data corruption on Helge's rp4440and rp3440, as well as on my c8000.At this point, I realized that I could restore the code where we onlyflush in flush_cache_page_if_present if the page has been accessed.However, for this, we also need to flush the cache when the accessedbit is cleared in---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40918` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-40918",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-40918"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-12 13:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-40918",
+				"href": "https://ubuntu.com/security/CVE-2024-40918",
+				"public": "20240712"
+			},
+			"public_date_at_usn": "2024-07-12 13:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6999-1",
+				"https://ubuntu.com/security/notices/USN-7004-1",
+				"https://ubuntu.com/security/notices/USN-7005-1",
+				"https://ubuntu.com/security/notices/USN-7008-1",
+				"https://ubuntu.com/security/notices/USN-7005-2",
+				"https://ubuntu.com/security/notices/USN-6999-2",
+				"https://ubuntu.com/security/notices/USN-7029-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,88 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024269240000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26924 on Ubuntu 24.10 (oracular) - high",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nft_set_pipapo: do not free live element Pablo reports a crashwith large batches of elements with a back-to-back add/remove pattern.Quoting Pablo: add_elem(\"00000000\") timeout 100 ms ... add_elem(\"0000000X\")timeout 100 ms del_elem(\"0000000X\") <---------------- delete one that wasjust added ... add_elem(\"00005000\") timeout 100 ms 1) nft_pipapo_remove()removes element 0000000X Then, KASAN shows a splat. Looking at the removefunction there is a chance that we will drop a rule that maps to anon-deactivated element. Removal happens in two steps, first we do a lookupfor key k and return the to-be-removed element and mark it as inactive inthe next generation. Then, in a second step, the element gets removed fromthe set/map. The _remove function does not work correctly if we have morethan one element that share the same key. This can happen if we insert anelement into a set when the set already holds an element with same key, butthe element mapping to the existing key has timed out or is not active inthe next generation. In such case its possible that removal will unmap thewrong element. If this happens, we will leak the non-deactivated element,it becomes unreachable. The element that got deactivated (and will be freedlater) will remain reachable in the set data structure, this can result ina crash when such an element is retrieved during lookup (stale pointer).Add a check that the fully matching key does in fact map to the elementthat we have marked as inactive in the deactivation step. If not, we needto continue searching. Add a bug/warn trap at the end of the function aswell, the remove function must not ever be called with aninvisible/unreachable/non-existent element. v2: avoid uneeded temporaryvariable (Stefano)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26924` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic - 6.11.0-7.7\nlinux-image-unsigned-6.11.0-7-generic-64k - 6.11.0-7.7\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-aws - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1003-azure - 6.11.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1001-gcp - 6.11.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1002-lowlatency - 6.11.0-1002.2\nlinux-image-unsigned-6.11.0-1002-lowlatency-64k - 6.11.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.11.0-1004-oracle - 6.11.0-1004.4\nlinux-image-unsigned-6.11.0-1004-oracle-64k - 6.11.0-1004.4\nNo subscription required\n\nlinux-image-6.11.0-1003-raspi - 6.11.0-1003.3\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26924",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26924"
+		},
+		"advisory": {
+			"severity": "High",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-04-25 06:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26924",
+				"href": "https://ubuntu.com/security/CVE-2024-26924",
+				"public": "20240425"
+			},
+			"public_date_at_usn": "2024-04-25 06:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6869-1",
+				"https://ubuntu.com/security/notices/USN-6870-1",
+				"https://ubuntu.com/security/notices/USN-6871-1",
+				"https://ubuntu.com/security/notices/USN-6872-1",
+				"https://ubuntu.com/security/notices/USN-6873-1",
+				"https://ubuntu.com/security/notices/USN-6874-1",
+				"https://ubuntu.com/security/notices/USN-6875-1",
+				"https://ubuntu.com/security/notices/USN-6863-1",
+				"https://ubuntu.com/security/notices/USN-6864-1",
+				"https://ubuntu.com/security/notices/USN-6872-2",
+				"https://ubuntu.com/security/notices/USN-6864-2",
+				"https://ubuntu.com/security/notices/USN-6873-2",
+				"https://ubuntu.com/security/notices/USN-6870-2",
+				"https://ubuntu.com/security/notices/USN-6892-1",
+				"https://ubuntu.com/security/notices/USN-6864-3",
+				"https://ubuntu.com/security/notices/USN-6900-1",
+				"https://ubuntu.com/security/notices/USN-6919-1",
+				"https://ubuntu.com/security/notices/USN-6918-1",
+				"https://ubuntu.com/security/notices/USN-6927-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-7.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000030",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000010",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:2022380960000020",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.11.0-1003.3')."
+					}
+				]
+			}
+		]
+	}
+}

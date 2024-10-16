@@ -1,0 +1,77 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2023524900000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52490 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mm:migrate: fix getting incorrect page mapping during page migration Whenrunning stress-ng testing, we found below kernel crash after a few hours:Unable to handle kernel NULL pointer dereference at virtual address0000000000000000 pc : dentry_name+0xd8/0x224 lr : pointer+0x22c/0x370 sp :ffff800025f134c0 ...... Call trace: dentry_name+0xd8/0x224pointer+0x22c/0x370 vsnprintf+0x1ec/0x730 vscnprintf+0x2c/0x60vprintk_store+0x70/0x234 vprintk_emit+0xe0/0x24c vprintk_default+0x3c/0x44vprintk_func+0x84/0x2d0 printk+0x64/0x88 __dump_page+0x52c/0x530dump_page+0x14/0x20 set_migratetype_isolate+0x110/0x224start_isolate_page_range+0xc4/0x20c offline_pages+0x124/0x474memory_block_offline+0x44/0xf4 memory_subsys_offline+0x3c/0x70device_offline+0xf0/0x120 ...... After analyzing the vmcore, I found thisissue is caused by page migration. The scenario is that, one thread isdoing page migration, and we will use the target page's ->mapping field tosave 'anon_vma' pointer between page unmap and page move, and now thetarget page is locked and refcount is 1. Currently, there is anotherstress-ng thread performing memory hotplug, attempting to offline thetarget page that is being migrated. It discovers that the refcount of thistarget page is 1, preventing the offline operation, thus proceeding to dumpthe page. However, page_mapping() of the target page may return anincorrect file mapping to crash the system in dump_mapping(), since thetarget page->mapping only saves 'anon_vma' pointer without settingPAGE_MAPPING_ANON flag. There are seveval ways to fix this issue: (1)Setting the PAGE_MAPPING_ANON flag for target page's ->mapping when saving'anon_vma', but this can confuse PageAnon() for PFN walkers, since thetarget page has not built mappings yet. (2) Getting the page lock to callpage_mapping() in __dump_page() to avoid crashing the system, however,there are still some PFN walkers that call page_mapping() without holdingthe page lock, such as compaction. (3) Using target page->private field tosave the 'anon_vma' pointer and 2 bits page state, just as page->mappingrecords an anonymous page, which can remove the page_mapping() impact forPFN walkers and also seems a simple way. So I choose option 3 to fix thisissue, and this can also fix other potential issues for PFN walkers, suchas compaction.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52490` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52490",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52490"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-11 18:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52490",
+				"href": "https://ubuntu.com/security/CVE-2023-52490",
+				"public": "20240311"
+			},
+			"public_date_at_usn": "2024-03-11 18:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6818-1",
+				"https://ubuntu.com/security/notices/USN-6819-1",
+				"https://ubuntu.com/security/notices/USN-6818-2",
+				"https://ubuntu.com/security/notices/USN-6819-2",
+				"https://ubuntu.com/security/notices/USN-6819-3",
+				"https://ubuntu.com/security/notices/USN-6818-3",
+				"https://ubuntu.com/security/notices/USN-6818-4",
+				"https://ubuntu.com/security/notices/USN-6819-4"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}

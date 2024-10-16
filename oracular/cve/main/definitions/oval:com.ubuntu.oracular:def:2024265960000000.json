@@ -1,0 +1,68 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024265960000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-26596 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: net:dsa: fix netdev_priv() dereference before check on non-DSA netdevice eventsAfter the blamed commit, we started doing this dereference for everyNETDEV_CHANGEUPPER and NETDEV_PRECHANGEUPPER event in the system. staticinline struct dsa_port *dsa_user_to_port(const struct net_device *dev) {struct dsa_user_priv *p = netdev_priv(dev); return p->dp; } Which isobviously bogus, because not all net_devices have a netdev_priv() of typestruct dsa_user_priv. But struct dsa_user_priv is fairly small, and p->dpmeans dereferencing 8 bytes starting with offset 16. Most drivers allocatethat much private memory anyway, making our access not fault, and wediscard the bogus data quickly afterwards, so this wasn't caught. But thedummy interface is somewhat special in that it calls alloc_netdev() with apriv size of 0. So every netdev_priv() dereference is invalid, and we getthis when we emit a NETDEV_PRECHANGEUPPER event with a VLAN as its newupper: $ ip link add dummy1 type dummy $ ip link add link dummy1 namedummy1.100 type vlan id 100 [ 43.309174]================================================================== [43.316456] BUG: KASAN: slab-out-of-bounds indsa_user_prechangeupper+0x30/0xe8 [ 43.323835] Read of size 8 at addrffff3f86481d2990 by task ip/374 [ 43.330058] [ 43.342436] Call trace: [43.366542] dsa_user_prechangeupper+0x30/0xe8 [ 43.371024]dsa_user_netdevice_event+0xb38/0xee8 [ 43.375768]notifier_call_chain+0xa4/0x210 [ 43.379985]raw_notifier_call_chain+0x24/0x38 [ 43.384464]__netdev_upper_dev_link+0x3ec/0x5d8 [ 43.389120]netdev_upper_dev_link+0x70/0xa8 [ 43.393424] register_vlan_dev+0x1bc/0x310[ 43.397554] vlan_newlink+0x210/0x248 [ 43.401247] rtnl_newlink+0x9fc/0xe30[ 43.404942] rtnetlink_rcv_msg+0x378/0x580 Avoid the kernel oops bydereferencing after the type check, as customary.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26596` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic - 6.8.0-31.31\nlinux-image-unsigned-6.8.0-31-generic-64k - 6.8.0-31.31\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-26596",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-26596"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-23 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-26596",
+				"href": "https://ubuntu.com/security/CVE-2024-26596",
+				"public": "20240223",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000000",
+						"comment": "linux package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000010",
+						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000020",
+						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000030",
+						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000040",
+						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201499000000050",
+						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+					}
+				]
+			}
+		]
+	}
+}
