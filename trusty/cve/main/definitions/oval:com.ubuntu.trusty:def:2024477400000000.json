@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024477400000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47740 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: Require FMODE_WRITE for atomic write ioctlsThe F2FS ioctls for starting and committing atomic writes check forinode_owner_or_capable(), but this does not give LSMs like SELinux orLandlock an opportunity to deny the write access - if the caller's FSUIDmatches the inode's UID, inode_owner_or_capable() immediately returns true.There are scenarios where LSMs want to deny a process the ability to writeparticular files, even files that the FSUID of the process owns; but thiscan currently partially be bypassed using atomic write ioctls in two ways: - F2FS_IOC_START_ATOMIC_REPLACE + F2FS_IOC_COMMIT_ATOMIC_WRITE can   truncate an inode to size 0 - F2FS_IOC_START_ATOMIC_WRITE + F2FS_IOC_ABORT_ATOMIC_WRITE can revert   changes another process concurrently made to a fileFix it by requiring FMODE_WRITE for these operations, just like forF2FS_IOC_MOVE_RANGE. Since any legitimate caller should only be using theseioctls when intending to write into the file, that seems unlikely to breakanything.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47740",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47740"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-47740",
+				"href": "https://ubuntu.com/security/CVE-2024-47740",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

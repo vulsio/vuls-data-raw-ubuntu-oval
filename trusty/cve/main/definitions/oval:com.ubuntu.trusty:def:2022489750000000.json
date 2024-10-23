@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2022489750000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48975 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:gpiolib: fix memory leak in gpiochip_setup_dev()Here is a backtrace report about memory leak detected ingpiochip_setup_dev():unreferenced object 0xffff88810b406400 (size 512):  comm \"python3\", pid 1682, jiffies 4295346908 (age 24.090s)  backtrace:    kmalloc_trace    device_add\t\tdevice_private_init at drivers/base/core.c:3361\t\t\t(inlined by) device_add at drivers/base/core.c:3411    cdev_device_add    gpiolib_cdev_register    gpiochip_setup_dev    gpiochip_add_data_with_keygcdev_register() & gcdev_unregister() would call device_add() &device_del() (no matter CONFIG_GPIO_CDEV is enabled or not) toregister/unregister device.However, if device_add() succeeds, some resource (likestruct device_private allocated by device_private_init())is not released by device_del().Therefore, after device_add() succeeds by gcdev_register(), itneeds to call put_device() to release resource in the error handlepath.Here we move forward the register of release function, and let itrelease every piece of resource by put_device() instead of kfree().While at it, fix another subtle issue, i.e. when gc->ngpio is equalto 0, we still call kcalloc() and, in case of further error, kfree()on the ZERO_PTR pointer, which is not NULL. It's not a bug per se,but rather waste of the resources and potentially wrong expectationabout contents of the gdev->descs variable.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48975",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48975"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2022-48975",
+				"href": "https://ubuntu.com/security/CVE-2022-48975",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

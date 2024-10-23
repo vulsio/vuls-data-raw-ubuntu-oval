@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024499790000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-49979 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: gso: fix tcp fraglist segmentation after pull from frag_listDetect tcp gso fraglist skbs with corrupted geometry (see below) andpass these to skb_segment instead of skb_segment_list, as the firstcan segment them correctly.Valid SKB_GSO_FRAGLIST skbs- consist of two or more segments- the head_skb holds the protocol headers plus first gso_size- one or more frag_list skbs hold exactly one segment- all but the last must be gso_sizeOptional datapath hooks such as NAT and BPF (bpf_skb_pull_data) canmodify these skbs, breaking these invariants.In extreme cases they pull all data into skb linear. For TCP, thiscauses a NULL ptr deref in __tcpv4_gso_segment_list_csum attcp_hdr(seg->next).Detect invalid geometry due to pull, by checking head_skb size.Don't just drop, as this may blackhole a destination. Convert to beable to pass to regular skb_segment.Approach and description based on a patch by Willem de Bruijn.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-49979",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-49979"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-49979",
+				"href": "https://ubuntu.com/security/CVE-2024-49979",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

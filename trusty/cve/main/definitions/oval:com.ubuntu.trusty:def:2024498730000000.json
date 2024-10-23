@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024498730000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-49873 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/filemap: fix filemap_get_folios_contig THP panicPatch series \"memfd-pin huge page fixes\".Fix multiple bugs that occur when using memfd_pin_folios with hugetlbpages and THP.  The hugetlb bugs only bite when the page is not yetfaulted in when memfd_pin_folios is called.  The THP bug bites when thestarting offset passed to memfd_pin_folios is not huge page aligned.  Seethe commit messages for details.This patch (of 5):memfd_pin_folios on memory backed by THP panics if the requested startoffset is not huge page aligned:BUG: kernel NULL pointer dereference, address: 0000000000000036RIP: 0010:filemap_get_folios_contig+0xdf/0x290RSP: 0018:ffffc9002092fbe8 EFLAGS: 00010202RAX: 0000000000000002 RBX: 0000000000000002 RCX: 0000000000000002The fault occurs here, because xas_load returns a folio with value 2:    filemap_get_folios_contig()        for (folio = xas_load(&xas); folio && xas.xa_index <= end;                        folio = xas_next(&xas)) {                ...                if (!folio_try_get(folio))   <-- BOOM\"2\" is an xarray sibling entry.  We get it because memfd_pin_folios doesnot round the indices passed to filemap_get_folios_contig to huge pageboundaries for THP, so we load from the middle of a huge page range see asibling.  (It does round for hugetlbfs, at the is_file_hugepages test).To fix, if the folio is a sibling, then return the next index as thestarting point for the next call to filemap_get_folios_contig.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-49873",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-49873"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-49873",
+				"href": "https://ubuntu.com/security/CVE-2024-49873",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

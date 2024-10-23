@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024498880000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-49888 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Fix a sdiv overflow issueZac Ecob reported a problem where a bpf program may cause kernel crash dueto the following error:  Oops: divide error: 0000 [#1] PREEMPT SMP KASAN PTIThe failure is due to the below signed divide:  LLONG_MIN/-1 where LLONG_MIN equals to -9,223,372,036,854,775,808.LLONG_MIN/-1 is supposed to give a positive number9,223,372,036,854,775,808,but it is impossible since for 64-bit system, the maximum positivenumber is 9,223,372,036,854,775,807. On x86_64, LLONG_MIN/-1 willcause a kernel exception. On arm64, the result for LLONG_MIN/-1 isLLONG_MIN.Further investigation found all the following sdiv/smod cases may triggeran exception when bpf program is running on x86_64 platform:  - LLONG_MIN/-1 for 64bit operation  - INT_MIN/-1 for 32bit operation  - LLONG_MIN%-1 for 64bit operation  - INT_MIN%-1 for 32bit operationwhere -1 can be an immediate or in a register.On arm64, there are no exceptions:  - LLONG_MIN/-1 = LLONG_MIN  - INT_MIN/-1 = INT_MIN  - LLONG_MIN%-1 = 0  - INT_MIN%-1 = 0where -1 can be an immediate or in a register.Insn patching is needed to handle the above cases and the patched codesproduced results aligned with above arm64 result. The below are pseudocodes to handle sdiv/smod exceptions including both divisor -1 and divisor0and the divisor is stored in a register.sdiv:      tmp = rX      tmp += 1 /* [-1, 0] -> [0, 1]      if tmp >(unsigned) 1 goto L2      if tmp == 0 goto L1      rY = 0  L1:      rY = -rY;      goto L3  L2:      rY /= rX  L3:smod:      tmp = rX      tmp += 1 /* [-1, 0] -> [0, 1]      if tmp >(unsigned) 1 goto L1      if tmp == 1 (is64 ? goto L2 : goto L3)      rY = 0;      goto L2  L1:      rY %= rX  L2:      goto L4  // only when !is64  L3:      wY = wY  // only when !is64  L4:  [1]https://lore.kernel.org/bpf/tPJLTEh7S_DxFEqAI2Ji5MBSoZVg7_G-Py2iaZpAaWtM961fFTWtsnlzwvTbzBzaUzwQAoNATXKUlt0LZOFgnDcIyKCswAnAGdUF3LBrhGQ=@protonmail.com/",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-49888",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-49888"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-49888",
+				"href": "https://ubuntu.com/security/CVE-2024-49888",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

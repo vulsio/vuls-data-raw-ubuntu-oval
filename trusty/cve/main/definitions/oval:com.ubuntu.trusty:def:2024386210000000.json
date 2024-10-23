@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-38621 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: media:stk1160: fix bounds checking in stk1160_copy_video() The subtract in thiscondition is reversed. The ->length is the length of the buffer. The->bytesused is how many bytes we have copied thus far. When the conditionis reversed that means the result of the subtraction is always negative butsince it's unsigned then the result is a very high positive value. Thatmeans the overflow check is never true. Additionally, the ->bytesuseddoesn't actually work for this purpose because we're not writing to\"buf->mem + buf->bytesused\". Instead, the math to calculate the destinationwhere we are writing is a bit involved. You calculate the number of fulllines already written, multiply by two, skip a line if necessary so that westart on an odd numbered line, and add the offset into the line. To fixthis buffer overflow, just take the actual destination where we arewriting, if the offset is already out of bounds print an error and return.Otherwise, write up to buf->length bytes.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: media:stk1160: fix bounds checking in stk1160_copy_video() The subtract in thiscondition is reversed. The ->length is the length of the buffer. The->bytesused is how many bytes we have copied thus far. When the conditionis reversed that means the result of the subtraction is always negative butsince it's unsigned then the result is a very high positive value. Thatmeans the overflow check is never true. Additionally, the ->bytesuseddoesn't actually work for this purpose because we're not writing to\"buf->mem + buf->bytesused\". Instead, the math to calculate the destinationwhere we are writing is a bit involved. You calculate the number of fulllines already written, multiply by two, skip a line if necessary so that westart on an odd numbered line, and add the offset into the line. To fixthis buffer overflow, just take the actual destination where we arewriting, if the offset is already out of bounds print an error and return.Otherwise, write up to buf->length bytes.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-38621` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-4.15.0-1182-azure - 4.15.0-1182.197~14.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -44,7 +44,8 @@
 				"https://ubuntu.com/security/notices/USN-7007-3",
 				"https://ubuntu.com/security/notices/USN-7029-1",
 				"https://ubuntu.com/security/notices/USN-7009-2",
-				"https://ubuntu.com/security/notices/USN-7069-1"
+				"https://ubuntu.com/security/notices/USN-7069-1",
+				"https://ubuntu.com/security/notices/USN-7069-2"
 			]
 		}
 	},
@@ -67,8 +68,8 @@
 						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2023525100000000",
+						"comment": "linux-azure package in trusty was vulnerable but has been fixed (note: '4.15.0-1182.197~14.04.1')."
 					}
 				]
 			}
