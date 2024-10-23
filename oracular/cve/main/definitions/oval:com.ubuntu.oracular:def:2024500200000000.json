@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024500200000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50020 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ice: Fix improper handling of refcount in ice_sriov_set_msix_vec_count()This patch addresses an issue with improper reference count handling in theice_sriov_set_msix_vec_count() function.First, the function calls ice_get_vf_by_id(), which increments thereference count of the vf pointer. If the subsequent call toice_get_vf_vsi() fails, the function currently returns an error withoutdecrementing the reference count of the vf pointer, leading to a referencecount leak. The correct behavior, as implemented in this patch, is todecrement the reference count using ice_put_vf(vf) before returning anerror when vsi is NULL.Second, the function calls ice_sriov_get_irqs(), which setsvf->first_vector_idx. If this call returns a negative value, indicating anerror, the function returns an error without decrementing the referencecount of the vf pointer, resulting in another reference count leak. Thepatch addresses this by adding a call to ice_put_vf(vf) before returningan error when vf->first_vector_idx < 0.This bug was identified by an experimental static analysis tool developedby our team. The tool specializes in analyzing reference count operationsand identifying potential mismanagement of reference counts. In this case,the tool flagged the missing decrement operation as a potential issue,leading to this patch.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50020",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50020"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-50020",
+				"href": "https://ubuntu.com/security/CVE-2024-50020",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000000",
+						"comment": "linux package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

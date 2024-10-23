@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024500410000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50041 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:i40e: Fix macvlan leak by synchronizing access to mac_filter_hashThis patch addresses a macvlan leak issue in the i40e driver caused byconcurrent access to vsi->mac_filter_hash. The leak occurs when multiplethreads attempt to modify the mac_filter_hash simultaneously, leading toinconsistent state and potential memory leaks.To fix this, we now wrap the calls to i40e_del_mac_filter() and zeroingvf->default_lan_addr.addr withspin_lock/unlock_bh(&vsi->mac_filter_hash_lock),ensuring atomic operations and preventing concurrent access.Additionally, we add lockdep_assert_held(&vsi->mac_filter_hash_lock) ini40e_add_mac_filter() to help catch similar issues in the future.Reproduction steps:1. Spawn VFs and configure port vlan on them.2. Trigger concurrent macvlan operations (e.g., adding and deleting\tportvlan and/or mac filters).3. Observe the potential memory leak and inconsistent state in the\tmac_filter_hash.This synchronization ensures the integrity of the mac_filter_hash andpreventsthe described leak.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50041",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50041"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-50041",
+				"href": "https://ubuntu.com/security/CVE-2024-50041",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024498740000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-49874 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:i3c: master: svc: Fix use after free vulnerability in svc_i3c_master DriverDue to Race ConditionIn the svc_i3c_master_probe function, &master->hj_work is bound withsvc_i3c_master_hj_work, &master->ibi_work is bound withsvc_i3c_master_ibi_work. And svc_i3c_master_ibi_work  can start thehj_work, svc_i3c_master_irq_handler can start the ibi_work.If we remove the module which will call svc_i3c_master_remove tomake cleanup, it will free master->base through i3c_master_unregisterwhile the work mentioned above will be used. The sequence of operationsthat may lead to a UAF bug is as follows:CPU0                                         CPU1                                    | svc_i3c_master_hj_worksvc_i3c_master_remove               |i3c_master_unregister(&master->base)|device_unregister(&master->dev)     |device_release                      |//free master->base                 |                                    | i3c_master_do_daa(&master->base)                                    | //use master->baseFix it by ensuring that the work is canceled before proceeding with thecleanup in svc_i3c_master_remove.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-49874",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-49874"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-49874",
+				"href": "https://ubuntu.com/security/CVE-2024-49874",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

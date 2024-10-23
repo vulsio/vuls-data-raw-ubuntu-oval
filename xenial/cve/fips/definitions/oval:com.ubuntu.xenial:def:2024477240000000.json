@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024477240000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47724 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: ath11k: use work queue to process beacon tx eventCommit 3a415daa3e8b (\"wifi: ath11k: add P2P IE in beacon template\")from Feb 28, 2024 (linux-next), leads to the following Smatch staticchecker warning:drivers/net/wireless/ath/ath11k/wmi.c:1742 ath11k_wmi_p2p_go_bcn_ie()warn: sleeping in atomic contextThe reason is that ath11k_bcn_tx_status_event() will directly call mightsleep function ath11k_wmi_cmd_send() during RCU read-side criticalsections. The call trace is like:ath11k_bcn_tx_status_event()-> rcu_read_lock()-> ath11k_mac_bcn_tx_event()\t-> ath11k_mac_setup_bcn_tmpl()\t……\t\t-> ath11k_wmi_bcn_tmpl()\t\t\t-> ath11k_wmi_cmd_send()-> rcu_read_unlock()Commit 886433a98425 (\"ath11k: add support for BSS color change\") added theath11k_mac_bcn_tx_event(), commit 01e782c89108 (\"ath11k: fix warningof RCU usage for ath11k_mac_get_arvif_by_vdev_id()\") added the RCU lockto avoid warning but also introduced this BUG.Use work queue to avoid directly calling ath11k_mac_bcn_tx_event()during RCU critical sections. No need to worry about the deletion of vifbecause cancel_work_sync() will drop the work if it doesn't start orblock vif deletion until the running work is done.Tested-on: WCN6855 hw2.0 PCIWLAN.HSP.1.1-03125-QCAHSPSWPL_V1_V2_SILICONZ_LITE-3.6510.30",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47724",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47724"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-47724",
+				"href": "https://ubuntu.com/security/CVE-2024-47724",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

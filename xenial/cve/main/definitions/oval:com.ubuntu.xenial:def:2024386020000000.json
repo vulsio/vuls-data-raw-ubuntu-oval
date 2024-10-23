@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-38602 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: ax25:Fix reference count leak issues of ax25_dev The ax25_addr_ax25dev() andax25_dev_device_down() exist a reference count leak issue of the object\"ax25_dev\". Memory leak issue in ax25_addr_ax25dev(): The reference countof the object \"ax25_dev\" can be increased multiple times inax25_addr_ax25dev(). This will cause a memory leak. Memory leak issues inax25_dev_device_down(): The reference count of ax25_dev is set to 1 inax25_dev_device_up() and then increase the reference count when ax25_dev isadded to ax25_dev_list. As a result, the reference count of ax25_dev is 2.But when the device is shutting down. The ax25_dev_device_down() drops thereference count once or twice depending on if we goto unlock_put or not,which will cause memory leak. As for the issue of ax25_addr_ax25dev(), itis impossible for one pointer to be on a list twice. So add a break inax25_addr_ax25dev(). As for the issue of ax25_dev_device_down(), increasethe reference count of ax25_dev once in ax25_dev_device_up() and decreasethe reference count of ax25_dev after it is removed from the ax25_dev_list.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-38602` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ax25:Fix reference count leak issues of ax25_dev The ax25_addr_ax25dev() andax25_dev_device_down() exist a reference count leak issue of the object\"ax25_dev\". Memory leak issue in ax25_addr_ax25dev(): The reference countof the object \"ax25_dev\" can be increased multiple times inax25_addr_ax25dev(). This will cause a memory leak. Memory leak issues inax25_dev_device_down(): The reference count of ax25_dev is set to 1 inax25_dev_device_up() and then increase the reference count when ax25_dev isadded to ax25_dev_list. As a result, the reference count of ax25_dev is 2.But when the device is shutting down. The ax25_dev_device_down() drops thereference count once or twice depending on if we goto unlock_put or not,which will cause memory leak. As for the issue of ax25_addr_ax25dev(), itis impossible for one pointer to be on a list twice. So add a break inax25_addr_ax25dev(). As for the issue of ax25_dev_device_down(), increasethe reference count of ax25_dev once in ax25_dev_device_up() and decreasethe reference count of ax25_dev after it is removed from the ax25_dev_list.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-38602` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240619",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "6949-1,6952-1,6955-1,6949-2,6952-2,7069-1"
+				"usns": "6949-1,6952-1,6955-1,6949-2,6952-2,7069-1,7069-2"
 			},
 			"public_date_at_usn": "2024-06-19 14:15:00 UTC",
 			"ref": [
@@ -33,7 +33,8 @@
 				"https://ubuntu.com/security/notices/USN-6955-1",
 				"https://ubuntu.com/security/notices/USN-6949-2",
 				"https://ubuntu.com/security/notices/USN-6952-2",
-				"https://ubuntu.com/security/notices/USN-7069-1"
+				"https://ubuntu.com/security/notices/USN-7069-1",
+				"https://ubuntu.com/security/notices/USN-7069-2"
 			]
 		}
 	},
@@ -64,8 +65,8 @@
 						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1182.197~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",

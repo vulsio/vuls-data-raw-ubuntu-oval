@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024499270000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-49927 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/ioapic: Handle allocation failures gracefullyBreno observed panics when using failslab under certain conditions duringruntime:   can not alloc irq_pin_list (-1,0,20)   Kernel panic - not syncing: IO-APIC: failed to add irq-pin. Can notproceed   panic+0x4e9/0x590   mp_irqdomain_alloc+0x9ab/0xa80   irq_domain_alloc_irqs_locked+0x25d/0x8d0   __irq_domain_alloc_irqs+0x80/0x110   mp_map_pin_to_irq+0x645/0x890   acpi_register_gsi_ioapic+0xe6/0x150   hpet_open+0x313/0x480That's a pointless panic which is a leftover of the historic IO/APIC codewhich panic'ed during early boot when the interrupt allocation failed.The only place which might justify panic is the PIT/HPET timer_check() codewhich tries to figure out whether the timer interrupt is delivered throughthe IO/APIC. But that code does not require to handle interrupt allocationfailures. If the interrupt cannot be allocated then timer delivery failsand it either panics due to that or falls back to legacy mode.Cure this by removing the panic wrapper around __add_pin_to_irq_node() andmaking mp_irqdomain_alloc() aware of the failure condition and handle it asany other failure in this function gracefully.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-49927",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-49927"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-49927",
+				"href": "https://ubuntu.com/security/CVE-2024-49927",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000000",
+						"comment": "linux package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

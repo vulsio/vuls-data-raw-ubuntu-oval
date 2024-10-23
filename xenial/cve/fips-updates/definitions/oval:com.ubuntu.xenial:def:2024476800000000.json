@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024476800000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47680 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: check discard support for conventional zonesAs the helper function f2fs_bdev_support_discard() shows, f2fs checks ifthe target block devices support discard by callingbdev_max_discard_sectors() and bdev_is_zoned(). This check works wellfor most cases, but it does not work for conventional zones on zonedblock devices. F2fs assumes that zoned block devices support discard,and calls __submit_discard_cmd(). When __submit_discard_cmd() is calledfor sequential write required zones, it works fine since__submit_discard_cmd() issues zone reset commands instead of discardcommands. However, when __submit_discard_cmd() is called forconventional zones, __blkdev_issue_discard() is called even when thedevices do not support discard.The inappropriate __blkdev_issue_discard() call was not a problem beforethe commit 30f1e7241422 (\"block: move discard checks into the ioctlhandler\") because __blkdev_issue_discard() checked if the target devicessupport discard or not. If not, it returned EOPNOTSUPP. After thecommit, __blkdev_issue_discard() no longer checks it. It always returnszero and sets NULL to the given bio pointer. This NULL pointer triggersf2fs_bug_on() in __submit_discard_cmd(). The BUG is recreated with thecommands below at the umount step, where /dev/nullb0 is a zoned null_blkwith 5GB total size, 128MB zone size and 10 conventional zones.$ mkfs.f2fs -f -m /dev/nullb0$ mount /dev/nullb0 /mnt$ for ((i=0;i<5;i++)); do dd if=/dev/zero of=/mnt/test bs=65536 count=1600conv=fsync; done$ umount /mntTo fix the BUG, avoid the inappropriate __blkdev_issue_discard() call.When discard is requested for conventional zones, check if the devicesupports discard or not. If not, return EOPNOTSUPP.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47680",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47680"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-47680",
+				"href": "https://ubuntu.com/security/CVE-2024-47680",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

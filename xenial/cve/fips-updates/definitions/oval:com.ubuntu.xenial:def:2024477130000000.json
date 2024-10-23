@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024477130000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47713 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: mac80211: use two-phase skb reclamation in ieee80211_do_stop()Since '__dev_queue_xmit()' should be called with interrupts enabled,the following backtrace:ieee80211_do_stop() ... spin_lock_irqsave(&local->queue_stop_reason_lock, flags) ... ieee80211_free_txskb()  ieee80211_report_used_skb()   ieee80211_report_ack_skb()    cfg80211_mgmt_tx_status_ext()     nl80211_frame_tx_status()      genlmsg_multicast_netns()       genlmsg_multicast_netns_filtered()        nlmsg_multicast_filtered()\t netlink_broadcast_filtered()\t  do_one_broadcast()\t   netlink_broadcast_deliver()\t    __netlink_sendskb()\t     netlink_deliver_tap()\t      __netlink_deliver_tap_skb()\t       dev_queue_xmit()\t        __dev_queue_xmit() ; with IRQS disabled ... spin_unlock_irqrestore(&local->queue_stop_reason_lock, flags)issues the warning (as reported by syzbot reproducer):WARNING: CPU: 2 PID: 5128 at kernel/softirq.c:362__local_bh_enable_ip+0xc3/0x120Fix this by implementing a two-phase skb reclamation in'ieee80211_do_stop()', where actual work is performedoutside of a section with interrupts disabled.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47713",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47713"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-22",
+			"cve": {
+				"text": "CVE-2024-47713",
+				"href": "https://ubuntu.com/security/CVE-2024-47713",
+				"public": "20241022"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
