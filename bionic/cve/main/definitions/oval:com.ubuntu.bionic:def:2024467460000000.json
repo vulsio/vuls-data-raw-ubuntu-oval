@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-46746 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:HID: amd_sfh: free driver_data after destroying hid deviceHID driver callbacks aren't called anymore once hid_destroy_device() hasbeen called. Hence, hid driver_data should be freed only after thehid_destroy_device() function returned as driver_data is used in severalcallbacks.I observed a crash with kernel 6.10.0 on my T14s Gen 3, after enablingKASAN to debug memory allocation, I got this output:  [   13.050438]==================================================================  [   13.054060] BUG: KASAN: slab-use-after-free inamd_sfh_get_report+0x3ec/0x530 [amd_sfh]  [   13.054809] psmouse serio1: trackpoint: Synaptics TrackPoint firmware:0x02, buttons: 3/3  [   13.056432] Read of size 8 at addr ffff88813152f408 by task(udev-worker)/479  [   13.060970] CPU: 5 PID: 479 Comm: (udev-worker) Not tainted6.10.0-arch1-2 #1 893bb55d7f0073f25c46adbb49eb3785fefd74b0  [   13.063978] Hardware name: LENOVO 21CQCTO1WW/21CQCTO1WW, BIOS R22ET70W(1.40 ) 03/21/2024  [   13.067860] Call Trace:  [   13.069383] input: TPPS/2 Synaptics TrackPoint as/devices/platform/i8042/serio1/input/input8  [   13.071486]  <TASK>  [   13.071492]  dump_stack_lvl+0x5d/0x80  [   13.074870] snd_hda_intel 0000:33:00.6: enabling device (0000 -> 0002)  [   13.078296]  ? amd_sfh_get_report+0x3ec/0x530 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.082199]  print_report+0x174/0x505  [   13.085776]  ? __pfx__raw_spin_lock_irqsave+0x10/0x10  [   13.089367]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.093255]  ? amd_sfh_get_report+0x3ec/0x530 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.097464]  kasan_report+0xc8/0x150  [   13.101461]  ? amd_sfh_get_report+0x3ec/0x530 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.105802]  amd_sfh_get_report+0x3ec/0x530 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.110303]  amdtp_hid_request+0xb8/0x110 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.114879]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.119450]  sensor_hub_get_feature+0x1d3/0x540 [hid_sensor_hub3f13be3016ff415bea03008d45d99da837ee3082]  [   13.124097]  hid_sensor_parse_common_attributes+0x4d0/0xad0[hid_sensor_iio_common c3a5cbe93969c28b122609768bbe23efe52eb8f5]  [   13.127404]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.131925]  ? __pfx_hid_sensor_parse_common_attributes+0x10/0x10[hid_sensor_iio_common c3a5cbe93969c28b122609768bbe23efe52eb8f5]  [   13.136455]  ? _raw_spin_lock_irqsave+0x96/0xf0  [   13.140197]  ? __pfx__raw_spin_lock_irqsave+0x10/0x10  [   13.143602]  ? devm_iio_device_alloc+0x34/0x50 [industrialio3d261d5e5765625d2b052be40e526d62b1d2123b]  [   13.147234]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.150446]  ? __devm_add_action+0x167/0x1d0  [   13.155061]  hid_gyro_3d_probe+0x120/0x7f0 [hid_sensor_gyro_3d63da36a143b775846ab2dbb86c343b401b5e3172]  [   13.158581]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.161814]  platform_probe+0xa2/0x150  [   13.165029]  really_probe+0x1e3/0x8a0  [   13.168243]  __driver_probe_device+0x18c/0x370  [   13.171500]  driver_probe_device+0x4a/0x120  [   13.175000]  __driver_attach+0x190/0x4a0  [   13.178521]  ? __pfx___driver_attach+0x10/0x10  [   13.181771]  bus_for_each_dev+0x106/0x180  [   13.185033]  ? __pfx__raw_spin_lock+0x10/0x10  [   13.188229]  ? __pfx_bus_for_each_dev+0x10/0x10  [   13.191446]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.194382]  bus_add_driver+0x29e/0x4d0  [   13.197328]  driver_register+0x1a5/0x360  [   13.200283]  ? __pfx_hid_gyro_3d_platform_driver_init+0x10/0x10[hid_sensor_gyro_3d 63da36a143b775846ab2dbb86c343b401b5e3172]  [   13.203362]  do_one_initcall+0xa7/0x380  [   13.206432]  ? __pfx_do_one_initcall+0x10/0x10  [   13.210175]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.213211]  ? kasan_unpoison+0x44/0x70  [   13.216688]  do_init_module+0x238/0x750  [   13.2196---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:HID: amd_sfh: free driver_data after destroying hid deviceHID driver callbacks aren't called anymore once hid_destroy_device() hasbeen called. Hence, hid driver_data should be freed only after thehid_destroy_device() function returned as driver_data is used in severalcallbacks.I observed a crash with kernel 6.10.0 on my T14s Gen 3, after enablingKASAN to debug memory allocation, I got this output:  [   13.050438]==================================================================  [   13.054060] BUG: KASAN: slab-use-after-free inamd_sfh_get_report+0x3ec/0x530 [amd_sfh]  [   13.054809] psmouse serio1: trackpoint: Synaptics TrackPoint firmware:0x02, buttons: 3/3  [   13.056432] Read of size 8 at addr ffff88813152f408 by task(udev-worker)/479  [   13.060970] CPU: 5 PID: 479 Comm: (udev-worker) Not tainted6.10.0-arch1-2 #1 893bb55d7f0073f25c46adbb49eb3785fefd74b0  [   13.063978] Hardware name: LENOVO 21CQCTO1WW/21CQCTO1WW, BIOS R22ET70W(1.40 ) 03/21/2024  [   13.067860] Call Trace:  [   13.069383] input: TPPS/2 Synaptics TrackPoint as/devices/platform/i8042/serio1/input/input8  [   13.071486]  <TASK>  [   13.071492]  dump_stack_lvl+0x5d/0x80  [   13.074870] snd_hda_intel 0000:33:00.6: enabling device (0000 -> 0002)  [   13.078296]  ? amd_sfh_get_report+0x3ec/0x530 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.082199]  print_report+0x174/0x505  [   13.085776]  ? __pfx__raw_spin_lock_irqsave+0x10/0x10  [   13.089367]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.093255]  ? amd_sfh_get_report+0x3ec/0x530 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.097464]  kasan_report+0xc8/0x150  [   13.101461]  ? amd_sfh_get_report+0x3ec/0x530 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.105802]  amd_sfh_get_report+0x3ec/0x530 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.110303]  amdtp_hid_request+0xb8/0x110 [amd_sfh05f43221435b5205f734cd9da29399130f398a38]  [   13.114879]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.119450]  sensor_hub_get_feature+0x1d3/0x540 [hid_sensor_hub3f13be3016ff415bea03008d45d99da837ee3082]  [   13.124097]  hid_sensor_parse_common_attributes+0x4d0/0xad0[hid_sensor_iio_common c3a5cbe93969c28b122609768bbe23efe52eb8f5]  [   13.127404]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.131925]  ? __pfx_hid_sensor_parse_common_attributes+0x10/0x10[hid_sensor_iio_common c3a5cbe93969c28b122609768bbe23efe52eb8f5]  [   13.136455]  ? _raw_spin_lock_irqsave+0x96/0xf0  [   13.140197]  ? __pfx__raw_spin_lock_irqsave+0x10/0x10  [   13.143602]  ? devm_iio_device_alloc+0x34/0x50 [industrialio3d261d5e5765625d2b052be40e526d62b1d2123b]  [   13.147234]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.150446]  ? __devm_add_action+0x167/0x1d0  [   13.155061]  hid_gyro_3d_probe+0x120/0x7f0 [hid_sensor_gyro_3d63da36a143b775846ab2dbb86c343b401b5e3172]  [   13.158581]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.161814]  platform_probe+0xa2/0x150  [   13.165029]  really_probe+0x1e3/0x8a0  [   13.168243]  __driver_probe_device+0x18c/0x370  [   13.171500]  driver_probe_device+0x4a/0x120  [   13.175000]  __driver_attach+0x190/0x4a0  [   13.178521]  ? __pfx___driver_attach+0x10/0x10  [   13.181771]  bus_for_each_dev+0x106/0x180  [   13.185033]  ? __pfx__raw_spin_lock+0x10/0x10  [   13.188229]  ? __pfx_bus_for_each_dev+0x10/0x10  [   13.191446]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.194382]  bus_add_driver+0x29e/0x4d0  [   13.197328]  driver_register+0x1a5/0x360  [   13.200283]  ? __pfx_hid_gyro_3d_platform_driver_init+0x10/0x10[hid_sensor_gyro_3d 63da36a143b775846ab2dbb86c343b401b5e3172]  [   13.203362]  do_one_initcall+0xa7/0x380  [   13.206432]  ? __pfx_do_one_initcall+0x10/0x10  [   13.210175]  ? srso_alias_return_thunk+0x5/0xfbef5  [   13.213211]  ? kasan_unpoison+0x44/0x70  [   13.216688]  do_init_module+0x238/0x750  [   13.2196---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46746` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1018-aws - 5.4.0-1018.18~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1020-azure - 5.4.0-1020.20~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-gcp - 5.4.0-1019.19~18.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-oracle - 5.4.0-1019.19~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -34,24 +34,24 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
-						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000000",
+						"comment": "linux package in bionic, is related to the CVE in some way and has been fixed (note: '4.13.0-16.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
 						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000050",
+						"comment": "linux-hwe-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-37.41~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
-						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-kvm package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-aws package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -62,40 +62,40 @@
 						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
-						"comment": "linux-aws-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000100",
+						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1018.18~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
 						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
-						"comment": "linux-azure-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000010",
+						"comment": "linux-azure-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1082.92')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000070",
+						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
 						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
-						"comment": "linux-gcp-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000040",
+						"comment": "linux-gcp-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1071.81')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000090",
+						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -110,12 +110,12 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201499000000000",
+						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1010.11~18.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
-						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000110",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -126,8 +126,8 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000080",
+						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -138,8 +138,8 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
-						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000060",
+						"comment": "linux-raspi-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1013.13~18.04.1')."
 					}
 				]
 			}

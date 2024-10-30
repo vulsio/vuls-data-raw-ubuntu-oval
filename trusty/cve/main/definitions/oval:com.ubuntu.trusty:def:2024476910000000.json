@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-47691 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: fix to avoid use-after-free in f2fs_stop_gc_thread()syzbot reports a f2fs bug as below: __dump_stack lib/dump_stack.c:88 [inline] dump_stack_lvl+0x241/0x360 lib/dump_stack.c:114 print_report+0xe8/0x550 mm/kasan/report.c:491 kasan_report+0x143/0x180 mm/kasan/report.c:601 kasan_check_range+0x282/0x290 mm/kasan/generic.c:189 instrument_atomic_read_write include/linux/instrumented.h:96 [inline] atomic_fetch_add_relaxed include/linux/atomic/atomic-instrumented.h:252[inline] __refcount_add include/linux/refcount.h:184 [inline] __refcount_inc include/linux/refcount.h:241 [inline] refcount_inc include/linux/refcount.h:258 [inline] get_task_struct include/linux/sched/task.h:118 [inline] kthread_stop+0xca/0x630 kernel/kthread.c:704 f2fs_stop_gc_thread+0x65/0xb0 fs/f2fs/gc.c:210 f2fs_do_shutdown+0x192/0x540 fs/f2fs/file.c:2283 f2fs_ioc_shutdown fs/f2fs/file.c:2325 [inline] __f2fs_ioctl+0x443a/0xbe60 fs/f2fs/file.c:4325 vfs_ioctl fs/ioctl.c:51 [inline] __do_sys_ioctl fs/ioctl.c:907 [inline] __se_sys_ioctl+0xfc/0x170 fs/ioctl.c:893 do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0xf3/0x230 arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x77/0x7fThe root cause is below race condition, it may cause use-after-freeissue in sbi->gc_th pointer.- remount - f2fs_remount  - f2fs_stop_gc_thread   - kfree(gc_th)\t\t\t\t- f2fs_ioc_shutdown\t\t\t\t - f2fs_do_shutdown\t\t\t\t  - f2fs_stop_gc_thread\t\t\t\t   - kthread_stop(gc_th->f2fs_gc_task)   : sbi->gc_thread = NULL;We will call f2fs_do_shutdown() in two paths:- for f2fs_ioc_shutdown() path, we should grab sb->s_umount semaphorefor fixing.- for f2fs_shutdown() path, it's safe since caller has already grabbedsb->s_umount semaphore.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: fix to avoid use-after-free in f2fs_stop_gc_thread()syzbot reports a f2fs bug as below: __dump_stack lib/dump_stack.c:88 [inline] dump_stack_lvl+0x241/0x360 lib/dump_stack.c:114 print_report+0xe8/0x550 mm/kasan/report.c:491 kasan_report+0x143/0x180 mm/kasan/report.c:601 kasan_check_range+0x282/0x290 mm/kasan/generic.c:189 instrument_atomic_read_write include/linux/instrumented.h:96 [inline] atomic_fetch_add_relaxed include/linux/atomic/atomic-instrumented.h:252[inline] __refcount_add include/linux/refcount.h:184 [inline] __refcount_inc include/linux/refcount.h:241 [inline] refcount_inc include/linux/refcount.h:258 [inline] get_task_struct include/linux/sched/task.h:118 [inline] kthread_stop+0xca/0x630 kernel/kthread.c:704 f2fs_stop_gc_thread+0x65/0xb0 fs/f2fs/gc.c:210 f2fs_do_shutdown+0x192/0x540 fs/f2fs/file.c:2283 f2fs_ioc_shutdown fs/f2fs/file.c:2325 [inline] __f2fs_ioctl+0x443a/0xbe60 fs/f2fs/file.c:4325 vfs_ioctl fs/ioctl.c:51 [inline] __do_sys_ioctl fs/ioctl.c:907 [inline] __se_sys_ioctl+0xfc/0x170 fs/ioctl.c:893 do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0xf3/0x230 arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x77/0x7fThe root cause is below race condition, it may cause use-after-freeissue in sbi->gc_th pointer.- remount - f2fs_remount  - f2fs_stop_gc_thread   - kfree(gc_th)\t\t\t\t- f2fs_ioc_shutdown\t\t\t\t - f2fs_do_shutdown\t\t\t\t  - f2fs_stop_gc_thread\t\t\t\t   - kthread_stop(gc_th->f2fs_gc_task)   : sbi->gc_thread = NULL;We will call f2fs_do_shutdown() in two paths:- for f2fs_ioc_shutdown() path, we should grab sb->s_umount semaphorefor fixing.- for f2fs_shutdown() path, it's safe since caller has already grabbedsb->s_umount semaphore.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-47691` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -17,11 +17,13 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-10-22",
+			"public_date": "2024-10-21 12:15:00 UTC",
 			"cve": {
 				"text": "CVE-2024-47691",
 				"href": "https://ubuntu.com/security/CVE-2024-47691",
-				"public": "20241022"
+				"public": "20241021",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
 			}
 		}
 	},
@@ -32,20 +34,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48983 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:io_uring: Fix a null-ptr-deref in io_tctx_exit_cb()Syzkaller reports a NULL deref bug as follows: BUG: KASAN: null-ptr-deref in io_tctx_exit_cb+0x53/0xd3 Read of size 4 at addr 0000000000000138 by task file1/1955 CPU: 1 PID: 1955 Comm: file1 Not tainted 6.1.0-rc7-00103-gef4d3ea40565 #75 Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.11.0-2.el704/01/2014 Call Trace:  <TASK>  dump_stack_lvl+0xcd/0x134  ? io_tctx_exit_cb+0x53/0xd3  kasan_report+0xbb/0x1f0  ? io_tctx_exit_cb+0x53/0xd3  kasan_check_range+0x140/0x190  io_tctx_exit_cb+0x53/0xd3  task_work_run+0x164/0x250  ? task_work_cancel+0x30/0x30  get_signal+0x1c3/0x2440  ? lock_downgrade+0x6e0/0x6e0  ? lock_downgrade+0x6e0/0x6e0  ? exit_signals+0x8b0/0x8b0  ? do_raw_read_unlock+0x3b/0x70  ? do_raw_spin_unlock+0x50/0x230  arch_do_signal_or_restart+0x82/0x2470  ? kmem_cache_free+0x260/0x4b0  ? putname+0xfe/0x140  ? get_sigframe_size+0x10/0x10  ? do_execveat_common.isra.0+0x226/0x710  ? lockdep_hardirqs_on+0x79/0x100  ? putname+0xfe/0x140  ? do_execveat_common.isra.0+0x238/0x710  exit_to_user_mode_prepare+0x15f/0x250  syscall_exit_to_user_mode+0x19/0x50  do_syscall_64+0x42/0xb0  entry_SYSCALL_64_after_hwframe+0x63/0xcd RIP: 0023:0x0 Code: Unable to access opcode bytes at 0xffffffffffffffd6. RSP: 002b:00000000fffb7790 EFLAGS: 00000200 ORIG_RAX: 000000000000000b RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000 RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000 RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000 R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000 R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000  </TASK> Kernel panic - not syncing: panic_on_warn set ...This happens because the adding of task_work from io_ring_exit_work()isn't synchronized with canceling all work items from eg exec. Theexecution of the two are ordered in that they are both run by the taskitself, but if io_tctx_exit_cb() is queued while we're canceling allwork items off exec AND gets executed when the task exits to userspacerather than in the main loop in io_uring_cancel_generic(), then we canfind current->io_uring == NULL and hit the above crash.It's safe to add this NULL check here, because the execution of the twopaths are done by the task itself.[axboe: add code comment and also put an explanation in the commit msg]",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:io_uring: Fix a null-ptr-deref in io_tctx_exit_cb()Syzkaller reports a NULL deref bug as follows: BUG: KASAN: null-ptr-deref in io_tctx_exit_cb+0x53/0xd3 Read of size 4 at addr 0000000000000138 by task file1/1955 CPU: 1 PID: 1955 Comm: file1 Not tainted 6.1.0-rc7-00103-gef4d3ea40565 #75 Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.11.0-2.el704/01/2014 Call Trace:  <TASK>  dump_stack_lvl+0xcd/0x134  ? io_tctx_exit_cb+0x53/0xd3  kasan_report+0xbb/0x1f0  ? io_tctx_exit_cb+0x53/0xd3  kasan_check_range+0x140/0x190  io_tctx_exit_cb+0x53/0xd3  task_work_run+0x164/0x250  ? task_work_cancel+0x30/0x30  get_signal+0x1c3/0x2440  ? lock_downgrade+0x6e0/0x6e0  ? lock_downgrade+0x6e0/0x6e0  ? exit_signals+0x8b0/0x8b0  ? do_raw_read_unlock+0x3b/0x70  ? do_raw_spin_unlock+0x50/0x230  arch_do_signal_or_restart+0x82/0x2470  ? kmem_cache_free+0x260/0x4b0  ? putname+0xfe/0x140  ? get_sigframe_size+0x10/0x10  ? do_execveat_common.isra.0+0x226/0x710  ? lockdep_hardirqs_on+0x79/0x100  ? putname+0xfe/0x140  ? do_execveat_common.isra.0+0x238/0x710  exit_to_user_mode_prepare+0x15f/0x250  syscall_exit_to_user_mode+0x19/0x50  do_syscall_64+0x42/0xb0  entry_SYSCALL_64_after_hwframe+0x63/0xcd RIP: 0023:0x0 Code: Unable to access opcode bytes at 0xffffffffffffffd6. RSP: 002b:00000000fffb7790 EFLAGS: 00000200 ORIG_RAX: 000000000000000b RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000 RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000 RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000 R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000 R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000  </TASK> Kernel panic - not syncing: panic_on_warn set ...This happens because the adding of task_work from io_ring_exit_work()isn't synchronized with canceling all work items from eg exec. Theexecution of the two are ordered in that they are both run by the taskitself, but if io_tctx_exit_cb() is queued while we're canceling allwork items off exec AND gets executed when the task exits to userspacerather than in the main loop in io_uring_cancel_generic(), then we canfind current->io_uring == NULL and hit the above crash.It's safe to add this NULL check here, because the execution of the twopaths are done by the task itself.[axboe: add code comment and also put an explanation in the commit msg]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48983` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 16.04 LTS"
@@ -17,11 +17,13 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-10-22",
+			"public_date": "2024-10-21 20:15:00 UTC",
 			"cve": {
 				"text": "CVE-2022-48983",
 				"href": "https://ubuntu.com/security/CVE-2022-48983",
-				"public": "20241022"
+				"public": "20241021",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
 			}
 		}
 	},
@@ -32,40 +34,52 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201592890000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}

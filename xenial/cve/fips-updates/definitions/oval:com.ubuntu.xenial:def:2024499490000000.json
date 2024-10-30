@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-49949 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: avoid potential underflow in qdisc_pkt_len_init() with UFOAfter commit 7c6d2ecbda83 (\"net: be more gentle about silly gsorequests coming from user\") virtio_net_hdr_to_skb() had sanity checkto detect malicious attempts from user space to cook a bad GSO packet.Then commit cf9acc90c80ec (\"net: virtio_net_hdr_to_skb: counttransport header in UFO\") while fixing one issue, allowed user spaceto cook a GSO packet with the following characteristic :IPv4 SKB_GSO_UDP, gso_size=3, skb->len = 28.When this packet arrives in qdisc_pkt_len_init(), we end upwith hdr_len = 28 (IPv4 header + UDP header), matching skb->lenThen the following sets gso_segs to 0 :gso_segs = DIV_ROUND_UP(skb->len - hdr_len,                        shinfo->gso_size);Then later we set qdisc_skb_cb(skb)->pkt_len to back to zero :/qdisc_skb_cb(skb)->pkt_len += (gso_segs - 1) * hdr_len;This leads to the following crash in fq_codel [1]qdisc_pkt_len_init() is best effort, we only want an estimationof the bytes sent on the wire, not crashing the kernel.This patch is fixing this particular issue, a following oneadds more sanity checks for another potential bug.[1][   70.724101] BUG: kernel NULL pointer dereference, address:0000000000000000[   70.724561] #PF: supervisor read access in kernel mode[   70.724561] #PF: error_code(0x0000) - not-present page[   70.724561] PGD 10ac61067 P4D 10ac61067 PUD 107ee2067 PMD 0[   70.724561] Oops: Oops: 0000 [#1] SMP NOPTI[   70.724561] CPU: 11 UID: 0 PID: 2163 Comm: b358537762 Not tainted6.11.0-virtme #991[   70.724561] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.16.3-debian-1.16.3-2 04/01/2014[   70.724561] RIP: 0010:fq_codel_enqueue (net/sched/sch_fq_codel.c:120net/sched/sch_fq_codel.c:168 net/sched/sch_fq_codel.c:230) sch_fq_codel[ 70.724561] Code: 24 08 49 c1 e1 06 44 89 7c 24 18 45 31 ed 45 31 c0 31 ff89 44 24 14 4c 03 8b 90 01 00 00 eb 04 39 ca 73 37 4d 8b 39 83 c7 01 <49>8b 17 49 89 11 41 8b 57 28 45 8b 5f 34 49 c7 07 00 00 00 00 49All code========   0:\t24 08                \tand    $0x8,%al   2:\t49 c1 e1 06          \tshl    $0x6,%r9   6:\t44 89 7c 24 18       \tmov    %r15d,0x18(%rsp)   b:\t45 31 ed             \txor    %r13d,%r13d   e:\t45 31 c0             \txor    %r8d,%r8d  11:\t31 ff                \txor    %edi,%edi  13:\t89 44 24 14          \tmov    %eax,0x14(%rsp)  17:\t4c 03 8b 90 01 00 00 \tadd    0x190(%rbx),%r9  1e:\teb 04                \tjmp    0x24  20:\t39 ca                \tcmp    %ecx,%edx  22:\t73 37                \tjae    0x5b  24:\t4d 8b 39             \tmov    (%r9),%r15  27:\t83 c7 01             \tadd    $0x1,%edi  2a:*\t49 8b 17             \tmov    (%r15),%rdx\t\t<-- trapping instruction  2d:\t49 89 11             \tmov    %rdx,(%r9)  30:\t41 8b 57 28          \tmov    0x28(%r15),%edx  34:\t45 8b 5f 34          \tmov    0x34(%r15),%r11d  38:\t49 c7 07 00 00 00 00 \tmovq   $0x0,(%r15)  3f:\t49                   \trex.WBCode starting with the faulting instruction===========================================   0:\t49 8b 17             \tmov    (%r15),%rdx   3:\t49 89 11             \tmov    %rdx,(%r9)   6:\t41 8b 57 28          \tmov    0x28(%r15),%edx   a:\t45 8b 5f 34          \tmov    0x34(%r15),%r11d   e:\t49 c7 07 00 00 00 00 \tmovq   $0x0,(%r15)  15:\t49                   \trex.WB[   70.724561] RSP: 0018:ffff95ae85e6fb90 EFLAGS: 00000202[   70.724561] RAX: 0000000002000000 RBX: ffff95ae841de000 RCX:0000000000000000[   70.724561] RDX: 0000000000000000 RSI: 0000000000000001 RDI:0000000000000001[   70.724561] RBP: ffff95ae85e6fbf8 R08: 0000000000000000 R09:ffff95b710a30000[   70.724561] R10: 0000000000000000 R11: bdf289445ce31881 R12:ffff95ae85e6fc58[   70.724561] R13: 0000000000000000 R14: 0000000000000040 R15:0000000000000000[   70.724561] FS:  000000002c5c1380(0000) GS:ffff95bd7fcc0000(0000)knlGS:0000000000000000[   70.724561] CS:  0010 DS: 0000 ES: 0000 C---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: avoid potential underflow in qdisc_pkt_len_init() with UFOAfter commit 7c6d2ecbda83 (\"net: be more gentle about silly gsorequests coming from user\") virtio_net_hdr_to_skb() had sanity checkto detect malicious attempts from user space to cook a bad GSO packet.Then commit cf9acc90c80ec (\"net: virtio_net_hdr_to_skb: counttransport header in UFO\") while fixing one issue, allowed user spaceto cook a GSO packet with the following characteristic :IPv4 SKB_GSO_UDP, gso_size=3, skb->len = 28.When this packet arrives in qdisc_pkt_len_init(), we end upwith hdr_len = 28 (IPv4 header + UDP header), matching skb->lenThen the following sets gso_segs to 0 :gso_segs = DIV_ROUND_UP(skb->len - hdr_len,                        shinfo->gso_size);Then later we set qdisc_skb_cb(skb)->pkt_len to back to zero :/qdisc_skb_cb(skb)->pkt_len += (gso_segs - 1) * hdr_len;This leads to the following crash in fq_codel [1]qdisc_pkt_len_init() is best effort, we only want an estimationof the bytes sent on the wire, not crashing the kernel.This patch is fixing this particular issue, a following oneadds more sanity checks for another potential bug.[1][   70.724101] BUG: kernel NULL pointer dereference, address:0000000000000000[   70.724561] #PF: supervisor read access in kernel mode[   70.724561] #PF: error_code(0x0000) - not-present page[   70.724561] PGD 10ac61067 P4D 10ac61067 PUD 107ee2067 PMD 0[   70.724561] Oops: Oops: 0000 [#1] SMP NOPTI[   70.724561] CPU: 11 UID: 0 PID: 2163 Comm: b358537762 Not tainted6.11.0-virtme #991[   70.724561] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.16.3-debian-1.16.3-2 04/01/2014[   70.724561] RIP: 0010:fq_codel_enqueue (net/sched/sch_fq_codel.c:120net/sched/sch_fq_codel.c:168 net/sched/sch_fq_codel.c:230) sch_fq_codel[ 70.724561] Code: 24 08 49 c1 e1 06 44 89 7c 24 18 45 31 ed 45 31 c0 31 ff89 44 24 14 4c 03 8b 90 01 00 00 eb 04 39 ca 73 37 4d 8b 39 83 c7 01 <49>8b 17 49 89 11 41 8b 57 28 45 8b 5f 34 49 c7 07 00 00 00 00 49All code========   0:\t24 08                \tand    $0x8,%al   2:\t49 c1 e1 06          \tshl    $0x6,%r9   6:\t44 89 7c 24 18       \tmov    %r15d,0x18(%rsp)   b:\t45 31 ed             \txor    %r13d,%r13d   e:\t45 31 c0             \txor    %r8d,%r8d  11:\t31 ff                \txor    %edi,%edi  13:\t89 44 24 14          \tmov    %eax,0x14(%rsp)  17:\t4c 03 8b 90 01 00 00 \tadd    0x190(%rbx),%r9  1e:\teb 04                \tjmp    0x24  20:\t39 ca                \tcmp    %ecx,%edx  22:\t73 37                \tjae    0x5b  24:\t4d 8b 39             \tmov    (%r9),%r15  27:\t83 c7 01             \tadd    $0x1,%edi  2a:*\t49 8b 17             \tmov    (%r15),%rdx\t\t<-- trapping instruction  2d:\t49 89 11             \tmov    %rdx,(%r9)  30:\t41 8b 57 28          \tmov    0x28(%r15),%edx  34:\t45 8b 5f 34          \tmov    0x34(%r15),%r11d  38:\t49 c7 07 00 00 00 00 \tmovq   $0x0,(%r15)  3f:\t49                   \trex.WBCode starting with the faulting instruction===========================================   0:\t49 8b 17             \tmov    (%r15),%rdx   3:\t49 89 11             \tmov    %rdx,(%r9)   6:\t41 8b 57 28          \tmov    0x28(%r15),%edx   a:\t45 8b 5f 34          \tmov    0x34(%r15),%r11d   e:\t49 c7 07 00 00 00 00 \tmovq   $0x0,(%r15)  15:\t49                   \trex.WB[   70.724561] RSP: 0018:ffff95ae85e6fb90 EFLAGS: 00000202[   70.724561] RAX: 0000000002000000 RBX: ffff95ae841de000 RCX:0000000000000000[   70.724561] RDX: 0000000000000000 RSI: 0000000000000001 RDI:0000000000000001[   70.724561] RBP: ffff95ae85e6fbf8 R08: 0000000000000000 R09:ffff95b710a30000[   70.724561] R10: 0000000000000000 R11: bdf289445ce31881 R12:ffff95ae85e6fc58[   70.724561] R13: 0000000000000000 R14: 0000000000000040 R15:0000000000000000[   70.724561] FS:  000000002c5c1380(0000) GS:ffff95bd7fcc0000(0000)knlGS:0000000000000000[   70.724561] CS:  0010 DS: 0000 ES: 0000 C---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-49949` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 16.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-10-22",
+			"public_date": "2024-10-21 18:15:00 UTC",
 			"cve": {
 				"text": "CVE-2024-49949",
 				"href": "https://ubuntu.com/security/CVE-2024-49949",
-				"public": "20241022"
+				"public": "20241021"
 			}
 		}
 	},
@@ -32,40 +32,52 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe package in xenial is affected and may need fixing."
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected and may need fixing."
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
-						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000080",
+						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1003.3')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp package in xenial is affected and may need fixing."
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle package in xenial is affected and may need fixing."
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}

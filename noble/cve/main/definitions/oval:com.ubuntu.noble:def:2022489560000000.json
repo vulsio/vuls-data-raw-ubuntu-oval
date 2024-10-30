@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48956 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:ipv6: avoid use-after-free in ip6_fragment()Blamed commit claimed rcu_read_lock() was held by ip6_fragment() callers.It seems to not be always true, at least for UDP stack.syzbot reported:BUG: KASAN: use-after-free in ip6_dst_idev include/net/ip6_fib.h:245[inline]BUG: KASAN: use-after-free in ip6_fragment+0x2724/0x2770net/ipv6/ip6_output.c:951Read of size 8 at addr ffff88801d403e80 by task syz-executor.3/7618CPU: 1 PID: 7618 Comm: syz-executor.3 Not tainted6.1.0-rc6-syzkaller-00012-g4312098baf37 #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 10/26/2022Call Trace: <TASK> __dump_stack lib/dump_stack.c:88 [inline] dump_stack_lvl+0xd1/0x138 lib/dump_stack.c:106 print_address_description mm/kasan/report.c:284 [inline] print_report+0x15e/0x45d mm/kasan/report.c:395 kasan_report+0xbf/0x1f0 mm/kasan/report.c:495 ip6_dst_idev include/net/ip6_fib.h:245 [inline] ip6_fragment+0x2724/0x2770 net/ipv6/ip6_output.c:951 __ip6_finish_output net/ipv6/ip6_output.c:193 [inline] ip6_finish_output+0x9a3/0x1170 net/ipv6/ip6_output.c:206 NF_HOOK_COND include/linux/netfilter.h:291 [inline] ip6_output+0x1f1/0x540 net/ipv6/ip6_output.c:227 dst_output include/net/dst.h:445 [inline] ip6_local_out+0xb3/0x1a0 net/ipv6/output_core.c:161 ip6_send_skb+0xbb/0x340 net/ipv6/ip6_output.c:1966 udp_v6_send_skb+0x82a/0x18a0 net/ipv6/udp.c:1286 udp_v6_push_pending_frames+0x140/0x200 net/ipv6/udp.c:1313 udpv6_sendmsg+0x18da/0x2c80 net/ipv6/udp.c:1606 inet6_sendmsg+0x9d/0xe0 net/ipv6/af_inet6.c:665 sock_sendmsg_nosec net/socket.c:714 [inline] sock_sendmsg+0xd3/0x120 net/socket.c:734 sock_write_iter+0x295/0x3d0 net/socket.c:1108 call_write_iter include/linux/fs.h:2191 [inline] new_sync_write fs/read_write.c:491 [inline] vfs_write+0x9ed/0xdd0 fs/read_write.c:584 ksys_write+0x1ec/0x250 fs/read_write.c:637 do_syscall_x64 arch/x86/entry/common.c:50 [inline] do_syscall_64+0x39/0xb0 arch/x86/entry/common.c:80 entry_SYSCALL_64_after_hwframe+0x63/0xcdRIP: 0033:0x7fde3588c0d9Code: 28 00 00 00 75 05 48 83 c4 28 c3 e8 f1 19 00 00 90 48 89 f8 48 89 f748 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ffff 73 01 c3 48 c7 c1 b8 ff ff ff f7 d8 64 89 01 48RSP: 002b:00007fde365b6168 EFLAGS: 00000246 ORIG_RAX: 0000000000000001RAX: ffffffffffffffda RBX: 00007fde359ac050 RCX: 00007fde3588c0d9RDX: 000000000000ffdc RSI: 00000000200000c0 RDI: 000000000000000aRBP: 00007fde358e7ae9 R08: 0000000000000000 R09: 0000000000000000R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000R13: 00007fde35acfb1f R14: 00007fde365b6300 R15: 0000000000022000 </TASK>Allocated by task 7618: kasan_save_stack+0x22/0x40 mm/kasan/common.c:45 kasan_set_track+0x25/0x30 mm/kasan/common.c:52 __kasan_slab_alloc+0x82/0x90 mm/kasan/common.c:325 kasan_slab_alloc include/linux/kasan.h:201 [inline] slab_post_alloc_hook mm/slab.h:737 [inline] slab_alloc_node mm/slub.c:3398 [inline] slab_alloc mm/slub.c:3406 [inline] __kmem_cache_alloc_lru mm/slub.c:3413 [inline] kmem_cache_alloc+0x2b4/0x3d0 mm/slub.c:3422 dst_alloc+0x14a/0x1f0 net/core/dst.c:92 ip6_dst_alloc+0x32/0xa0 net/ipv6/route.c:344 ip6_rt_pcpu_alloc net/ipv6/route.c:1369 [inline] rt6_make_pcpu_route net/ipv6/route.c:1417 [inline] ip6_pol_route+0x901/0x1190 net/ipv6/route.c:2254 pol_lookup_func include/net/ip6_fib.h:582 [inline] fib6_rule_lookup+0x52e/0x6f0 net/ipv6/fib6_rules.c:121 ip6_route_output_flags_noref+0x2e6/0x380 net/ipv6/route.c:2625 ip6_route_output_flags+0x76/0x320 net/ipv6/route.c:2638 ip6_route_output include/net/ip6_route.h:98 [inline] ip6_dst_lookup_tail+0x5ab/0x1620 net/ipv6/ip6_output.c:1092 ip6_dst_lookup_flow+0x90/0x1d0 net/ipv6/ip6_output.c:1222 ip6_sk_dst_lookup_flow+0x553/0x980 net/ipv6/ip6_output.c:1260 udpv6_sendmsg+0x151d/0x2c80 net/ipv6/udp.c:1554 inet6_sendmsg+0x9d/0xe0 net/ipv6/af_inet6.c:665 sock_sendmsg_nosec n---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ipv6: avoid use-after-free in ip6_fragment()Blamed commit claimed rcu_read_lock() was held by ip6_fragment() callers.It seems to not be always true, at least for UDP stack.syzbot reported:BUG: KASAN: use-after-free in ip6_dst_idev include/net/ip6_fib.h:245[inline]BUG: KASAN: use-after-free in ip6_fragment+0x2724/0x2770net/ipv6/ip6_output.c:951Read of size 8 at addr ffff88801d403e80 by task syz-executor.3/7618CPU: 1 PID: 7618 Comm: syz-executor.3 Not tainted6.1.0-rc6-syzkaller-00012-g4312098baf37 #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 10/26/2022Call Trace: <TASK> __dump_stack lib/dump_stack.c:88 [inline] dump_stack_lvl+0xd1/0x138 lib/dump_stack.c:106 print_address_description mm/kasan/report.c:284 [inline] print_report+0x15e/0x45d mm/kasan/report.c:395 kasan_report+0xbf/0x1f0 mm/kasan/report.c:495 ip6_dst_idev include/net/ip6_fib.h:245 [inline] ip6_fragment+0x2724/0x2770 net/ipv6/ip6_output.c:951 __ip6_finish_output net/ipv6/ip6_output.c:193 [inline] ip6_finish_output+0x9a3/0x1170 net/ipv6/ip6_output.c:206 NF_HOOK_COND include/linux/netfilter.h:291 [inline] ip6_output+0x1f1/0x540 net/ipv6/ip6_output.c:227 dst_output include/net/dst.h:445 [inline] ip6_local_out+0xb3/0x1a0 net/ipv6/output_core.c:161 ip6_send_skb+0xbb/0x340 net/ipv6/ip6_output.c:1966 udp_v6_send_skb+0x82a/0x18a0 net/ipv6/udp.c:1286 udp_v6_push_pending_frames+0x140/0x200 net/ipv6/udp.c:1313 udpv6_sendmsg+0x18da/0x2c80 net/ipv6/udp.c:1606 inet6_sendmsg+0x9d/0xe0 net/ipv6/af_inet6.c:665 sock_sendmsg_nosec net/socket.c:714 [inline] sock_sendmsg+0xd3/0x120 net/socket.c:734 sock_write_iter+0x295/0x3d0 net/socket.c:1108 call_write_iter include/linux/fs.h:2191 [inline] new_sync_write fs/read_write.c:491 [inline] vfs_write+0x9ed/0xdd0 fs/read_write.c:584 ksys_write+0x1ec/0x250 fs/read_write.c:637 do_syscall_x64 arch/x86/entry/common.c:50 [inline] do_syscall_64+0x39/0xb0 arch/x86/entry/common.c:80 entry_SYSCALL_64_after_hwframe+0x63/0xcdRIP: 0033:0x7fde3588c0d9Code: 28 00 00 00 75 05 48 83 c4 28 c3 e8 f1 19 00 00 90 48 89 f8 48 89 f748 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ffff 73 01 c3 48 c7 c1 b8 ff ff ff f7 d8 64 89 01 48RSP: 002b:00007fde365b6168 EFLAGS: 00000246 ORIG_RAX: 0000000000000001RAX: ffffffffffffffda RBX: 00007fde359ac050 RCX: 00007fde3588c0d9RDX: 000000000000ffdc RSI: 00000000200000c0 RDI: 000000000000000aRBP: 00007fde358e7ae9 R08: 0000000000000000 R09: 0000000000000000R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000R13: 00007fde35acfb1f R14: 00007fde365b6300 R15: 0000000000022000 </TASK>Allocated by task 7618: kasan_save_stack+0x22/0x40 mm/kasan/common.c:45 kasan_set_track+0x25/0x30 mm/kasan/common.c:52 __kasan_slab_alloc+0x82/0x90 mm/kasan/common.c:325 kasan_slab_alloc include/linux/kasan.h:201 [inline] slab_post_alloc_hook mm/slab.h:737 [inline] slab_alloc_node mm/slub.c:3398 [inline] slab_alloc mm/slub.c:3406 [inline] __kmem_cache_alloc_lru mm/slub.c:3413 [inline] kmem_cache_alloc+0x2b4/0x3d0 mm/slub.c:3422 dst_alloc+0x14a/0x1f0 net/core/dst.c:92 ip6_dst_alloc+0x32/0xa0 net/ipv6/route.c:344 ip6_rt_pcpu_alloc net/ipv6/route.c:1369 [inline] rt6_make_pcpu_route net/ipv6/route.c:1417 [inline] ip6_pol_route+0x901/0x1190 net/ipv6/route.c:2254 pol_lookup_func include/net/ip6_fib.h:582 [inline] fib6_rule_lookup+0x52e/0x6f0 net/ipv6/fib6_rules.c:121 ip6_route_output_flags_noref+0x2e6/0x380 net/ipv6/route.c:2625 ip6_route_output_flags+0x76/0x320 net/ipv6/route.c:2638 ip6_route_output include/net/ip6_route.h:98 [inline] ip6_dst_lookup_tail+0x5ab/0x1620 net/ipv6/ip6_output.c:1092 ip6_dst_lookup_flow+0x90/0x1d0 net/ipv6/ip6_output.c:1222 ip6_sk_dst_lookup_flow+0x553/0x980 net/ipv6/ip6_output.c:1260 udpv6_sendmsg+0x151d/0x2c80 net/ipv6/udp.c:1554 inet6_sendmsg+0x9d/0xe0 net/ipv6/af_inet6.c:665 sock_sendmsg_nosec n---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48956` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -17,11 +17,13 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-10-22",
+			"public_date": "2024-10-21 20:15:00 UTC",
 			"cve": {
 				"text": "CVE-2022-48956",
 				"href": "https://ubuntu.com/security/CVE-2022-48956",
-				"public": "20241022"
+				"public": "20241021",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
 			}
 		}
 	},
@@ -32,52 +34,56 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
-						"comment": "linux-raspi-realtime package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
-						"comment": "linux-realtime package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

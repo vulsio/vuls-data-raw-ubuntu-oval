@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-47702 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Fail verification for sign-extension of packet data/data_end/data_metasyzbot reported a kernel crash due to  commit 1f1e864b6555 (\"bpf: Handle sign-extenstin ctx member accesses\").The reason is due to sign-extension of 32-bit load forpacket data/data_end/data_meta uapi field.The original code looks like:        r2 = *(s32 *)(r1 + 76) /* load __sk_buff->data */        r3 = *(u32 *)(r1 + 80) /* load __sk_buff->data_end */        r0 = r2        r0 += 8        if r3 > r0 goto +1        ...Note that __sk_buff->data load has 32-bit sign extension.After verification and convert_ctx_accesses(), the final asm code lookslike:        r2 = *(u64 *)(r1 +208)        r2 = (s32)r2        r3 = *(u64 *)(r1 +80)        r0 = r2        r0 += 8        if r3 > r0 goto pc+1        ...Note that 'r2 = (s32)r2' may make the kernel __sk_buff->data addressinvalidwhich may cause runtime failure.Currently, in C code, typically we have        void *data = (void *)(long)skb->data;        void *data_end = (void *)(long)skb->data_end;        ...and it will generate        r2 = *(u64 *)(r1 +208)        r3 = *(u64 *)(r1 +80)        r0 = r2        r0 += 8        if r3 > r0 goto pc+1If we allow sign-extension,        void *data = (void *)(long)(int)skb->data;        void *data_end = (void *)(long)skb->data_end;        ...the generated code looks like        r2 = *(u64 *)(r1 +208)        r2 <<= 32        r2 s>>= 32        r3 = *(u64 *)(r1 +80)        r0 = r2        r0 += 8        if r3 > r0 goto pc+1and this will cause verification failure since \"r2 <<= 32\" is not allowedas \"r2\" is a packet pointer.To fix this issue for case  r2 = *(s32 *)(r1 + 76) /* load __sk_buff->data */this patch added additional checking in is_valid_access() callbackfunction for packet data/data_end/data_meta access. If those accessesare with sign-extenstion, the verification will fail.  [1] https://lore.kernel.org/bpf/000000000000c90eee061d236d37@google.com/",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Fail verification for sign-extension of packet data/data_end/data_metasyzbot reported a kernel crash due to  commit 1f1e864b6555 (\"bpf: Handle sign-extenstin ctx member accesses\").The reason is due to sign-extension of 32-bit load forpacket data/data_end/data_meta uapi field.The original code looks like:        r2 = *(s32 *)(r1 + 76) /* load __sk_buff->data */        r3 = *(u32 *)(r1 + 80) /* load __sk_buff->data_end */        r0 = r2        r0 += 8        if r3 > r0 goto +1        ...Note that __sk_buff->data load has 32-bit sign extension.After verification and convert_ctx_accesses(), the final asm code lookslike:        r2 = *(u64 *)(r1 +208)        r2 = (s32)r2        r3 = *(u64 *)(r1 +80)        r0 = r2        r0 += 8        if r3 > r0 goto pc+1        ...Note that 'r2 = (s32)r2' may make the kernel __sk_buff->data addressinvalidwhich may cause runtime failure.Currently, in C code, typically we have        void *data = (void *)(long)skb->data;        void *data_end = (void *)(long)skb->data_end;        ...and it will generate        r2 = *(u64 *)(r1 +208)        r3 = *(u64 *)(r1 +80)        r0 = r2        r0 += 8        if r3 > r0 goto pc+1If we allow sign-extension,        void *data = (void *)(long)(int)skb->data;        void *data_end = (void *)(long)skb->data_end;        ...the generated code looks like        r2 = *(u64 *)(r1 +208)        r2 <<= 32        r2 s>>= 32        r3 = *(u64 *)(r1 +80)        r0 = r2        r0 += 8        if r3 > r0 goto pc+1and this will cause verification failure since \"r2 <<= 32\" is not allowedas \"r2\" is a packet pointer.To fix this issue for case  r2 = *(s32 *)(r1 + 76) /* load __sk_buff->data */this patch added additional checking in is_valid_access() callbackfunction for packet data/data_end/data_meta access. If those accessesare with sign-extenstion, the verification will fail.  [1] https://lore.kernel.org/bpf/000000000000c90eee061d236d37@google.com/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-47702` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -17,11 +17,13 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-10-22",
+			"public_date": "2024-10-21 12:15:00 UTC",
 			"cve": {
 				"text": "CVE-2024-47702",
 				"href": "https://ubuntu.com/security/CVE-2024-47702",
-				"public": "20241022"
+				"public": "20241021",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
 			}
 		}
 	},
@@ -32,20 +34,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-49885 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm, slub: avoid zeroing kmalloc redzoneSince commit 946fa0dbf2d8 (\"mm/slub: extend redzone check to extraallocated kmalloc space than requested\"), setting orig_size treatsthe wasted space (object_size - orig_size) as a redzone. However withinit_on_free=1 we clear the full object->size, including the redzone.Additionally we clear the object metadata, including the stored orig_size,making it zero, which makes check_object() treat the whole object as aredzone.These issues lead to the following BUG report with \"slub_debug=FUZinit_on_free=1\":[    0.000000]=============================================================================[    0.000000] BUG kmalloc-8 (Not tainted): kmalloc Redzone overwritten[    0.000000]-----------------------------------------------------------------------------[    0.000000][    0.000000] 0xffff000010032858-0xffff00001003285f @offset=2136. Firstbyte 0x0 instead of 0xcc[    0.000000] FIX kmalloc-8: Restoring kmalloc Redzone0xffff000010032858-0xffff00001003285f=0xcc[    0.000000] Slab 0xfffffdffc0400c80 objects=36 used=23fp=0xffff000010032a18flags=0x3fffe0000000200(workingset|node=0|zone=0|lastcpupid=0x1ffff)[    0.000000] Object 0xffff000010032858 @offset=2136 fp=0xffff0000100328c8[    0.000000][    0.000000] Redzone  ffff000010032850: cc cc cc cc cc cc cc cc               ........[    0.000000] Object   ffff000010032858: cc cc cc cc cc cc cc cc               ........[    0.000000] Redzone  ffff000010032860: cc cc cc cc cc cc cc cc               ........[    0.000000] Padding  ffff0000100328b4: 00 00 00 00 00 00 00 00 00 00 0000              ............[    0.000000] CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tainted6.11.0-rc3-next-20240814-00004-g61844c55c3f4 #144[    0.000000] Hardware name: NXP i.MX95 19X19 board (DT)[    0.000000] Call trace:[    0.000000]  dump_backtrace+0x90/0xe8[    0.000000]  show_stack+0x18/0x24[    0.000000]  dump_stack_lvl+0x74/0x8c[    0.000000]  dump_stack+0x18/0x24[    0.000000]  print_trailer+0x150/0x218[    0.000000]  check_object+0xe4/0x454[    0.000000]  free_to_partial_list+0x2f8/0x5ecTo address the issue, use orig_size to clear the used area. And restorethe value of orig_size after clear the remaining area.When CONFIG_SLUB_DEBUG not defined, (get_orig_size()' directly returnss->object_size. So when using memset to init the area, the size can simplybe orig_size, as orig_size returns object_size when CONFIG_SLUB_DEBUG notenabled. And orig_size can never be bigger than object_size.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm, slub: avoid zeroing kmalloc redzoneSince commit 946fa0dbf2d8 (\"mm/slub: extend redzone check to extraallocated kmalloc space than requested\"), setting orig_size treatsthe wasted space (object_size - orig_size) as a redzone. However withinit_on_free=1 we clear the full object->size, including the redzone.Additionally we clear the object metadata, including the stored orig_size,making it zero, which makes check_object() treat the whole object as aredzone.These issues lead to the following BUG report with \"slub_debug=FUZinit_on_free=1\":[    0.000000]=============================================================================[    0.000000] BUG kmalloc-8 (Not tainted): kmalloc Redzone overwritten[    0.000000]-----------------------------------------------------------------------------[    0.000000][    0.000000] 0xffff000010032858-0xffff00001003285f @offset=2136. Firstbyte 0x0 instead of 0xcc[    0.000000] FIX kmalloc-8: Restoring kmalloc Redzone0xffff000010032858-0xffff00001003285f=0xcc[    0.000000] Slab 0xfffffdffc0400c80 objects=36 used=23fp=0xffff000010032a18flags=0x3fffe0000000200(workingset|node=0|zone=0|lastcpupid=0x1ffff)[    0.000000] Object 0xffff000010032858 @offset=2136 fp=0xffff0000100328c8[    0.000000][    0.000000] Redzone  ffff000010032850: cc cc cc cc cc cc cc cc               ........[    0.000000] Object   ffff000010032858: cc cc cc cc cc cc cc cc               ........[    0.000000] Redzone  ffff000010032860: cc cc cc cc cc cc cc cc               ........[    0.000000] Padding  ffff0000100328b4: 00 00 00 00 00 00 00 00 00 00 0000              ............[    0.000000] CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tainted6.11.0-rc3-next-20240814-00004-g61844c55c3f4 #144[    0.000000] Hardware name: NXP i.MX95 19X19 board (DT)[    0.000000] Call trace:[    0.000000]  dump_backtrace+0x90/0xe8[    0.000000]  show_stack+0x18/0x24[    0.000000]  dump_stack_lvl+0x74/0x8c[    0.000000]  dump_stack+0x18/0x24[    0.000000]  print_trailer+0x150/0x218[    0.000000]  check_object+0xe4/0x454[    0.000000]  free_to_partial_list+0x2f8/0x5ecTo address the issue, use orig_size to clear the used area. And restorethe value of orig_size after clear the remaining area.When CONFIG_SLUB_DEBUG not defined, (get_orig_size()' directly returnss->object_size. So when using memset to init the area, the size can simplybe orig_size, as orig_size returns object_size when CONFIG_SLUB_DEBUG notenabled. And orig_size can never be bigger than object_size.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-49885` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -17,11 +17,11 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-10-22",
+			"public_date": "2024-10-21 18:15:00 UTC",
 			"cve": {
 				"text": "CVE-2024-49885",
 				"href": "https://ubuntu.com/security/CVE-2024-49885",
-				"public": "20241022"
+				"public": "20241021"
 			}
 		}
 	},
@@ -32,36 +32,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}

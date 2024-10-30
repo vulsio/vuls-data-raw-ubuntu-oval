@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-47724 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: ath11k: use work queue to process beacon tx eventCommit 3a415daa3e8b (\"wifi: ath11k: add P2P IE in beacon template\")from Feb 28, 2024 (linux-next), leads to the following Smatch staticchecker warning:drivers/net/wireless/ath/ath11k/wmi.c:1742 ath11k_wmi_p2p_go_bcn_ie()warn: sleeping in atomic contextThe reason is that ath11k_bcn_tx_status_event() will directly call mightsleep function ath11k_wmi_cmd_send() during RCU read-side criticalsections. The call trace is like:ath11k_bcn_tx_status_event()-> rcu_read_lock()-> ath11k_mac_bcn_tx_event()\t-> ath11k_mac_setup_bcn_tmpl()\t……\t\t-> ath11k_wmi_bcn_tmpl()\t\t\t-> ath11k_wmi_cmd_send()-> rcu_read_unlock()Commit 886433a98425 (\"ath11k: add support for BSS color change\") added theath11k_mac_bcn_tx_event(), commit 01e782c89108 (\"ath11k: fix warningof RCU usage for ath11k_mac_get_arvif_by_vdev_id()\") added the RCU lockto avoid warning but also introduced this BUG.Use work queue to avoid directly calling ath11k_mac_bcn_tx_event()during RCU critical sections. No need to worry about the deletion of vifbecause cancel_work_sync() will drop the work if it doesn't start orblock vif deletion until the running work is done.Tested-on: WCN6855 hw2.0 PCIWLAN.HSP.1.1-03125-QCAHSPSWPL_V1_V2_SILICONZ_LITE-3.6510.30",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: ath11k: use work queue to process beacon tx eventCommit 3a415daa3e8b (\"wifi: ath11k: add P2P IE in beacon template\")from Feb 28, 2024 (linux-next), leads to the following Smatch staticchecker warning:drivers/net/wireless/ath/ath11k/wmi.c:1742 ath11k_wmi_p2p_go_bcn_ie()warn: sleeping in atomic contextThe reason is that ath11k_bcn_tx_status_event() will directly call mightsleep function ath11k_wmi_cmd_send() during RCU read-side criticalsections. The call trace is like:ath11k_bcn_tx_status_event()-> rcu_read_lock()-> ath11k_mac_bcn_tx_event()\t-> ath11k_mac_setup_bcn_tmpl()\t……\t\t-> ath11k_wmi_bcn_tmpl()\t\t\t-> ath11k_wmi_cmd_send()-> rcu_read_unlock()Commit 886433a98425 (\"ath11k: add support for BSS color change\") added theath11k_mac_bcn_tx_event(), commit 01e782c89108 (\"ath11k: fix warningof RCU usage for ath11k_mac_get_arvif_by_vdev_id()\") added the RCU lockto avoid warning but also introduced this BUG.Use work queue to avoid directly calling ath11k_mac_bcn_tx_event()during RCU critical sections. No need to worry about the deletion of vifbecause cancel_work_sync() will drop the work if it doesn't start orblock vif deletion until the running work is done.Tested-on: WCN6855 hw2.0 PCIWLAN.HSP.1.1-03125-QCAHSPSWPL_V1_V2_SILICONZ_LITE-3.6510.30\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-47724` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 16.04 LTS"
@@ -17,11 +17,13 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-10-22",
+			"public_date": "2024-10-21 13:15:00 UTC",
 			"cve": {
 				"text": "CVE-2024-47724",
 				"href": "https://ubuntu.com/security/CVE-2024-47724",
-				"public": "20241022"
+				"public": "20241021",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
 			}
 		}
 	},
@@ -32,40 +34,52 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201592890000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}

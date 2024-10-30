@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-47744 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: Use dedicated mutex to protect kvm_usage_count to avoid deadlockUse a dedicated mutex to guard kvm_usage_count to fix a potential deadlockon x86 due to a chain of locks and SRCU synchronizations.  Translating thebelow lockdep splat, CPU1 #6 will wait on CPU0 #1, CPU0 #8 will wait onCPU2 #3, and CPU2 #7 will wait on CPU1 #4 (if there's a writer, due to thefairness of r/w semaphores).    CPU0                     CPU1                     CPU21   lock(&kvm->slots_lock);2                                                     lock(&vcpu->mutex);3                                                     lock(&kvm->srcu);4                            lock(cpu_hotplug_lock);5                            lock(kvm_lock);6                            lock(&kvm->slots_lock);7lock(cpu_hotplug_lock);8   sync(&kvm->srcu);Note, there are likely more potential deadlocks in KVM x86, e.g. the samepattern of taking cpu_hotplug_lock outside of kvm_lock likely exists with__kvmclock_cpufreq_notifier():  cpuhp_cpufreq_online()  |  -> cpufreq_online()     |     -> cpufreq_gov_performance_limits()        |        -> __cpufreq_driver_target()           |           -> __target_index()              |              -> cpufreq_freq_transition_begin()                 |                 -> cpufreq_notify_transition()                    |                    -> ... __kvmclock_cpufreq_notifier()But, actually triggering such deadlocks is beyond rare due to thecombination of dependencies and timings involved.  E.g. the cpufreqnotifier is only used on older CPUs without a constant TSC, mucking withthe NX hugepage mitigation while VMs are running is very uncommon, anddoing so while also onlining/offlining a CPU (necessary to generatecontention on cpu_hotplug_lock) would be even more unusual.The most robust solution to the general cpu_hotplug_lock issue is likelyto switch vm_list to be an RCU-protected list, e.g. so that x86's cpufreqnotifier doesn't to take kvm_lock.  For now, settle for fixing the mostblatant deadlock, as switching to an RCU-protected list is a much moreinvolved change, but add a comment in locking.rst to call out that careneeds to be taken when walking holding kvm_lock and walking vm_list.  ======================================================  WARNING: possible circular locking dependency detected  6.10.0-smp--c257535a0c9d-pip #330 Tainted: G S         O  ------------------------------------------------------  tee/35048 is trying to acquire lock:  ff6a80eced71e0a8 (&kvm->slots_lock){+.+.}-{3:3}, at:set_nx_huge_pages+0x179/0x1e0 [kvm]  but task is already holding lock:  ffffffffc07abb08 (kvm_lock){+.+.}-{3:3}, at:set_nx_huge_pages+0x14a/0x1e0 [kvm]  which lock already depends on the new lock.   the existing dependency chain (in reverse order) is:  -> #3 (kvm_lock){+.+.}-{3:3}:         __mutex_lock+0x6a/0xb40         mutex_lock_nested+0x1f/0x30         kvm_dev_ioctl+0x4fb/0xe50 [kvm]         __se_sys_ioctl+0x7b/0xd0         __x64_sys_ioctl+0x21/0x30         x64_sys_call+0x15d0/0x2e60         do_syscall_64+0x83/0x160         entry_SYSCALL_64_after_hwframe+0x76/0x7e  -> #2 (cpu_hotplug_lock){++++}-{0:0}:         cpus_read_lock+0x2e/0xb0         static_key_slow_inc+0x16/0x30         kvm_lapic_set_base+0x6a/0x1c0 [kvm]         kvm_set_apic_base+0x8f/0xe0 [kvm]         kvm_set_msr_common+0x9ae/0xf80 [kvm]         vmx_set_msr+0xa54/0xbe0 [kvm_intel]         __kvm_set_msr+0xb6/0x1a0 [kvm]         kvm_arch_vcpu_ioctl+0xeca/0x10c0 [kvm]         kvm_vcpu_ioctl+0x485/0x5b0 [kvm]         __se_sys_ioctl+0x7b/0xd0         __x64_sys_ioctl+0x21/0x30         x64_sys_call+0x15d0/0x2e60         do_syscall_64+0x83/0x160         entry_SYSCALL_64_after_hwframe+0x76/0x7e  -> #1 (&kvm->srcu){.+.+}-{0:0}:         __synchronize_srcu+0x44/0x1a0---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: Use dedicated mutex to protect kvm_usage_count to avoid deadlockUse a dedicated mutex to guard kvm_usage_count to fix a potential deadlockon x86 due to a chain of locks and SRCU synchronizations.  Translating thebelow lockdep splat, CPU1 #6 will wait on CPU0 #1, CPU0 #8 will wait onCPU2 #3, and CPU2 #7 will wait on CPU1 #4 (if there's a writer, due to thefairness of r/w semaphores).    CPU0                     CPU1                     CPU21   lock(&kvm->slots_lock);2                                                     lock(&vcpu->mutex);3                                                     lock(&kvm->srcu);4                            lock(cpu_hotplug_lock);5                            lock(kvm_lock);6                            lock(&kvm->slots_lock);7lock(cpu_hotplug_lock);8   sync(&kvm->srcu);Note, there are likely more potential deadlocks in KVM x86, e.g. the samepattern of taking cpu_hotplug_lock outside of kvm_lock likely exists with__kvmclock_cpufreq_notifier():  cpuhp_cpufreq_online()  |  -> cpufreq_online()     |     -> cpufreq_gov_performance_limits()        |        -> __cpufreq_driver_target()           |           -> __target_index()              |              -> cpufreq_freq_transition_begin()                 |                 -> cpufreq_notify_transition()                    |                    -> ... __kvmclock_cpufreq_notifier()But, actually triggering such deadlocks is beyond rare due to thecombination of dependencies and timings involved.  E.g. the cpufreqnotifier is only used on older CPUs without a constant TSC, mucking withthe NX hugepage mitigation while VMs are running is very uncommon, anddoing so while also onlining/offlining a CPU (necessary to generatecontention on cpu_hotplug_lock) would be even more unusual.The most robust solution to the general cpu_hotplug_lock issue is likelyto switch vm_list to be an RCU-protected list, e.g. so that x86's cpufreqnotifier doesn't to take kvm_lock.  For now, settle for fixing the mostblatant deadlock, as switching to an RCU-protected list is a much moreinvolved change, but add a comment in locking.rst to call out that careneeds to be taken when walking holding kvm_lock and walking vm_list.  ======================================================  WARNING: possible circular locking dependency detected  6.10.0-smp--c257535a0c9d-pip #330 Tainted: G S         O  ------------------------------------------------------  tee/35048 is trying to acquire lock:  ff6a80eced71e0a8 (&kvm->slots_lock){+.+.}-{3:3}, at:set_nx_huge_pages+0x179/0x1e0 [kvm]  but task is already holding lock:  ffffffffc07abb08 (kvm_lock){+.+.}-{3:3}, at:set_nx_huge_pages+0x14a/0x1e0 [kvm]  which lock already depends on the new lock.   the existing dependency chain (in reverse order) is:  -> #3 (kvm_lock){+.+.}-{3:3}:         __mutex_lock+0x6a/0xb40         mutex_lock_nested+0x1f/0x30         kvm_dev_ioctl+0x4fb/0xe50 [kvm]         __se_sys_ioctl+0x7b/0xd0         __x64_sys_ioctl+0x21/0x30         x64_sys_call+0x15d0/0x2e60         do_syscall_64+0x83/0x160         entry_SYSCALL_64_after_hwframe+0x76/0x7e  -> #2 (cpu_hotplug_lock){++++}-{0:0}:         cpus_read_lock+0x2e/0xb0         static_key_slow_inc+0x16/0x30         kvm_lapic_set_base+0x6a/0x1c0 [kvm]         kvm_set_apic_base+0x8f/0xe0 [kvm]         kvm_set_msr_common+0x9ae/0xf80 [kvm]         vmx_set_msr+0xa54/0xbe0 [kvm_intel]         __kvm_set_msr+0xb6/0x1a0 [kvm]         kvm_arch_vcpu_ioctl+0xeca/0x10c0 [kvm]         kvm_vcpu_ioctl+0x485/0x5b0 [kvm]         __se_sys_ioctl+0x7b/0xd0         __x64_sys_ioctl+0x21/0x30         x64_sys_call+0x15d0/0x2e60         do_syscall_64+0x83/0x160         entry_SYSCALL_64_after_hwframe+0x76/0x7e  -> #1 (&kvm->srcu){.+.+}-{0:0}:         __synchronize_srcu+0x44/0x1a0---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-47744` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1018-aws - 5.4.0-1018.18~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1020-azure - 5.4.0-1020.20~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nlinux-image-unsigned-hmac-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-gcp - 5.4.0-1019.19~18.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-oracle - 5.4.0-1019.19~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
@@ -17,11 +17,13 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-10-22",
+			"public_date": "2024-10-21 13:15:00 UTC",
 			"cve": {
 				"text": "CVE-2024-47744",
 				"href": "https://ubuntu.com/security/CVE-2024-47744",
-				"public": "20241022"
+				"public": "20241021",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
 			}
 		}
 	},
@@ -32,24 +34,24 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
-						"comment": "linux package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000000",
+						"comment": "linux package in bionic, is related to the CVE in some way and has been fixed (note: '4.13.0-16.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
 						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000050",
+						"comment": "linux-hwe-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-37.41~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
-						"comment": "linux-kvm package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-kvm package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
-						"comment": "linux-aws package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-aws package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -60,56 +62,56 @@
 						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
-						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000100",
+						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1018.18~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
 						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
-						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000010",
+						"comment": "linux-azure-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1082.92')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000070",
+						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
-						"comment": "linux-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201499000000000",
+						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1027.32')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
-						"comment": "linux-aws-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201499000000010",
+						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
-						"comment": "linux-azure-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
-						"comment": "linux-gcp-fips package in fips-updates/bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201499000000020",
+						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2013.14')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
 						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
-						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000040",
+						"comment": "linux-gcp-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1071.81')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000090",
+						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -124,12 +126,12 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201499000000030",
+						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1010.11~18.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
-						"comment": "linux-oracle package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000110",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -140,16 +142,20 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000080",
+						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
 						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
-						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000060",
+						"comment": "linux-raspi-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1013.13~18.04.1')."
 					}
 				]
 			}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48984 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:can: slcan: fix freed work crashThe LTP test pty03 is causing a crash in slcan:  BUG: kernel NULL pointer dereference, address: 0000000000000008  #PF: supervisor read access in kernel mode  #PF: error_code(0x0000) - not-present page  PGD 0 P4D 0  Oops: 0000 [#1] PREEMPT SMP NOPTI  CPU: 0 PID: 348 Comm: kworker/0:3 Not tainted 6.0.8-1-default #1 openSUSETumbleweed 9d20364b934f5aab0a9bdf84e8f45cfdfae39dab  Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.15.0-0-g2dd4b9b-rebuilt.opensuse.org 04/01/2014  Workqueue:  0x0 (events)  RIP: 0010:process_one_work(/home/rich/kernel/linux/kernel/workqueue.c:706/home/rich/kernel/linux/kernel/workqueue.c:2185)  Code: 49 89 ff 41 56 41 55 41 54 55 53 48 89 f3 48 83 ec 10 48 8b 06 488b 6f 48 49 89 c4 45 30 e4 a8 04 b8 00 00 00 00 4c 0f 44 e0 <49> 8b 44 2408 44 8b a8 00 01 00 00 41 83 e5 20 f6 45 10 04 75 0e  RSP: 0018:ffffaf7b40f47e98 EFLAGS: 00010046  RAX: 0000000000000000 RBX: ffff9d644e1b8b48 RCX: ffff9d649e439968  RDX: 00000000ffff8455 RSI: ffff9d644e1b8b48 RDI: ffff9d64764aa6c0  RBP: ffff9d649e4335c0 R08: 0000000000000c00 R09: ffff9d64764aa734  R10: 0000000000000007 R11: 0000000000000001 R12: 0000000000000000  R13: ffff9d649e4335e8 R14: ffff9d64490da780 R15: ffff9d64764aa6c0  FS:  0000000000000000(0000) GS:ffff9d649e400000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 0000000000000008 CR3: 0000000036424000 CR4: 00000000000006f0  Call Trace:   <TASK>  worker_thread (/home/rich/kernel/linux/kernel/workqueue.c:2436)  kthread (/home/rich/kernel/linux/kernel/kthread.c:376)  ret_from_fork (/home/rich/kernel/linux/arch/x86/entry/entry_64.S:312)Apparently, the slcan's tx_work is freed while being scheduled. Whileslcan_netdev_close() (netdev side) calls flush_work(&sl->tx_work),slcan_close() (tty side) does not. So when the netdev is never set UP,but the tty is stuffed with bytes and forced to wakeup write, the workis scheduled, but never flushed.So add an additional flush_work() to slcan_close() to be sure the workis flushed under all circumstances.The Fixes commit below moved flush_work() from slcan_close() toslcan_netdev_close(). What was the rationale behind it? Maybe we candrop the one in slcan_netdev_close()?I see the same pattern in can327. So it perhaps needs the very same fix.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:can: slcan: fix freed work crashThe LTP test pty03 is causing a crash in slcan:  BUG: kernel NULL pointer dereference, address: 0000000000000008  #PF: supervisor read access in kernel mode  #PF: error_code(0x0000) - not-present page  PGD 0 P4D 0  Oops: 0000 [#1] PREEMPT SMP NOPTI  CPU: 0 PID: 348 Comm: kworker/0:3 Not tainted 6.0.8-1-default #1 openSUSETumbleweed 9d20364b934f5aab0a9bdf84e8f45cfdfae39dab  Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.15.0-0-g2dd4b9b-rebuilt.opensuse.org 04/01/2014  Workqueue:  0x0 (events)  RIP: 0010:process_one_work(/home/rich/kernel/linux/kernel/workqueue.c:706/home/rich/kernel/linux/kernel/workqueue.c:2185)  Code: 49 89 ff 41 56 41 55 41 54 55 53 48 89 f3 48 83 ec 10 48 8b 06 488b 6f 48 49 89 c4 45 30 e4 a8 04 b8 00 00 00 00 4c 0f 44 e0 <49> 8b 44 2408 44 8b a8 00 01 00 00 41 83 e5 20 f6 45 10 04 75 0e  RSP: 0018:ffffaf7b40f47e98 EFLAGS: 00010046  RAX: 0000000000000000 RBX: ffff9d644e1b8b48 RCX: ffff9d649e439968  RDX: 00000000ffff8455 RSI: ffff9d644e1b8b48 RDI: ffff9d64764aa6c0  RBP: ffff9d649e4335c0 R08: 0000000000000c00 R09: ffff9d64764aa734  R10: 0000000000000007 R11: 0000000000000001 R12: 0000000000000000  R13: ffff9d649e4335e8 R14: ffff9d64490da780 R15: ffff9d64764aa6c0  FS:  0000000000000000(0000) GS:ffff9d649e400000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 0000000000000008 CR3: 0000000036424000 CR4: 00000000000006f0  Call Trace:   <TASK>  worker_thread (/home/rich/kernel/linux/kernel/workqueue.c:2436)  kthread (/home/rich/kernel/linux/kernel/kthread.c:376)  ret_from_fork (/home/rich/kernel/linux/arch/x86/entry/entry_64.S:312)Apparently, the slcan's tx_work is freed while being scheduled. Whileslcan_netdev_close() (netdev side) calls flush_work(&sl->tx_work),slcan_close() (tty side) does not. So when the netdev is never set UP,but the tty is stuffed with bytes and forced to wakeup write, the workis scheduled, but never flushed.So add an additional flush_work() to slcan_close() to be sure the workis flushed under all circumstances.The Fixes commit below moved flush_work() from slcan_close() toslcan_netdev_close(). What was the rationale behind it? Maybe we candrop the one in slcan_netdev_close()?I see the same pattern in can327. So it perhaps needs the very same fix.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48984` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -17,11 +17,13 @@
 		"advisory": {
 			"severity": "Medium",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
-			"public_date": "2024-10-22",
+			"public_date": "2024-10-21 20:15:00 UTC",
 			"cve": {
 				"text": "CVE-2022-48984",
 				"href": "https://ubuntu.com/security/CVE-2022-48984",
-				"public": "20241022"
+				"public": "20241021",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
 			}
 		}
 	},
@@ -32,52 +34,56 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
-						"comment": "linux-raspi-realtime package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
-						"comment": "linux-realtime package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

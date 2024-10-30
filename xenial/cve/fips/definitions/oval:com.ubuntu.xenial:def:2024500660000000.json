@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024500660000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50066 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/mremap: fix move_normal_pmd/retract_page_tables raceIn mremap(), move_page_tables() looks at the type of the PMD entry and thespecified address range to figure out by which method the next chunk ofpage table entries should be moved.At that point, the mmap_lock is held in write mode, but no rmap locks areheld yet.  For PMD entries that point to page tables and are fully coveredby the source address range, move_pgt_entry(NORMAL_PMD, ...) is called,which first takes rmap locks, then does move_normal_pmd().move_normal_pmd() takes the necessary page table locks at source anddestination, then moves an entire page table from the source to thedestination.The problem is: The rmap locks, which protect against concurrent pagetable removal by retract_page_tables() in the THP code, are only takenafter the PMD entry has been read and it has been decided how to move it.So we can race as follows (with two processes that have mappings of thesame tmpfs file that is stored on a tmpfs mount with huge=advise); notethat process A accesses page tables through the MM while process B does itthrough the file rmap:process A                      process B=========                      =========mremap  mremap_to    move_vma      move_page_tables        get_old_pmd        alloc_new_pmd                      *** PREEMPT ***                               madvise(MADV_COLLAPSE)                                 do_madvise                                   madvise_walk_vmas                                     madvise_vma_behavior                                       madvise_collapse                                         hpage_collapse_scan_file                                           collapse_file                                             retract_page_tables                                               i_mmap_lock_read(mapping)                                               pmdp_collapse_flush                                               i_mmap_unlock_read(mapping)        move_pgt_entry(NORMAL_PMD, ...)          take_rmap_locks          move_normal_pmd          drop_rmap_locksWhen this happens, move_normal_pmd() can end up creating bogus PMD entriesin the line `pmd_populate(mm, new_pmd, pmd_pgtable(pmd))`.  The effectdepends on arch-specific and machine-specific details; on x86, you can endup with physical page 0 mapped as a page table, which is likelyexploitable for user->kernel privilege escalation.Fix the race by letting process B recheck that the PMD still points to apage table after the rmap locks have been taken.  Otherwise, we bail andlet the caller fall back to the PTE-level copying path, which will thenbail immediately at the pmd_none() check.Bug reachability: Reaching this bug requires that you can createshmem/file THP mappings - anonymous THP uses different code that doesn'tzap stuff under rmap locks.  File THP is gated on an experimental configflag (CONFIG_READ_ONLY_THP_FOR_FS), so on normal distro kernels you needshmem THP to hit this bug.  As far as I know, getting shmem THP normallyrequires that you can mount your own tmpfs with the right mount flags,which would require creating your own user+mount namespace; though I don'tknow if some distros maybe enable shmem THP by default or something likethat.Bug impact: This issue can likely be used for user->kernel privilegeescalation when it is reachable.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50066` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50066",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50066"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-23 06:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-50066",
+				"href": "https://ubuntu.com/security/CVE-2024-50066",
+				"public": "20241023"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201513390000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201589440000000",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201592890000000",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

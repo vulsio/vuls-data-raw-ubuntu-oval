@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024500770000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50077 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:Bluetooth: ISO: Fix multiple init when debugfs is disabledIf bt_debugfs is not created successfully, which happens if eitherCONFIG_DEBUG_FS or CONFIG_DEBUG_FS_ALLOW_ALL is unset, then iso_init()returns early and does not set iso_inited to true. This means that asubsequent call to iso_init() will result in duplicate calls toproto_register(), bt_sock_register(), etc.With CONFIG_LIST_HARDENED and CONFIG_BUG_ON_DATA_CORRUPTION enabled, theduplicate call to proto_register() triggers this BUG():  list_add double add: new=ffffffffc0b280d0, prev=ffffffffbab56250,    next=ffffffffc0b280d0.  ------------[ cut here ]------------  kernel BUG at lib/list_debug.c:35!  Oops: invalid opcode: 0000 [#1] PREEMPT SMP PTI  CPU: 2 PID: 887 Comm: bluetoothd Not tainted 6.10.11-1-ao-desktop #1  RIP: 0010:__list_add_valid_or_report+0x9a/0xa0  ...    __list_add_valid_or_report+0x9a/0xa0    proto_register+0x2b5/0x340    iso_init+0x23/0x150 [bluetooth]    set_iso_socket_func+0x68/0x1b0 [bluetooth]    kmem_cache_free+0x308/0x330    hci_sock_sendmsg+0x990/0x9e0 [bluetooth]    __sock_sendmsg+0x7b/0x80    sock_write_iter+0x9a/0x110    do_iter_readv_writev+0x11d/0x220    vfs_writev+0x180/0x3e0    do_writev+0xca/0x100  ...This change removes the early return. The check for iso_debugfs beingNULL was unnecessary, it is always NULL when iso_inited is false.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50077",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50077"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-29",
+			"cve": {
+				"text": "CVE-2024-50077",
+				"href": "https://ubuntu.com/security/CVE-2024-50077",
+				"public": "20241029"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
