@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-46740 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:binder: fix UAF caused by offsets overwriteBinder objects are processed and copied individually into the targetbuffer during transactions. Any raw data in-between these objects iscopied as well. However, this raw data copy lacks an out-of-boundscheck. If the raw data exceeds the data section size then the copyoverwrites the offsets section. This eventually triggers an error thatattempts to unwind the processed objects. However, at this point theoffsets used to index these objects are now corrupted.Unwinding with corrupted offsets can result in decrements of arbitrarynodes and lead to their premature release. Other users of such nodes areleft with a dangling pointer triggering a use-after-free. This issue ismade evident by the following KASAN report (trimmed):  ==================================================================  BUG: KASAN: slab-use-after-free in _raw_spin_lock+0xe4/0x19c  Write of size 4 at addr ffff47fc91598f04 by task binder-util/743  CPU: 9 UID: 0 PID: 743 Comm: binder-util Not tainted 6.11.0-rc4 #1  Hardware name: linux,dummy-virt (DT)  Call trace:   _raw_spin_lock+0xe4/0x19c   binder_free_buf+0x128/0x434   binder_thread_write+0x8a4/0x3260   binder_ioctl+0x18f0/0x258c  [...]  Allocated by task 743:   __kmalloc_cache_noprof+0x110/0x270   binder_new_node+0x50/0x700   binder_transaction+0x413c/0x6da8   binder_thread_write+0x978/0x3260   binder_ioctl+0x18f0/0x258c  [...]  Freed by task 745:   kfree+0xbc/0x208   binder_thread_read+0x1c5c/0x37d4   binder_ioctl+0x16d8/0x258c  [...]  ==================================================================To avoid this issue, let's check that the raw data copy is within theboundaries of the data section.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46740` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nlinux-image-unsigned-hmac-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:binder: fix UAF caused by offsets overwriteBinder objects are processed and copied individually into the targetbuffer during transactions. Any raw data in-between these objects iscopied as well. However, this raw data copy lacks an out-of-boundscheck. If the raw data exceeds the data section size then the copyoverwrites the offsets section. This eventually triggers an error thatattempts to unwind the processed objects. However, at this point theoffsets used to index these objects are now corrupted.Unwinding with corrupted offsets can result in decrements of arbitrarynodes and lead to their premature release. Other users of such nodes areleft with a dangling pointer triggering a use-after-free. This issue ismade evident by the following KASAN report (trimmed):  ==================================================================  BUG: KASAN: slab-use-after-free in _raw_spin_lock+0xe4/0x19c  Write of size 4 at addr ffff47fc91598f04 by task binder-util/743  CPU: 9 UID: 0 PID: 743 Comm: binder-util Not tainted 6.11.0-rc4 #1  Hardware name: linux,dummy-virt (DT)  Call trace:   _raw_spin_lock+0xe4/0x19c   binder_free_buf+0x128/0x434   binder_thread_write+0x8a4/0x3260   binder_ioctl+0x18f0/0x258c  [...]  Allocated by task 743:   __kmalloc_cache_noprof+0x110/0x270   binder_new_node+0x50/0x700   binder_transaction+0x413c/0x6da8   binder_thread_write+0x978/0x3260   binder_ioctl+0x18f0/0x258c  [...]  Freed by task 745:   kfree+0xbc/0x208   binder_thread_read+0x1c5c/0x37d4   binder_ioctl+0x16d8/0x258c  [...]  ==================================================================To avoid this issue, let's check that the raw data copy is within theboundaries of the data section.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46740` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-unsigned-5.4.0-200-generic - 5.4.0-200.220~18.04.1\nlinux-image-unsigned-5.4.0-200-lowlatency - 5.4.0-200.220~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nlinux-image-unsigned-hmac-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1139-gcp - 5.4.0-1139.148~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1082-ibm - 5.4.0-1082.87~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
@@ -23,8 +23,13 @@
 				"href": "https://ubuntu.com/security/CVE-2024-46740",
 				"public": "20240918",
 				"cvss_score": "7.8",
-				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
-			}
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+				"usns": "7088-1"
+			},
+			"public_date_at_usn": "2024-09-18 08:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-7088-1"
+			]
 		}
 	},
 	"notes": {},
@@ -42,8 +47,8 @@
 						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-200.220~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000000",
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-200.220~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
@@ -110,8 +115,8 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1139.148~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000010",
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1139.148~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -126,8 +131,8 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1082.87~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000020",
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1082.87~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000110",

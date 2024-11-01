@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-43914 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:md/raid5: avoid BUG_ON() while continue reshape after reassemblingCurrently, mdadm support --revert-reshape to abort the reshape whilereassembling, as the test 07revert-grow. However, following BUG_ON()can be triggerred by the test:kernel BUG at drivers/md/raid5.c:6278!invalid opcode: 0000 [#1] PREEMPT SMP PTIirq event stamp: 158985CPU: 6 PID: 891 Comm: md0_reshape Not tainted 6.9.0-03335-g7592a0b0049a #94RIP: 0010:reshape_request+0x3f1/0xe60Call Trace: <TASK> raid5_sync_request+0x43d/0x550 md_do_sync+0xb7a/0x2110 md_thread+0x294/0x2b0 kthread+0x147/0x1c0 ret_from_fork+0x59/0x70 ret_from_fork_asm+0x1a/0x30 </TASK>Root cause is that --revert-reshape update the raid_disks from 5 to 4,while reshape position is still set, and after reassembling the array,reshape position will be read from super block, then during reshape thechecking of 'writepos' that is caculated by old reshape position willfail.Fix this panic the easy way first, by converting the BUG_ON() toWARN_ON(), and stop the reshape if checkings fail.Noted that mdadm must fix --revert-shape as well, and probably md/raidshould enhance metadata validation as well, however this meansreassemble will fail and there must be user tools to fix the wrongmetadata.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:md/raid5: avoid BUG_ON() while continue reshape after reassemblingCurrently, mdadm support --revert-reshape to abort the reshape whilereassembling, as the test 07revert-grow. However, following BUG_ON()can be triggerred by the test:kernel BUG at drivers/md/raid5.c:6278!invalid opcode: 0000 [#1] PREEMPT SMP PTIirq event stamp: 158985CPU: 6 PID: 891 Comm: md0_reshape Not tainted 6.9.0-03335-g7592a0b0049a #94RIP: 0010:reshape_request+0x3f1/0xe60Call Trace: <TASK> raid5_sync_request+0x43d/0x550 md_do_sync+0xb7a/0x2110 md_thread+0x294/0x2b0 kthread+0x147/0x1c0 ret_from_fork+0x59/0x70 ret_from_fork_asm+0x1a/0x30 </TASK>Root cause is that --revert-reshape update the raid_disks from 5 to 4,while reshape position is still set, and after reassembling the array,reshape position will be read from super block, then during reshape thechecking of 'writepos' that is caculated by old reshape position willfail.Fix this panic the easy way first, by converting the BUG_ON() toWARN_ON(), and stop the reshape if checkings fail.Noted that mdadm must fix --revert-shape as well, and probably md/raidshould enhance metadata validation as well, however this meansreassemble will fail and there must be user tools to fix the wrongmetadata.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-43914` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-200-generic - 5.4.0-200.220~18.04.1\nlinux-image-unsigned-5.4.0-200-lowlatency - 5.4.0-200.220~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1139-gcp - 5.4.0-1139.148~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1082-ibm - 5.4.0-1082.87~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -23,8 +23,13 @@
 				"href": "https://ubuntu.com/security/CVE-2024-43914",
 				"public": "20240826",
 				"cvss_score": "5.5",
-				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
-			}
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "7088-1"
+			},
+			"public_date_at_usn": "2024-08-26 11:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-7088-1"
+			]
 		}
 	},
 	"notes": {},
@@ -42,8 +47,8 @@
 						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-200.220~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000000",
+						"comment": "linux-hwe-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-200.220~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
@@ -94,8 +99,8 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1139.148~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000010",
+						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1139.148~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -110,8 +115,8 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1082.87~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000020",
+						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1082.87~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
