@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2023529200000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52920 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: support non-r10 register spill/fill to/from stack in precisiontrackingUse instruction (jump) history to record instructions that performedregister spill/fill to/from stack, regardless if this was done throughread-only r10 register, or any other register after copying r10 into it*and* potentially adjusting offset.To make this work reliably, we push extra per-instruction flags intoinstruction history, encoding stack slot index (spi) and stack framenumber in extra 10 bit flags we take away from prev_idx in instructionhistory. We don't touch idx field for maximum performance, as it'schecked most frequently during backtracking.This change removes basically the last remaining practical limitation ofprecision backtracking logic in BPF verifier. It fixes knowndeficiencies, but also opens up new opportunities to reduce number ofverified states, explored in the subsequent patches.There are only three differences in selftests' BPF object filesaccording to veristat, all in the positive direction (less states).File                                    Program        Insns (A)  Insns (B) Insns  (DIFF)  States (A)  States (B)  States (DIFF)--------------------------------------  -------------  ---------  --------- -------------  ----------  ----------  -------------test_cls_redirect_dynptr.bpf.linked3.o  cls_redirect        2987       2864 -123 (-4.12%)         240         231    -9 (-3.75%)xdp_synproxy_kern.bpf.linked3.o         syncookie_tc       82848      82661 -187 (-0.23%)        5107        5073   -34 (-0.67%)xdp_synproxy_kern.bpf.linked3.o         syncookie_xdp      85116      84964 -152 (-0.18%)        5162        5130   -32 (-0.62%)Note, I avoided renaming jmp_history to more generic insn_hist tominimize number of lines changed and potential merge conflicts betweenbpf and bpf-next trees.Notice also cur_hist_entry pointer reset to NULL at the beginning ofinstruction verification loop. This pointer avoids the problem ofrelying on last jump history entry's insn_idx to determine whether wealready have entry for current instruction or not. It can happen that weadded jump history entry because current instruction is_jmp_point(), butalso we need to add instruction flags for stack access. In this case, wedon't want to entries, so we need to reuse last added entry, if it ispresent.Relying on insn_idx comparison has the same ambiguity problem as the onethat was fixed recently in [0], so we avoid that.  [0]https://patchwork.kernel.org/project/netdevbpf/patch/20231110002638.4168352-3-andrii@kernel.org/",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52920",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52920"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-05 10:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52920",
+				"href": "https://ubuntu.com/security/CVE-2023-52920",
+				"public": "20241105"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
