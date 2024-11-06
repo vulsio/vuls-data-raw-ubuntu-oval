@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024501000000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50100 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:USB: gadget: dummy-hcd: Fix \"task hung\" problemThe syzbot fuzzer has been encountering \"task hung\" problems eversince the dummy-hcd driver was changed to use hrtimers instead ofregular timers.  It turns out that the problems are caused by a subtledifference between the timer_pending() and hrtimer_active() APIs.The changeover blindly replaced the first by the second.  However,timer_pending() returns True when the timer is queued but not when itscallback is running, whereas hrtimer_active() returns True when thehrtimer is queued _or_ its callback is running.  This differenceoccasionally caused dummy_urb_enqueue() to think that the callbackroutine had not yet started when in fact it was almost finished.  As aresult the hrtimer was not restarted, which made it impossible for thedriver to dequeue later the URB that was just enqueued.  This causedusb_kill_urb() to hang, and things got worse from there.Since hrtimers have no API for telling when they are queued and thecallback isn't running, the driver must keep track of this for itself.That's what this patch does, adding a new \"timer_pending\" flag andsetting or clearing it at the appropriate times.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50100",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50100"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-05 18:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-50100",
+				"href": "https://ubuntu.com/security/CVE-2024-50100",
+				"public": "20241105"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

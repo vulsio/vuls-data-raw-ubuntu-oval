@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2024422430000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-42243 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/filemap: make MAX_PAGECACHE_ORDER acceptable to xarrayPatch series \"mm/filemap: Limit page cache size to that supported byxarray\", v2.Currently, xarray can't support arbitrary page cache size.  More detailscan be found from the WARN_ON() statement in xas_split_alloc().  In ourtest whose code is attached below, we hit the WARN_ON() on ARM64 systemwhere the base page size is 64KB and huge page size is 512MB.  The issuewas reported long time ago and some discussions on it can be found here[1].[1] https://www.spinics.net/lists/linux-xfs/msg75404.htmlIn order to fix the issue, we need to adjust MAX_PAGECACHE_ORDER to onesupported by xarray and avoid PMD-sized page cache if needed.  The codechanges are suggested by David Hildenbrand.PATCH[1] adjusts MAX_PAGECACHE_ORDER to that supported by xarrayPATCH[2-3] avoids PMD-sized page cache in the synchronous readahead pathPATCH[4] avoids PMD-sized page cache for shmem files if neededTest program============# cat test.c#define _GNU_SOURCE#include <stdio.h>#include <stdlib.h>#include <unistd.h>#include <string.h>#include <fcntl.h>#include <errno.h>#include <sys/syscall.h>#include <sys/mman.h>#define TEST_XFS_FILENAME\t\"/tmp/data\"#define TEST_SHMEM_FILENAME\t\"/dev/shm/data\"#define TEST_MEM_SIZE\t\t0x20000000int main(int argc, char **argv){\tconst char *filename;\tint fd = 0;\tvoid *buf = (void *)-1, *p;\tint pgsize = getpagesize();\tint ret;\tif (pgsize != 0x10000) {\t\tfprintf(stderr, \"64KB base page size is required\\n\");\t\treturn -EPERM;\t}\tsystem(\"echo force > /sys/kernel/mm/transparent_hugepage/shmem_enabled\");\tsystem(\"rm -fr /tmp/data\");\tsystem(\"rm -fr /dev/shm/data\");\tsystem(\"echo 1 > /proc/sys/vm/drop_caches\");\t/* Open xfs or shmem file */\tfilename = TEST_XFS_FILENAME;\tif (argc > 1 && !strcmp(argv[1], \"shmem\"))\t\tfilename = TEST_SHMEM_FILENAME;\tfd = open(filename, O_CREAT | O_RDWR | O_TRUNC);\tif (fd < 0) {\t\tfprintf(stderr, \"Unable to open <%s>\\n\", filename);\t\treturn -EIO;\t}\t/* Extend file size */\tret = ftruncate(fd, TEST_MEM_SIZE);\tif (ret) {\t\tfprintf(stderr, \"Error %d to ftruncate()\\n\", ret);\t\tgoto cleanup;\t}\t/* Create VMA */\tbuf = mmap(NULL, TEST_MEM_SIZE,\t\t   PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);\tif (buf == (void *)-1) {\t\tfprintf(stderr, \"Unable to mmap <%s>\\n\", filename);\t\tgoto cleanup;\t}\tfprintf(stdout, \"mapped buffer at 0x%p\\n\", buf);\tret = madvise(buf, TEST_MEM_SIZE, MADV_HUGEPAGE);        if (ret) {\t\tfprintf(stderr, \"Unable to madvise(MADV_HUGEPAGE)\\n\");\t\tgoto cleanup;\t}\t/* Populate VMA */\tret = madvise(buf, TEST_MEM_SIZE, MADV_POPULATE_WRITE);\tif (ret) {\t\tfprintf(stderr, \"Error %d to madvise(MADV_POPULATE_WRITE)\\n\", ret);\t\tgoto cleanup;\t}\t/* Punch the file to enforce xarray split */\tret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,        \t\tTEST_MEM_SIZE - pgsize, pgsize);\tif (ret)\t\tfprintf(stderr, \"Error %d to fallocate()\\n\", ret);cleanup:\tif (buf != (void *)-1)\t\tmunmap(buf, TEST_MEM_SIZE);\tif (fd > 0)\t\tclose(fd);\treturn 0;}# gcc test.c -o test# cat /proc/1/smaps | grep KernelPageSize | head -n 1KernelPageSize:       64 kB# ./test shmem   :------------[ cut here ]------------WARNING: CPU: 17 PID: 5253 at lib/xarray.c:1025 xas_split_alloc+0xf8/0x128Modules linked in: nft_fib_inet nft_fib_ipv4 nft_fib_ipv6 nft_fib  \\nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct    \\nft_chain_nat nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4    \\ip_set nf_tables rfkill nfnetlink vfat fat virtio_balloon          \\drm fuse xfs libcrc32c crct10dif_ce ghash_ce sha2_ce sha256_arm64  \\virtio_net sha1_ce net_failover failover virtio_console virtio_blk \\dimlib virtio_mmioCPU: 17 PID: 5253 Comm: test Kdump: loaded Tainted: G W 6.10.0-rc5-gavin+#12Hardware name: QEMU KVM Virtual Machine, BIOS edk2-20240524-1.el905/24/2024pstate: 83400005 (Nzcv daif +PAN -UAO +TC---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42243` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"title": "CVE-2024-42243 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/filemap: make MAX_PAGECACHE_ORDER acceptable to xarrayPatch series \"mm/filemap: Limit page cache size to that supported byxarray\", v2.Currently, xarray can't support arbitrary page cache size.  More detailscan be found from the WARN_ON() statement in xas_split_alloc().  In ourtest whose code is attached below, we hit the WARN_ON() on ARM64 systemwhere the base page size is 64KB and huge page size is 512MB.  The issuewas reported long time ago and some discussions on it can be found here[1].[1] https://www.spinics.net/lists/linux-xfs/msg75404.htmlIn order to fix the issue, we need to adjust MAX_PAGECACHE_ORDER to onesupported by xarray and avoid PMD-sized page cache if needed.  The codechanges are suggested by David Hildenbrand.PATCH[1] adjusts MAX_PAGECACHE_ORDER to that supported by xarrayPATCH[2-3] avoids PMD-sized page cache in the synchronous readahead pathPATCH[4] avoids PMD-sized page cache for shmem files if neededTest program============# cat test.c#define _GNU_SOURCE#include <stdio.h>#include <stdlib.h>#include <unistd.h>#include <string.h>#include <fcntl.h>#include <errno.h>#include <sys/syscall.h>#include <sys/mman.h>#define TEST_XFS_FILENAME\t\"/tmp/data\"#define TEST_SHMEM_FILENAME\t\"/dev/shm/data\"#define TEST_MEM_SIZE\t\t0x20000000int main(int argc, char **argv){\tconst char *filename;\tint fd = 0;\tvoid *buf = (void *)-1, *p;\tint pgsize = getpagesize();\tint ret;\tif (pgsize != 0x10000) {\t\tfprintf(stderr, \"64KB base page size is required\\n\");\t\treturn -EPERM;\t}\tsystem(\"echo force > /sys/kernel/mm/transparent_hugepage/shmem_enabled\");\tsystem(\"rm -fr /tmp/data\");\tsystem(\"rm -fr /dev/shm/data\");\tsystem(\"echo 1 > /proc/sys/vm/drop_caches\");\t/* Open xfs or shmem file */\tfilename = TEST_XFS_FILENAME;\tif (argc > 1 && !strcmp(argv[1], \"shmem\"))\t\tfilename = TEST_SHMEM_FILENAME;\tfd = open(filename, O_CREAT | O_RDWR | O_TRUNC);\tif (fd < 0) {\t\tfprintf(stderr, \"Unable to open <%s>\\n\", filename);\t\treturn -EIO;\t}\t/* Extend file size */\tret = ftruncate(fd, TEST_MEM_SIZE);\tif (ret) {\t\tfprintf(stderr, \"Error %d to ftruncate()\\n\", ret);\t\tgoto cleanup;\t}\t/* Create VMA */\tbuf = mmap(NULL, TEST_MEM_SIZE,\t\t   PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);\tif (buf == (void *)-1) {\t\tfprintf(stderr, \"Unable to mmap <%s>\\n\", filename);\t\tgoto cleanup;\t}\tfprintf(stdout, \"mapped buffer at 0x%p\\n\", buf);\tret = madvise(buf, TEST_MEM_SIZE, MADV_HUGEPAGE);        if (ret) {\t\tfprintf(stderr, \"Unable to madvise(MADV_HUGEPAGE)\\n\");\t\tgoto cleanup;\t}\t/* Populate VMA */\tret = madvise(buf, TEST_MEM_SIZE, MADV_POPULATE_WRITE);\tif (ret) {\t\tfprintf(stderr, \"Error %d to madvise(MADV_POPULATE_WRITE)\\n\", ret);\t\tgoto cleanup;\t}\t/* Punch the file to enforce xarray split */\tret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,        \t\tTEST_MEM_SIZE - pgsize, pgsize);\tif (ret)\t\tfprintf(stderr, \"Error %d to fallocate()\\n\", ret);cleanup:\tif (buf != (void *)-1)\t\tmunmap(buf, TEST_MEM_SIZE);\tif (fd > 0)\t\tclose(fd);\treturn 0;}# gcc test.c -o test# cat /proc/1/smaps | grep KernelPageSize | head -n 1KernelPageSize:       64 kB# ./test shmem   :------------[ cut here ]------------WARNING: CPU: 17 PID: 5253 at lib/xarray.c:1025 xas_split_alloc+0xf8/0x128Modules linked in: nft_fib_inet nft_fib_ipv4 nft_fib_ipv6 nft_fib  \\nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct    \\nft_chain_nat nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4    \\ip_set nf_tables rfkill nfnetlink vfat fat virtio_balloon          \\drm fuse xfs libcrc32c crct10dif_ce ghash_ce sha2_ce sha256_arm64  \\virtio_net sha1_ce net_failover failover virtio_console virtio_blk \\dimlib virtio_mmioCPU: 17 PID: 5253 Comm: test Kdump: loaded Tainted: G W 6.10.0-rc5-gavin+#12Hardware name: QEMU KVM Virtual Machine, BIOS edk2-20240524-1.el905/24/2024pstate: 83400005 (Nzcv daif +PAN -UAO +TC---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42243` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1011-bluefield - 5.15.0-1011.13\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS"
+			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
 		},
 		"reference": {
 			"source": "CVE",
@@ -24,12 +24,13 @@
 				"public": "20240807",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7089-1,7090-1"
+				"usns": "7089-1,7090-1,7089-2"
 			},
 			"public_date_at_usn": "2024-08-07 16:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-7089-1",
-				"https://ubuntu.com/security/notices/USN-7090-1"
+				"https://ubuntu.com/security/notices/USN-7090-1",
+				"https://ubuntu.com/security/notices/USN-7089-2"
 			]
 		}
 	},
@@ -44,15 +45,15 @@
 						"comment": "linux package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-19.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
 					},
 					{
@@ -60,7 +61,7 @@
 						"comment": "linux-kvm package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -68,15 +69,15 @@
 						"comment": "linux-aws package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
@@ -84,15 +85,15 @@
 						"comment": "linux-azure package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1006.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
@@ -100,27 +101,31 @@
 						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
+						"comment": "linux-bluefield package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1011.13')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000010",
 						"comment": "linux-gcp package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
@@ -128,7 +133,7 @@
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
@@ -136,83 +141,83 @@
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000100",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000120",
 						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
 						"comment": "linux-oracle-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
 						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
 					}
 				]
