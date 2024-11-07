@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-42297 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: fix to don't dirty inode for readonly filesystemsyzbot reports f2fs bug as below:kernel BUG at fs/f2fs/inode.c:933!RIP: 0010:f2fs_evict_inode+0x1576/0x1590 fs/f2fs/inode.c:933Call Trace: evict+0x2a4/0x620 fs/inode.c:664 dispose_list fs/inode.c:697 [inline] evict_inodes+0x5f8/0x690 fs/inode.c:747 generic_shutdown_super+0x9d/0x2c0 fs/super.c:675 kill_block_super+0x44/0x90 fs/super.c:1667 kill_f2fs_super+0x303/0x3b0 fs/f2fs/super.c:4894 deactivate_locked_super+0xc1/0x130 fs/super.c:484 cleanup_mnt+0x426/0x4c0 fs/namespace.c:1256 task_work_run+0x24a/0x300 kernel/task_work.c:180 ptrace_notify+0x2cd/0x380 kernel/signal.c:2399 ptrace_report_syscall include/linux/ptrace.h:411 [inline] ptrace_report_syscall_exit include/linux/ptrace.h:473 [inline] syscall_exit_work kernel/entry/common.c:251 [inline] syscall_exit_to_user_mode_prepare kernel/entry/common.c:278 [inline] __syscall_exit_to_user_mode_work kernel/entry/common.c:283 [inline] syscall_exit_to_user_mode+0x15c/0x280 kernel/entry/common.c:296 do_syscall_64+0x50/0x110 arch/x86/entry/common.c:88 entry_SYSCALL_64_after_hwframe+0x63/0x6bThe root cause is:- do_sys_open - f2fs_lookup  - __f2fs_find_entry   - f2fs_i_depth_write    - f2fs_mark_inode_dirty_sync     - f2fs_dirty_inode      - set_inode_flag(inode, FI_DIRTY_INODE)- umount - kill_f2fs_super  - kill_block_super   - generic_shutdown_super    - sync_filesystem    : sb is readonly, skip sync_filesystem()    - evict_inodes     - iput      - f2fs_evict_inode       - f2fs_bug_on(sbi, is_inode_flag_set(inode, FI_DIRTY_INODE))       : trigger kernel panicWhen we try to repair i_current_depth in readonly filesystem, let'sskip dirty inode to avoid panic in later f2fs_evict_inode().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42297` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-200-generic - 5.4.0-200.220~18.04.1\nlinux-image-unsigned-5.4.0-200-lowlatency - 5.4.0-200.220~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1135-aws - 5.4.0-1135.145~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1139-gcp - 5.4.0-1139.148~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1082-ibm - 5.4.0-1082.87~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-oracle - 5.4.0-1134.143~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: fix to don't dirty inode for readonly filesystemsyzbot reports f2fs bug as below:kernel BUG at fs/f2fs/inode.c:933!RIP: 0010:f2fs_evict_inode+0x1576/0x1590 fs/f2fs/inode.c:933Call Trace: evict+0x2a4/0x620 fs/inode.c:664 dispose_list fs/inode.c:697 [inline] evict_inodes+0x5f8/0x690 fs/inode.c:747 generic_shutdown_super+0x9d/0x2c0 fs/super.c:675 kill_block_super+0x44/0x90 fs/super.c:1667 kill_f2fs_super+0x303/0x3b0 fs/f2fs/super.c:4894 deactivate_locked_super+0xc1/0x130 fs/super.c:484 cleanup_mnt+0x426/0x4c0 fs/namespace.c:1256 task_work_run+0x24a/0x300 kernel/task_work.c:180 ptrace_notify+0x2cd/0x380 kernel/signal.c:2399 ptrace_report_syscall include/linux/ptrace.h:411 [inline] ptrace_report_syscall_exit include/linux/ptrace.h:473 [inline] syscall_exit_work kernel/entry/common.c:251 [inline] syscall_exit_to_user_mode_prepare kernel/entry/common.c:278 [inline] __syscall_exit_to_user_mode_work kernel/entry/common.c:283 [inline] syscall_exit_to_user_mode+0x15c/0x280 kernel/entry/common.c:296 do_syscall_64+0x50/0x110 arch/x86/entry/common.c:88 entry_SYSCALL_64_after_hwframe+0x63/0x6bThe root cause is:- do_sys_open - f2fs_lookup  - __f2fs_find_entry   - f2fs_i_depth_write    - f2fs_mark_inode_dirty_sync     - f2fs_dirty_inode      - set_inode_flag(inode, FI_DIRTY_INODE)- umount - kill_f2fs_super  - kill_block_super   - generic_shutdown_super    - sync_filesystem    : sb is readonly, skip sync_filesystem()    - evict_inodes     - iput      - f2fs_evict_inode       - f2fs_bug_on(sbi, is_inode_flag_set(inode, FI_DIRTY_INODE))       : trigger kernel panicWhen we try to repair i_current_depth in readonly filesystem, let'sskip dirty inode to avoid panic in later f2fs_evict_inode().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42297` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-200-generic - 5.4.0-200.220~18.04.1\nlinux-image-unsigned-5.4.0-200-lowlatency - 5.4.0-200.220~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1135-aws - 5.4.0-1135.145~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1140-azure - 5.4.0-1140.147~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1139-gcp - 5.4.0-1139.148~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1082-ibm - 5.4.0-1082.87~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-oracle - 5.4.0-1134.143~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -24,13 +24,14 @@
 				"public": "20240817",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7088-1,7088-2,7088-3"
+				"usns": "7088-1,7088-2,7088-3,7088-4"
 			},
 			"public_date_at_usn": "2024-08-17 09:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-7088-1",
 				"https://ubuntu.com/security/notices/USN-7088-2",
-				"https://ubuntu.com/security/notices/USN-7088-3"
+				"https://ubuntu.com/security/notices/USN-7088-3",
+				"https://ubuntu.com/security/notices/USN-7088-4"
 			]
 		}
 	},
@@ -85,8 +86,8 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1140.147~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000020",
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1140.147~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -101,7 +102,7 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000020",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000030",
 						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1139.148~18.04.1')."
 					},
 					{
@@ -117,7 +118,7 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000030",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000040",
 						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1082.87~18.04.1')."
 					},
 					{
@@ -133,7 +134,7 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000040",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000050",
 						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1134.143~18.04.1')."
 					},
 					{

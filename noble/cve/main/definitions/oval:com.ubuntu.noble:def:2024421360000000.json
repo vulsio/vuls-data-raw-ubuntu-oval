@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-42136 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:cdrom: rearrange last_media_change check to avoid unintentional overflowWhen running syzkaller with the newly reintroduced signed integer wrapsanitizer we encounter this splat:[  366.015950] UBSAN: signed-integer-overflow in../drivers/cdrom/cdrom.c:2361:33[  366.021089] -9223372036854775808 - 346321 cannot be represented in type'__s64' (aka 'long long')[  366.025894] program syz-executor.4 is using a deprecated SCSI ioctl,please convert it to SG_IO[  366.027502] CPU: 5 PID: 28472 Comm: syz-executor.7 Not tainted6.8.0-rc2-00035-gb3ef86b5a957 #1[  366.027512] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.16.3-debian-1.16.3-2 04/01/2014[  366.027518] Call Trace:[  366.027523]  <TASK>[  366.027533]  dump_stack_lvl+0x93/0xd0[  366.027899]  handle_overflow+0x171/0x1b0[  366.038787] ata1.00: invalid multi_count 32 ignored[  366.043924]  cdrom_ioctl+0x2c3f/0x2d10[  366.063932]  ? __pm_runtime_resume+0xe6/0x130[  366.071923]  sr_block_ioctl+0x15d/0x1d0[  366.074624]  ? __pfx_sr_block_ioctl+0x10/0x10[  366.077642]  blkdev_ioctl+0x419/0x500[  366.080231]  ? __pfx_blkdev_ioctl+0x10/0x10...Historically, the signed integer overflow sanitizer did not work in thekernel due to its interaction with `-fwrapv` but this has since beenchanged [1] in the newest version of Clang. It was re-enabled in thekernel with Commit 557f8c582a9ba8ab (\"ubsan: Reintroduce signed overflowsanitizer\").Let's rearrange the check to not perform any arithmetic, thus nottripping the sanitizer.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42136` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cdrom: rearrange last_media_change check to avoid unintentional overflowWhen running syzkaller with the newly reintroduced signed integer wrapsanitizer we encounter this splat:[  366.015950] UBSAN: signed-integer-overflow in../drivers/cdrom/cdrom.c:2361:33[  366.021089] -9223372036854775808 - 346321 cannot be represented in type'__s64' (aka 'long long')[  366.025894] program syz-executor.4 is using a deprecated SCSI ioctl,please convert it to SG_IO[  366.027502] CPU: 5 PID: 28472 Comm: syz-executor.7 Not tainted6.8.0-rc2-00035-gb3ef86b5a957 #1[  366.027512] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.16.3-debian-1.16.3-2 04/01/2014[  366.027518] Call Trace:[  366.027523]  <TASK>[  366.027533]  dump_stack_lvl+0x93/0xd0[  366.027899]  handle_overflow+0x171/0x1b0[  366.038787] ata1.00: invalid multi_count 32 ignored[  366.043924]  cdrom_ioctl+0x2c3f/0x2d10[  366.063932]  ? __pm_runtime_resume+0xe6/0x130[  366.071923]  sr_block_ioctl+0x15d/0x1d0[  366.074624]  ? __pfx_sr_block_ioctl+0x10/0x10[  366.077642]  blkdev_ioctl+0x419/0x500[  366.080231]  ? __pfx_blkdev_ioctl+0x10/0x10...Historically, the signed integer overflow sanitizer did not work in thekernel due to its interaction with `-fwrapv` but this has since beenchanged [1] in the newest version of Clang. It was re-enabled in thekernel with Commit 557f8c582a9ba8ab (\"ubsan: Reintroduce signed overflowsanitizer\").Let's rearrange the check to not perform any arithmetic, thus nottripping the sanitizer.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42136` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -24,13 +24,15 @@
 				"public": "20240730",
 				"cvss_score": "7.8",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
-				"usns": "7089-1,7090-1,7089-2"
+				"usns": "7089-1,7090-1,7089-2,7089-3,7095-1"
 			},
 			"public_date_at_usn": "2024-07-30 08:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-7089-1",
 				"https://ubuntu.com/security/notices/USN-7090-1",
-				"https://ubuntu.com/security/notices/USN-7089-2"
+				"https://ubuntu.com/security/notices/USN-7089-2",
+				"https://ubuntu.com/security/notices/USN-7089-3",
+				"https://ubuntu.com/security/notices/USN-7095-1"
 			]
 		}
 	},
@@ -45,15 +47,15 @@
 						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-48.48')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1018.20')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000010",
-						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1017.20')."
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1018.20')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000020",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1017.20')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000030",
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1017.19')."
 					},
 					{
@@ -61,7 +63,7 @@
 						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1013.17')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000040",
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1015.15')."
 					},
 					{
@@ -69,8 +71,8 @@
 						"comment": "linux-lowlatency package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-48.48.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1015.16')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000010",
+						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",

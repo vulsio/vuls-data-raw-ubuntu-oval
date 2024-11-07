@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-41088 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:can: mcp251xfd: fix infinite loop when xmit failsWhen the mcp251xfd_start_xmit() function fails, the driver stopsprocessing messages, and the interrupt routine does not return,running indefinitely even after killing the running application.Error messages:[  441.298819] mcp251xfd spi2.0 can0: ERROR in mcp251xfd_start_xmit: -16[  441.306498] mcp251xfd spi2.0 can0: Transmit Event FIFO buffer not empty.(seq=0x000017c7, tef_tail=0x000017cf, tef_head=0x000017d0,tx_head=0x000017d3).... and repeat forever.The issue can be triggered when multiple devices share the same SPIinterface. And there is concurrent access to the bus.The problem occurs because tx_ring->head increments even ifmcp251xfd_start_xmit() fails. Consequently, the driver skips one TXpackage while still expecting a response inmcp251xfd_handle_tefif_one().Resolve the issue by starting a workqueue to write the tx objsynchronously if err = -EBUSY. In case of another error, decrementtx_ring->head, remove skb from the echo stack, and drop the message.[mkl: use more imperative wording in patch description]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41088` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:can: mcp251xfd: fix infinite loop when xmit failsWhen the mcp251xfd_start_xmit() function fails, the driver stopsprocessing messages, and the interrupt routine does not return,running indefinitely even after killing the running application.Error messages:[  441.298819] mcp251xfd spi2.0 can0: ERROR in mcp251xfd_start_xmit: -16[  441.306498] mcp251xfd spi2.0 can0: Transmit Event FIFO buffer not empty.(seq=0x000017c7, tef_tail=0x000017cf, tef_head=0x000017d0,tx_head=0x000017d3).... and repeat forever.The issue can be triggered when multiple devices share the same SPIinterface. And there is concurrent access to the bus.The problem occurs because tx_ring->head increments even ifmcp251xfd_start_xmit() fails. Consequently, the driver skips one TXpackage while still expecting a response inmcp251xfd_handle_tefif_one().Resolve the issue by starting a workqueue to write the tx objsynchronously if err = -EBUSY. In case of another error, decrementtx_ring->head, remove skb from the echo stack, and drop the message.[mkl: use more imperative wording in patch description]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41088` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -24,13 +24,15 @@
 				"public": "20240729",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7089-1,7090-1,7089-2"
+				"usns": "7089-1,7090-1,7089-2,7089-3,7095-1"
 			},
 			"public_date_at_usn": "2024-07-29 16:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-7089-1",
 				"https://ubuntu.com/security/notices/USN-7090-1",
-				"https://ubuntu.com/security/notices/USN-7089-2"
+				"https://ubuntu.com/security/notices/USN-7089-2",
+				"https://ubuntu.com/security/notices/USN-7089-3",
+				"https://ubuntu.com/security/notices/USN-7095-1"
 			]
 		}
 	},
@@ -45,15 +47,15 @@
 						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-48.48')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1018.20')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000010",
-						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1017.20')."
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1018.20')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000020",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1017.20')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000030",
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1017.19')."
 					},
 					{
@@ -61,7 +63,7 @@
 						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1013.17')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000040",
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1015.15')."
 					},
 					{
@@ -69,8 +71,8 @@
 						"comment": "linux-lowlatency package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-48.48.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1015.16')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000010",
+						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",

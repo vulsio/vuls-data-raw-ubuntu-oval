@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-41051 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:cachefiles: wait for ondemand_object_worker to finish when dropping objectWhen queuing ondemand_object_worker() to re-open the object,cachefiles_object is not pinned. The cachefiles_object may be freed whenthe pending read request is completed intentionally and the relatederofs is umounted. If ondemand_object_worker() runs after the object isfreed, it will incur use-after-free problem as shown below.process A  processs B  process C  process Dcachefiles_ondemand_send_req()// send a read req X// wait for its completion           // close ondemand fd           cachefiles_ondemand_fd_release()           // set object as CLOSE                       cachefiles_ondemand_daemon_read()                       // set object as REOPENING                       queue_work(fscache_wq, &info->ondemand_work)                                // close /dev/cachefiles                                cachefiles_daemon_release                                cachefiles_flush_reqs                                complete(&req->done)// read req X is completed// umount the erofs fscachefiles_put_object()// object will be freedcachefiles_ondemand_deinit_obj_info()kmem_cache_free(object)                       // both info and object are freed                       ondemand_object_worker()When dropping an object, it is no longer necessary to reopen the object,so use cancel_work_sync() to cancel or wait for ondemand_object_worker()to finish.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41051` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cachefiles: wait for ondemand_object_worker to finish when dropping objectWhen queuing ondemand_object_worker() to re-open the object,cachefiles_object is not pinned. The cachefiles_object may be freed whenthe pending read request is completed intentionally and the relatederofs is umounted. If ondemand_object_worker() runs after the object isfreed, it will incur use-after-free problem as shown below.process A  processs B  process C  process Dcachefiles_ondemand_send_req()// send a read req X// wait for its completion           // close ondemand fd           cachefiles_ondemand_fd_release()           // set object as CLOSE                       cachefiles_ondemand_daemon_read()                       // set object as REOPENING                       queue_work(fscache_wq, &info->ondemand_work)                                // close /dev/cachefiles                                cachefiles_daemon_release                                cachefiles_flush_reqs                                complete(&req->done)// read req X is completed// umount the erofs fscachefiles_put_object()// object will be freedcachefiles_ondemand_deinit_obj_info()kmem_cache_free(object)                       // both info and object are freed                       ondemand_object_worker()When dropping an object, it is no longer necessary to reopen the object,so use cancel_work_sync() to cancel or wait for ondemand_object_worker()to finish.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41051` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -27,7 +27,9 @@
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-7089-1",
 				"https://ubuntu.com/security/notices/USN-7090-1",
-				"https://ubuntu.com/security/notices/USN-7089-2"
+				"https://ubuntu.com/security/notices/USN-7089-2",
+				"https://ubuntu.com/security/notices/USN-7089-3",
+				"https://ubuntu.com/security/notices/USN-7095-1"
 			]
 		}
 	},
@@ -42,15 +44,15 @@
 						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-48.48')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1018.20')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000010",
-						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1017.20')."
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1018.20')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000020",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1017.20')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000030",
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1017.19')."
 					},
 					{
@@ -58,7 +60,7 @@
 						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1013.17')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000030",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000040",
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1015.15')."
 					},
 					{
@@ -66,8 +68,8 @@
 						"comment": "linux-lowlatency package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-48.48.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1015.16')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000010",
+						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
