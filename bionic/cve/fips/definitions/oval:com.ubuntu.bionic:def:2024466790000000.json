@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-46679 on Ubuntu Pro FIPS 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:ethtool: check device is present when getting link settingsA sysfs reader can race with a device reset or removal, attempting toread device state when the device is not actually present. eg:     [exception RIP: qed_get_current_link+17]  #8 [ffffb9e4f2907c48] qede_get_link_ksettings at ffffffffc07a994a [qede]  #9 [ffffb9e4f2907cd8] __rh_call_get_link_ksettings at ffffffff992b01a3 #10 [ffffb9e4f2907d38] __ethtool_get_link_ksettings at ffffffff992b04e4 #11 [ffffb9e4f2907d90] duplex_show at ffffffff99260300 #12 [ffffb9e4f2907e38] dev_attr_show at ffffffff9905a01c #13 [ffffb9e4f2907e50] sysfs_kf_seq_show at ffffffff98e0145b #14 [ffffb9e4f2907e68] seq_read at ffffffff98d902e3 #15 [ffffb9e4f2907ec8] vfs_read at ffffffff98d657d1 #16 [ffffb9e4f2907f00] ksys_read at ffffffff98d65c3f #17 [ffffb9e4f2907f38] do_syscall_64 at ffffffff98a052fb crash> struct net_device.state ffff9a9d21336000    state = 5,state 5 is __LINK_STATE_START (0b1) and __LINK_STATE_NOCARRIER (0b100).The device is not present, note lack of __LINK_STATE_PRESENT (0b10).This is the same sort of panic as observed in commit 4224cfd7fb65(\"net-sysfs: add check for netdevice being present to speed_show\").There are many other callers of __ethtool_get_link_ksettings() whichdon't have a device presence check.Move this check into ethtool to protect all callers.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46679` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-200-generic - 5.4.0-200.220~18.04.1\nlinux-image-unsigned-5.4.0-200-lowlatency - 5.4.0-200.220~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1139-gcp - 5.4.0-1139.148~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1082-ibm - 5.4.0-1082.87~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ethtool: check device is present when getting link settingsA sysfs reader can race with a device reset or removal, attempting toread device state when the device is not actually present. eg:     [exception RIP: qed_get_current_link+17]  #8 [ffffb9e4f2907c48] qede_get_link_ksettings at ffffffffc07a994a [qede]  #9 [ffffb9e4f2907cd8] __rh_call_get_link_ksettings at ffffffff992b01a3 #10 [ffffb9e4f2907d38] __ethtool_get_link_ksettings at ffffffff992b04e4 #11 [ffffb9e4f2907d90] duplex_show at ffffffff99260300 #12 [ffffb9e4f2907e38] dev_attr_show at ffffffff9905a01c #13 [ffffb9e4f2907e50] sysfs_kf_seq_show at ffffffff98e0145b #14 [ffffb9e4f2907e68] seq_read at ffffffff98d902e3 #15 [ffffb9e4f2907ec8] vfs_read at ffffffff98d657d1 #16 [ffffb9e4f2907f00] ksys_read at ffffffff98d65c3f #17 [ffffb9e4f2907f38] do_syscall_64 at ffffffff98a052fb crash> struct net_device.state ffff9a9d21336000    state = 5,state 5 is __LINK_STATE_START (0b1) and __LINK_STATE_NOCARRIER (0b100).The device is not present, note lack of __LINK_STATE_PRESENT (0b10).This is the same sort of panic as observed in commit 4224cfd7fb65(\"net-sysfs: add check for netdevice being present to speed_show\").There are many other callers of __ethtool_get_link_ksettings() whichdon't have a device presence check.Move this check into ethtool to protect all callers.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46679` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-200-generic - 5.4.0-200.220~18.04.1\nlinux-image-unsigned-5.4.0-200-lowlatency - 5.4.0-200.220~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1135-aws - 5.4.0-1135.145~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1139-gcp - 5.4.0-1139.148~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1082-ibm - 5.4.0-1082.87~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-oracle - 5.4.0-1134.143~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 18.04 LTS"
@@ -24,12 +24,13 @@
 				"public": "20240913",
 				"cvss_score": "4.7",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7088-1,7088-2"
+				"usns": "7088-1,7088-2,7088-3"
 			},
 			"public_date_at_usn": "2024-09-13 06:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-7088-1",
-				"https://ubuntu.com/security/notices/USN-7088-2"
+				"https://ubuntu.com/security/notices/USN-7088-2",
+				"https://ubuntu.com/security/notices/USN-7088-3"
 			]
 		}
 	},
@@ -68,8 +69,8 @@
 						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
-						"comment": "linux-aws-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1135.145~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000010",
+						"comment": "linux-aws-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1135.145~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -116,7 +117,7 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000010",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000020",
 						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1139.148~18.04.1')."
 					},
 					{
@@ -132,7 +133,7 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000020",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000030",
 						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1082.87~18.04.1')."
 					},
 					{
@@ -148,8 +149,8 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1134.143~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000040",
+						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1134.143~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
