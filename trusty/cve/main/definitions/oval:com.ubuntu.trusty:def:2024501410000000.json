@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024501410000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50141 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ACPI: PRM: Find EFI_MEMORY_RUNTIME block for PRM handler and contextPRMT needs to find the correct type of block to translate the PA-VAmapping for EFI runtime services.The issue arises because the PRMT is finding a block of typeEFI_CONVENTIONAL_MEMORY, which is not appropriate for runtime servicesas described in Section 2.2.2 (Runtime Services) of the UEFISpecification [1]. Since the PRM handler is a type of runtime service,this causes an exception when the PRM handler is called.    [Firmware Bug]: Unable to handle paging request in EFI runtime service    WARNING: CPU: 22 PID: 4330 atdrivers/firmware/efi/runtime-wrappers.c:341        __efi_queue_work+0x11c/0x170    Call trace:Let PRMT find a block with EFI_MEMORY_RUNTIME for PRM handler and PRMcontext.If no suitable block is found, a warning message will be printed, butthe procedure continues to manage the next PRM handler.However, if the PRM handler is actually called without proper allocation,it would result in a failure during error handling.By using the correct memory types for runtime services, ensure that thePRM handler and the context are properly mapped in the virtual addressspace during runtime, preventing the paging request error.The issue is really that only memory that has been remapped for runtimeby the firmware can be used by the PRM handler, and so the region needsto have the EFI_MEMORY_RUNTIME attribute.[ rjw: Subject and changelog edits ]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50141",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50141"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-08",
+			"cve": {
+				"text": "CVE-2024-50141",
+				"href": "https://ubuntu.com/security/CVE-2024-50141",
+				"public": "20241108"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
