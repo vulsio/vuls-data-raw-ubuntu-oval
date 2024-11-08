@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-45025 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:fix bitmap corruption on close_range() with CLOSE_RANGE_UNSHAREcopy_fd_bitmaps(new, old, count) is expected to copy the firstcount/BITS_PER_LONG bits from old->full_fds_bits[] and fillthe rest with zeroes.  What it does is copying enough words(BITS_TO_LONGS(count/BITS_PER_LONG)), then memsets the rest.That works fine, *if* all bits past the cutoff point areclear.  Otherwise we are risking garbage from the last wordwe'd copied.For most of the callers that is true - expand_fdtable() hascount equal to old->max_fds, so there's no open descriptorspast count, let alone fully occupied words in ->open_fds[],which is what bits in ->full_fds_bits[] correspond to.The other caller (dup_fd()) passes sane_fdtable_size(old_fdt, max_fds),which is the smallest multiple of BITS_PER_LONG that covers allopened descriptors below max_fds.  In the common case (copying onfork()) max_fds is ~0U, so all opened descriptors will be belowit and we are fine, by the same reasons why the call in expand_fdtable()is safe.Unfortunately, there is a case where max_fds is less than thatand where we might, indeed, end up with junk in ->full_fds_bits[] -close_range(from, to, CLOSE_RANGE_UNSHARE) with\t* descriptor table being currently shared\t* 'to' being above the current capacity of descriptor table\t* 'from' being just under some chunk of opened descriptors.In that case we end up with observably wrong behaviour - e.g. spawna child with CLONE_FILES, get all descriptors in range 0..127 open,then close_range(64, ~0U, CLOSE_RANGE_UNSHARE) and watch dup(0) endingup with descriptor #128, despite #64 being observably not open.The minimally invasive fix would be to deal with that in dup_fd().If this proves to add measurable overhead, we can go that way, butlet's try to fix copy_fd_bitmaps() first.* new helper: bitmap_copy_and_expand(to, from, bits_to_copy, size).* make copy_fd_bitmaps() take the bitmap size in words, rather thanbits; it's 'count' argument is always a multiple of BITS_PER_LONG,so we are not losing any information, and that way we can use thesame helper for all three bitmaps - compiler will see that countis a multiple of BITS_PER_LONG for the large ones, so it'll generateplain memcpy()+memset().Reproducer added to tools/testing/selftests/core/close_range_test.c\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45025` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-200-generic - 5.4.0-200.220~18.04.1\nlinux-image-unsigned-5.4.0-200-lowlatency - 5.4.0-200.220~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1135-aws - 5.4.0-1135.145~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1139-gcp - 5.4.0-1139.148~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1082-ibm - 5.4.0-1082.87~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-oracle - 5.4.0-1134.143~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:fix bitmap corruption on close_range() with CLOSE_RANGE_UNSHAREcopy_fd_bitmaps(new, old, count) is expected to copy the firstcount/BITS_PER_LONG bits from old->full_fds_bits[] and fillthe rest with zeroes.  What it does is copying enough words(BITS_TO_LONGS(count/BITS_PER_LONG)), then memsets the rest.That works fine, *if* all bits past the cutoff point areclear.  Otherwise we are risking garbage from the last wordwe'd copied.For most of the callers that is true - expand_fdtable() hascount equal to old->max_fds, so there's no open descriptorspast count, let alone fully occupied words in ->open_fds[],which is what bits in ->full_fds_bits[] correspond to.The other caller (dup_fd()) passes sane_fdtable_size(old_fdt, max_fds),which is the smallest multiple of BITS_PER_LONG that covers allopened descriptors below max_fds.  In the common case (copying onfork()) max_fds is ~0U, so all opened descriptors will be belowit and we are fine, by the same reasons why the call in expand_fdtable()is safe.Unfortunately, there is a case where max_fds is less than thatand where we might, indeed, end up with junk in ->full_fds_bits[] -close_range(from, to, CLOSE_RANGE_UNSHARE) with\t* descriptor table being currently shared\t* 'to' being above the current capacity of descriptor table\t* 'from' being just under some chunk of opened descriptors.In that case we end up with observably wrong behaviour - e.g. spawna child with CLONE_FILES, get all descriptors in range 0..127 open,then close_range(64, ~0U, CLOSE_RANGE_UNSHARE) and watch dup(0) endingup with descriptor #128, despite #64 being observably not open.The minimally invasive fix would be to deal with that in dup_fd().If this proves to add measurable overhead, we can go that way, butlet's try to fix copy_fd_bitmaps() first.* new helper: bitmap_copy_and_expand(to, from, bits_to_copy, size).* make copy_fd_bitmaps() take the bitmap size in words, rather thanbits; it's 'count' argument is always a multiple of BITS_PER_LONG,so we are not losing any information, and that way we can use thesame helper for all three bitmaps - compiler will see that countis a multiple of BITS_PER_LONG for the large ones, so it'll generateplain memcpy()+memset().Reproducer added to tools/testing/selftests/core/close_range_test.c\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45025` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.4.0-200-generic - 5.4.0-200.220~18.04.1\nlinux-image-unsigned-5.4.0-200-lowlatency - 5.4.0-200.220~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1135-aws - 5.4.0-1135.145~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1140-azure - 5.4.0-1140.147~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1139-gcp - 5.4.0-1139.148~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1082-ibm - 5.4.0-1082.87~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-oracle - 5.4.0-1134.143~18.04.1\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
@@ -24,13 +24,14 @@
 				"public": "20240911",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7088-1,7088-2,7088-3"
+				"usns": "7088-1,7088-2,7088-3,7088-4"
 			},
 			"public_date_at_usn": "2024-09-11 16:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-7088-1",
 				"https://ubuntu.com/security/notices/USN-7088-2",
-				"https://ubuntu.com/security/notices/USN-7088-3"
+				"https://ubuntu.com/security/notices/USN-7088-3",
+				"https://ubuntu.com/security/notices/USN-7088-4"
 			]
 		}
 	},
@@ -85,8 +86,8 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1140.147~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000020",
+						"comment": "linux-azure-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1140.147~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
@@ -117,7 +118,7 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000020",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000030",
 						"comment": "linux-gcp-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1139.148~18.04.1')."
 					},
 					{
@@ -133,7 +134,7 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000030",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000040",
 						"comment": "linux-ibm-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1082.87~18.04.1')."
 					},
 					{
@@ -149,7 +150,7 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000040",
+						"test_ref": "oval:com.ubuntu.bionic:tst:2021472120000050",
 						"comment": "linux-oracle-5.4 package in bionic was vulnerable but has been fixed (note: '5.4.0-1134.143~18.04.1')."
 					},
 					{
