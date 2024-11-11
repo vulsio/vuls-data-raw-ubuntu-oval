@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024502200000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50220 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:fork: do not invoke uffd on fork if error occursPatch series \"fork: do not expose incomplete mm on fork\".During fork we may place the virtual memory address space into aninconsistent state before the fork operation is complete.In addition, we may encounter an error during the fork operation thatindicates that the virtual memory address space is invalidated.As a result, we should not be exposing it in any way to external machinerythat might interact with the mm or VMAs, machinery that is not designed todeal with incomplete state.We specifically update the fork logic to defer khugepaged and ksm to theend of the operation and only to be invoked if no error arose, anddisallow uffd from observing fork events should an error have occurred.This patch (of 2):Currently on fork we expose the virtual address space of a process touserland unconditionally if uffd is registered in VMAs, regardless ofwhether an error arose in the fork.This is performed in dup_userfaultfd_complete() which is invokedunconditionally, and performs two duties - invoking registered handlersfor the UFFD_EVENT_FORK event via dup_fctx(), and clearing downuserfaultfd_fork_ctx objects established in dup_userfaultfd().This is problematic, because the virtual address space may not yet becorrectly initialised if an error arose.The change in commit d24062914837 (\"fork: use __mt_dup() to duplicatemaple tree in dup_mmap()\") makes this more pertinent as we may be in astate where entries in the maple tree are not yet consistent.We address this by, on fork error, ensuring that we roll back state thatwe would otherwise expect to clean up through the event being handled byuserland and perform the memory freeing duty otherwise performed bydup_userfaultfd_complete().We do this by implementing a new function, dup_userfaultfd_fail(), whichperforms the same loop, only decrementing reference counts.Note that we perform mmgrab() on the parent and child mm's, howeveruserfaultfd_ctx_put() will mmdrop() this once the reference count drops tozero, so we will avoid memory leaks correctly here.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50220",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50220"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-11",
+			"cve": {
+				"text": "CVE-2024-50220",
+				"href": "https://ubuntu.com/security/CVE-2024-50220",
+				"public": "20241111"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000000",
+						"comment": "linux package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

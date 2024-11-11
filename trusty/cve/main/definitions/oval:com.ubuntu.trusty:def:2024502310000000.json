@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024502310000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50231 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:iio: gts-helper: Fix memory leaks in iio_gts_build_avail_scale_table()modprobe iio-test-gts and rmmod it, then the following memory leakoccurs:\tunreferenced object 0xffffff80c810be00 (size 64):\t  comm \"kunit_try_catch\", pid 1654, jiffies 4294913981\t  hex dump (first 32 bytes):\t    02 00 00 00 08 00 00 00 20 00 00 00 40 00 00 00  ........ ...@...\t    80 00 00 00 00 02 00 00 00 04 00 00 00 08 00 00  ................\t  backtrace (crc a63d875e):\t    [<0000000028c1b3c2>] kmemleak_alloc+0x34/0x40\t    [<000000001d6ecc87>] __kmalloc_noprof+0x2bc/0x3c0\t    [<00000000393795c1>] devm_iio_init_iio_gts+0x4b4/0x16f4\t    [<0000000071bb4b09>] 0xffffffdf052a62e0\t    [<000000000315bc18>] 0xffffffdf052a6488\t    [<00000000f9dc55b5>] kunit_try_run_case+0x13c/0x3ac\t    [<00000000175a3fd4>] kunit_generic_run_threadfn_adapter+0x80/0xec\t    [<00000000f505065d>] kthread+0x2e8/0x374\t    [<00000000bbfb0e5d>] ret_from_fork+0x10/0x20\tunreferenced object 0xffffff80cbfe9e70 (size 16):\t  comm \"kunit_try_catch\", pid 1658, jiffies 4294914015\t  hex dump (first 16 bytes):\t    10 00 00 00 40 00 00 00 80 00 00 00 00 00 00 00  ....@...........\t  backtrace (crc 857f0cb4):\t    [<0000000028c1b3c2>] kmemleak_alloc+0x34/0x40\t    [<000000001d6ecc87>] __kmalloc_noprof+0x2bc/0x3c0\t    [<00000000393795c1>] devm_iio_init_iio_gts+0x4b4/0x16f4\t    [<0000000071bb4b09>] 0xffffffdf052a62e0\t    [<000000007d089d45>] 0xffffffdf052a6864\t    [<00000000f9dc55b5>] kunit_try_run_case+0x13c/0x3ac\t    [<00000000175a3fd4>] kunit_generic_run_threadfn_adapter+0x80/0xec\t    [<00000000f505065d>] kthread+0x2e8/0x374\t    [<00000000bbfb0e5d>] ret_from_fork+0x10/0x20\t......It includes 5*5 times \"size 64\" memory leaks, which correspond to 5 timestest_init_iio_gain_scale() calls with gts_test_gains size 10 (10*size(int))and gts_test_itimes size 5. It also includes 5*1 times \"size 16\"memory leak, which correspond to one time __test_init_iio_gain_scale()call with gts_test_gains_gain_low size 3 (3*size(int)) and gts_test_itimessize 5.The reason is that the per_time_gains[i] is not freed which is allocated inthe \"gts->num_itime\" for loop in iio_gts_build_avail_scale_table().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50231",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50231"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-11",
+			"cve": {
+				"text": "CVE-2024-50231",
+				"href": "https://ubuntu.com/security/CVE-2024-50231",
+				"public": "20241111"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

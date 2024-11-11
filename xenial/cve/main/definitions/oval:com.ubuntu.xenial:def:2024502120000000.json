@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024502120000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50212 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:lib: alloc_tag_module_unload must wait for pending kfree_rcu callsBen Greear reports following splat: ------------[ cut here ]------------ net/netfilter/nf_nat_core.c:1114 module nf_nat func:nf_nat_register_fn has256 allocated at module unload WARNING: CPU: 1 PID: 10421 at lib/alloc_tag.c:168alloc_tag_module_unload+0x22b/0x3f0 Modules linked in: nf_nat(-) btrfs ufs qnx4 hfsplus hfs minix vfat msdosfat... Hardware name: Default string Default string/SKYBAY, BIOS 5.12 08/04/2020 RIP: 0010:alloc_tag_module_unload+0x22b/0x3f0  codetag_unload_module+0x19b/0x2a0  ? codetag_load_module+0x80/0x80nf_nat module exit calls kfree_rcu on those addresses, but the freeoperation is likely still pending by the time alloc_tag checks for leaks.Wait for outstanding kfree_rcu operations to complete before checkingresolves this warning.Reproducer:unshare -n iptables-nft -t nat -A PREROUTING -p tcpgrep nf_nat /proc/allocinfo # will list 4 allocationsrmmod nft_chain_natrmmod nf_nat                # will WARN.[akpm@linux-foundation.org: add comment]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50212",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50212"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-11",
+			"cve": {
+				"text": "CVE-2024-50212",
+				"href": "https://ubuntu.com/security/CVE-2024-50212",
+				"public": "20241111"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
