@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2024502000000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-50200 on Ubuntu 22.04 LTS (jammy) - medium",
+		"title": "CVE-2024-50200 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
 		"description": "In the Linux kernel, the following vulnerability has been resolved:maple_tree: correct tree corruption on spanning storePatch series \"maple_tree: correct tree corruption on spanning store\", v3.There has been a nasty yet subtle maple tree corruption bug that appearsto have been in existence since the inception of the algorithm.This bug seems far more likely to happen since commit f8d112a4e657(\"mm/mmap: avoid zeroing vma tree in mmap_region()\"), which is the pointat which reports started to be submitted concerning this bug.We were made definitely aware of the bug thanks to the kind efforts ofBert Karwatzki who helped enormously in my being able to track this downand identify the cause of it.The bug arises when an attempt is made to perform a spanning store acrosstwo leaf nodes, where the right leaf node is the rightmost child of theshared parent, AND the store completely consumes the right-mode node.This results in mas_wr_spanning_store() mitakenly duplicating the new andexisting entries at the maximum pivot within the range, and thus mapletree corruption.The fix patch corrects this by detecting this scenario and disallowing themistaken duplicate copy.The fix patch commit message goes into great detail as to how this occurs.This series also includes a test which reliably reproduces the issue, andasserts that the fix works correctly.Bert has kindly tested the fix and confirmed it resolved his issues.  AlsoMikhail Gavrilov kindly reported what appears to be precisely the samebug, which this fix should also resolve.This patch (of 2):There has been a subtle bug present in the maple tree implementation fromits inception.This arises from how stores are performed - when a store occurs, it willoverwrite overlapping ranges and adjust the tree as necessary toaccommodate this.A range may always ultimately span two leaf nodes.  In this instance wewalk the two leaf nodes, determine which elements are not overwritten tothe left and to the right of the start and end of the ranges respectivelyand then rebalance the tree to contain these entries and the newlyinserted one.This kind of store is dubbed a 'spanning store' and is implemented bymas_wr_spanning_store().In order to reach this stage, mas_store_gfp() invokesmas_wr_preallocate(), mas_wr_store_type() and mas_wr_walk() in turn towalk the tree and update the object (mas) to traverse to the locationwhere the write should be performed, determining its store type.When a spanning store is required, this function returns false stopping atthe parent node which contains the target range, and mas_wr_store_type()marks the mas->store_type as wr_spanning_store to denote this fact.When we go to perform the store in mas_wr_spanning_store(), we firstdetermine the elements AFTER the END of the range we wish to store (thatis, to the right of the entry to be inserted) - we do this by walking tothe NEXT pivot in the tree (i.e.  r_mas.last + 1), starting at the node wehave just determined contains the range over which we intend to write.We then turn our attention to the entries to the left of the entry we areinserting, whose state is represented by l_mas, and copy these into a 'bignode', which is a special node which contains enough slots to contain twoleaf node's worth of data.We then copy the entry we wish to store immediately after this - the copyand the insertion of the new entry is performed by mas_store_b_node().After this we copy the elements to the right of the end of the range whichwe are inserting, if we have not exceeded the length of the node (i.e.r_mas.offset <= r_mas.end).Herein lies the bug - under very specific circumstances, this logic canbreak and corrupt the maple tree.Consider the following tree:Height  0                             Root Node                                 /      \\                 pivot = 0xffff /        \\ pivot = ULONG_MAX                               /---truncated---",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS"
+			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
 		},
 		"reference": {
 			"source": "CVE",
@@ -36,15 +36,15 @@
 						"comment": "linux package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
 					},
 					{
@@ -52,7 +52,7 @@
 						"comment": "linux-kvm package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -60,15 +60,15 @@
 						"comment": "linux-aws package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
@@ -76,43 +76,47 @@
 						"comment": "linux-azure package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
 						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
+						"comment": "linux-bluefield package in jammy is affected and may need fixing."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
 						"comment": "linux-gcp package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
@@ -124,39 +128,39 @@
 						"comment": "linux-gkeop package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
 						"comment": "linux-ibm package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
 						"comment": "linux-intel-iotg package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
 						"comment": "linux-lowlatency package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
 						"comment": "linux-nvidia package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8')."
 					},
 					{
@@ -164,23 +168,23 @@
 						"comment": "linux-oracle package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
 						"comment": "linux-oracle-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
@@ -188,23 +192,23 @@
 						"comment": "linux-raspi package in jammy is affected and may need fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
 						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
 						"comment": "linux-xilinx-zynqmp package in jammy is affected and may need fixing."
 					}
 				]
