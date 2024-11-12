@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2024450240000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-45024 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/hugetlb: fix hugetlb vs. core-mm PT lockingWe recently made GUP's common page table walking code to also walk hugetlbVMAs without most hugetlb special-casing, preparing for the future ofhaving less hugetlb-specific page table walking code in the codebase.Turns out that we missed one page table locking detail: page table lockingfor hugetlb folios that are not mapped using a single PMD/PUD.Assume we have hugetlb folio that spans multiple PTEs (e.g., 64 KiBhugetlb folios on arm64 with 4 KiB base page size).  GUP, as it walks thepage tables, will perform a pte_offset_map_lock() to grab the PTE tablelock.However, hugetlb that concurrently modifies these page tables wouldactually grab the mm->page_table_lock: with USE_SPLIT_PTE_PTLOCKS, thelocks would differ.  Something similar can happen right now with hugetlbfolios that span multiple PMDs when USE_SPLIT_PMD_PTLOCKS.This issue can be reproduced [1], for example triggering:[ 3105.936100] ------------[ cut here ]------------[ 3105.939323] WARNING: CPU: 31 PID: 2732 at mm/gup.c:142try_grab_folio+0x11c/0x188[ 3105.944634] Modules linked in: [...][ 3105.974841] CPU: 31 PID: 2732 Comm: reproducer Not tainted6.10.0-64.eln141.aarch64 #1[ 3105.980406] Hardware name: QEMU KVM Virtual Machine, BIOSedk2-20240524-4.fc40 05/24/2024[ 3105.986185] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBSBTYPE=--)[ 3105.991108] pc : try_grab_folio+0x11c/0x188[ 3105.994013] lr : follow_page_pte+0xd8/0x430[ 3105.996986] sp : ffff80008eafb8f0[ 3105.999346] x29: ffff80008eafb900 x28: ffffffe8d481f380 x27:00f80001207cff43[ 3106.004414] x26: 0000000000000001 x25: 0000000000000000 x24:ffff80008eafba48[ 3106.009520] x23: 0000ffff9372f000 x22: ffff7a54459e2000 x21:ffff7a546c1aa978[ 3106.014529] x20: ffffffe8d481f3c0 x19: 0000000000610041 x18:0000000000000001[ 3106.019506] x17: 0000000000000001 x16: ffffffffffffffff x15:0000000000000000[ 3106.024494] x14: ffffb85477fdfe08 x13: 0000ffff9372ffff x12:0000000000000000[ 3106.029469] x11: 1fffef4a88a96be1 x10: ffff7a54454b5f0c x9 :ffffb854771b12f0[ 3106.034324] x8 : 0008000000000000 x7 : ffff7a546c1aa980 x6 :0008000000000080[ 3106.038902] x5 : 00000000001207cf x4 : 0000ffff9372f000 x3 :ffffffe8d481f000[ 3106.043420] x2 : 0000000000610041 x1 : 0000000000000001 x0 :0000000000000000[ 3106.047957] Call trace:[ 3106.049522]  try_grab_folio+0x11c/0x188[ 3106.051996]  follow_pmd_mask.constprop.0.isra.0+0x150/0x2e0[ 3106.055527]  follow_page_mask+0x1a0/0x2b8[ 3106.058118]  __get_user_pages+0xf0/0x348[ 3106.060647]  faultin_page_range+0xb0/0x360[ 3106.063651]  do_madvise+0x340/0x598Let's make huge_pte_lockptr() effectively use the same PT locks as anycore-mm page table walker would.  Add ptep_lockptr() to obtain the PTEpage table lock using a pte pointer -- unfortunately we cannot convertpte_lockptr() because virt_to_page() doesn't work with kmap'ed page tableswe can have with CONFIG_HIGHPTE.Handle CONFIG_PGTABLE_LEVELS correctly by checking in reverse order, suchthat when e.g., CONFIG_PGTABLE_LEVELS==2 withPGDIR_SIZE==P4D_SIZE==PUD_SIZE==PMD_SIZE will work as expected.  Documentwhy that works.There is one ugly case: powerpc 8xx, whereby we have an 8 MiB hugetlbfolio being mapped using two PTE page tables.  While hugetlb wants to takethe PMD table lock, core-mm would grab the PTE table lock of one of bothPTE page tables.  In such corner cases, we have to make sure that bothlocks match, which is (fortunately!) currently guaranteed for 8xx as itdoes not support SMP and consequently doesn't use split PT locks.[1]https://lore.kernel.org/all/1bbfcc7f-f222-45a5-ac44-c5a1381c596d@redhat.com/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45024` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1011-bluefield - 5.15.0-1011.13\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"title": "CVE-2024-45024 on Ubuntu 22.04 LTS (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/hugetlb: fix hugetlb vs. core-mm PT lockingWe recently made GUP's common page table walking code to also walk hugetlbVMAs without most hugetlb special-casing, preparing for the future ofhaving less hugetlb-specific page table walking code in the codebase.Turns out that we missed one page table locking detail: page table lockingfor hugetlb folios that are not mapped using a single PMD/PUD.Assume we have hugetlb folio that spans multiple PTEs (e.g., 64 KiBhugetlb folios on arm64 with 4 KiB base page size).  GUP, as it walks thepage tables, will perform a pte_offset_map_lock() to grab the PTE tablelock.However, hugetlb that concurrently modifies these page tables wouldactually grab the mm->page_table_lock: with USE_SPLIT_PTE_PTLOCKS, thelocks would differ.  Something similar can happen right now with hugetlbfolios that span multiple PMDs when USE_SPLIT_PMD_PTLOCKS.This issue can be reproduced [1], for example triggering:[ 3105.936100] ------------[ cut here ]------------[ 3105.939323] WARNING: CPU: 31 PID: 2732 at mm/gup.c:142try_grab_folio+0x11c/0x188[ 3105.944634] Modules linked in: [...][ 3105.974841] CPU: 31 PID: 2732 Comm: reproducer Not tainted6.10.0-64.eln141.aarch64 #1[ 3105.980406] Hardware name: QEMU KVM Virtual Machine, BIOSedk2-20240524-4.fc40 05/24/2024[ 3105.986185] pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBSBTYPE=--)[ 3105.991108] pc : try_grab_folio+0x11c/0x188[ 3105.994013] lr : follow_page_pte+0xd8/0x430[ 3105.996986] sp : ffff80008eafb8f0[ 3105.999346] x29: ffff80008eafb900 x28: ffffffe8d481f380 x27:00f80001207cff43[ 3106.004414] x26: 0000000000000001 x25: 0000000000000000 x24:ffff80008eafba48[ 3106.009520] x23: 0000ffff9372f000 x22: ffff7a54459e2000 x21:ffff7a546c1aa978[ 3106.014529] x20: ffffffe8d481f3c0 x19: 0000000000610041 x18:0000000000000001[ 3106.019506] x17: 0000000000000001 x16: ffffffffffffffff x15:0000000000000000[ 3106.024494] x14: ffffb85477fdfe08 x13: 0000ffff9372ffff x12:0000000000000000[ 3106.029469] x11: 1fffef4a88a96be1 x10: ffff7a54454b5f0c x9 :ffffb854771b12f0[ 3106.034324] x8 : 0008000000000000 x7 : ffff7a546c1aa980 x6 :0008000000000080[ 3106.038902] x5 : 00000000001207cf x4 : 0000ffff9372f000 x3 :ffffffe8d481f000[ 3106.043420] x2 : 0000000000610041 x1 : 0000000000000001 x0 :0000000000000000[ 3106.047957] Call trace:[ 3106.049522]  try_grab_folio+0x11c/0x188[ 3106.051996]  follow_pmd_mask.constprop.0.isra.0+0x150/0x2e0[ 3106.055527]  follow_page_mask+0x1a0/0x2b8[ 3106.058118]  __get_user_pages+0xf0/0x348[ 3106.060647]  faultin_page_range+0xb0/0x360[ 3106.063651]  do_madvise+0x340/0x598Let's make huge_pte_lockptr() effectively use the same PT locks as anycore-mm page table walker would.  Add ptep_lockptr() to obtain the PTEpage table lock using a pte pointer -- unfortunately we cannot convertpte_lockptr() because virt_to_page() doesn't work with kmap'ed page tableswe can have with CONFIG_HIGHPTE.Handle CONFIG_PGTABLE_LEVELS correctly by checking in reverse order, suchthat when e.g., CONFIG_PGTABLE_LEVELS==2 withPGDIR_SIZE==P4D_SIZE==PUD_SIZE==PMD_SIZE will work as expected.  Documentwhy that works.There is one ugly case: powerpc 8xx, whereby we have an 8 MiB hugetlbfolio being mapped using two PTE page tables.  While hugetlb wants to takethe PMD table lock, core-mm would grab the PTE table lock of one of bothPTE page tables.  In such corner cases, we have to make sure that bothlocks match, which is (fortunately!) currently guaranteed for 8xx as itdoes not support SMP and consequently doesn't use split PT locks.[1]https://lore.kernel.org/all/1bbfcc7f-f222-45a5-ac44-c5a1381c596d@redhat.com/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45024` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1021-intel-iot-realtime - 5.15.0-1021.26\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1004-nvidia - 6.5.0-1004.4\nlinux-image-unsigned-6.5.0-1004-nvidia-64k - 6.5.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1006-realtime - 5.15.0-1006.6\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
+			"platform": "Ubuntu 22.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -38,15 +38,15 @@
 						"comment": "linux package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-19.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
 					},
 					{
@@ -54,7 +54,7 @@
 						"comment": "linux-kvm package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -62,15 +62,15 @@
 						"comment": "linux-aws package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
@@ -78,15 +78,15 @@
 						"comment": "linux-azure package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1006.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
@@ -94,31 +94,27 @@
 						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
-						"comment": "linux-bluefield package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1011.13')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000010",
 						"comment": "linux-gcp package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
@@ -126,7 +122,7 @@
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
@@ -134,23 +130,27 @@
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"comment": "linux-intel-iot-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1021.26')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
@@ -158,7 +158,7 @@
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
@@ -170,23 +170,23 @@
 						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
 						"comment": "linux-oracle-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
@@ -194,23 +194,23 @@
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
-						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
+						"comment": "linux-realtime package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000150",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]
