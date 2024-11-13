@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-50221 on Ubuntu Pro FIPS-updates 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/amd/pm: Vangogh: Fix kernel memory out of bounds writeKASAN reports that the GPU metrics table allocated invangogh_tables_init() is not large enough for the memset done insmu_cmn_init_soft_gpu_metrics(). Condensed report follows:[   33.861314] BUG: KASAN: slab-out-of-bounds insmu_cmn_init_soft_gpu_metrics+0x73/0x200 [amdgpu][   33.861799] Write of size 168 at addr ffff888129f59500 by taskmangoapp/1067...[   33.861808] CPU: 6 UID: 1000 PID: 1067 Comm: mangoapp Tainted: GW          6.12.0-rc4 #356 1a56f59a8b5182eeaf67eb7cb8b13594dd23b544[   33.861816] Tainted: [W]=WARN[   33.861818] Hardware name: Valve Galileo/Galileo, BIOS F7G010712/01/2023[   33.861822] Call Trace:[   33.861826]  <TASK>[   33.861829]  dump_stack_lvl+0x66/0x90[   33.861838]  print_report+0xce/0x620[   33.861853]  kasan_report+0xda/0x110[   33.862794]  kasan_check_range+0xfd/0x1a0[   33.862799]  __asan_memset+0x23/0x40[   33.862803]  smu_cmn_init_soft_gpu_metrics+0x73/0x200 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.863306]  vangogh_get_gpu_metrics_v2_4+0x123/0xad0 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.864257]  vangogh_common_get_gpu_metrics+0xb0c/0xbc0 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.865682]  amdgpu_dpm_get_gpu_metrics+0xcc/0x110 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.866160]  amdgpu_get_gpu_metrics+0x154/0x2d0 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.867135]  dev_attr_show+0x43/0xc0[   33.867147]  sysfs_kf_seq_show+0x1f1/0x3b0[   33.867155]  seq_read_iter+0x3f8/0x1140[   33.867173]  vfs_read+0x76c/0xc50[   33.867198]  ksys_read+0xfb/0x1d0[   33.867214]  do_syscall_64+0x90/0x160...[   33.867353] Allocated by task 378 on cpu 7 at 22.794876s:[   33.867358]  kasan_save_stack+0x33/0x50[   33.867364]  kasan_save_track+0x17/0x60[   33.867367]  __kasan_kmalloc+0x87/0x90[   33.867371]  vangogh_init_smc_tables+0x3f9/0x840 [amdgpu][   33.867835]  smu_sw_init+0xa32/0x1850 [amdgpu][   33.868299]  amdgpu_device_init+0x467b/0x8d90 [amdgpu][   33.868733]  amdgpu_driver_load_kms+0x19/0xf0 [amdgpu][   33.869167]  amdgpu_pci_probe+0x2d6/0xcd0 [amdgpu][   33.869608]  local_pci_probe+0xda/0x180[   33.869614]  pci_device_probe+0x43f/0x6b0Empirically we can confirm that the former allocates 152 bytes for thetable, while the latter memsets the 168 large block.Root cause appears that when GPU metrics tables for v2_4 parts were addedit was not considered to enlarge the table to fit.The fix in this patch is rather \"brute force\" and perhaps later should bedone in a smarter way, by extracting and consolidating the part version tosize logic to a common helper, instead of brute forcing the largestpossible allocation. Nevertheless, for now this works and fixes the out ofbounds write.v2: * Drop impossible v3_0 case. (Mario)(cherry picked from commit 0880f58f9609f0200483a49429af0f050d281703)",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/amd/pm: Vangogh: Fix kernel memory out of bounds writeKASAN reports that the GPU metrics table allocated invangogh_tables_init() is not large enough for the memset done insmu_cmn_init_soft_gpu_metrics(). Condensed report follows:[   33.861314] BUG: KASAN: slab-out-of-bounds insmu_cmn_init_soft_gpu_metrics+0x73/0x200 [amdgpu][   33.861799] Write of size 168 at addr ffff888129f59500 by taskmangoapp/1067...[   33.861808] CPU: 6 UID: 1000 PID: 1067 Comm: mangoapp Tainted: GW          6.12.0-rc4 #356 1a56f59a8b5182eeaf67eb7cb8b13594dd23b544[   33.861816] Tainted: [W]=WARN[   33.861818] Hardware name: Valve Galileo/Galileo, BIOS F7G010712/01/2023[   33.861822] Call Trace:[   33.861826]  <TASK>[   33.861829]  dump_stack_lvl+0x66/0x90[   33.861838]  print_report+0xce/0x620[   33.861853]  kasan_report+0xda/0x110[   33.862794]  kasan_check_range+0xfd/0x1a0[   33.862799]  __asan_memset+0x23/0x40[   33.862803]  smu_cmn_init_soft_gpu_metrics+0x73/0x200 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.863306]  vangogh_get_gpu_metrics_v2_4+0x123/0xad0 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.864257]  vangogh_common_get_gpu_metrics+0xb0c/0xbc0 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.865682]  amdgpu_dpm_get_gpu_metrics+0xcc/0x110 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.866160]  amdgpu_get_gpu_metrics+0x154/0x2d0 [amdgpu13b1bc364ec578808f676eba412c20eaab792779][   33.867135]  dev_attr_show+0x43/0xc0[   33.867147]  sysfs_kf_seq_show+0x1f1/0x3b0[   33.867155]  seq_read_iter+0x3f8/0x1140[   33.867173]  vfs_read+0x76c/0xc50[   33.867198]  ksys_read+0xfb/0x1d0[   33.867214]  do_syscall_64+0x90/0x160...[   33.867353] Allocated by task 378 on cpu 7 at 22.794876s:[   33.867358]  kasan_save_stack+0x33/0x50[   33.867364]  kasan_save_track+0x17/0x60[   33.867367]  __kasan_kmalloc+0x87/0x90[   33.867371]  vangogh_init_smc_tables+0x3f9/0x840 [amdgpu][   33.867835]  smu_sw_init+0xa32/0x1850 [amdgpu][   33.868299]  amdgpu_device_init+0x467b/0x8d90 [amdgpu][   33.868733]  amdgpu_driver_load_kms+0x19/0xf0 [amdgpu][   33.869167]  amdgpu_pci_probe+0x2d6/0xcd0 [amdgpu][   33.869608]  local_pci_probe+0xda/0x180[   33.869614]  pci_device_probe+0x43f/0x6b0Empirically we can confirm that the former allocates 152 bytes for thetable, while the latter memsets the 168 large block.Root cause appears that when GPU metrics tables for v2_4 parts were addedit was not considered to enlarge the table to fit.The fix in this patch is rather \"brute force\" and perhaps later should bedone in a smarter way, by extracting and consolidating the part version tosize logic to a common helper, instead of brute forcing the largestpossible allocation. Nevertheless, for now this works and fixes the out ofbounds write.v2: * Drop impossible v3_0 case. (Mario)(cherry picked from commit 0880f58f9609f0200483a49429af0f050d281703)\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50221` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-92-fips - 5.15.0-92.102+fips1\nlinux-image-unsigned-hmac-5.15.0-92-fips - 5.15.0-92.102+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1052-aws-fips - 5.15.0-1052.57+fips1\nlinux-image-unsigned-hmac-5.15.0-1052-aws-fips - 5.15.0-1052.57+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1058-azure-fips - 5.15.0-1058.66+fips1\nlinux-image-unsigned-hmac-5.15.0-1058-azure-fips - 5.15.0-1058.66+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 22.04 LTS"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000000",
-						"comment": "linux package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000000",
+						"comment": "linux package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-19.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
@@ -48,16 +48,16 @@
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
-						"comment": "linux-kvm package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000040",
+						"comment": "linux-kvm package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1004.4')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000010",
-						"comment": "linux-aws package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000010",
+						"comment": "linux-aws package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
@@ -72,8 +72,8 @@
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
-						"comment": "linux-azure package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000030",
+						"comment": "linux-azure package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1006.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
@@ -88,8 +88,8 @@
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000050",
+						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -100,24 +100,24 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000460",
-						"comment": "linux-fips package in fips-updates/jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
+						"comment": "linux-fips package in fips-updates/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-92.102+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
-						"comment": "linux-aws-fips package in fips-updates/jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
+						"comment": "linux-aws-fips package in fips-updates/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1052.57+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
-						"comment": "linux-azure-fips package in fips-updates/jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"comment": "linux-azure-fips package in fips-updates/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1058.66+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000450",
-						"comment": "linux-gcp-fips package in fips-updates/jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
+						"comment": "linux-gcp-fips package in fips-updates/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1048.56+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
-						"comment": "linux-gcp package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000010",
+						"comment": "linux-gcp package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
@@ -132,24 +132,24 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
-						"comment": "linux-gke package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000020",
+						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000080",
-						"comment": "linux-gkeop package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000100",
+						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-ibm package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000020",
+						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
-						"comment": "linux-intel-iotg package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000110",
+						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
-						"comment": "linux-lowlatency package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000120",
+						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
@@ -164,8 +164,8 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
-						"comment": "linux-nvidia package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
+						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
@@ -176,8 +176,8 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000060",
-						"comment": "linux-oracle package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000150",
+						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
@@ -200,8 +200,8 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
-						"comment": "linux-raspi package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000160",
+						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000470",
@@ -220,8 +220,8 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
-						"comment": "linux-xilinx-zynqmp package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000170",
+						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]
 			}

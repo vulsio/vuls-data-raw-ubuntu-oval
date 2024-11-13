@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-50114 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: arm64: Unregister redistributor for failed vCPU creationAlex reports that syzkaller has managed to trigger a use-after-free whentearing down a VM:  BUG: KASAN: slab-use-after-free in kvm_put_kvm+0x300/0xe68virt/kvm/kvm_main.c:5769  Read of size 8 at addr ffffff801c6890d0 by task syz.3.2219/10758  CPU: 3 UID: 0 PID: 10758 Comm: syz.3.2219 Not tainted 6.11.0-rc6-dirty#64  Hardware name: linux,dummy-virt (DT)  Call trace:   dump_backtrace+0x17c/0x1a8 arch/arm64/kernel/stacktrace.c:317   show_stack+0x2c/0x3c arch/arm64/kernel/stacktrace.c:324   __dump_stack lib/dump_stack.c:93 [inline]   dump_stack_lvl+0x94/0xc0 lib/dump_stack.c:119   print_report+0x144/0x7a4 mm/kasan/report.c:377   kasan_report+0xcc/0x128 mm/kasan/report.c:601   __asan_report_load8_noabort+0x20/0x2c mm/kasan/report_generic.c:381   kvm_put_kvm+0x300/0xe68 virt/kvm/kvm_main.c:5769   kvm_vm_release+0x4c/0x60 virt/kvm/kvm_main.c:1409   __fput+0x198/0x71c fs/file_table.c:422   ____fput+0x20/0x30 fs/file_table.c:450   task_work_run+0x1cc/0x23c kernel/task_work.c:228   do_notify_resume+0x144/0x1a0 include/linux/resume_user_mode.h:50   el0_svc+0x64/0x68 arch/arm64/kernel/entry-common.c:169   el0t_64_sync_handler+0x90/0xfc arch/arm64/kernel/entry-common.c:730   el0t_64_sync+0x190/0x194 arch/arm64/kernel/entry.S:598Upon closer inspection, it appears that we do not properly tear down theMMIO registration for a vCPU that fails creation late in the game, e.g.a vCPU w/ the same ID already exists in the VM.It is important to consider the context of commit that introduced this bugby moving the unregistration out of __kvm_vgic_vcpu_destroy(). Thatchange correctly sought to avoid an srcu v. config_lock inversion bybreaking up the vCPU teardown into two parts, one guarded by theconfig_lock.Fix the use-after-free while avoiding lock inversion by adding aspecial-cased unregistration to __kvm_vgic_vcpu_destroy(). This is safebecause failed vCPUs are torn down outside of the config_lock.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: arm64: Unregister redistributor for failed vCPU creationAlex reports that syzkaller has managed to trigger a use-after-free whentearing down a VM:  BUG: KASAN: slab-use-after-free in kvm_put_kvm+0x300/0xe68virt/kvm/kvm_main.c:5769  Read of size 8 at addr ffffff801c6890d0 by task syz.3.2219/10758  CPU: 3 UID: 0 PID: 10758 Comm: syz.3.2219 Not tainted 6.11.0-rc6-dirty#64  Hardware name: linux,dummy-virt (DT)  Call trace:   dump_backtrace+0x17c/0x1a8 arch/arm64/kernel/stacktrace.c:317   show_stack+0x2c/0x3c arch/arm64/kernel/stacktrace.c:324   __dump_stack lib/dump_stack.c:93 [inline]   dump_stack_lvl+0x94/0xc0 lib/dump_stack.c:119   print_report+0x144/0x7a4 mm/kasan/report.c:377   kasan_report+0xcc/0x128 mm/kasan/report.c:601   __asan_report_load8_noabort+0x20/0x2c mm/kasan/report_generic.c:381   kvm_put_kvm+0x300/0xe68 virt/kvm/kvm_main.c:5769   kvm_vm_release+0x4c/0x60 virt/kvm/kvm_main.c:1409   __fput+0x198/0x71c fs/file_table.c:422   ____fput+0x20/0x30 fs/file_table.c:450   task_work_run+0x1cc/0x23c kernel/task_work.c:228   do_notify_resume+0x144/0x1a0 include/linux/resume_user_mode.h:50   el0_svc+0x64/0x68 arch/arm64/kernel/entry-common.c:169   el0t_64_sync_handler+0x90/0xfc arch/arm64/kernel/entry-common.c:730   el0t_64_sync+0x190/0x194 arch/arm64/kernel/entry.S:598Upon closer inspection, it appears that we do not properly tear down theMMIO registration for a vCPU that fails creation late in the game, e.g.a vCPU w/ the same ID already exists in the VM.It is important to consider the context of commit that introduced this bugby moving the unregistration out of __kvm_vgic_vcpu_destroy(). Thatchange correctly sought to avoid an srcu v. config_lock inversion bybreaking up the vCPU teardown into two parts, one guarded by theconfig_lock.Fix the use-after-free while avoiding lock inversion by adding aspecial-cased unregistration to __kvm_vgic_vcpu_destroy(). This is safebecause failed vCPUs are torn down outside of the config_lock.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50114` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -34,44 +34,56 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

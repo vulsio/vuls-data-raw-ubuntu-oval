@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-50163 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Make sure internal and UAPI bpf_redirect flags don't overlapThe bpf_redirect_info is shared between the SKB and XDP redirect paths,and the two paths use the same numeric flag values in the ri->flagsfield (specifically, BPF_F_BROADCAST == BPF_F_NEXTHOP). This means thatif skb bpf_redirect_neigh() is used with a non-NULL params argument and,subsequently, an XDP redirect is performed using the samebpf_redirect_info struct, the XDP path will get confused and end upcrashing, which syzbot managed to trigger.With the stack-allocated bpf_redirect_info, the structure is no longershared between the SKB and XDP paths, so the crash doesn't happenanymore. However, different code paths using identically-numbered flagvalues in the same struct field still seems like a bit of a mess, sothis patch cleans that up by moving the flag definitions together andredefining the three flags in BPF_F_REDIRECT_INTERNAL to not overlapwith the flags used for XDP. It also adds a BUILD_BUG_ON() check to makesure the overlap is not re-introduced by mistake.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Make sure internal and UAPI bpf_redirect flags don't overlapThe bpf_redirect_info is shared between the SKB and XDP redirect paths,and the two paths use the same numeric flag values in the ri->flagsfield (specifically, BPF_F_BROADCAST == BPF_F_NEXTHOP). This means thatif skb bpf_redirect_neigh() is used with a non-NULL params argument and,subsequently, an XDP redirect is performed using the samebpf_redirect_info struct, the XDP path will get confused and end upcrashing, which syzbot managed to trigger.With the stack-allocated bpf_redirect_info, the structure is no longershared between the SKB and XDP paths, so the crash doesn't happenanymore. However, different code paths using identically-numbered flagvalues in the same struct field still seems like a bit of a mess, sothis patch cleans that up by moving the flag definitions together andredefining the three flags in BPF_F_REDIRECT_INTERNAL to not overlapwith the flags used for XDP. It also adds a BUILD_BUG_ON() check to makesure the overlap is not re-introduced by mistake.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50163` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}

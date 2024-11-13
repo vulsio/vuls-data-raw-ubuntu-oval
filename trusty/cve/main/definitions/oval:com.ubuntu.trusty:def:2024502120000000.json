@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-50212 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:lib: alloc_tag_module_unload must wait for pending kfree_rcu callsBen Greear reports following splat: ------------[ cut here ]------------ net/netfilter/nf_nat_core.c:1114 module nf_nat func:nf_nat_register_fn has256 allocated at module unload WARNING: CPU: 1 PID: 10421 at lib/alloc_tag.c:168alloc_tag_module_unload+0x22b/0x3f0 Modules linked in: nf_nat(-) btrfs ufs qnx4 hfsplus hfs minix vfat msdosfat... Hardware name: Default string Default string/SKYBAY, BIOS 5.12 08/04/2020 RIP: 0010:alloc_tag_module_unload+0x22b/0x3f0  codetag_unload_module+0x19b/0x2a0  ? codetag_load_module+0x80/0x80nf_nat module exit calls kfree_rcu on those addresses, but the freeoperation is likely still pending by the time alloc_tag checks for leaks.Wait for outstanding kfree_rcu operations to complete before checkingresolves this warning.Reproducer:unshare -n iptables-nft -t nat -A PREROUTING -p tcpgrep nf_nat /proc/allocinfo # will list 4 allocationsrmmod nft_chain_natrmmod nf_nat                # will WARN.[akpm@linux-foundation.org: add comment]",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:lib: alloc_tag_module_unload must wait for pending kfree_rcu callsBen Greear reports following splat: ------------[ cut here ]------------ net/netfilter/nf_nat_core.c:1114 module nf_nat func:nf_nat_register_fn has256 allocated at module unload WARNING: CPU: 1 PID: 10421 at lib/alloc_tag.c:168alloc_tag_module_unload+0x22b/0x3f0 Modules linked in: nf_nat(-) btrfs ufs qnx4 hfsplus hfs minix vfat msdosfat... Hardware name: Default string Default string/SKYBAY, BIOS 5.12 08/04/2020 RIP: 0010:alloc_tag_module_unload+0x22b/0x3f0  codetag_unload_module+0x19b/0x2a0  ? codetag_load_module+0x80/0x80nf_nat module exit calls kfree_rcu on those addresses, but the freeoperation is likely still pending by the time alloc_tag checks for leaks.Wait for outstanding kfree_rcu operations to complete before checkingresolves this warning.Reproducer:unshare -n iptables-nft -t nat -A PREROUTING -p tcpgrep nf_nat /proc/allocinfo # will list 4 allocationsrmmod nft_chain_natrmmod nf_nat                # will WARN.[akpm@linux-foundation.org: add comment]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50212` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}

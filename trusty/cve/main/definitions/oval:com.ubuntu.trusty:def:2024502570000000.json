@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-50257 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: Fix use-after-free in get_info()ip6table_nat module unload has refcnt warning for UAF. call trace is:WARNING: CPU: 1 PID: 379 at kernel/module/main.c:853 module_put+0x6f/0x80Modules linked in: ip6table_nat(-)CPU: 1 UID: 0 PID: 379 Comm: ip6tables Not tainted6.12.0-rc4-00047-gc2ee9f594da8-dirty #205Hardware name: QEMU Standard PC (i440FX + PIIX, 1996),BIOS rel-1.13.0-0-gf21b5a4aeb02-prebuilt.qemu.org 04/01/2014RIP: 0010:module_put+0x6f/0x80Call Trace: <TASK> get_info+0x128/0x180 do_ip6t_get_ctl+0x6a/0x430 nf_getsockopt+0x46/0x80 ipv6_getsockopt+0xb9/0x100 rawv6_getsockopt+0x42/0x190 do_sock_getsockopt+0xaa/0x180 __sys_getsockopt+0x70/0xc0 __x64_sys_getsockopt+0x20/0x30 do_syscall_64+0xa2/0x1a0 entry_SYSCALL_64_after_hwframe+0x77/0x7fConcurrent execution of module unload and get_info() trigered the warning.The root cause is as follows:cpu0\t\t\t\t      cpu1module_exit//mod->state = MODULE_STATE_GOING  ip6table_nat_exit    xt_unregister_template\tkfree(t)\t//removed from templ_list\t\t\t\t      getinfo()\t\t\t\t\t  t = xt_find_table_lock\t\t\t\t\t\tlist_for_each_entry(tmpl, &xt_templates[af]...)\t\t\t\t\t\t\tif (strcmp(tmpl->name, name))\t\t\t\t\t\t\t\tcontinue;  //table not found\t\t\t\t\t\t\ttry_module_get\t\t\t\t\t\tlist_for_each_entry(t, &xt_net->tables[af]...)\t\t\t\t\t\t\treturn t;  //not get refcnt\t\t\t\t\t  module_put(t->me) //uaf    unregister_pernet_subsys    //remove table from xt_net listWhile xt_table module was going away and has been removed fromxt_templates list, we couldnt get refcnt of xt_table->me. Checkmodule in xt_net->tables list re-traversal to fix it.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: Fix use-after-free in get_info()ip6table_nat module unload has refcnt warning for UAF. call trace is:WARNING: CPU: 1 PID: 379 at kernel/module/main.c:853 module_put+0x6f/0x80Modules linked in: ip6table_nat(-)CPU: 1 UID: 0 PID: 379 Comm: ip6tables Not tainted6.12.0-rc4-00047-gc2ee9f594da8-dirty #205Hardware name: QEMU Standard PC (i440FX + PIIX, 1996),BIOS rel-1.13.0-0-gf21b5a4aeb02-prebuilt.qemu.org 04/01/2014RIP: 0010:module_put+0x6f/0x80Call Trace: <TASK> get_info+0x128/0x180 do_ip6t_get_ctl+0x6a/0x430 nf_getsockopt+0x46/0x80 ipv6_getsockopt+0xb9/0x100 rawv6_getsockopt+0x42/0x190 do_sock_getsockopt+0xaa/0x180 __sys_getsockopt+0x70/0xc0 __x64_sys_getsockopt+0x20/0x30 do_syscall_64+0xa2/0x1a0 entry_SYSCALL_64_after_hwframe+0x77/0x7fConcurrent execution of module unload and get_info() trigered the warning.The root cause is as follows:cpu0\t\t\t\t      cpu1module_exit//mod->state = MODULE_STATE_GOING  ip6table_nat_exit    xt_unregister_template\tkfree(t)\t//removed from templ_list\t\t\t\t      getinfo()\t\t\t\t\t  t = xt_find_table_lock\t\t\t\t\t\tlist_for_each_entry(tmpl, &xt_templates[af]...)\t\t\t\t\t\t\tif (strcmp(tmpl->name, name))\t\t\t\t\t\t\t\tcontinue;  //table not found\t\t\t\t\t\t\ttry_module_get\t\t\t\t\t\tlist_for_each_entry(t, &xt_net->tables[af]...)\t\t\t\t\t\t\treturn t;  //not get refcnt\t\t\t\t\t  module_put(t->me) //uaf    unregister_pernet_subsys    //remove table from xt_net listWhile xt_table module was going away and has been removed fromxt_templates list, we couldnt get refcnt of xt_table->me. Checkmodule in xt_net->tables list re-traversal to fix it.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50257` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}
