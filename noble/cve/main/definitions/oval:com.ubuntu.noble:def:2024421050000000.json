@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-42105 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix inode number range checksPatch series \"nilfs2: fix potential issues related to reserved inodes\".This series fixes one use-after-free issue reported by syzbot, caused bynilfs2's internal inode being exposed in the namespace on a corruptedfilesystem, and a couple of flaws that cause problems if the startingnumber of non-reserved inodes written in the on-disk super block isintentionally (or corruptly) changed from its default value.This patch (of 3):In the current implementation of nilfs2, \"nilfs->ns_first_ino\", whichgives the first non-reserved inode number, is read from the superblock,but its lower limit is not checked.As a result, if a number that overlaps with the inode number range ofreserved inodes such as the root directory or metadata files is set in thesuper block parameter, the inode number test macros (NILFS_MDT_INODE andNILFS_VALID_INODE) will not function properly.In addition, these test macros use left bit-shift calculations using withthe inode number as the shift count via the BIT macro, but the result of ashift calculation that exceeds the bit width of an integer is undefined inthe C specification, so if \"ns_first_ino\" is set to a large value otherthan the default value NILFS_USER_INO (=11), the macros may potentiallymalfunction depending on the environment.Fix these issues by checking the lower bound of \"nilfs->ns_first_ino\" andby preventing bit shifts equal to or greater than the NILFS_USER_INOconstant in the inode number test macros.Also, change the type of \"ns_first_ino\" from signed integer to unsignedinteger to avoid the need for type casting in comparisons such as thelower bound check introduced this time.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42105` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1014.21\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix inode number range checksPatch series \"nilfs2: fix potential issues related to reserved inodes\".This series fixes one use-after-free issue reported by syzbot, caused bynilfs2's internal inode being exposed in the namespace on a corruptedfilesystem, and a couple of flaws that cause problems if the startingnumber of non-reserved inodes written in the on-disk super block isintentionally (or corruptly) changed from its default value.This patch (of 3):In the current implementation of nilfs2, \"nilfs->ns_first_ino\", whichgives the first non-reserved inode number, is read from the superblock,but its lower limit is not checked.As a result, if a number that overlaps with the inode number range ofreserved inodes such as the root directory or metadata files is set in thesuper block parameter, the inode number test macros (NILFS_MDT_INODE andNILFS_VALID_INODE) will not function properly.In addition, these test macros use left bit-shift calculations using withthe inode number as the shift count via the BIT macro, but the result of ashift calculation that exceeds the bit width of an integer is undefined inthe C specification, so if \"ns_first_ino\" is set to a large value otherthan the default value NILFS_USER_INO (=11), the macros may potentiallymalfunction depending on the environment.Fix these issues by checking the lower bound of \"nilfs->ns_first_ino\" andby preventing bit shifts equal to or greater than the NILFS_USER_INOconstant in the inode number test macros.Also, change the type of \"ns_first_ino\" from signed integer to unsignedinteger to avoid the need for type casting in comparisons such as thelower bound check introduced this time.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42105` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1016-oem - 6.8.0-1016.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1014.21\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -41,7 +41,8 @@
 				"https://ubuntu.com/security/notices/USN-7090-1",
 				"https://ubuntu.com/security/notices/USN-7089-2",
 				"https://ubuntu.com/security/notices/USN-7089-3",
-				"https://ubuntu.com/security/notices/USN-7095-1"
+				"https://ubuntu.com/security/notices/USN-7095-1",
+				"https://ubuntu.com/security/notices/USN-7089-4"
 			]
 		}
 	},
@@ -84,15 +85,15 @@
 						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1016.16')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000050",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1016.16')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
 						"comment": "linux-raspi package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1014.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000060",
 						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1014.21')."
 					}
 				]

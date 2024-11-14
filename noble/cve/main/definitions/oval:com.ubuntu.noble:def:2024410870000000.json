@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-41087 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:ata: libata-core: Fix double free on errorIf e.g. the ata_port_alloc() call in ata_host_alloc() fails, we will jumpto the err_out label, which will call devres_release_group().devres_release_group() will trigger a call to ata_host_release().ata_host_release() calls kfree(host), so executing the kfree(host) inata_host_alloc() will lead to a double free:kernel BUG at mm/slub.c:553!Oops: invalid opcode: 0000 [#1] PREEMPT SMP NOPTICPU: 11 PID: 599 Comm: (udev-worker) Not tainted 6.10.0-rc5 #47Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-2.fc4004/01/2014RIP: 0010:kfree+0x2cf/0x2f0Code: 5d 41 5e 41 5f 5d e9 80 d6 ff ff 4d 89 f1 41 b8 01 00 00 00 48 89 d948 89 daRSP: 0018:ffffc90000f377f0 EFLAGS: 00010246RAX: ffff888112b1f2c0 RBX: ffff888112b1f2c0 RCX: ffff888112b1f320RDX: 000000000000400b RSI: ffffffffc02c9de5 RDI: ffff888112b1f2c0RBP: ffffc90000f37830 R08: 0000000000000000 R09: 0000000000000000R10: ffffc90000f37610 R11: 617461203a736b6e R12: ffffea00044ac780R13: ffff888100046400 R14: ffffffffc02c9de5 R15: 0000000000000006FS:  00007f2f1cabe980(0000) GS:ffff88813b380000(0000)knlGS:0000000000000000CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033CR2: 00007f2f1c3acf75 CR3: 0000000111724000 CR4: 0000000000750ef0PKRU: 55555554Call Trace: <TASK> ? __die_body.cold+0x19/0x27 ? die+0x2e/0x50 ? do_trap+0xca/0x110 ? do_error_trap+0x6a/0x90 ? kfree+0x2cf/0x2f0 ? exc_invalid_op+0x50/0x70 ? kfree+0x2cf/0x2f0 ? asm_exc_invalid_op+0x1a/0x20 ? ata_host_alloc+0xf5/0x120 [libata] ? ata_host_alloc+0xf5/0x120 [libata] ? kfree+0x2cf/0x2f0 ata_host_alloc+0xf5/0x120 [libata] ata_host_alloc_pinfo+0x14/0xa0 [libata] ahci_init_one+0x6c9/0xd20 [ahci]Ensure that we will not call kfree(host) twice, by performing the kfree()only if the devres_open_group() call failed.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41087` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1014.21\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ata: libata-core: Fix double free on errorIf e.g. the ata_port_alloc() call in ata_host_alloc() fails, we will jumpto the err_out label, which will call devres_release_group().devres_release_group() will trigger a call to ata_host_release().ata_host_release() calls kfree(host), so executing the kfree(host) inata_host_alloc() will lead to a double free:kernel BUG at mm/slub.c:553!Oops: invalid opcode: 0000 [#1] PREEMPT SMP NOPTICPU: 11 PID: 599 Comm: (udev-worker) Not tainted 6.10.0-rc5 #47Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.3-2.fc4004/01/2014RIP: 0010:kfree+0x2cf/0x2f0Code: 5d 41 5e 41 5f 5d e9 80 d6 ff ff 4d 89 f1 41 b8 01 00 00 00 48 89 d948 89 daRSP: 0018:ffffc90000f377f0 EFLAGS: 00010246RAX: ffff888112b1f2c0 RBX: ffff888112b1f2c0 RCX: ffff888112b1f320RDX: 000000000000400b RSI: ffffffffc02c9de5 RDI: ffff888112b1f2c0RBP: ffffc90000f37830 R08: 0000000000000000 R09: 0000000000000000R10: ffffc90000f37610 R11: 617461203a736b6e R12: ffffea00044ac780R13: ffff888100046400 R14: ffffffffc02c9de5 R15: 0000000000000006FS:  00007f2f1cabe980(0000) GS:ffff88813b380000(0000)knlGS:0000000000000000CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033CR2: 00007f2f1c3acf75 CR3: 0000000111724000 CR4: 0000000000750ef0PKRU: 55555554Call Trace: <TASK> ? __die_body.cold+0x19/0x27 ? die+0x2e/0x50 ? do_trap+0xca/0x110 ? do_error_trap+0x6a/0x90 ? kfree+0x2cf/0x2f0 ? exc_invalid_op+0x50/0x70 ? kfree+0x2cf/0x2f0 ? asm_exc_invalid_op+0x1a/0x20 ? ata_host_alloc+0xf5/0x120 [libata] ? ata_host_alloc+0xf5/0x120 [libata] ? kfree+0x2cf/0x2f0 ata_host_alloc+0xf5/0x120 [libata] ata_host_alloc_pinfo+0x14/0xa0 [libata] ahci_init_one+0x6c9/0xd20 [ahci]Ensure that we will not call kfree(host) twice, by performing the kfree()only if the devres_open_group() call failed.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41087` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1016-oem - 6.8.0-1016.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1014.21\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240729",
 				"cvss_score": "7.8",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
-				"usns": "7003-1,7003-2,7006-1,7003-3,7007-1,7009-1,7019-1,7007-2,7007-3,7009-2,7003-4,7003-5,7089-1,7090-1,7089-2,7089-3,7095-1"
+				"usns": "7003-1,7003-2,7006-1,7003-3,7007-1,7009-1,7019-1,7007-2,7007-3,7009-2,7003-4,7003-5,7089-1,7090-1,7089-2,7089-3,7095-1,7089-4"
 			},
 			"public_date_at_usn": "2024-07-29 16:15:00 UTC",
 			"ref": [
@@ -44,7 +44,8 @@
 				"https://ubuntu.com/security/notices/USN-7090-1",
 				"https://ubuntu.com/security/notices/USN-7089-2",
 				"https://ubuntu.com/security/notices/USN-7089-3",
-				"https://ubuntu.com/security/notices/USN-7095-1"
+				"https://ubuntu.com/security/notices/USN-7095-1",
+				"https://ubuntu.com/security/notices/USN-7089-4"
 			]
 		}
 	},
@@ -87,15 +88,15 @@
 						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1016.16')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000050",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1016.16')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
 						"comment": "linux-raspi package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1014.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000060",
 						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1014.21')."
 					}
 				]
