@@ -3,11 +3,11 @@
 	"id": "oval:com.ubuntu.jammy:def:2024501040000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-50104 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:ASoC: qcom: sdm845: add missing soundwire runtime stream allocDuring the migration of Soundwire runtime stream allocation fromthe Qualcomm Soundwire controller to SoC's soundcard drivers the sdm845soundcard was forgotten.At this point any playback attempt or audio daemon startup, for instanceon sdm845-db845c (Qualcomm RB3 board), will result in stream pointerNULL dereference: Unable to handle kernel NULL pointer dereference at virtual address 0000000000000020 Mem abort info:   ESR = 0x0000000096000004   EC = 0x25: DABT (current EL), IL = 32 bits   SET = 0, FnV = 0   EA = 0, S1PTW = 0   FSC = 0x04: level 0 translation fault Data abort info:   ISV = 0, ISS = 0x00000004, ISS2 = 0x00000000   CM = 0, WnR = 0, TnD = 0, TagAccess = 0   GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0 user pgtable: 4k pages, 48-bit VAs, pgdp=0000000101ecf000 [0000000000000020] pgd=0000000000000000, p4d=0000000000000000 Internal error: Oops: 0000000096000004 [#1] PREEMPT SMP Modules linked in: ... CPU: 5 UID: 0 PID: 1198 Comm: aplay Not tainted 6.12.0-rc2-qcomlt-arm64-00059-g9d78f315a362-dirty #18 Hardware name: Thundercomm Dragonboard 845c (DT) pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--) pc : sdw_stream_add_slave+0x44/0x380 [soundwire_bus] lr : sdw_stream_add_slave+0x44/0x380 [soundwire_bus] sp : ffff80008a2035c0 x29: ffff80008a2035c0 x28: ffff80008a203978 x27: 0000000000000000 x26: 00000000000000c0 x25: 0000000000000000 x24: ffff1676025f4800 x23: ffff167600ff1cb8 x22: ffff167600ff1c98 x21: 0000000000000003 x20: ffff167607316000 x19: ffff167604e64e80 x18: 0000000000000000 x17: 0000000000000000 x16: ffffcec265074160 x15: 0000000000000000 x14: 0000000000000000 x13: 0000000000000000 x12: 0000000000000000 x11: 0000000000000000 x10: 0000000000000000 x9 : 0000000000000000 x8 : 0000000000000000 x7 : 0000000000000000 x6 : ffff167600ff1cec x5 : ffffcec22cfa2010 x4 : 0000000000000000 x3 : 0000000000000003 x2 : ffff167613f836c0 x1 : 0000000000000000 x0 : ffff16761feb60b8 Call trace:  sdw_stream_add_slave+0x44/0x380 [soundwire_bus]  wsa881x_hw_params+0x68/0x80 [snd_soc_wsa881x]  snd_soc_dai_hw_params+0x3c/0xa4  __soc_pcm_hw_params+0x230/0x660  dpcm_be_dai_hw_params+0x1d0/0x3f8  dpcm_fe_dai_hw_params+0x98/0x268  snd_pcm_hw_params+0x124/0x460  snd_pcm_common_ioctl+0x998/0x16e8  snd_pcm_ioctl+0x34/0x58  __arm64_sys_ioctl+0xac/0xf8  invoke_syscall+0x48/0x104  el0_svc_common.constprop.0+0x40/0xe0  do_el0_svc+0x1c/0x28  el0_svc+0x34/0xe0  el0t_64_sync_handler+0x120/0x12c  el0t_64_sync+0x190/0x194 Code: aa0403fb f9418400 9100e000 9400102f (f8420f22) ---[ end trace 0000000000000000 ]---0000000000006108 <sdw_stream_add_slave>:    6108:       d503233f        paciasp    610c:       a9b97bfd        stp     x29, x30, [sp, #-112]!    6110:       910003fd        mov     x29, sp    6114:       a90153f3        stp     x19, x20, [sp, #16]    6118:       a9025bf5        stp     x21, x22, [sp, #32]    611c:       aa0103f6        mov     x22, x1    6120:       2a0303f5        mov     w21, w3    6124:       a90363f7        stp     x23, x24, [sp, #48]    6128:       aa0003f8        mov     x24, x0    612c:       aa0203f7        mov     x23, x2    6130:       a9046bf9        stp     x25, x26, [sp, #64]    6134:       aa0403f9        mov     x25, x4        <-- x4 copied to x25    6138:       a90573fb        stp     x27, x28, [sp, #80]    613c:       aa0403fb        mov     x27, x4    6140:       f9418400        ldr     x0, [x0, #776]    6144:       9100e000        add     x0, x0, #0x38    6148:       94000000        bl      0 <mutex_lock>    614c:       f8420f22        ldr     x2, [x25, #32]!  <-- offset 0x44    ^^^This is 0x6108 + offset 0x44 from the beginning of sdw_stream_add_slave()where data abort happens.wsa881x_hw_params() is called with stream = NULL and passes it furtherin register x4 (5th argu---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50104` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1011-bluefield - 5.15.0-1011.13\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"title": "CVE-2024-50104 on Ubuntu 22.04 LTS (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ASoC: qcom: sdm845: add missing soundwire runtime stream allocDuring the migration of Soundwire runtime stream allocation fromthe Qualcomm Soundwire controller to SoC's soundcard drivers the sdm845soundcard was forgotten.At this point any playback attempt or audio daemon startup, for instanceon sdm845-db845c (Qualcomm RB3 board), will result in stream pointerNULL dereference: Unable to handle kernel NULL pointer dereference at virtual address 0000000000000020 Mem abort info:   ESR = 0x0000000096000004   EC = 0x25: DABT (current EL), IL = 32 bits   SET = 0, FnV = 0   EA = 0, S1PTW = 0   FSC = 0x04: level 0 translation fault Data abort info:   ISV = 0, ISS = 0x00000004, ISS2 = 0x00000000   CM = 0, WnR = 0, TnD = 0, TagAccess = 0   GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0 user pgtable: 4k pages, 48-bit VAs, pgdp=0000000101ecf000 [0000000000000020] pgd=0000000000000000, p4d=0000000000000000 Internal error: Oops: 0000000096000004 [#1] PREEMPT SMP Modules linked in: ... CPU: 5 UID: 0 PID: 1198 Comm: aplay Not tainted 6.12.0-rc2-qcomlt-arm64-00059-g9d78f315a362-dirty #18 Hardware name: Thundercomm Dragonboard 845c (DT) pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--) pc : sdw_stream_add_slave+0x44/0x380 [soundwire_bus] lr : sdw_stream_add_slave+0x44/0x380 [soundwire_bus] sp : ffff80008a2035c0 x29: ffff80008a2035c0 x28: ffff80008a203978 x27: 0000000000000000 x26: 00000000000000c0 x25: 0000000000000000 x24: ffff1676025f4800 x23: ffff167600ff1cb8 x22: ffff167600ff1c98 x21: 0000000000000003 x20: ffff167607316000 x19: ffff167604e64e80 x18: 0000000000000000 x17: 0000000000000000 x16: ffffcec265074160 x15: 0000000000000000 x14: 0000000000000000 x13: 0000000000000000 x12: 0000000000000000 x11: 0000000000000000 x10: 0000000000000000 x9 : 0000000000000000 x8 : 0000000000000000 x7 : 0000000000000000 x6 : ffff167600ff1cec x5 : ffffcec22cfa2010 x4 : 0000000000000000 x3 : 0000000000000003 x2 : ffff167613f836c0 x1 : 0000000000000000 x0 : ffff16761feb60b8 Call trace:  sdw_stream_add_slave+0x44/0x380 [soundwire_bus]  wsa881x_hw_params+0x68/0x80 [snd_soc_wsa881x]  snd_soc_dai_hw_params+0x3c/0xa4  __soc_pcm_hw_params+0x230/0x660  dpcm_be_dai_hw_params+0x1d0/0x3f8  dpcm_fe_dai_hw_params+0x98/0x268  snd_pcm_hw_params+0x124/0x460  snd_pcm_common_ioctl+0x998/0x16e8  snd_pcm_ioctl+0x34/0x58  __arm64_sys_ioctl+0xac/0xf8  invoke_syscall+0x48/0x104  el0_svc_common.constprop.0+0x40/0xe0  do_el0_svc+0x1c/0x28  el0_svc+0x34/0xe0  el0t_64_sync_handler+0x120/0x12c  el0t_64_sync+0x190/0x194 Code: aa0403fb f9418400 9100e000 9400102f (f8420f22) ---[ end trace 0000000000000000 ]---0000000000006108 <sdw_stream_add_slave>:    6108:       d503233f        paciasp    610c:       a9b97bfd        stp     x29, x30, [sp, #-112]!    6110:       910003fd        mov     x29, sp    6114:       a90153f3        stp     x19, x20, [sp, #16]    6118:       a9025bf5        stp     x21, x22, [sp, #32]    611c:       aa0103f6        mov     x22, x1    6120:       2a0303f5        mov     w21, w3    6124:       a90363f7        stp     x23, x24, [sp, #48]    6128:       aa0003f8        mov     x24, x0    612c:       aa0203f7        mov     x23, x2    6130:       a9046bf9        stp     x25, x26, [sp, #64]    6134:       aa0403f9        mov     x25, x4        <-- x4 copied to x25    6138:       a90573fb        stp     x27, x28, [sp, #80]    613c:       aa0403fb        mov     x27, x4    6140:       f9418400        ldr     x0, [x0, #776]    6144:       9100e000        add     x0, x0, #0x38    6148:       94000000        bl      0 <mutex_lock>    614c:       f8420f22        ldr     x2, [x25, #32]!  <-- offset 0x44    ^^^This is 0x6108 + offset 0x44 from the beginning of sdw_stream_add_slave()where data abort happens.wsa881x_hw_params() is called with stream = NULL and passes it furtherin register x4 (5th argu---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50104` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
-			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
+			"platform": "Ubuntu 22.04 LTS"
 		},
 		"reference": {
 			"source": "CVE",
@@ -21,7 +21,9 @@
 			"cve": {
 				"text": "CVE-2024-50104",
 				"href": "https://ubuntu.com/security/CVE-2024-50104",
-				"public": "20241105"
+				"public": "20241105",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
 			}
 		}
 	},
@@ -36,15 +38,15 @@
 						"comment": "linux package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-19.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
 						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
 						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
 					},
 					{
@@ -52,7 +54,7 @@
 						"comment": "linux-kvm package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
@@ -60,15 +62,15 @@
 						"comment": "linux-aws package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
 						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
 						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
@@ -76,15 +78,15 @@
 						"comment": "linux-azure package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1006.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
 						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
 						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
@@ -92,31 +94,27 @@
 						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
 						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
-						"comment": "linux-bluefield package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1011.13')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000010",
 						"comment": "linux-gcp package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
 						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
 						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
@@ -124,7 +122,7 @@
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000060",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
@@ -132,83 +130,83 @@
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000070",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000080",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
 						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
 						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000090",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
 						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000110",
 						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
 						"comment": "linux-oracle-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
 						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
 						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
 						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000120",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
 						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
 						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
 						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201499000000130",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]
