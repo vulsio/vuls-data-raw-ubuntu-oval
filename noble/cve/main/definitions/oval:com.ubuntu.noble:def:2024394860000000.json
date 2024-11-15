@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-39486 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/drm_file: Fix pid refcounting race<maarten.lankhorst@linux.intel.com>, Maxime Ripard<mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>filp->pid is supposed to be a refcounted pointer; however, before thispatch, drm_file_update_pid() only increments the refcount of a structpid after storing a pointer to it in filp->pid and dropping thedev->filelist_mutex, making the following race possible:process A               process B=========               =========                        begin drm_file_update_pid                        mutex_lock(&dev->filelist_mutex)                        rcu_replace_pointer(filp->pid, <pid B>, 1)                        mutex_unlock(&dev->filelist_mutex)begin drm_file_update_pidmutex_lock(&dev->filelist_mutex)rcu_replace_pointer(filp->pid, <pid A>, 1)mutex_unlock(&dev->filelist_mutex)get_pid(<pid A>)synchronize_rcu()put_pid(<pid B>)   *** pid B reaches refcount 0 and is freed here ***                        get_pid(<pid B>)   *** UAF ***                        synchronize_rcu()                        put_pid(<pid A>)As far as I know, this race can only occur with CONFIG_PREEMPT_RCU=ybecause it requires RCU to detect a quiescent state in code that is notexplicitly calling into the scheduler.This race leads to use-after-free of a \"struct pid\".It is probably somewhat hard to hit because process A has to passthrough a synchronize_rcu() operation while process B is betweenmutex_unlock() and get_pid().Fix it by ensuring that by the time a pointer to the current task's pidis stored in the file, an extra reference to the pid has been taken.This fix also removes the condition for synchronize_rcu(); I thinkthat optimization is unnecessary complexity, since in that case wewould usually have bailed out on the lockless check above.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-39486` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1014.21\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1016-oem - 6.8.0-1016.16\nNo subscription required\n\nlinux-image-6.8.0-1014-raspi - 6.8.0-1014.16\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/drm_file: Fix pid refcounting race<maarten.lankhorst@linux.intel.com>, Maxime Ripard<mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>filp->pid is supposed to be a refcounted pointer; however, before thispatch, drm_file_update_pid() only increments the refcount of a structpid after storing a pointer to it in filp->pid and dropping thedev->filelist_mutex, making the following race possible:process A               process B=========               =========                        begin drm_file_update_pid                        mutex_lock(&dev->filelist_mutex)                        rcu_replace_pointer(filp->pid, <pid B>, 1)                        mutex_unlock(&dev->filelist_mutex)begin drm_file_update_pidmutex_lock(&dev->filelist_mutex)rcu_replace_pointer(filp->pid, <pid A>, 1)mutex_unlock(&dev->filelist_mutex)get_pid(<pid A>)synchronize_rcu()put_pid(<pid B>)   *** pid B reaches refcount 0 and is freed here ***                        get_pid(<pid B>)   *** UAF ***                        synchronize_rcu()                        put_pid(<pid A>)As far as I know, this race can only occur with CONFIG_PREEMPT_RCU=ybecause it requires RCU to detect a quiescent state in code that is notexplicitly calling into the scheduler.This race leads to use-after-free of a \"struct pid\".It is probably somewhat hard to hit because process A has to passthrough a synchronize_rcu() operation while process B is betweenmutex_unlock() and get_pid().Fix it by ensuring that by the time a pointer to the current task's pidis stored in the file, an extra reference to the pid has been taken.This fix also removes the condition for synchronize_rcu(); I thinkthat optimization is unnecessary complexity, since in that case wewould usually have bailed out on the lockless check above.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-39486` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1013-gke - 6.8.0-1013.17\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1014.21\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1016-oem - 6.8.0-1016.16\nNo subscription required\n\nlinux-image-6.8.0-1014-raspi - 6.8.0-1014.16\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240706",
 				"cvss_score": "7.0",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
-				"usns": "7089-1,7090-1,7089-2,7089-3,7095-1,7089-4,7089-5"
+				"usns": "7089-1,7090-1,7089-2,7089-3,7095-1,7089-4,7089-5,7089-6"
 			},
 			"public_date_at_usn": "2024-07-06 10:15:00 UTC",
 			"ref": [
@@ -34,7 +34,8 @@
 				"https://ubuntu.com/security/notices/USN-7089-3",
 				"https://ubuntu.com/security/notices/USN-7095-1",
 				"https://ubuntu.com/security/notices/USN-7089-4",
-				"https://ubuntu.com/security/notices/USN-7089-5"
+				"https://ubuntu.com/security/notices/USN-7089-5",
+				"https://ubuntu.com/security/notices/USN-7089-6"
 			]
 		}
 	},
@@ -61,15 +62,15 @@
 						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1017.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1013.17')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000040",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1013.17')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000040",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000050",
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1015.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000060",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000070",
 						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1014.21')."
 					},
 					{
@@ -81,20 +82,12 @@
 						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000050",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000060",
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1016.16')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000020",
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1014.16')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
-						"comment": "linux-raspi-realtime package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-2013.14')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
-						"comment": "linux-realtime package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.1-1011.11')."
 					}
 				]
 			}
