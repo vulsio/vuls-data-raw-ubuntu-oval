@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2021473870000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47387 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cpufreq: schedutil: Use kobject release() method to free sugov_tunables Thestruct sugov_tunables is protected by the kobject, so we can't free itdirectly. Otherwise we would get a call trace like this: ODEBUG: freeactive (active state 0) object type: timer_list hint:delayed_work_timer_fn+0x0/0x30 WARNING: CPU: 3 PID: 720 atlib/debugobjects.c:505 debug_print_object+0xb8/0x100 Modules linked in:CPU: 3 PID: 720 Comm: a.sh Tainted: G W5.14.0-rc1-next-20210715-yocto-standard+ #507 Hardware name: MarvellOcteonTX CN96XX board (DT) pstate: 40400009 (nZcv daif +PAN -UAO -TCOBTYPE=--) pc : debug_print_object+0xb8/0x100 lr :debug_print_object+0xb8/0x100 sp : ffff80001ecaf910 x29: ffff80001ecaf910x28: ffff00011b10b8d0 x27: ffff800011043d80 x26: ffff00011a8f0000 x25:ffff800013cb3ff0 x24: 0000000000000000 x23: ffff80001142aa68 x22:ffff800011043d80 x21: ffff00010de46f20 x20: ffff800013c0c520 x19:ffff800011d8f5b0 x18: 0000000000000010 x17: 6e6968207473696c x16:5f72656d6974203a x15: 6570797420746365 x14: 6a626f2029302065 x13:303378302f307830 x12: 2b6e665f72656d69 x11: ffff8000124b1560 x10:ffff800012331520 x9 : ffff8000100ca6b0 x8 : 000000000017ffe8 x7 :c0000000fffeffff x6 : 0000000000000001 x5 : ffff800011d8c000 x4 :ffff800011d8c740 x3 : 0000000000000000 x2 : ffff0001108301c0 x1 :ab3c90eedf9c0f00 x0 : 0000000000000000 Call trace:debug_print_object+0xb8/0x100 __debug_check_no_obj_freed+0x1c0/0x230debug_check_no_obj_freed+0x20/0x88 slab_free_freelist_hook+0x154/0x1c8kfree+0x114/0x5d0 sugov_exit+0xbc/0xc0 cpufreq_exit_governor+0x44/0x90cpufreq_set_policy+0x268/0x4a8 store_scaling_governor+0xe0/0x128store+0xc0/0xf0 sysfs_kf_write+0x54/0x80 kernfs_fop_write_iter+0x128/0x1c0new_sync_write+0xf0/0x190 vfs_write+0x2d4/0x478 ksys_write+0x74/0x100__arm64_sys_write+0x24/0x30 invoke_syscall.constprop.0+0x54/0xe0do_el0_svc+0x64/0x158 el0_svc+0x2c/0xb0 el0t_64_sync_handler+0xb0/0xb8el0t_64_sync+0x198/0x19c irq event stamp: 5518 hardirqs last enabled at(5517): [<ffff8000100cbd7c>] console_unlock+0x554/0x6c8 hardirqs lastdisabled at (5518): [<ffff800010fc0638>] el1_dbg+0x28/0xa0 softirqs lastenabled at (5504): [<ffff8000100106e0>] __do_softirq+0x4d0/0x6c0 softirqslast disabled at (5483): [<ffff800010049548>] irq_exit+0x1b0/0x1b8 So splitthe original sugov_tunables_free() into two functions,sugov_clear_global_tunables() is just used to clear the global_tunables andthe new sugov_tunables_free() is used as kobj_type::release to release thesugov_tunables safely.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47387` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47387",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47387"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-21 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47387",
+				"href": "https://ubuntu.com/security/CVE-2021-47387",
+				"public": "20240521"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					}
+				]
+			}
+		]
+	}
+}

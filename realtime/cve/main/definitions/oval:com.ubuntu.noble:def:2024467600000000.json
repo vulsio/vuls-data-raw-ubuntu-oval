@@ -1,0 +1,92 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024467600000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-46760 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: rtw88: usb: schedule rx work after everything is set upRight now it's possible to hit NULL pointer dereference inrtw_rx_fill_rx_status on hw object and/or its fields becauseinitialization routine can start getting USB replies beforertw_dev is fully setup.The stack trace looks like this:rtw_rx_fill_rx_statusrtw8821c_query_rx_descrtw_usb_rx_handler...queue_workrtw_usb_read_port_complete...usb_submit_urbrtw_usb_rx_resubmitrtw_usb_init_rxrtw_usb_probeSo while we do the async stuff rtw_usb_probe continues and callsrtw_register_hw, which does all kinds of initialization (e.g.via ieee80211_register_hw) that rtw_rx_fill_rx_status relies on.Fix this by moving the first usb_submit_urb after everythingis set up.For me, this bug manifested as:[    8.893177] rtw_8821cu 1-1:1.2: band wrong, packet dropped[    8.910904] rtw_8821cu 1-1:1.2: hw->conf.chandef.chan NULL inrtw_rx_fill_rx_statusbecause I'm using Larry's backport of rtw88 driver with the NULLchecks in rtw_rx_fill_rx_status.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-46760",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-46760"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-09-18 08:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-46760",
+				"href": "https://ubuntu.com/security/CVE-2024-46760",
+				"public": "20240918",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-50.51')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
+						"comment": "linux-intel package in noble is affected and needs fixing."
+					}
+				]
+			}
+		]
+	}
+}

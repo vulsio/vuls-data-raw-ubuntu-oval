@@ -1,0 +1,98 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:201710004100000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2017-1000410 on Ubuntu 24.04 LTS (noble) - low",
+		"description": "The Linux kernel version 3.3-rc1 and later is affected by a vulnerabilitylies in the processing of incoming L2CAP commands - ConfigRequest, andConfigResponse messages. This info leak is a result of uninitialized stackvariables that may be returned to an attacker in their uninitialized state.By manipulating the code flows that precede the handling of theseconfiguration messages, an attacker can also gain some control over whichdata will be held in the uninitialized stack variables. This can allow himto bypass KASLR, and stack canaries protection - as both pointers and stackcanaries may be leaked in this manner. Combining this vulnerability (forexample) with the previously disclosed RCE vulnerability in L2CAPconfiguration parsing (CVE-2017-1000251) may allow an attacker to exploitthe RCE against kernels which were built with the above mitigations. Theseare the specifics of this vulnerability: In the functionl2cap_parse_conf_rsp and in the function l2cap_parse_conf_req the followingvariable is declared without initialization: struct l2cap_conf_efs efs; Inaddition, when parsing input configuration parameters in both of thesefunctions, the switch case for handling EFS elements may skip the memcpycall that will write to the efs variable: ... case L2CAP_CONF_EFS: if (olen== sizeof(efs)) memcpy(&efs, (void *)val, olen); ... The olen in the aboveif is attacker controlled, and regardless of that if, in both of thesefunctions the efs variable would eventually be added to the outgoingconfiguration request that is being built: l2cap_add_conf_opt(&ptr,L2CAP_CONF_EFS, sizeof(efs), (unsigned long) &efs); So by sending aconfiguration request, or response, that contains an L2CAP_CONF_EFSelement, but with an element length that is not sizeof(efs) - the memcpy tothe uninitialized efs variable can be avoided, and the uninitializedvariable would be returned to the attacker (16 bytes).\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2017-1000410` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2017-1000410",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2017-1000410"
+		},
+		"advisory": {
+			"severity": "Low",
+			"rights": "Copyright (C) 2017 Canonical Ltd.",
+			"public_date": "2017-12-07",
+			"cve": {
+				"text": "CVE-2017-1000410",
+				"href": "https://ubuntu.com/security/CVE-2017-1000410",
+				"public": "20171207",
+				"cvss_score": "7.5",
+				"cvss_vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+				"usns": "3933-1,3933-2"
+			},
+			"public_date_at_usn": "2017-12-07",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-3933-1",
+				"https://ubuntu.com/security/notices/USN-3933-2"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					}
+				]
+			}
+		]
+	}
+}

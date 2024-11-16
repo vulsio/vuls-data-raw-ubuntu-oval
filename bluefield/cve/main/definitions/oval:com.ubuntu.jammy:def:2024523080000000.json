@@ -1,0 +1,42 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.jammy:def:2024523080000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-52308 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - high",
+		"description": "The GitHub CLI version 2.6.1 and earlier are vulnerable to remote codeexecution through a malicious codespace SSH server when using `gh codespacessh` or `gh codespace logs` commands. This has been patched in the cliv2.62.0.Developers connect to remote codespaces through an SSH server runningwithin the devcontainer, which is generally provided through the [defaultdevcontainerimage](https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers#using-the-default-dev-container-configuration).GitHub CLI [retrieves SSH connectiondetails](https://github.com/cli/cli/blob/30066b0042d0c5928d959e288144300cb28196c9/internal/codespaces/rpc/invoker.go#L230-L244),such as remote username, which is used in [executing `ssh`commands](https://github.com/cli/cli/blob/e356c69a6f0125cfaac782c35acf77314f18908d/pkg/cmd/codespace/ssh.go#L263)for `gh codespace ssh` or `gh codespace logs` commands.This exploit occurs when a malicious third-party devcontainer contains amodified SSH server that injects `ssh` arguments within the SSH connectiondetails. `gh codespace ssh` and `gh codespace logs` commands could executearbitrary code on the user's workstation if the remote username containssomething like `-oProxyCommand=\"echo hacked\" #`.  The `-oProxyCommand` flagcauses `ssh` to execute the provided command while `#` shell comment causesany other `ssh` arguments to be ignored.In `2.62.0`, the remote username information is being validated beforebeing used.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-52308",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-52308"
+		},
+		"advisory": {
+			"severity": "High",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-15",
+			"cve": {
+				"text": "CVE-2024-52308",
+				"href": "https://ubuntu.com/security/CVE-2024-52308",
+				"public": "20241115"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2024523080000000",
+						"comment": "gh package in jammy is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

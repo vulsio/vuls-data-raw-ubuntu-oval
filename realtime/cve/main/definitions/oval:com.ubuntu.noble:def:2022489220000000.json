@@ -1,0 +1,92 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2022489220000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48922 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:riscv: fix oops caused by irqsoff latency tracerThe trace_hardirqs_{on,off}() require the caller to setup frame pointerproperly. This because these two functions use macro 'CALLER_ADDR1' (aka.__builtin_return_address(1)) to acquire caller info. If the $fp is usedfor other purpose, the code generated this macro (as below) could triggermemory access fault.   0xffffffff8011510e <+80>:    ld      a1,-16(s0)   0xffffffff80115112 <+84>:    ld      s2,-8(a1)  # <-- paging fault hereThe oops message during booting if compiled with 'irqoff' tracer enabled:[    0.039615][    T0] Unable to handle kernel NULL pointer dereference atvirtual address 00000000000000f8[    0.041925][    T0] Oops [#1][    0.042063][    T0] Modules linked in:[    0.042864][    T0] CPU: 0 PID: 0 Comm: swapper/0 Not tainted5.17.0-rc1-00233-g9a20c48d1ed2 #29[    0.043568][    T0] Hardware name: riscv-virtio,qemu (DT)[    0.044343][    T0] epc : trace_hardirqs_on+0x56/0xe2[    0.044601][    T0]  ra : restore_all+0x12/0x6e[    0.044721][    T0] epc : ffffffff80126a5c ra : ffffffff80003b94 sp :ffffffff81403db0[    0.044801][    T0]  gp : ffffffff8163acd8 tp : ffffffff81414880 t0 :0000000000000020[    0.044882][    T0]  t1 : 0098968000000000 t2 : 0000000000000000 s0 :ffffffff81403de0[    0.044967][    T0]  s1 : 0000000000000000 a0 : 0000000000000001 a1 :0000000000000100[    0.045046][    T0]  a2 : 0000000000000000 a3 : 0000000000000000 a4 :0000000000000000[    0.045124][    T0]  a5 : 0000000000000000 a6 : 0000000000000000 a7 :0000000054494d45[    0.045210][    T0]  s2 : ffffffff80003b94 s3 : ffffffff81a8f1b0 s4 :ffffffff80e27b50[    0.045289][    T0]  s5 : ffffffff81414880 s6 : ffffffff8160fa00 s7 :00000000800120e8[    0.045389][    T0]  s8 : 0000000080013100 s9 : 000000000000007f s10:0000000000000000[    0.045474][    T0]  s11: 0000000000000000 t3 : 7fffffffffffffff t4 :0000000000000000[    0.045548][    T0]  t5 : 0000000000000000 t6 : ffffffff814aa368[    0.045620][    T0] status: 0000000200000100 badaddr: 00000000000000f8cause: 000000000000000d[    0.046402][    T0] [<ffffffff80003b94>] restore_all+0x12/0x6eThis because the $fp(aka. $s0) register is not used as frame pointer in theassembly entry code.\tresume_kernel:\t\tREG_L s0, TASK_TI_PREEMPT_COUNT(tp)\t\tbnez s0, restore_all\t\tREG_L s0, TASK_TI_FLAGS(tp)                andi s0, s0, _TIF_NEED_RESCHED                beqz s0, restore_all                call preempt_schedule_irq                j restore_allTo fix above issue, here we add one extra level wrapper for functiontrace_hardirqs_{on,off}() so they can be safely called by low level entrycode.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48922` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48922",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48922"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-08-22 02:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48922",
+				"href": "https://ubuntu.com/security/CVE-2022-48922",
+				"public": "20240822",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2022486290000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48629 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: crypto:qcom-rng - ensure buffer for generate is completely filled The generatefunction in struct rng_alg expects that the destination buffer iscompletely filled if the function returns 0. qcom_rng_read() can run into asituation where the buffer is partially filled with randomness and theremaining part of the buffer is zeroed since qcom_rng_generate() doesn'tcheck the return value. This issue can be reproduced by running thefollowing from libkcapi: kcapi-rng -b 9000000 > OUTFILE The generatedOUTFILE will have three huge sections that contain all zeros, and this iscaused by the code where the test 'val & PRNG_STATUS_DATA_AVAIL' fails.Let's fix this issue by ensuring that qcom_rng_read() always returns with afull buffer if the function returns success. Let's also haveqcom_rng_generate() return the correct value. Here's some statistics fromthe ent project (https://www.fourmilab.ch/random/) that shows informationabout the quality of the generated numbers: $ ent -c qcom-random-beforeValue Char Occurrences Fraction 0 606748 0.067416 1 33104 0.003678 2 330010.003667 ... 253 � 32883 0.003654 254 � 33035 0.003671 255 � 33239 0.003693Total: 9000000 1.000000 Entropy = 7.811590 bits per byte. Optimumcompression would reduce the size of this 9000000 byte file by 2 percent.Chi square distribution for 9000000 samples is 9329962.81, and randomlywould exceed this value less than 0.01 percent of the times. Arithmeticmean value of data bytes is 119.3731 (127.5 = random). Monte Carlo valuefor Pi is 3.197293333 (error 1.77 percent). Serial correlation coefficientis 0.159130 (totally uncorrelated = 0.0). Without this patch, the resultsof the chi-square test is 0.01%, and the numbers are certainly not randomaccording to ent's project page. The results improve with this patch: $ ent-c qcom-random-after Value Char Occurrences Fraction 0 35432 0.003937 135127 0.003903 2 35424 0.003936 ... 253 � 35201 0.003911 254 � 348350.003871 255 � 35368 0.003930 Total: 9000000 1.000000 Entropy = 7.999979bits per byte. Optimum compression would reduce the size of this 9000000byte file by 0 percent. Chi square distribution for 9000000 samples is258.77, and randomly would exceed this value 42.24 percent of the times.Arithmetic mean value of data bytes is 127.5006 (127.5 = random). MonteCarlo value for Pi is 3.141277333 (error 0.01 percent). Serial correlationcoefficient is 0.000468 (totally uncorrelated = 0.0). This change wastested on a Nexus 5 phone (msm8974 SoC).\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48629` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48629",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48629"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-05 12:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48629",
+				"href": "https://ubuntu.com/security/CVE-2022-48629",
+				"public": "20240305"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					}
+				]
+			}
+		]
+	}
+}

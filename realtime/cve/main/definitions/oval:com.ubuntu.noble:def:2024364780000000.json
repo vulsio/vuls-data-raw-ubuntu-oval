@@ -1,0 +1,103 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024364780000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36478 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:null_blk: fix null-ptr-dereference while configuring 'power' and'submit_queues' Writing 'power' and 'submit_queues' concurrently willtrigger kernel panic: Test script: modprobe null_blk nr_devices=0 mkdir -p/sys/kernel/config/nullb/nullb0 while true; do echo 1 > submit_queues; echo4 > submit_queues; done & while true; do echo 1 > power; echo 0 > power;done Test result: BUG: kernel NULL pointer dereference, address:0000000000000148 Oops: 0000 [#1] PREEMPT SMP RIP:0010:__lock_acquire+0x41d/0x28f0 Call Trace: <TASK>lock_acquire+0x121/0x450 down_write+0x5f/0x1d0simple_recursive_removal+0x12f/0x5c0blk_mq_debugfs_unregister_hctxs+0x7c/0x100blk_mq_update_nr_hw_queues+0x4a3/0x720 nullb_update_nr_hw_queues+0x71/0xf0[null_blk] nullb_device_submit_queues_store+0x79/0xf0 [null_blk]configfs_write_iter+0x119/0x1e0 vfs_write+0x326/0x730 ksys_write+0x74/0x150This is because del_gendisk() can concurrent withblk_mq_update_nr_hw_queues(): nullb_device_power_storenullb_apply_submit_queues null_del_dev del_gendisknullb_update_nr_hw_queues if (!dev->nullb) // still set while gendisk isdeleted return 0 blk_mq_update_nr_hw_queues dev->nullb = NULL Fix thisproblem by resuing the global mutex to protect nullb_device_power_store()and nullb_update_nr_hw_queues() from configfs.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36478` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-44-generic - 6.8.0-44.44\nlinux-image-unsigned-6.8.0-44-generic - 6.8.0-44.44\nlinux-image-unsigned-6.8.0-44-generic-64k - 6.8.0-44.44\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-aws - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1014-azure - 6.8.0-1014.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1014-gcp - 6.8.0-1014.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gke - 6.8.0-1010.13\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1012-ibm - 6.8.0-1012.12\nNo subscription required\n\nlinux-image-unsigned-6.8.0-44-lowlatency - 6.8.0-44.44.1\nlinux-image-unsigned-6.8.0-44-lowlatency-64k - 6.8.0-44.44.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1012-oracle - 6.8.0-1012.12\nlinux-image-unsigned-6.8.0-1012-oracle-64k - 6.8.0-1012.12\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1012-oem - 6.8.0-1012.12\nNo subscription required\n\nlinux-image-6.8.0-1011-raspi - 6.8.0-1011.12\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1011.18\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36478",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36478"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-21 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36478",
+				"href": "https://ubuntu.com/security/CVE-2024-36478",
+				"public": "20240621",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "6999-1,7004-1,7005-1,7008-1,7005-2,6999-2,7029-1"
+			},
+			"public_date_at_usn": "2024-06-21 11:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6999-1",
+				"https://ubuntu.com/security/notices/USN-7004-1",
+				"https://ubuntu.com/security/notices/USN-7005-1",
+				"https://ubuntu.com/security/notices/USN-7008-1",
+				"https://ubuntu.com/security/notices/USN-7005-2",
+				"https://ubuntu.com/security/notices/USN-6999-2",
+				"https://ubuntu.com/security/notices/USN-7029-1"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000000",
+						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-44.44')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000010",
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000020",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1014.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000020",
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1014.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000030",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1010.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000040",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1012.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000050",
+						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-44.44.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000040",
+						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1012.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000040",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1012.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000060",
+						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1011.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1011.18')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-2010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.1-1008.8')."
+					}
+				]
+			}
+		]
+	}
+}

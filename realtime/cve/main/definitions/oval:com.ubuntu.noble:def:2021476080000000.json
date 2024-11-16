@@ -1,0 +1,84 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2021476080000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47608 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:Fix kernel address leakage in atomic fetch The change in commit37086bfdc737 (\"bpf: Propagate stack bounds to registers in atomics w/BPF_FETCH\") around check_mem_access() handling is buggy since this wouldallow for unprivileged users to leak kernel pointers. For example, anatomic fetch/and with -1 on a stack destination which holds a spilledpointer will migrate the spilled register type into a scalar, which canthen be exported out of the program (since scalar != pointer) by dumping itinto a map value. The original implementation of XADD was preventing thissituation by using a double call to check_mem_access() one with BPF_READand a subsequent one with BPF_WRITE, in both cases passing -1 as aplaceholder value instead of register as per XADD semantics since it didn'tcontain a value fetch. The BPF_READ also included a check incheck_stack_read_fixed_off() which rejects the program if the stack slot isof __is_pointer_value() if dst_regno < 0. The latter is to distinguishwhether we're dealing with a regular stack spill/ fill or some arithmeticaloperation which is disallowed on non-scalars, see also 6e7e63cbb023 (\"bpf:Forbid XADD on spilled pointers for unprivileged users\") for more contexton check_mem_access() and its handling of placeholder value -1. Oneminimally intrusive option to fix the leak is for the BPF_FETCH case toinitially check the BPF_READ case via check_mem_access() with -1 asregister, followed by the actual load case with non-negative load_reg topropagate stack bounds to registers.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47608` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47608",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47608"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-19 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47608",
+				"href": "https://ubuntu.com/security/CVE-2021-47608",
+				"public": "20240619",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					}
+				]
+			}
+		]
+	}
+}

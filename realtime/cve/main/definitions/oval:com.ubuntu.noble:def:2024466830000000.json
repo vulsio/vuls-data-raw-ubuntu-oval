@@ -1,0 +1,92 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024466830000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-46683 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/xe: prevent UAF around preempt fenceThe fence lock is part of the queue, therefore in the current designanything locking the fence should then also hold a ref to the queue toprevent the queue from being freed.However, currently it looks like we signal the fence and then drop thequeue ref, but if something is waiting on the fence, the waiter iskicked to wake up at some later point, where upon waking up it firstgrabs the lock before checking the fence state. But if we have alreadydropped the queue ref, then the lock might already be freed as part ofthe queue, leading to uaf.To prevent this, move the fence lock into the fence itself so we don'trun into lifetime issues. Alternative might be to have device levellock, or only release the queue in the fence release callback, howeverthat might require pushing to another worker to avoid locking issues.References: https://gitlab.freedesktop.org/drm/xe/kernel/-/issues/2454References: https://gitlab.freedesktop.org/drm/xe/kernel/-/issues/2342References: https://gitlab.freedesktop.org/drm/xe/kernel/-/issues/2020(cherry picked from commit 7116c35aacedc38be6d15bd21b2fc936eed0008b)",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-46683",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-46683"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-09-13 06:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-46683",
+				"href": "https://ubuntu.com/security/CVE-2024-46683",
+				"public": "20240913",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-50.51')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
+						"comment": "linux-intel package in noble is affected and needs fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024498660000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-49866 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:tracing/timerlat: Fix a race during cpuhp processingThere is another found exception that the \"timerlat/1\" thread wasscheduled on CPU0, and lead to timer corruption finally:```ODEBUG: init active (active state 0) object: ffff888237c2e108 object type:hrtimer hint: timerlat_irq+0x0/0x220WARNING: CPU: 0 PID: 426 at lib/debugobjects.c:518debug_print_object+0x7d/0xb0Modules linked in:CPU: 0 UID: 0 PID: 426 Comm: timerlat/1 Not tainted 6.11.0-rc7+ #45Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.13.0-1ubuntu1.1 04/01/2014RIP: 0010:debug_print_object+0x7d/0xb0...Call Trace: <TASK> ? __warn+0x7c/0x110 ? debug_print_object+0x7d/0xb0 ? report_bug+0xf1/0x1d0 ? prb_read_valid+0x17/0x20 ? handle_bug+0x3f/0x70 ? exc_invalid_op+0x13/0x60 ? asm_exc_invalid_op+0x16/0x20 ? debug_print_object+0x7d/0xb0 ? debug_print_object+0x7d/0xb0 ? __pfx_timerlat_irq+0x10/0x10 __debug_object_init+0x110/0x150 hrtimer_init+0x1d/0x60 timerlat_main+0xab/0x2d0 ? __pfx_timerlat_main+0x10/0x10 kthread+0xb7/0xe0 ? __pfx_kthread+0x10/0x10 ret_from_fork+0x2d/0x40 ? __pfx_kthread+0x10/0x10 ret_from_fork_asm+0x1a/0x30 </TASK>```After tracing the scheduling event, it was discovered that the migrationof the \"timerlat/1\" thread was performed during thread creation. Furtheranalysis confirmed that it is because the CPU online processing forosnoise is implemented through workers, which is asynchronous with theoffline processing. When the worker was scheduled to create a thread, theCPU may has already been removed from the cpu_online_mask during theofflineprocess, resulting in the inability to select the right CPU:T1                       | T2[CPUHP_ONLINE]           | cpu_device_down()osnoise_hotplug_workfn() |                         |     cpus_write_lock()                         |     takedown_cpu(1)                         |     cpus_write_unlock()[CPUHP_OFFLINE]          |    cpus_read_lock()     |    start_kthread(1)     |    cpus_read_unlock()   |To fix this, skip online processing if the CPU is already offline.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-49866",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-49866"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-21 18:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-49866",
+				"href": "https://ubuntu.com/security/CVE-2024-49866",
+				"public": "20241021"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
+						"comment": "linux-intel package in noble is affected and needs fixing."
+					}
+				]
+			}
+		]
+	}
+}

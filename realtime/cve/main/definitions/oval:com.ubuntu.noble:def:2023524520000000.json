@@ -1,0 +1,104 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2023524520000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2023-52452 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf:Fix accesses to uninit stack slots Privileged programs are supposed to beable to read uninitialized stack memory (ever since 6715df8d5) but, beforethis patch, these accesses were permitted inconsistently. In particular,accesses were permitted above state->allocated_stack, but not below it. Inother words, if the stack was already \"large enough\", the access waspermitted, but otherwise the access was rejected instead of being allowedto \"grow the stack\". This undesired rejection was happening in two places:- in check_stack_slot_within_bounds() - in check_stack_range_initialized()This patch arranges for these accesses to be permitted. A bunch of teststhat were relying on the old rejection had to change; all of them werechanged to add also run unprivileged, in which case the old behaviorpersists. One tests couldn't be updated - global_func16 - because it can'trun unprivileged for other reasons. This patch also fixes the tracking ofthe stack size for variable-offset reads. This second fix is bundled in thesame commit as the first one because they're inter-related. Before thispatch, writes to the stack using registers containing a variable offset (asopposed to registers with fixed, known values) were not properlycontributing to the function's needed stack size. As a result, it waspossible for a program to verify, but then to attempt to read out-of-boundsdata at runtime because a too small stack had been allocated for it. Eachfunction tracks the size of the stack it needs inbpf_subprog_info.stack_depth, which is maintained by update_stack_depth().For regular memory accesses, check_mem_access() was callingupdate_state_depth() but it was passing in only the fixed part of theoffset register, ignoring the variable offset. This was incorrect; theminimum possible value of that register should be used instead. Thistracking is now fixed by centralizing the tracking of stack size ingrow_stack_state(), and by lifting the calls to grow_stack_state() tocheck_stack_access_within_bounds() as suggested by Andrii. The code is nowsimpler and more convincingly tracks the correct maximum stack size.check_stack_range_initialized() can now rely on enough stack having beenallocated for the access; this helps with the fix for the first issue. Afew tests were changed to also check the stack depth computation. The onethat fails without this patch isverifier_var_off:stack_write_priv_vs_unpriv.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52452` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-11-generic - 6.8.0-11.11\nlinux-image-unsigned-6.8.0-11-generic - 6.8.0-11.11\nlinux-image-unsigned-6.8.0-11-generic-64k - 6.8.0-11.11\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-aws - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-azure - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1002-gcp - 6.8.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-ibm - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-7-lowlatency - 6.8.0-7.7.1\nlinux-image-unsigned-6.8.0-7-lowlatency-64k - 6.8.0-7.7.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1001-oracle - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-6.8.0-1001-raspi - 6.8.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2023-52452",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2023-52452"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-22 17:15:00 UTC",
+			"cve": {
+				"text": "CVE-2023-52452",
+				"href": "https://ubuntu.com/security/CVE-2023-52452",
+				"public": "20240222",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+				"usns": "6818-1,6819-1,6818-2,6819-2,6819-3,6818-3,6818-4,6819-4"
+			},
+			"public_date_at_usn": "2024-02-22 17:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6818-1",
+				"https://ubuntu.com/security/notices/USN-6819-1",
+				"https://ubuntu.com/security/notices/USN-6818-2",
+				"https://ubuntu.com/security/notices/USN-6819-2",
+				"https://ubuntu.com/security/notices/USN-6819-3",
+				"https://ubuntu.com/security/notices/USN-6818-3",
+				"https://ubuntu.com/security/notices/USN-6818-4",
+				"https://ubuntu.com/security/notices/USN-6819-4"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023240230000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-11.11')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023240230000010",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023240230000020",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-7.7.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2021474320000020",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					}
+				]
+			}
+		]
+	}
+}

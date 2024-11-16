@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024501960000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50196 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:pinctrl: ocelot: fix system hang on level based interruptsThe current implementation only calls chained_irq_enter() andchained_irq_exit() if it detects pending interrupts.```for (i = 0; i < info->stride; i++) {\turegmap_read(info->map, id_reg + 4 * i, &reg);\tif (!reg)\t\tcontinue;\tchained_irq_enter(parent_chip, desc);```However, in case of GPIO pin configured in level mode and the parentcontroller configured in edge mode, GPIO interrupt might be lowered by thehardware. In the result, if the interrupt is short enough, the parentinterrupt is still pending while the GPIO interrupt is cleared;chained_irq_enter() never gets called and the system hangs trying toservice the parent interrupt.Moving chained_irq_enter() and chained_irq_exit() outside the for loopensures that they are called even when GPIO interrupt is lowered by thehardware.The similar code with chained_irq_enter() / chained_irq_exit() functionswrapping interrupt checking loop may be found in many other drivers:```grep -r -A 10 chained_irq_enter drivers/pinctrl```",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50196",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50196"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-08 06:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-50196",
+				"href": "https://ubuntu.com/security/CVE-2024-50196",
+				"public": "20241108"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
+						"comment": "linux-intel package in noble is affected and needs fixing."
+					}
+				]
+			}
+		]
+	}
+}

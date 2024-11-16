@@ -1,0 +1,82 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2021470110000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47011 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mm:memcontrol: slab: fix obtain a reference to a freeing memcg Patch series\"Use obj_cgroup APIs to charge kmem pages\", v5. Since Roman's series \"Thenew cgroup slab memory controller\" applied. All slab objects are chargedwith the new APIs of obj_cgroup. The new APIs introduce a struct obj_cgroupto charge slab objects. It prevents long-living objects from pinning theoriginal memory cgroup in the memory. But there are still some cornerobjects (e.g. allocations larger than order-1 page on SLUB) which are notcharged with the new APIs. Those objects (include the pages which areallocated from buddy allocator directly) are charged as kmem pages whichstill hold a reference to the memory cgroup. E.g. We know that the kernelstack is charged as kmem pages because the size of the kernel stack can begreater than 2 pages (e.g. 16KB on x86_64 or arm64). If we create a thread(suppose the thread stack is charged to memory cgroup A) and then move itfrom memory cgroup A to memory cgroup B. Because the kernel stack of thethread hold a reference to the memory cgroup A. The thread can pin thememory cgroup A in the memory even if we remove the cgroup A. If we want tosee this scenario by using the following script. We can see that the systemhas added 500 dying cgroups (This is not a real world issue, just a scriptto show that the large kmallocs are charged as kmem pages which can pin thememory cgroup in the memory). #!/bin/bash cat /proc/cgroups | grep memorycd /sys/fs/cgroup/memory echo 1 > memory.move_charge_at_immigrate for i inrange{1..500} do mkdir kmem_test echo $$ > kmem_test/cgroup.procs sleep3600 & echo $$ > cgroup.procs echo `cat kmem_test/cgroup.procs` >cgroup.procs rmdir kmem_test done cat /proc/cgroups | grep memory Thispatchset aims to make those kmem pages to drop the reference to memorycgroup by using the APIs of obj_cgroup. Finally, we can see that the numberof the dying cgroups will not increase if we run the above test script.This patch (of 7): The rcu_read_lock/unlock only can guarantee that thememcg will not be freed, but it cannot guarantee the success of css_get(which is in the refill_stock when cached memcg changed) to memcg.rcu_read_lock() memcg = obj_cgroup_memcg(old) __memcg_kmem_uncharge(memcg)refill_stock(memcg) if (stock->cached != memcg) // css_get can change theref counter from 0 back to 1. css_get(&memcg->css) rcu_read_unlock() Thisfix is very like the commit: eefbfa7fd678 (\"mm: memcg/slab: fix use afterfree in obj_cgroup_charge\") Fix this by holding a reference to the memcgwhich is passed to the __memcg_kmem_uncharge() before calling__memcg_kmem_uncharge().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47011` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47011",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47011"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-02-28 09:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47011",
+				"href": "https://ubuntu.com/security/CVE-2021-47011",
+				"public": "20240228"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					}
+				]
+			}
+		]
+	}
+}

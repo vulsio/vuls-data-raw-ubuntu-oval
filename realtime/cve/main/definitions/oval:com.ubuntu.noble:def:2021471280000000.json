@@ -1,0 +1,82 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2021471280000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47128 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: bpf,lockdown, audit: Fix buggy SELinux lockdown permission checks Commit59438b46471a (\"security,lockdown,selinux: implement SELinux lockdown\")added an implementation of the locked_down LSM hook to SELinux, with theaim to restrict which domains are allowed to perform operations that wouldbreach lockdown. This is indirectly also getting audit subsystem involvedto report events. The latter is problematic, as reported by Ondrej andSerhei, since it can bring down the whole system via audit: 1) The auditevents that are triggered due to calls to security_locked_down() can OOMkill a machine, see below details [0]. 2) It also seems to be causing adeadlock via avc_has_perm()/slow_avc_audit() when trying to wake upkauditd, for example, when using trace_sched_switch() tracepoint, seedetails in [1]. Triggering this was not via some hypothetical corner case,but with existing tools like runqlat & runqslower from bcc, for example,which make use of this tracepoint. Rough call sequence goes like:rq_lock(rq) -> -------------------------+ trace_sched_switch() -> |bpf_prog_xyz() -> +-> deadlock selinux_lockdown() -> | audit_log_end() -> |wake_up_interruptible() -> | try_to_wake_up() -> | rq_lock(rq)--------------+ What's worse is that the intention of 59438b46471a tofurther restrict lockdown settings for specific applications in respect tothe global lockdown policy is completely broken for BPF. The SELinux policyrule for the current lockdown check looks something like this: allow <who><who> : lockdown { <reason> }; However, this doesn't match with the'current' task where the security_locked_down() is executed, example: httpddoes a syscall. There is a tracing program attached to the syscall whichtriggers a BPF program to run, which ends up doing abpf_probe_read_kernel{,_str}() helper call. The selinux_lockdown() hookdoes the permission check against 'current', that is, httpd in thisexample. httpd has literally zero relation to this tracing program, and itwould be nonsensical having to write an SELinux policy rule against httpdto let the tracing helper pass. The policy in this case needs to be againstthe entity that is installing the BPF program. For example, if bpftracewould generate a histogram of syscall counts by user space application:bpftrace -e 'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'bpftrace would then go and generate a BPF program from this internally. Oneway of doing it [for the sake of the example] could be to callbpf_get_current_task() helper and then access current->comm via one ofbpf_probe_read_kernel{,_str}() helpers. So the program itself has nothingto do with httpd or any other random app doing a syscall here. The BPFprogram _explicitly initiated_ the lockdown check. The allow/deny policybelongs in the context of bpftrace: meaning, you want to grant bpftraceaccess to use these helpers, but other tracers on the system likemy_random_tracer _not_. Therefore fix all three issues at the same time bytaking a completely different approach for the security_locked_down() hook,that is, move the check into the program verification phase where weactually retrieve the BPF func proto. This also reliably gets the task(current) that is trying to install the BPF tracing program, e.g.bpftrace/bcc/perf/systemtap/etc, and it also fixes the OOM since we'removing this out of the BPF helper's fast-path which can be called severalmillions of times per second. The check is then also in line with othersecurity_locked_down() hooks in the system where the enforcement isperformed at open/load time, for example, open_kcore() for /proc/kcoreaccess or module_sig_check() for module signatures just to pick f---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47128` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47128",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47128"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-03-15 21:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47128",
+				"href": "https://ubuntu.com/security/CVE-2021-47128",
+				"public": "20240315"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					}
+				]
+			}
+		]
+	}
+}

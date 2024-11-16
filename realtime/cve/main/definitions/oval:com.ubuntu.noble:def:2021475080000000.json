@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2021475080000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2021-47508 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:free exchange changeset on failures Fstests runs on my VMs have showseveral kmemleak reports like the following. unreferenced object0xffff88811ae59080 (size 64): comm \"xfs_io\", pid 12124, jiffies 4294987392(age 6.368s) hex dump (first 32 bytes): 00 c0 1c 00 00 00 00 00 ff cf 1c 0000 00 00 00 ................ 90 97 e5 1a 81 88 ff ff 90 97 e5 1a 81 88 ffff ................ backtrace: [<00000000ac0176d2>]ulist_add_merge+0x60/0x150 [btrfs] [<0000000076e9f312>]set_state_bits+0x86/0xc0 [btrfs] [<0000000014fe73d6>]set_extent_bit+0x270/0x690 [btrfs] [<000000004f675208>]set_record_extent_bits+0x19/0x20 [btrfs] [<00000000b96137b1>]qgroup_reserve_data+0x274/0x310 [btrfs] [<0000000057e9dcbb>]btrfs_check_data_free_space+0x5c/0xa0 [btrfs] [<0000000019c4511d>]btrfs_delalloc_reserve_space+0x1b/0xa0 [btrfs] [<000000006d37e007>]btrfs_dio_iomap_begin+0x415/0x970 [btrfs] [<00000000fb8a74b8>]iomap_iter+0x161/0x1e0 [<0000000071dff6ff>] __iomap_dio_rw+0x1df/0x700[<000000002567ba53>] iomap_dio_rw+0x5/0x20 [<0000000072e555f8>]btrfs_file_write_iter+0x290/0x530 [btrfs] [<000000005eb3d845>]new_sync_write+0x106/0x180 [<000000003fb505bf>] vfs_write+0x24d/0x2f0[<000000009bb57d37>] __x64_sys_pwrite64+0x69/0xa0 [<000000003eba3fdf>]do_syscall_64+0x43/0x90 In case brtfs_qgroup_reserve_data() orbtrfs_delalloc_reserve_metadata() fail the allocated extent_changeset willnot be freed. So in btrfs_check_data_free_space() andbtrfs_delalloc_reserve_space() free the allocated extent_changeset to getrid of the allocated memory. The issue currently only happens in the directIO write path, but only after 65b3c08606e5 (\"btrfs: fix ENOSPC failure whenattempting direct IO write into NOCOW range\"), and also atdefrag_one_locked_target(). Every other place is always callingextent_changeset_free() even if its call to btrfs_delalloc_reserve_space()or btrfs_check_data_free_space() has failed.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47508` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2021-47508",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2021-47508"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-05-24 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2021-47508",
+				"href": "https://ubuntu.com/security/CVE-2021-47508",
+				"public": "20240524"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					}
+				]
+			}
+		]
+	}
+}

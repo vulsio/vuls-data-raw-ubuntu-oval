@@ -1,0 +1,92 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2022489800000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2022-48980 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: dsa: sja1105: avoid out of bounds access in sja1105_init_l2_policing()The SJA1105 family has 45 L2 policing table entries(SJA1105_MAX_L2_POLICING_COUNT) and SJA1110 has 110(SJA1110_MAX_L2_POLICING_COUNT). Keeping the table structure butaccounting for the difference in port count (5 in SJA1105 vs 10 inSJA1110) does not fully explain the difference. Rather, the SJA1110 alsohas L2 ingress policers for multicast traffic. If a packet is classifiedas multicast, it will be processed by the policer index 99 + SRCPORT.The sja1105_init_l2_policing() function initializes all L2 policers suchthat they don't interfere with normal packet reception by default. To havea common code between SJA1105 and SJA1110, the index of the multicastpolicer for the port is calculated because it's an index that is out ofbounds for SJA1105 but in bounds for SJA1110, and a bounds check isperformed.The code fails to do the proper thing when determining what to do with themulticast policer of port 0 on SJA1105 (ds->num_ports = 5). The \"mcast\"index will be equal to 45, which is also equal totable->ops->max_entry_count (SJA1105_MAX_L2_POLICING_COUNT). So it passesthrough the check. But at the same time, SJA1105 doesn't have multicastpolicers. So the code programs the SHARINDX field of an out-of-boundselement in the L2 Policing table of the static config.The comparison between index 45 and 45 entries should have determined thecode to not access this policer index on SJA1105, since its memory wasn'teven allocated.With enough bad luck, the out-of-bounds write could even overwrite othervalid kernel data, but in this case, the issue was detected using KASAN.Kernel log:sja1105 spi5.0: Probed switch chip: SJA1105Q==================================================================BUG: KASAN: slab-out-of-bounds in sja1105_setup+0x1cbc/0x2340Write of size 8 at addr ffffff880bd57708 by task kworker/u8:0/8...Workqueue: events_unbound deferred_probe_work_funcCall trace:...sja1105_setup+0x1cbc/0x2340dsa_register_switch+0x1284/0x18d0sja1105_probe+0x748/0x840...Allocated by task 8:...sja1105_setup+0x1bcc/0x2340dsa_register_switch+0x1284/0x18d0sja1105_probe+0x748/0x840...\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48980` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2022-48980",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2022-48980"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-21 20:15:00 UTC",
+			"cve": {
+				"text": "CVE-2022-48980",
+				"href": "https://ubuntu.com/security/CVE-2022-48980",
+				"public": "20241021",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000020",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000040",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000060",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000070",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000080",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000090",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000100",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000110",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201499000000050",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+					}
+				]
+			}
+		]
+	}
+}

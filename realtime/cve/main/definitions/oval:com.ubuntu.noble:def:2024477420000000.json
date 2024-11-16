@@ -1,0 +1,92 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024477420000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47742 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:firmware_loader: Block path traversalMost firmware names are hardcoded strings, or are constructed from fairlyconstrained format strings where the dynamic parts are just some hexnumbers or such.However, there are a couple codepaths in the kernel where firmware filenames contain string components that are passed through from a device orsemi-privileged userspace; the ones I could find (not counting interfacesthat require root privileges) are: - lpfc_sli4_request_firmware_update() seems to construct the firmware   filename from \"ModelName\", a string that was previously parsed out of   some descriptor (\"Vital Product Data\") in lpfc_fill_vpd() - nfp_net_fw_find() seems to construct a firmware filename from a model   name coming from nfp_hwinfo_lookup(pf->hwinfo, \"nffw.partno\"), which I   think parses some descriptor that was read from the device.   (But this case likely isn't exploitable because the format string looks   like \"netronome/nic_%s\", and there shouldn't be any *folders* starting   with \"netronome/nic_\". The previous case was different because there,   the \"%s\" is *at the start* of the format string.) - module_flash_fw_schedule() is reachable from the   ETHTOOL_MSG_MODULE_FW_FLASH_ACT netlink command, which is marked as   GENL_UNS_ADMIN_PERM (meaning CAP_NET_ADMIN inside a user namespace is   enough to pass the privilege check), and takes a userspace-provided   firmware name.   (But I think to reach this case, you need to have CAP_NET_ADMIN over a   network namespace that a special kind of ethernet device is mapped into,   so I think this is not a viable attack path in practice.)Fix it by rejecting any firmware names containing \"..\" path components.For what it's worth, I went looking and haven't found any USB devicedrivers that use the firmware loader dangerously.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47742",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47742"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-10-21 13:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-47742",
+				"href": "https://ubuntu.com/security/CVE-2024-47742",
+				"public": "20241021",
+				"cvss_score": "7.8",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
+						"comment": "linux-intel package in noble is affected and needs fixing."
+					}
+				]
+			}
+		]
+	}
+}

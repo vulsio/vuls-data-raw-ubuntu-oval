@@ -1,0 +1,109 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024364890000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-36489 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: tls:fix missing memory barrier in tls_init In tls_init(), a write memorybarrier is missing, and store-store reordering may cause NULL dereferencein tls_{setsockopt,getsockopt}. CPU0 CPU1 ----- ----- // In tls_init() //In tls_ctx_create() ctx = kzalloc() ctx->sk_proto = READ_ONCE(sk->sk_prot)-(1) // In update_sk_prot() WRITE_ONCE(sk->sk_prot, tls_prots) -(2) // Insock_common_setsockopt() READ_ONCE(sk->sk_prot)->setsockopt() // Intls_{setsockopt,getsockopt}() ctx->sk_proto->setsockopt() -(3) In the abovescenario, when (1) and (2) are reordered, (3) can observe the NULL value ofctx->sk_proto, causing NULL dereference. To fix it, we rely onrcu_assign_pointer() which implies the release barrier semantic. By movingrcu_assign_pointer() after ctx->sk_proto is initialized, we can ensure thatctx->sk_proto are visible when changing sk->sk_prot.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36489` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-44-generic - 6.8.0-44.44\nlinux-image-unsigned-6.8.0-44-generic - 6.8.0-44.44\nlinux-image-unsigned-6.8.0-44-generic-64k - 6.8.0-44.44\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-aws - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1014-azure - 6.8.0-1014.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1014-gcp - 6.8.0-1014.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1010-gke - 6.8.0-1010.13\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1012-ibm - 6.8.0-1012.12\nNo subscription required\n\nlinux-image-unsigned-6.8.0-44-lowlatency - 6.8.0-44.44.1\nlinux-image-unsigned-6.8.0-44-lowlatency-64k - 6.8.0-44.44.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1012-oracle - 6.8.0-1012.12\nlinux-image-unsigned-6.8.0-1012-oracle-64k - 6.8.0-1012.12\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1012-oem - 6.8.0-1012.12\nNo subscription required\n\nlinux-image-6.8.0-1011-raspi - 6.8.0-1011.12\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1011.18\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-36489",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-36489"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-06-21 11:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-36489",
+				"href": "https://ubuntu.com/security/CVE-2024-36489",
+				"public": "20240621",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "6999-1,7004-1,7005-1,7007-1,7008-1,7005-2,7009-1,7019-1,7007-2,6999-2,7007-3,7029-1,7009-2"
+			},
+			"public_date_at_usn": "2024-06-21 11:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-6999-1",
+				"https://ubuntu.com/security/notices/USN-7004-1",
+				"https://ubuntu.com/security/notices/USN-7005-1",
+				"https://ubuntu.com/security/notices/USN-7007-1",
+				"https://ubuntu.com/security/notices/USN-7008-1",
+				"https://ubuntu.com/security/notices/USN-7005-2",
+				"https://ubuntu.com/security/notices/USN-7009-1",
+				"https://ubuntu.com/security/notices/USN-7019-1",
+				"https://ubuntu.com/security/notices/USN-7007-2",
+				"https://ubuntu.com/security/notices/USN-6999-2",
+				"https://ubuntu.com/security/notices/USN-7007-3",
+				"https://ubuntu.com/security/notices/USN-7029-1",
+				"https://ubuntu.com/security/notices/USN-7009-2"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000000",
+						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-44.44')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000010",
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000020",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1014.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000020",
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1014.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000030",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1010.13')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000040",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1012.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000050",
+						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-44.44.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000040",
+						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1012.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000040",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1012.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000060",
+						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1011.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1011.18')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-2010.10')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.1-1008.8')."
+					}
+				]
+			}
+		]
+	}
+}

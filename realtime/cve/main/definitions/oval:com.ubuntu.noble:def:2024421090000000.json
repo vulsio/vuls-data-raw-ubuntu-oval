@@ -1,0 +1,110 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024421090000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-42109 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: unconditionally flush pending work before notifiersyzbot reports:KASAN: slab-uaf in nft_ctx_update include/net/netfilter/nf_tables.h:1831KASAN: slab-uaf in nft_commit_release net/netfilter/nf_tables_api.c:9530KASAN: slab-uaf int nf_tables_trans_destroy_work+0x152b/0x1750net/netfilter/nf_tables_api.c:9597Read of size 2 at addr ffff88802b0051c4 by task kworker/1:1/45[..]Workqueue: events nf_tables_trans_destroy_workCall Trace: nft_ctx_update include/net/netfilter/nf_tables.h:1831 [inline] nft_commit_release net/netfilter/nf_tables_api.c:9530 [inline] nf_tables_trans_destroy_work+0x152b/0x1750net/netfilter/nf_tables_api.c:9597Problem is that the notifier does a conditional flush, but its possiblethat the table-to-be-removed is still referenced by transactions beingprocessed by the worker, so we need to flush unconditionally.We could make the flush_work depend on whether we found a table to deletein nf-next to avoid the flush for most cases.AFAICS this problem is only exposed in nf-next, withcommit e169285f8c56 (\"netfilter: nf_tables: do not store nft_ctx intransaction objects\"),with this commit applied there is an unconditional fetch oftable->family which is whats triggering the above splat.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42109` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1013-gke - 6.8.0-1013.17\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1016-oem - 6.8.0-1016.16\nNo subscription required\n\nlinux-image-6.8.0-1014-raspi - 6.8.0-1014.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1014.21\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-42109",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-42109"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-07-30 08:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-42109",
+				"href": "https://ubuntu.com/security/CVE-2024-42109",
+				"public": "20240730",
+				"cvss_score": "5.5",
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+				"usns": "7007-1,7009-1,7019-1,7007-2,7007-3,7009-2,7089-1,7090-1,7089-2,7089-3,7095-1,7089-4,7089-5,7089-6"
+			},
+			"public_date_at_usn": "2024-07-30 08:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-7007-1",
+				"https://ubuntu.com/security/notices/USN-7009-1",
+				"https://ubuntu.com/security/notices/USN-7019-1",
+				"https://ubuntu.com/security/notices/USN-7007-2",
+				"https://ubuntu.com/security/notices/USN-7007-3",
+				"https://ubuntu.com/security/notices/USN-7009-2",
+				"https://ubuntu.com/security/notices/USN-7089-1",
+				"https://ubuntu.com/security/notices/USN-7090-1",
+				"https://ubuntu.com/security/notices/USN-7089-2",
+				"https://ubuntu.com/security/notices/USN-7089-3",
+				"https://ubuntu.com/security/notices/USN-7095-1",
+				"https://ubuntu.com/security/notices/USN-7089-4",
+				"https://ubuntu.com/security/notices/USN-7089-5",
+				"https://ubuntu.com/security/notices/USN-7089-6"
+			]
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000000",
+						"comment": "linux package in noble was vulnerable but has been fixed (note: '6.8.0-48.48')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000010",
+						"comment": "linux-aws package in noble was vulnerable but has been fixed (note: '6.8.0-1018.20')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000020",
+						"comment": "linux-azure package in noble was vulnerable but has been fixed (note: '6.8.0-1017.20')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000030",
+						"comment": "linux-gcp package in noble was vulnerable but has been fixed (note: '6.8.0-1017.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000040",
+						"comment": "linux-gke package in noble was vulnerable but has been fixed (note: '6.8.0-1013.17')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000050",
+						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1015.15')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-48.48.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000010",
+						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000060",
+						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1016.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000020",
+						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1014.16')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1014.21')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-2013.14')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.1-1011.11')."
+					}
+				]
+			}
+		]
+	}
+}
