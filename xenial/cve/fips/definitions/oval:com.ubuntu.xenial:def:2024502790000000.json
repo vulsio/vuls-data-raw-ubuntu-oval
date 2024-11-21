@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024502790000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50279 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:dm cache: fix out-of-bounds access to the dirty bitset when resizingdm-cache checks the dirty bits of the cache blocks to be dropped whenshrinking the fast device, but an index bug in bitset iteration causesout-of-bounds access.Reproduce steps:1. create a cache device of 1024 cache blocks (128 bytes dirty bitset)dmsetup create cmeta --table \"0 8192 linear /dev/sdc 0\"dmsetup create cdata --table \"0 131072 linear /dev/sdc 8192\"dmsetup create corig --table \"0 524288 linear /dev/sdc 262144\"dd if=/dev/zero of=/dev/mapper/cmeta bs=4k count=1 oflag=directdmsetup create cache --table \"0 524288 cache /dev/mapper/cmeta \\/dev/mapper/cdata /dev/mapper/corig 128 2 metadata2 writethrough smq 0\"2. shrink the fast device to 512 cache blocks, triggering out-of-bounds   access to the dirty bitset (offset 0x80)dmsetup suspend cachedmsetup reload cdata --table \"0 65536 linear /dev/sdc 8192\"dmsetup resume cdatadmsetup resume cacheKASAN reports:  BUG: KASAN: vmalloc-out-of-bounds in cache_preresume+0x269/0x7b0  Read of size 8 at addr ffffc900000f3080 by task dmsetup/131  (...snip...)  The buggy address belongs to the virtual mapping at   [ffffc900000f3000, ffffc900000f5000) created by:   cache_ctr+0x176a/0x35f0  (...snip...)  Memory state around the buggy address:   ffffc900000f2f80: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8   ffffc900000f3000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  >ffffc900000f3080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8                     ^   ffffc900000f3100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8   ffffc900000f3180: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8Fix by making the index post-incremented.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50279",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50279"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-19 02:16:00 UTC",
+			"cve": {
+				"text": "CVE-2024-50279",
+				"href": "https://ubuntu.com/security/CVE-2024-50279",
+				"public": "20241119"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips/xenial is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					}
+				]
+			}
+		]
+	}
+}

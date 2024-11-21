@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024530470000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-53047 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mptcp: init: protect sched with rcu_read_lockEnabling CONFIG_PROVE_RCU_LIST with its dependence CONFIG_RCU_EXPERTcreates this splat when an MPTCP socket is created:  =============================  WARNING: suspicious RCU usage  6.12.0-rc2+ #11 Not tainted  -----------------------------  net/mptcp/sched.c:44 RCU-list traversed in non-reader section!!  other info that might help us debug this:  rcu_scheduler_active = 2, debug_locks = 1  no locks held by mptcp_connect/176.  stack backtrace:  CPU: 0 UID: 0 PID: 176 Comm: mptcp_connect Not tainted 6.12.0-rc2+ #11  Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011  Call Trace:   <TASK>   dump_stack_lvl (lib/dump_stack.c:123)   lockdep_rcu_suspicious (kernel/locking/lockdep.c:6822)   mptcp_sched_find (net/mptcp/sched.c:44 (discriminator 7))   mptcp_init_sock (net/mptcp/protocol.c:2867 (discriminator 1))   ? sock_init_data_uid (arch/x86/include/asm/atomic.h:28)   inet_create.part.0.constprop.0 (net/ipv4/af_inet.c:386)   ? __sock_create (include/linux/rcupdate.h:347 (discriminator 1))   __sock_create (net/socket.c:1576)   __sys_socket (net/socket.c:1671)   ? __pfx___sys_socket (net/socket.c:1712)   ? do_user_addr_fault (arch/x86/mm/fault.c:1419 (discriminator 1))   __x64_sys_socket (net/socket.c:1728)   do_syscall_64 (arch/x86/entry/common.c:52 (discriminator 1))   entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)That's because when the socket is initialised, rcu_read_lock() is notused despite the explicit comment written above the declaration ofmptcp_sched_find() in sched.c. Adding the missing lock/unlock avoids thewarning.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-53047` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-53047",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-53047"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-19 18:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-53047",
+				"href": "https://ubuntu.com/security/CVE-2024-53047",
+				"public": "20241119"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
+					}
+				]
+			}
+		]
+	}
+}

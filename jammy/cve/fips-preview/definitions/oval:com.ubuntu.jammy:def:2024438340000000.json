@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-43834 on Ubuntu Pro FIPS-preview 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:xdp: fix invalid wait context of page_pool_destroy()If the driver uses a page pool, it creates a page pool withpage_pool_create().The reference count of page pool is 1 as default.A page pool will be destroyed only when a reference count reaches 0.page_pool_destroy() is used to destroy page pool, it decreases areference count.When a page pool is destroyed, ->disconnect() is called, which ismem_allocator_disconnect().This function internally acquires mutex_lock().If the driver uses XDP, it registers a memory model withxdp_rxq_info_reg_mem_model().The xdp_rxq_info_reg_mem_model() internally increases a page poolreference count if a memory model is a page pool.Now the reference count is 2.To destroy a page pool, the driver should call both page_pool_destroy()and xdp_unreg_mem_model().The xdp_unreg_mem_model() internally calls page_pool_destroy().Only page_pool_destroy() decreases a reference count.If a driver calls page_pool_destroy() then xdp_unreg_mem_model(), wewill face an invalid wait context warning.Because xdp_unreg_mem_model() calls page_pool_destroy() withrcu_read_lock().The page_pool_destroy() internally acquires mutex_lock().Splat looks like:=============================[ BUG: Invalid wait context ]6.10.0-rc6+ #4 Tainted: G W-----------------------------ethtool/1806 is trying to lock:ffffffff90387b90 (mem_id_lock){+.+.}-{4:4}, at:mem_allocator_disconnect+0x73/0x150other info that might help us debug this:context-{5:5}3 locks held by ethtool/1806:stack backtrace:CPU: 0 PID: 1806 Comm: ethtool Tainted: G W 6.10.0-rc6+ #4f916f41f172891c800f2fedHardware name: ASUS System Product Name/PRIME Z690-P D4, BIOS 060311/01/2021Call Trace:<TASK>dump_stack_lvl+0x7e/0xc0__lock_acquire+0x1681/0x4de0? _printk+0x64/0xe0? __pfx_mark_lock.part.0+0x10/0x10? __pfx___lock_acquire+0x10/0x10lock_acquire+0x1b3/0x580? mem_allocator_disconnect+0x73/0x150? __wake_up_klogd.part.0+0x16/0xc0? __pfx_lock_acquire+0x10/0x10? dump_stack_lvl+0x91/0xc0__mutex_lock+0x15c/0x1690? mem_allocator_disconnect+0x73/0x150? __pfx_prb_read_valid+0x10/0x10? mem_allocator_disconnect+0x73/0x150? __pfx_llist_add_batch+0x10/0x10? console_unlock+0x193/0x1b0? lockdep_hardirqs_on+0xbe/0x140? __pfx___mutex_lock+0x10/0x10? tick_nohz_tick_stopped+0x16/0x90? __irq_work_queue_local+0x1e5/0x330? irq_work_queue+0x39/0x50? __wake_up_klogd.part.0+0x79/0xc0? mem_allocator_disconnect+0x73/0x150mem_allocator_disconnect+0x73/0x150? __pfx_mem_allocator_disconnect+0x10/0x10? mark_held_locks+0xa5/0xf0? rcu_is_watching+0x11/0xb0page_pool_release+0x36e/0x6d0page_pool_destroy+0xd7/0x440xdp_unreg_mem_model+0x1a7/0x2a0? __pfx_xdp_unreg_mem_model+0x10/0x10? kfree+0x125/0x370? bnxt_free_ring.isra.0+0x2eb/0x500? bnxt_free_mem+0x5ac/0x2500xdp_rxq_info_unreg+0x4a/0xd0bnxt_free_mem+0x1356/0x2500bnxt_close_nic+0xf0/0x3b0? __pfx_bnxt_close_nic+0x10/0x10? ethnl_parse_bit+0x2c6/0x6d0? __pfx___nla_validate_parse+0x10/0x10? __pfx_ethnl_parse_bit+0x10/0x10bnxt_set_features+0x2a8/0x3e0__netdev_update_features+0x4dc/0x1370? ethnl_parse_bitset+0x4ff/0x750? __pfx_ethnl_parse_bitset+0x10/0x10? __pfx___netdev_update_features+0x10/0x10? mark_held_locks+0xa5/0xf0? _raw_spin_unlock_irqrestore+0x42/0x70? __pm_runtime_resume+0x7d/0x110ethnl_set_features+0x32d/0xa20To fix this problem, it uses rhashtable_lookup_fast() instead ofrhashtable_lookup() with rcu_read_lock().Using xa without rcu_read_lock() here is safe.xa is freed by __xdp_mem_allocator_rcu_free() and this is called bycall_rcu() of mem_xa_remove().The mem_xa_remove() is called by page_pool_destroy() if a referencecount reaches 0.The xa is already protected by the reference count mechanism well in thecontrol plane.So removing rcu_read_lock() for page_pool_destroy() is safe.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-43834` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-5.15.0-125-generic-lpae - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-kvm - 5.15.0-1069.74\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-aws - 5.15.0-1072.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-gcp - 5.15.0-1071.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-gke - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1055-gkeop - 5.15.0-1055.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-ibm - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-125-lowlatency - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-lowlatency-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-nvidia - 5.15.0-1067.68\nlinux-image-unsigned-5.15.0-1067-nvidia-lowlatency - 5.15.0-1067.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-oracle - 5.15.0-1070.76\nNo subscription required\n\nlinux-image-5.15.0-1065-raspi - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-5.15.0-1038-xilinx-zynqmp - 5.15.0-1038.42\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:xdp: fix invalid wait context of page_pool_destroy()If the driver uses a page pool, it creates a page pool withpage_pool_create().The reference count of page pool is 1 as default.A page pool will be destroyed only when a reference count reaches 0.page_pool_destroy() is used to destroy page pool, it decreases areference count.When a page pool is destroyed, ->disconnect() is called, which ismem_allocator_disconnect().This function internally acquires mutex_lock().If the driver uses XDP, it registers a memory model withxdp_rxq_info_reg_mem_model().The xdp_rxq_info_reg_mem_model() internally increases a page poolreference count if a memory model is a page pool.Now the reference count is 2.To destroy a page pool, the driver should call both page_pool_destroy()and xdp_unreg_mem_model().The xdp_unreg_mem_model() internally calls page_pool_destroy().Only page_pool_destroy() decreases a reference count.If a driver calls page_pool_destroy() then xdp_unreg_mem_model(), wewill face an invalid wait context warning.Because xdp_unreg_mem_model() calls page_pool_destroy() withrcu_read_lock().The page_pool_destroy() internally acquires mutex_lock().Splat looks like:=============================[ BUG: Invalid wait context ]6.10.0-rc6+ #4 Tainted: G W-----------------------------ethtool/1806 is trying to lock:ffffffff90387b90 (mem_id_lock){+.+.}-{4:4}, at:mem_allocator_disconnect+0x73/0x150other info that might help us debug this:context-{5:5}3 locks held by ethtool/1806:stack backtrace:CPU: 0 PID: 1806 Comm: ethtool Tainted: G W 6.10.0-rc6+ #4f916f41f172891c800f2fedHardware name: ASUS System Product Name/PRIME Z690-P D4, BIOS 060311/01/2021Call Trace:<TASK>dump_stack_lvl+0x7e/0xc0__lock_acquire+0x1681/0x4de0? _printk+0x64/0xe0? __pfx_mark_lock.part.0+0x10/0x10? __pfx___lock_acquire+0x10/0x10lock_acquire+0x1b3/0x580? mem_allocator_disconnect+0x73/0x150? __wake_up_klogd.part.0+0x16/0xc0? __pfx_lock_acquire+0x10/0x10? dump_stack_lvl+0x91/0xc0__mutex_lock+0x15c/0x1690? mem_allocator_disconnect+0x73/0x150? __pfx_prb_read_valid+0x10/0x10? mem_allocator_disconnect+0x73/0x150? __pfx_llist_add_batch+0x10/0x10? console_unlock+0x193/0x1b0? lockdep_hardirqs_on+0xbe/0x140? __pfx___mutex_lock+0x10/0x10? tick_nohz_tick_stopped+0x16/0x90? __irq_work_queue_local+0x1e5/0x330? irq_work_queue+0x39/0x50? __wake_up_klogd.part.0+0x79/0xc0? mem_allocator_disconnect+0x73/0x150mem_allocator_disconnect+0x73/0x150? __pfx_mem_allocator_disconnect+0x10/0x10? mark_held_locks+0xa5/0xf0? rcu_is_watching+0x11/0xb0page_pool_release+0x36e/0x6d0page_pool_destroy+0xd7/0x440xdp_unreg_mem_model+0x1a7/0x2a0? __pfx_xdp_unreg_mem_model+0x10/0x10? kfree+0x125/0x370? bnxt_free_ring.isra.0+0x2eb/0x500? bnxt_free_mem+0x5ac/0x2500xdp_rxq_info_unreg+0x4a/0xd0bnxt_free_mem+0x1356/0x2500bnxt_close_nic+0xf0/0x3b0? __pfx_bnxt_close_nic+0x10/0x10? ethnl_parse_bit+0x2c6/0x6d0? __pfx___nla_validate_parse+0x10/0x10? __pfx_ethnl_parse_bit+0x10/0x10bnxt_set_features+0x2a8/0x3e0__netdev_update_features+0x4dc/0x1370? ethnl_parse_bitset+0x4ff/0x750? __pfx_ethnl_parse_bitset+0x10/0x10? __pfx___netdev_update_features+0x10/0x10? mark_held_locks+0xa5/0xf0? _raw_spin_unlock_irqrestore+0x42/0x70? __pm_runtime_resume+0x7d/0x110ethnl_set_features+0x32d/0xa20To fix this problem, it uses rhashtable_lookup_fast() instead ofrhashtable_lookup() with rcu_read_lock().Using xa without rcu_read_lock() here is safe.xa is freed by __xdp_mem_allocator_rcu_free() and this is called bycall_rcu() of mem_xa_remove().The mem_xa_remove() is called by page_pool_destroy() if a referencecount reaches 0.The xa is already protected by the reference count mechanism well in thecontrol plane.So removing rcu_read_lock() for page_pool_destroy() is safe.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-43834` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-5.15.0-125-generic-lpae - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-kvm - 5.15.0-1069.74\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-aws - 5.15.0-1072.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1075-azure - 5.15.0-1075.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-gcp - 5.15.0-1071.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-gke - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1055-gkeop - 5.15.0-1055.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-ibm - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-125-lowlatency - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-lowlatency-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-nvidia - 5.15.0-1067.68\nlinux-image-unsigned-5.15.0-1067-nvidia-lowlatency - 5.15.0-1067.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-oracle - 5.15.0-1070.76\nNo subscription required\n\nlinux-image-5.15.0-1065-raspi - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-5.15.0-1038-xilinx-zynqmp - 5.15.0-1038.42\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-preview 22.04 LTS"
@@ -24,12 +24,13 @@
 				"public": "20240817",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7100-1,7100-2"
+				"usns": "7100-1,7100-2,7123-1"
 			},
 			"public_date_at_usn": "2024-08-17 10:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-7100-1",
-				"https://ubuntu.com/security/notices/USN-7100-2"
+				"https://ubuntu.com/security/notices/USN-7100-2",
+				"https://ubuntu.com/security/notices/USN-7123-1"
 			]
 		}
 	},
@@ -80,8 +81,8 @@
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
-						"comment": "linux-azure package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1075.84')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000030",
+						"comment": "linux-azure package in jammy was vulnerable but has been fixed (note: '5.15.0-1075.84')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
@@ -124,7 +125,7 @@
 						"comment": "linux-gcp-fips package in fips-preview/jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000030",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000040",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1071.79')."
 					},
 					{
@@ -140,15 +141,15 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000040",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000050",
 						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1069.75')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000060",
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1055.62')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000070",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.68')."
 					},
 					{
@@ -172,7 +173,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000080",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.68')."
 					},
 					{
@@ -184,7 +185,7 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000090",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1070.76')."
 					},
 					{
@@ -208,7 +209,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000070",
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.68')."
 					},
 					{
@@ -224,7 +225,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000100",
 						"comment": "linux-xilinx-zynqmp package in jammy was vulnerable but has been fixed (note: '5.15.0-1038.42')."
 					},
 					{

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-45003 on Ubuntu Pro FIPS-preview 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:vfs: Don't evict inode under the inode lru traversing contextThe inode reclaiming process(See function prune_icache_sb) collects allreclaimable inodes and mark them with I_FREEING flag at first, at thattime, other processes will be stuck if they try getting these inodes(See function find_inode_fast), then the reclaiming process destroy theinodes by function dispose_list(). Some filesystems(eg. ext4 withea_inode feature, ubifs with xattr) may do inode lookup in the inodeevicting callback function, if the inode lookup is operated under theinode lru traversing context, deadlock problems may happen.Case 1: In function ext4_evict_inode(), the ea inode lookup could happen        if ea_inode feature is enabled, the lookup process will be stuck\tunder the evicting context like this: 1. File A has inode i_reg and an ea inode i_ea 2. getfattr(A, xattr_buf) // i_ea is added into lru // lru->i_ea 3. Then, following three processes running like this:    PA                              PB echo 2 > /proc/sys/vm/drop_caches  shrink_slab   prune_dcache_sb   // i_reg is added into lru, lru->i_ea->i_reg   prune_icache_sb    list_lru_walk_one     inode_lru_isolate      i_ea->i_state |= I_FREEING // set inode state     inode_lru_isolate      __iget(i_reg)      spin_unlock(&i_reg->i_lock)      spin_unlock(lru_lock)                                     rm file A                                      i_reg->nlink = 0      iput(i_reg) // i_reg->nlink is 0, do evict       ext4_evict_inode        ext4_xattr_delete_inode         ext4_xattr_inode_dec_ref_all          ext4_xattr_inode_iget           ext4_iget(i_ea->i_ino)            iget_locked             find_inode_fast              __wait_on_freeing_inode(i_ea) ----? AA deadlock    dispose_list // cannot be executed by prune_icache_sb     wake_up_bit(&i_ea->i_state)Case 2: In deleted inode writing function ubifs_jnl_write_inode(), file        deleting process holds BASEHD's wbuf->io_mutex while getting the\txattr inode, which could race with inode reclaiming process(The        reclaiming process could try locking BASEHD's wbuf->io_mutex in\tinode evicting function), then an ABBA deadlock problem would\thappen as following: 1. File A has inode ia and a xattr(with inode ixa), regular file B has    inode ib and a xattr. 2. getfattr(A, xattr_buf) // ixa is added into lru // lru->ixa 3. Then, following three processes running like this:        PA                PB                        PC                echo 2 > /proc/sys/vm/drop_caches                 shrink_slab                  prune_dcache_sb                  // ib and ia are added into lru, lru->ixa->ib->ia                  prune_icache_sb                   list_lru_walk_one                    inode_lru_isolate                     ixa->i_state |= I_FREEING // set inode state                    inode_lru_isolate                     __iget(ib)                     spin_unlock(&ib->i_lock)                     spin_unlock(lru_lock)                                                   rm file B                                                    ib->nlink = 0 rm file A  iput(ia)   ubifs_evict_inode(ia)    ubifs_jnl_delete_inode(ia)     ubifs_jnl_write_inode(ia)      make_reservation(BASEHD) // Lock wbuf->io_mutex      ubifs_iget(ixa->i_ino)       iget_locked        find_inode_fast         __wait_on_freeing_inode(ixa)          |          iput(ib) // ib->nlink is 0, do evict          |           ubifs_evict_inode          |            ubifs_jnl_delete_inode(ib)          ?             ubifs_jnl_write_inode     ABBA deadlock ?-----make_reservation(BASEHD)                   dispose_list // cannot be executed by prune_icache_sb                    wake_up_bit(&ixa->i_state)Fix the possible deadlock by using new inode state flag I_LRU_ISOLATINGto pin the inode in memory while inode_lru_isolate(---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45003` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-5.15.0-125-generic-lpae - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-kvm - 5.15.0-1069.74\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-aws - 5.15.0-1072.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-gcp - 5.15.0-1071.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-gke - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1055-gkeop - 5.15.0-1055.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-ibm - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-125-lowlatency - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-lowlatency-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-nvidia - 5.15.0-1067.68\nlinux-image-unsigned-5.15.0-1067-nvidia-lowlatency - 5.15.0-1067.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-oracle - 5.15.0-1070.76\nNo subscription required\n\nlinux-image-5.15.0-1065-raspi - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-5.15.0-1038-xilinx-zynqmp - 5.15.0-1038.42\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:vfs: Don't evict inode under the inode lru traversing contextThe inode reclaiming process(See function prune_icache_sb) collects allreclaimable inodes and mark them with I_FREEING flag at first, at thattime, other processes will be stuck if they try getting these inodes(See function find_inode_fast), then the reclaiming process destroy theinodes by function dispose_list(). Some filesystems(eg. ext4 withea_inode feature, ubifs with xattr) may do inode lookup in the inodeevicting callback function, if the inode lookup is operated under theinode lru traversing context, deadlock problems may happen.Case 1: In function ext4_evict_inode(), the ea inode lookup could happen        if ea_inode feature is enabled, the lookup process will be stuck\tunder the evicting context like this: 1. File A has inode i_reg and an ea inode i_ea 2. getfattr(A, xattr_buf) // i_ea is added into lru // lru->i_ea 3. Then, following three processes running like this:    PA                              PB echo 2 > /proc/sys/vm/drop_caches  shrink_slab   prune_dcache_sb   // i_reg is added into lru, lru->i_ea->i_reg   prune_icache_sb    list_lru_walk_one     inode_lru_isolate      i_ea->i_state |= I_FREEING // set inode state     inode_lru_isolate      __iget(i_reg)      spin_unlock(&i_reg->i_lock)      spin_unlock(lru_lock)                                     rm file A                                      i_reg->nlink = 0      iput(i_reg) // i_reg->nlink is 0, do evict       ext4_evict_inode        ext4_xattr_delete_inode         ext4_xattr_inode_dec_ref_all          ext4_xattr_inode_iget           ext4_iget(i_ea->i_ino)            iget_locked             find_inode_fast              __wait_on_freeing_inode(i_ea) ----? AA deadlock    dispose_list // cannot be executed by prune_icache_sb     wake_up_bit(&i_ea->i_state)Case 2: In deleted inode writing function ubifs_jnl_write_inode(), file        deleting process holds BASEHD's wbuf->io_mutex while getting the\txattr inode, which could race with inode reclaiming process(The        reclaiming process could try locking BASEHD's wbuf->io_mutex in\tinode evicting function), then an ABBA deadlock problem would\thappen as following: 1. File A has inode ia and a xattr(with inode ixa), regular file B has    inode ib and a xattr. 2. getfattr(A, xattr_buf) // ixa is added into lru // lru->ixa 3. Then, following three processes running like this:        PA                PB                        PC                echo 2 > /proc/sys/vm/drop_caches                 shrink_slab                  prune_dcache_sb                  // ib and ia are added into lru, lru->ixa->ib->ia                  prune_icache_sb                   list_lru_walk_one                    inode_lru_isolate                     ixa->i_state |= I_FREEING // set inode state                    inode_lru_isolate                     __iget(ib)                     spin_unlock(&ib->i_lock)                     spin_unlock(lru_lock)                                                   rm file B                                                    ib->nlink = 0 rm file A  iput(ia)   ubifs_evict_inode(ia)    ubifs_jnl_delete_inode(ia)     ubifs_jnl_write_inode(ia)      make_reservation(BASEHD) // Lock wbuf->io_mutex      ubifs_iget(ixa->i_ino)       iget_locked        find_inode_fast         __wait_on_freeing_inode(ixa)          |          iput(ib) // ib->nlink is 0, do evict          |           ubifs_evict_inode          |            ubifs_jnl_delete_inode(ib)          ?             ubifs_jnl_write_inode     ABBA deadlock ?-----make_reservation(BASEHD)                   dispose_list // cannot be executed by prune_icache_sb                    wake_up_bit(&ixa->i_state)Fix the possible deadlock by using new inode state flag I_LRU_ISOLATINGto pin the inode in memory while inode_lru_isolate(---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45003` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-5.15.0-125-generic-lpae - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-kvm - 5.15.0-1069.74\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-aws - 5.15.0-1072.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1075-azure - 5.15.0-1075.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-gcp - 5.15.0-1071.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-gke - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1055-gkeop - 5.15.0-1055.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-ibm - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-125-lowlatency - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-lowlatency-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-nvidia - 5.15.0-1067.68\nlinux-image-unsigned-5.15.0-1067-nvidia-lowlatency - 5.15.0-1067.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-oracle - 5.15.0-1070.76\nNo subscription required\n\nlinux-image-5.15.0-1065-raspi - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-5.15.0-1038-xilinx-zynqmp - 5.15.0-1038.42\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-preview 22.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240904",
 				"cvss_score": "4.7",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7088-1,7088-2,7088-3,7088-4,7100-1,7100-2,7088-5"
+				"usns": "7088-1,7088-2,7088-3,7088-4,7100-1,7100-2,7088-5,7119-1,7123-1"
 			},
 			"public_date_at_usn": "2024-09-04 20:15:00 UTC",
 			"ref": [
@@ -34,7 +34,9 @@
 				"https://ubuntu.com/security/notices/USN-7088-4",
 				"https://ubuntu.com/security/notices/USN-7100-1",
 				"https://ubuntu.com/security/notices/USN-7100-2",
-				"https://ubuntu.com/security/notices/USN-7088-5"
+				"https://ubuntu.com/security/notices/USN-7088-5",
+				"https://ubuntu.com/security/notices/USN-7119-1",
+				"https://ubuntu.com/security/notices/USN-7123-1"
 			]
 		}
 	},
@@ -85,8 +87,8 @@
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
-						"comment": "linux-azure package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1075.84')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000030",
+						"comment": "linux-azure package in jammy was vulnerable but has been fixed (note: '5.15.0-1075.84')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
@@ -129,7 +131,7 @@
 						"comment": "linux-gcp-fips package in fips-preview/jammy is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000030",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000040",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1071.79')."
 					},
 					{
@@ -145,15 +147,15 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000040",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000050",
 						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1069.75')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000060",
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1055.62')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000070",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.68')."
 					},
 					{
@@ -177,7 +179,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000080",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.68')."
 					},
 					{
@@ -189,7 +191,7 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000090",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1070.76')."
 					},
 					{
@@ -213,7 +215,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000070",
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.68')."
 					},
 					{
@@ -233,7 +235,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000100",
 						"comment": "linux-xilinx-zynqmp package in jammy was vulnerable but has been fixed (note: '5.15.0-1038.42')."
 					}
 				]

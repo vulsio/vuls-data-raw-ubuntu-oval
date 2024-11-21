@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-42234 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: fix crashes from deferred split racing folio migrationEven on 6.10-rc6, I've been seeing elusive \"Bad page state\"s (often onflags when freeing, yet the flags shown are not bad: PG_locked had beenset and cleared??), and VM_BUG_ON_PAGE(page_ref_count(page) == 0)s fromdeferred_split_scan()'s folio_put(), and a variety of other BUG and WARNsymptoms implying double free by deferred split and large folio migration.6.7 commit 9bcef5973e31 (\"mm: memcg: fix split queue list crash when largefolio migration\") was right to fix the memcg-dependent locking broken in85ce2c517ade (\"memcontrol: only transfer the memcg data for migration\"),but missed a subtlety of deferred_split_scan(): it moves folios to its ownlocal list to work on them without split_queue_lock, during which timefolio->_deferred_list is not empty, but even the \"right\" lock does nothingto secure the folio and the list it is on.Fortunately, deferred_split_scan() is careful to use folio_try_get(): sofolio_migrate_mapping() can avoid the race by folio_undo_large_rmappable()while the old folio's reference count is temporarily frozen to 0 - addingsuch a freeze in the !mapping case too (originally, folio lock andunmapping and no swap cache left an anon folio unreachable, so no freezingwas needed there: but the deferred split queue offers a way to reach it).\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42234` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1013-gke - 6.8.0-1013.17\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1016-oem - 6.8.0-1016.16\nNo subscription required\n\nlinux-image-6.8.0-1014-raspi - 6.8.0-1014.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1014.21\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: fix crashes from deferred split racing folio migrationEven on 6.10-rc6, I've been seeing elusive \"Bad page state\"s (often onflags when freeing, yet the flags shown are not bad: PG_locked had beenset and cleared??), and VM_BUG_ON_PAGE(page_ref_count(page) == 0)s fromdeferred_split_scan()'s folio_put(), and a variety of other BUG and WARNsymptoms implying double free by deferred split and large folio migration.6.7 commit 9bcef5973e31 (\"mm: memcg: fix split queue list crash when largefolio migration\") was right to fix the memcg-dependent locking broken in85ce2c517ade (\"memcontrol: only transfer the memcg data for migration\"),but missed a subtlety of deferred_split_scan(): it moves folios to its ownlocal list to work on them without split_queue_lock, during which timefolio->_deferred_list is not empty, but even the \"right\" lock does nothingto secure the folio and the list it is on.Fortunately, deferred_split_scan() is careful to use folio_try_get(): sofolio_migrate_mapping() can avoid the race by folio_undo_large_rmappable()while the old folio's reference count is temporarily frozen to 0 - addingsuch a freeze in the !mapping case too (originally, folio lock andunmapping and no swap cache left an anon folio unreachable, so no freezingwas needed there: but the deferred split queue offers a way to reach it).\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42234` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic - 6.8.0-48.48\nlinux-image-unsigned-6.8.0-48-generic-64k - 6.8.0-48.48\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1018-aws - 6.8.0-1018.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-azure - 6.8.0-1017.20\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1017-gcp - 6.8.0-1017.19\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1013-gke - 6.8.0-1013.17\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-ibm - 6.8.0-1015.15\nNo subscription required\n\nlinux-image-unsigned-6.8.0-48-lowlatency - 6.8.0-48.48.3\nlinux-image-unsigned-6.8.0-48-lowlatency-64k - 6.8.0-48.48.3\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1015-oracle - 6.8.0-1015.16\nlinux-image-unsigned-6.8.0-1015-oracle-64k - 6.8.0-1015.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1016-oem - 6.8.0-1016.16\nNo subscription required\n\nlinux-image-6.8.0-1014-raspi - 6.8.0-1014.16\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1014.21\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240807",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7089-1,7090-1,7089-2,7089-3,7095-1,7089-4,7089-5,7089-6"
+				"usns": "7089-1,7090-1,7089-2,7089-3,7095-1,7089-4,7089-5,7089-6,7089-7"
 			},
 			"public_date_at_usn": "2024-08-07 16:15:00 UTC",
 			"ref": [
@@ -35,7 +35,8 @@
 				"https://ubuntu.com/security/notices/USN-7095-1",
 				"https://ubuntu.com/security/notices/USN-7089-4",
 				"https://ubuntu.com/security/notices/USN-7089-5",
-				"https://ubuntu.com/security/notices/USN-7089-6"
+				"https://ubuntu.com/security/notices/USN-7089-6",
+				"https://ubuntu.com/security/notices/USN-7089-7"
 			]
 		}
 	},
@@ -70,15 +71,15 @@
 						"comment": "linux-ibm package in noble was vulnerable but has been fixed (note: '6.8.0-1015.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-48.48.3')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000060",
+						"comment": "linux-lowlatency package in noble was vulnerable but has been fixed (note: '6.8.0-48.48.3')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.noble:tst:2022487720000010",
 						"comment": "linux-oracle package in noble was vulnerable but has been fixed (note: '6.8.0-1015.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000060",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000070",
 						"comment": "linux-oem-6.8 package in noble was vulnerable but has been fixed (note: '6.8.0-1016.16')."
 					},
 					{
@@ -86,7 +87,7 @@
 						"comment": "linux-raspi package in noble was vulnerable but has been fixed (note: '6.8.0-1014.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000070",
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528870000080",
 						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1014.21')."
 					}
 				]

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48733 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:fix use-after-free after failure to create a snapshot Atioctl.c:create_snapshot(), we allocate a pending snapshot structure andthen attach it to the transaction's list of pending snapshots. After thatwe call btrfs_commit_transaction(), and if that returns an error we jump to'fail' label, where we kfree() the pending snapshot structure. This canresult in a later use-after-free of the pending snapshot: 1) We allocatedthe pending snapshot and added it to the transaction's list of pendingsnapshots; 2) We call btrfs_commit_transaction(), and it fails either atthe first call to btrfs_run_delayed_refs() orbtrfs_start_dirty_block_groups(). In both cases, we don't abort thetransaction and we release our transaction handle. We jump to the 'fail'label and free the pending snapshot structure. We return with the pendingsnapshot still in the transaction's list; 3) Another task commits thetransaction. This time there's no error at all, and then during thetransaction commit it accesses a pointer to the pending snapshot structurethat the snapshot creation task has already freed, resulting in auser-after-free. This issue could actually be detected by smatch, whichproduced the following warning: fs/btrfs/ioctl.c:843 create_snapshot()warn: '&pending_snapshot->list' not removed from list So fix this by nothaving the snapshot creation ioctl directly add the pending snapshot to thetransaction's list. Instead add the pending snapshot to the transactionhandle, and then at btrfs_commit_transaction() we add the snapshot to thelist only when we can guarantee that any error returned after that pointwill result in a transaction abort, in which case the ioctl code can safelyfree the pending snapshot and no one can access it anymore.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: btrfs:fix use-after-free after failure to create a snapshot Atioctl.c:create_snapshot(), we allocate a pending snapshot structure andthen attach it to the transaction's list of pending snapshots. After thatwe call btrfs_commit_transaction(), and if that returns an error we jump to'fail' label, where we kfree() the pending snapshot structure. This canresult in a later use-after-free of the pending snapshot: 1) We allocatedthe pending snapshot and added it to the transaction's list of pendingsnapshots; 2) We call btrfs_commit_transaction(), and it fails either atthe first call to btrfs_run_delayed_refs() orbtrfs_start_dirty_block_groups(). In both cases, we don't abort thetransaction and we release our transaction handle. We jump to the 'fail'label and free the pending snapshot structure. We return with the pendingsnapshot still in the transaction's list; 3) Another task commits thetransaction. This time there's no error at all, and then during thetransaction commit it accesses a pointer to the pending snapshot structurethat the snapshot creation task has already freed, resulting in auser-after-free. This issue could actually be detected by smatch, whichproduced the following warning: fs/btrfs/ioctl.c:843 create_snapshot()warn: '&pending_snapshot->list' not removed from list So fix this by nothaving the snapshot creation ioctl directly add the pending snapshot to thetransaction's list. Instead add the pending snapshot to the transactionhandle, and then at btrfs_commit_transaction() we add the snapshot to thelist only when we can guarantee that any error returned after that pointwill result in a transaction abort, in which case the ioctl code can safelyfree the pending snapshot and no one can access it anymore.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48733` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.15.0-231-generic - 4.15.0-231.243\nlinux-image-unsigned-4.15.0-231-generic - 4.15.0-231.243\nlinux-image-unsigned-4.15.0-231-lowlatency - 4.15.0-231.243\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-4.15.0-1158-kvm - 4.15.0-1158.163\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1175-aws - 4.15.0-1175.188\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1183-azure - 4.15.0-1183.198\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1168-gcp - 4.15.0-1168.185\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1137-oracle - 4.15.0-1137.148\nAvailable with Ubuntu Pro (Infra-only): https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
@@ -23,8 +23,14 @@
 				"href": "https://ubuntu.com/security/CVE-2022-48733",
 				"public": "20240620",
 				"cvss_score": "7.8",
-				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
-			}
+				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+				"usns": "7121-1,7121-2"
+			},
+			"public_date_at_usn": "2024-06-20 12:15:00 UTC",
+			"ref": [
+				"https://ubuntu.com/security/notices/USN-7121-1",
+				"https://ubuntu.com/security/notices/USN-7121-2"
+			]
 		}
 	},
 	"notes": {},
@@ -34,8 +40,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
-						"comment": "linux package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-231.243')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022487330000000",
+						"comment": "linux package in bionic was vulnerable but has been fixed (note: '4.15.0-231.243')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
@@ -43,15 +49,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-hwe-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-202.222~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
-						"comment": "linux-kvm package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1158.163')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022487330000010",
+						"comment": "linux-kvm package in bionic was vulnerable but has been fixed (note: '4.15.0-1158.163')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
-						"comment": "linux-aws package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1175.188')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022487330000020",
+						"comment": "linux-aws package in bionic was vulnerable but has been fixed (note: '4.15.0-1175.188')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -70,8 +76,8 @@
 						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
-						"comment": "linux-azure-4.15 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1183.198')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022487330000030",
+						"comment": "linux-azure-4.15 package in bionic was vulnerable but has been fixed (note: '4.15.0-1183.198')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
@@ -102,8 +108,8 @@
 						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
-						"comment": "linux-gcp-4.15 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1168.185')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:2022487330000040",
+						"comment": "linux-gcp-4.15 package in bionic was vulnerable but has been fixed (note: '4.15.0-1168.185')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
@@ -111,7 +117,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+						"comment": "linux-gcp-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1140.149~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -130,8 +136,8 @@
 						"comment": "linux-ibm-5.4 package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1083.88~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
-						"comment": "linux-oracle package in bionic is affected. An update containing the fix has been completed and is pending publication (note: '4.15.0-1137.148')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:202141970000020",
+						"comment": "linux-oracle package in bionic was vulnerable but has been fixed (note: '4.15.0-1137.148')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",

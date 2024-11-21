@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024502960000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-50296 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: hns3: fix kernel crash when uninstalling driverWhen the driver is uninstalled and the VF is disabled concurrently, akernel crash occurs. The reason is that the two actions call functionpci_disable_sriov(). The num_VFs is checked to determine whether torelease the corresponding resources. During the second calling, num_VFsis not 0 and the resource release function is called. However, thecorresponding resource has been released during the first invoking.Therefore, the problem occurs:[15277.839633][T50670] Unable to handle kernel NULL pointer dereference atvirtual address 0000000000000020...[15278.131557][T50670] Call trace:[15278.134686][T50670]  klist_put+0x28/0x12c[15278.138682][T50670]  klist_del+0x14/0x20[15278.142592][T50670]  device_del+0xbc/0x3c0[15278.146676][T50670]  pci_remove_bus_device+0x84/0x120[15278.151714][T50670]  pci_stop_and_remove_bus_device+0x6c/0x80[15278.157447][T50670]  pci_iov_remove_virtfn+0xb4/0x12c[15278.162485][T50670]  sriov_disable+0x50/0x11c[15278.166829][T50670]  pci_disable_sriov+0x24/0x30[15278.171433][T50670]  hnae3_unregister_ae_algo_prepare+0x60/0x90 [hnae3][15278.178039][T50670]  hclge_exit+0x28/0xd0 [hclge][15278.182730][T50670]  __se_sys_delete_module.isra.0+0x164/0x230[15278.188550][T50670]  __arm64_sys_delete_module+0x1c/0x30[15278.193848][T50670]  invoke_syscall+0x50/0x11c[15278.198278][T50670]  el0_svc_common.constprop.0+0x158/0x164[15278.203837][T50670]  do_el0_svc+0x34/0xcc[15278.207834][T50670]  el0_svc+0x20/0x30For details, see the following figure.     rmmod hclge              disable VFs----------------------------------------------------hclge_exit()            sriov_numvfs_store()  ...                     device_lock()  pci_disable_sriov()     hns3_pci_sriov_configure()                            pci_disable_sriov()                              sriov_disable()    sriov_disable()             if !num_VFs :      if !num_VFs :               return;        return;                 sriov_del_vfs()      sriov_del_vfs()             ...        ...                       klist_put()        klist_put()               ...        ...                     num_VFs = 0;      num_VFs = 0;        device_unlock();In this patch, when driver is removing, we get the device_lock()to protect num_VFs, just like sriov_numvfs_store().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-50296",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-50296"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-11-19 02:16:00 UTC",
+			"cve": {
+				"text": "CVE-2024-50296",
+				"href": "https://ubuntu.com/security/CVE-2024-50296",
+				"public": "20241119"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
+					}
+				]
+			}
+		]
+	}
+}
