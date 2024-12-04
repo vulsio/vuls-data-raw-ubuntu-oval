@@ -1,0 +1,90 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024531110000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-53111 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/mremap: fix address wraparound in move_page_tables()On 32-bit platforms, it is possible for the expression `len + old_addr <old_end` to be false-positive if `len + old_addr` wraps around.`old_addr` is the cursor in the old range up to which page table entrieshave been moved; so if the operation succeeded, `old_addr` is the *end* ofthe old region, and adding `len` to it can wrap.The overflow causes mremap() to mistakenly believe that PTEs have beencopied; the consequence is that mremap() bails out, but doesn't move thePTEs back before the new VMA is unmapped, causing anonymous pages in theregion to be lost.  So basically if userspace tries to mremap() aprivate-anon region and hits this bug, mremap() will return an error andthe private-anon region's contents appear to have been zeroed.The idea of this check is that `old_end - len` is the original startaddress, and writing the check that way also makes it easier to read; sofix the check by rearranging the comparison accordingly.(An alternate fix would be to refactor this function by introducing an\"orig_old_start\" variable or such.)Tested in a VM with a 32-bit X86 kernel; without the patch:```user@horn:~/big_mremap$ cat test.c#define _GNU_SOURCE#include <stdlib.h>#include <stdio.h>#include <err.h>#include <sys/mman.h>#define ADDR1 ((void*)0x60000000)#define ADDR2 ((void*)0x10000000)#define SIZE          0x50000000uLint main(void) {  unsigned char *p1 = mmap(ADDR1, SIZE, PROT_READ|PROT_WRITE,      MAP_ANONYMOUS|MAP_PRIVATE|MAP_FIXED_NOREPLACE, -1, 0);  if (p1 == MAP_FAILED)    err(1, \"mmap 1\");  unsigned char *p2 = mmap(ADDR2, SIZE, PROT_NONE,      MAP_ANONYMOUS|MAP_PRIVATE|MAP_FIXED_NOREPLACE, -1, 0);  if (p2 == MAP_FAILED)    err(1, \"mmap 2\");  *p1 = 0x41;  printf(\"first char is 0x%02hhx\\n\", *p1);  unsigned char *p3 = mremap(p1, SIZE, SIZE,      MREMAP_MAYMOVE|MREMAP_FIXED, p2);  if (p3 == MAP_FAILED) {    printf(\"mremap() failed; first char is 0x%02hhx\\n\", *p1);  } else {    printf(\"mremap() succeeded; first char is 0x%02hhx\\n\", *p3);  }}user@horn:~/big_mremap$ gcc -static -o test test.cuser@horn:~/big_mremap$ setarch -R ./testfirst char is 0x41mremap() failed; first char is 0x00```With the patch:```user@horn:~/big_mremap$ setarch -R ./testfirst char is 0x41mremap() succeeded; first char is 0x41```",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-53111",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-53111"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-03",
+			"cve": {
+				"text": "CVE-2024-53111",
+				"href": "https://ubuntu.com/security/CVE-2024-53111",
+				"public": "20241203"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected and needs fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
+						"comment": "linux-intel package in noble is affected and needs fixing."
+					}
+				]
+			}
+		]
+	}
+}
