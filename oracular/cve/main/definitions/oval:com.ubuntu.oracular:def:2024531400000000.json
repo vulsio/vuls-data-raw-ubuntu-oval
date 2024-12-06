@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024531400000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-53140 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netlink: terminate outstanding dump on socket closeNetlink supports iterative dumping of data. It provides the familiesthe following ops: - start - (optional) kicks off the dumping process - dump  - actual dump helper, keeps getting called until it returns 0 - done  - (optional) pairs with .start, can be used for cleanupThe whole process is asynchronous and the repeated calls to .dumpdon't actually happen in a tight loop, but rather are triggeredin response to recvmsg() on the socket.This gives the user full control over the dump, but also means thatthe user can close the socket without getting to the end of the dump.To make sure .start is always paired with .done we check if thereis an ongoing dump before freeing the socket, and if so call .done.The complication is that sockets can get freed from BH and .doneis allowed to sleep. So we use a workqueue to defer the call, whenneeded.Unfortunately this does not work correctly. What we defer is notthe cleanup but rather releasing a reference on the socket.We have no guarantee that we own the last reference, if someoneelse holds the socket they may release it in BH and we're backto square one.The whole dance, however, appears to be unnecessary. Only the usercan interact with dumps, so we can clean up when socket is closed.And close always happens in process context. Some async code maystill access the socket after close, queue notification skbs to it etc.but no dumps can start, end or otherwise make progress.Delete the workqueue and flush the dump state directly from the releasehandler. Note that further cleanup is possible in -next, for instancewe now always call .done before releasing the main module reference,so dump doesn't have to take a reference of its own.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-53140",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-53140"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-05",
+			"cve": {
+				"text": "CVE-2024-53140",
+				"href": "https://ubuntu.com/security/CVE-2024-53140",
+				"public": "20241205"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000000",
+						"comment": "linux package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

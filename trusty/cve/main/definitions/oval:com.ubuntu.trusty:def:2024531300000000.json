@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024531300000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-53130 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nilfs2: fix null-ptr-deref in block_dirty_buffer tracepointWhen using the \"block:block_dirty_buffer\" tracepoint, mark_buffer_dirty()may cause a NULL pointer dereference, or a general protection fault whenKASAN is enabled.This happens because, since the tracepoint was added inmark_buffer_dirty(), it references the dev_t member bh->b_bdev->bd_devregardless of whether the buffer head has a pointer to a block_devicestructure.In the current implementation, nilfs_grab_buffer(), which grabs a bufferto read (or create) a block of metadata, including b-tree node blocks,does not set the block device, but instead does so only if the buffer isnot in the \"uptodate\" state for each of its caller block readingfunctions.  However, if the uptodate flag is set on a folio/page, and thebuffer heads are detached from it by try_to_free_buffers(), and new bufferheads are then attached by create_empty_buffers(), the uptodate flag maybe restored to each buffer without the block device being set tobh->b_bdev, and mark_buffer_dirty() may be called later in that state,resulting in the bug mentioned above.Fix this issue by making nilfs_grab_buffer() always set the block deviceof the super block structure to the buffer head, regardless of the stateof the buffer's uptodate flag.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-53130",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-53130"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-05",
+			"cve": {
+				"text": "CVE-2024-53130",
+				"href": "https://ubuntu.com/security/CVE-2024-53130",
+				"public": "20241205"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
