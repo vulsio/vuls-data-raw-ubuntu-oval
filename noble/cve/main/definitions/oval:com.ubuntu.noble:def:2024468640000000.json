@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-46864 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/hyperv: fix kexec crash due to VP assist page corruptioncommit 9636be85cc5b (\"x86/hyperv: Fix hyperv_pcpu_input_arg handling whenCPUs go online/offline\") introduces a new cpuhp state for hypervinitialization.cpuhp_setup_state() returns the state number if state isCPUHP_AP_ONLINE_DYN or CPUHP_BP_PREPARE_DYN and 0 for all other states.For the hyperv case, since a new cpuhp state was introduced it wouldreturn 0. However, in hv_machine_shutdown(), the cpuhp_remove_state() callis conditioned upon \"hyperv_init_cpuhp > 0\". This will never be true andso hv_cpu_die() won't be called on all CPUs. This means the VP assist pagewon't be reset. When the kexec kernel tries to setup the VP assist pageagain, the hypervisor corrupts the memory region of the old VP assist pagecausing a panic in case the kexec kernel is using that memory elsewhere.This was originally fixed in commit dfe94d4086e4 (\"x86/hyperv: Fix kexecpanic/hang issues\").Get rid of hyperv_init_cpuhp entirely since we are no longer using adynamic cpuhp state and use CPUHP_AP_HYPERV_ONLINE directly withcpuhp_remove_state().",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:x86/hyperv: fix kexec crash due to VP assist page corruptioncommit 9636be85cc5b (\"x86/hyperv: Fix hyperv_pcpu_input_arg handling whenCPUs go online/offline\") introduces a new cpuhp state for hypervinitialization.cpuhp_setup_state() returns the state number if state isCPUHP_AP_ONLINE_DYN or CPUHP_BP_PREPARE_DYN and 0 for all other states.For the hyperv case, since a new cpuhp state was introduced it wouldreturn 0. However, in hv_machine_shutdown(), the cpuhp_remove_state() callis conditioned upon \"hyperv_init_cpuhp > 0\". This will never be true andso hv_cpu_die() won't be called on all CPUs. This means the VP assist pagewon't be reset. When the kexec kernel tries to setup the VP assist pageagain, the hypervisor corrupts the memory region of the old VP assist pagecausing a panic in case the kexec kernel is using that memory elsewhere.This was originally fixed in commit dfe94d4086e4 (\"x86/hyperv: Fix kexecpanic/hang issues\").Get rid of hyperv_init_cpuhp entirely since we are no longer using adynamic cpuhp state and use CPUHP_AP_HYPERV_ONLINE directly withcpuhp_remove_state().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46864` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1016.23\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -74,8 +74,8 @@
 						"comment": "linux-raspi package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1016.18')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
-						"comment": "linux-intel package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1016.23')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528890000000",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1016.23')."
 					}
 				]
 			}

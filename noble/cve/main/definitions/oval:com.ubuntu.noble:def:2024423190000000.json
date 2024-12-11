@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-42319 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mailbox: mtk-cmdq: Move devm_mbox_controller_register() afterdevm_pm_runtime_enable()When mtk-cmdq unbinds, a WARN_ON message with conditionpm_runtime_get_sync() < 0 occurs.According to the call tracei below:  cmdq_mbox_shutdown  mbox_free_channel  mbox_controller_unregister  __devm_mbox_controller_unregister  ...The root cause can be deduced to be calling pm_runtime_get_sync() aftercalling pm_runtime_disable() as observed below:1. CMDQ driver uses devm_mbox_controller_register() in cmdq_probe()   to bind the cmdq device to the mbox_controller, so   devm_mbox_controller_unregister() will automatically unregister   the device bound to the mailbox controller when the device-managed   resource is removed. That means devm_mbox_controller_unregister()   and cmdq_mbox_shoutdown() will be called after cmdq_remove().2. CMDQ driver also uses devm_pm_runtime_enable() in cmdq_probe() after   devm_mbox_controller_register(), so that devm_pm_runtime_disable()   will be called after cmdq_remove(), but before   devm_mbox_controller_unregister().To fix this problem, cmdq_probe() needs to movedevm_mbox_controller_register() after devm_pm_runtime_enable() to makedevm_pm_runtime_disable() be called afterdevm_mbox_controller_unregister().",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mailbox: mtk-cmdq: Move devm_mbox_controller_register() afterdevm_pm_runtime_enable()When mtk-cmdq unbinds, a WARN_ON message with conditionpm_runtime_get_sync() < 0 occurs.According to the call tracei below:  cmdq_mbox_shutdown  mbox_free_channel  mbox_controller_unregister  __devm_mbox_controller_unregister  ...The root cause can be deduced to be calling pm_runtime_get_sync() aftercalling pm_runtime_disable() as observed below:1. CMDQ driver uses devm_mbox_controller_register() in cmdq_probe()   to bind the cmdq device to the mbox_controller, so   devm_mbox_controller_unregister() will automatically unregister   the device bound to the mailbox controller when the device-managed   resource is removed. That means devm_mbox_controller_unregister()   and cmdq_mbox_shoutdown() will be called after cmdq_remove().2. CMDQ driver also uses devm_pm_runtime_enable() in cmdq_probe() after   devm_mbox_controller_register(), so that devm_pm_runtime_disable()   will be called after cmdq_remove(), but before   devm_mbox_controller_unregister().To fix this problem, cmdq_probe() needs to movedevm_mbox_controller_register() after devm_pm_runtime_enable() to makedevm_pm_runtime_disable() be called afterdevm_mbox_controller_unregister().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-42319` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1016.23\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -72,8 +72,8 @@
 						"comment": "linux-raspi package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1016.18')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
-						"comment": "linux-intel package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1016.23')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528890000000",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1016.23')."
 					}
 				]
 			}

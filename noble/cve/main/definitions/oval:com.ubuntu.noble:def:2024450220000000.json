@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-45022 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/vmalloc: fix page mapping if vm_area_alloc_pages() with high orderfallback to order 0The __vmap_pages_range_noflush() assumes its argument pages** containspages with the same page shift.  However, since commit e9c3cda4d86e (\"mm,vmalloc: fix high order __GFP_NOFAIL allocations\"), if gfp_flags includes__GFP_NOFAIL with high order in vm_area_alloc_pages() and page allocationfailed for high order, the pages** may contain two different page shifts(high order and order-0).  This could lead __vmap_pages_range_noflush() toperform incorrect mappings, potentially resulting in memory corruption.Users might encounter this as follows (vmap_allow_huge = true, 2M is forPMD_SIZE):kvmalloc(2M, __GFP_NOFAIL|GFP_X)    __vmalloc_node_range_noprof(vm_flags=VM_ALLOW_HUGE_VMAP)        vm_area_alloc_pages(order=9) ---> order-9 allocation failed andfallback to order-0            vmap_pages_range()                vmap_pages_range_noflush()                    __vmap_pages_range_noflush(page_shift = 21) ----> wrongmapping happensWe can remove the fallback code because if a high-order allocation fails,__vmalloc_node_range_noprof() will retry with order-0.  Therefore, it isunnecessary to fallback to order-0 here.  Therefore, fix this by removingthe fallback code.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/vmalloc: fix page mapping if vm_area_alloc_pages() with high orderfallback to order 0The __vmap_pages_range_noflush() assumes its argument pages** containspages with the same page shift.  However, since commit e9c3cda4d86e (\"mm,vmalloc: fix high order __GFP_NOFAIL allocations\"), if gfp_flags includes__GFP_NOFAIL with high order in vm_area_alloc_pages() and page allocationfailed for high order, the pages** may contain two different page shifts(high order and order-0).  This could lead __vmap_pages_range_noflush() toperform incorrect mappings, potentially resulting in memory corruption.Users might encounter this as follows (vmap_allow_huge = true, 2M is forPMD_SIZE):kvmalloc(2M, __GFP_NOFAIL|GFP_X)    __vmalloc_node_range_noprof(vm_flags=VM_ALLOW_HUGE_VMAP)        vm_area_alloc_pages(order=9) ---> order-9 allocation failed andfallback to order-0            vmap_pages_range()                vmap_pages_range_noflush()                    __vmap_pages_range_noflush(page_shift = 21) ----> wrongmapping happensWe can remove the fallback code because if a high-order allocation fails,__vmalloc_node_range_noprof() will retry with order-0.  Therefore, it isunnecessary to fallback to order-0 here.  Therefore, fix this by removingthe fallback code.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45022` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1016.23\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -74,8 +74,8 @@
 						"comment": "linux-raspi package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1016.18')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
-						"comment": "linux-intel package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1016.23')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528890000000",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1016.23')."
 					}
 				]
 			}

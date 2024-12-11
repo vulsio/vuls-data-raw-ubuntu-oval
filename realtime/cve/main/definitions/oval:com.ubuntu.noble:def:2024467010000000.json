@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-46701 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:libfs: fix infinite directory reads for offset dirAfter we switch tmpfs dir operations from simple_dir_operations tosimple_offset_dir_operations, every rename happened will fill new dentryto dest dir's maple tree(&SHMEM_I(inode)->dir_offsets->mt) with a freekey starting with octx->newx_offset, and then set newx_offset equals tofree key + 1. This will lead to infinite readdir combine with renamehappened at the same time, which fail generic/736 in xfstests(detail showas below).1. create 5000 files(1 2 3...) under one dir2. call readdir(man 3 readdir) once, and get one entry3. rename(entry, \"TEMPFILE\"), then rename(\"TEMPFILE\", entry)4. loop 2~3, until readdir return nothing or we loop too many   times(tmpfs break test with the second condition)We choose the same logic what commit 9b378f6ad48cf (\"btrfs: fix infinitedirectory reads\") to fix it, record the last_index when we open dir, anddo not emit the entry which index >= last_index. The file->private_datanow used in offset dir can use directly to do this, and we also updatethe last_index when we llseek the dir file.[brauner: only update last_index after seek when offset is zero like Jansuggested]",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:libfs: fix infinite directory reads for offset dirAfter we switch tmpfs dir operations from simple_dir_operations tosimple_offset_dir_operations, every rename happened will fill new dentryto dest dir's maple tree(&SHMEM_I(inode)->dir_offsets->mt) with a freekey starting with octx->newx_offset, and then set newx_offset equals tofree key + 1. This will lead to infinite readdir combine with renamehappened at the same time, which fail generic/736 in xfstests(detail showas below).1. create 5000 files(1 2 3...) under one dir2. call readdir(man 3 readdir) once, and get one entry3. rename(entry, \"TEMPFILE\"), then rename(\"TEMPFILE\", entry)4. loop 2~3, until readdir return nothing or we loop too many   times(tmpfs break test with the second condition)We choose the same logic what commit 9b378f6ad48cf (\"btrfs: fix infinitedirectory reads\") to fix it, record the last_index when we open dir, anddo not emit the entry which index >= last_index. The file->private_datanow used in offset dir can use directly to do this, and we also updatethe last_index when we llseek the dir file.[brauner: only update last_index after seek when offset is zero like Jansuggested]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46701` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1016.23\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -82,8 +82,8 @@
 						"comment": "linux-realtime package in realtime/noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.1-1013.14')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
-						"comment": "linux-intel package in noble is affected. An update containing the fix has been completed and is pending publication (note: '6.8.0-1016.23')."
+						"test_ref": "oval:com.ubuntu.noble:tst:2023528890000000",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1016.23')."
 					}
 				]
 			}
