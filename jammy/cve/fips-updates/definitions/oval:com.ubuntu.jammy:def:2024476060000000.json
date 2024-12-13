@@ -1,0 +1,49 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.jammy:def:2024476060000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47606 on Ubuntu Pro FIPS-updates 22.04 LTS (jammy) - medium",
+		"description": "GStreamer is a library for constructing graphs of media-handlingcomponents. An integer underflow has been detected in the functionqtdemux_parse_theora_extension within qtdemux.c. The vulnerability occursdue to an underflow of the gint size variable, which causes size to hold alarge unintended value when cast to an unsigned integer. This 32-bitnegative value is then cast to a 64-bit unsigned integer(0xfffffffffffffffa) in a subsequent call to gst_buffer_new_and_alloc. Thefunction gst_buffer_new_allocate then attempts to allocate memory,eventually calling _sysmem_new_block. The function _sysmem_new_block addsalignment and header size to the (unsigned) size, causing the overflow ofthe 'slice_size' variable. As a result, only 0x89 bytes are allocated,despite the large input size. When the following memcpy call occurs ingst_buffer_fill, the data from the input file will overwrite the content ofthe GstMapInfo info structure. Finally, during the call togst_memory_unmap, the overwritten memory may cause a function pointerhijack, as the mem->allocator->mem_unmap_full function is called with acorrupted pointer. This function pointer overwrite could allow an attackerto alter the execution flow of the program, leading to arbitrary codeexecution. This vulnerability is fixed in 1.24.10.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS-updates 22.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47606",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47606"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-12",
+			"bug": [
+				"https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/3851"
+			],
+			"cve": {
+				"text": "CVE-2024-47606",
+				"href": "https://ubuntu.com/security/CVE-2024-47606",
+				"public": "20241212"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2024475370000000",
+						"comment": "gst-plugins-good1.0 package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2024476060000000",
+						"comment": "gstreamer1.0 package in jammy is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
