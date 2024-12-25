@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024531510000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-53151 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:svcrdma: Address an integer overflowDan Carpenter reports:> Commit 78147ca8b4a9 (\"svcrdma: Add a \"parsed chunk list\" data> structure\") from Jun 22, 2020 (linux-next), leads to the following> Smatch static checker warning:>>\tnet/sunrpc/xprtrdma/svc_rdma_recvfrom.c:498 xdr_check_write_chunk()>\twarn: potential user controlled sizeof overflow 'segcount * 4 * 4'>> net/sunrpc/xprtrdma/svc_rdma_recvfrom.c>     488 static bool xdr_check_write_chunk(struct svc_rdma_recv_ctxt*rctxt)>     489 {>     490         u32 segcount;>     491         __be32 *p;>     492>     493         if (xdr_stream_decode_u32(&rctxt->rc_stream, &segcount))>                                                               ^^^^^^^^>>     494                 return false;>     495>     496         /* A bogus segcount causes this buffer overflow check tofail. */>     497         p = xdr_inline_decode(&rctxt->rc_stream,> --> 498                               segcount * rpcrdma_segment_maxsz *sizeof(*p));>>> segcount is an untrusted u32.  On 32bit systems anything >= SIZE_MAX / 16will> have an integer overflow and some those values will be accepted by> xdr_inline_decode().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-53151",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-53151"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-24",
+			"cve": {
+				"text": "CVE-2024-53151",
+				"href": "https://ubuntu.com/security/CVE-2024-53151",
+				"public": "20241224"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
