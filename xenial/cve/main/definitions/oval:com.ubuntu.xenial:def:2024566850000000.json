@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024566850000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-56685 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ASoC: mediatek: Check num_codecs is not zero to avoid panic during probeFollowing commit 13f58267cda3 (\"ASoC: soc.h: don't create dummyComponent via COMP_DUMMY()\"), COMP_DUMMY() became an array with zerolength, and only gets populated with the dummy struct after the card isregistered. Since the sound card driver's probe happens before the cardregistration, accessing any of the members of a dummy component duringprobe will result in undefined behavior.This can be observed in the mt8188 and mt8195 machine sound drivers. Byomitting a dai link subnode in the sound card's node in the Devicetree,the default uninitialized dummy codec is used, and when its dai_namepointer gets passed to strcmp() it results in a null pointer dereferenceand a kernel panic.In addition to that, set_card_codec_info() in the generic helpers file,mtk-soundcard-driver.c, will populate a dai link with a dummy codec whena dai link node is present in DT but with no codec property.The result is that at probe time, a dummy codec can either beuninitialized with num_codecs = 0, or be an initialized dummy codec,with num_codecs = 1 and dai_name = \"snd-soc-dummy-dai\". In order toaccommodate for both situations, check that num_codecs is not zerobefore accessing the codecs' fields but still check for the codec's dainame against \"snd-soc-dummy-dai\" as needed.While at it, also drop the check that dai_name is not null in the mt8192driver, introduced in commit 4d4e1b6319e5 (\"ASoC: mediatek: mt8192:Check existence of dai_name before dereferencing\"), as it is actuallyredundant given the preceding num_codecs != 0 check.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-56685",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-56685"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-28 10:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-56685",
+				"href": "https://ubuntu.com/security/CVE-2024-56685",
+				"public": "20241228"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

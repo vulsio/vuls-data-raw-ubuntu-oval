@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024566310000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-56631 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:scsi: sg: Fix slab-use-after-free read in sg_release()Fix a use-after-free bug in sg_release(), detected by syzbot with KASAN:BUG: KASAN: slab-use-after-free in lock_release+0x151/0xa30kernel/locking/lockdep.c:5838__mutex_unlock_slowpath+0xe2/0x750 kernel/locking/mutex.c:912sg_release+0x1f4/0x2e0 drivers/scsi/sg.c:407In sg_release(), the function kref_put(&sfp->f_ref, sg_remove_sfp) iscalled before releasing the open_rel_lock mutex. The kref_put() call maydecrement the reference count of sfp to zero, triggering its cleanupthrough sg_remove_sfp(). This cleanup includes scheduling deferred workvia sg_remove_sfp_usercontext(), which ultimately frees sfp.After kref_put(), sg_release() continues to unlock open_rel_lock and mayreference sfp or sdp. If sfp has already been freed, this results in aslab-use-after-free error.Move the kref_put(&sfp->f_ref, sg_remove_sfp) call after unlocking theopen_rel_lock mutex. This ensures: - No references to sfp or sdp occur after the reference count is   decremented. - Cleanup functions such as sg_remove_sfp() and   sg_remove_sfp_usercontext() can safely execute without impacting the   mutex handling in sg_release().The fix has been tested and validated by syzbot. This patch closes thebug reported at the following syzkaller link and ensures propersequencing of resource cleanup and mutex operations, eliminating therisk of use-after-free errors in sg_release().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-56631",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-56631"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-27 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-56631",
+				"href": "https://ubuntu.com/security/CVE-2024-56631",
+				"public": "20241227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024565990000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-56599 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: ath10k: avoid NULL pointer error during sdio removeWhen running 'rmmod ath10k', ath10k_sdio_remove() will free sdioworkqueue by destroy_workqueue(). But if CONFIG_INIT_ON_FREE_DEFAULT_ONis set to yes, kernel panic will happen:Call trace: destroy_workqueue+0x1c/0x258 ath10k_sdio_remove+0x84/0x94 sdio_bus_remove+0x50/0x16c device_release_driver_internal+0x188/0x25c device_driver_detach+0x20/0x2cThis is because during 'rmmod ath10k', ath10k_sdio_remove() will callath10k_core_destroy() before destroy_workqueue(). wiphy_dev_release()will finally be called in ath10k_core_destroy(). This function will freestruct cfg80211_registered_device *rdev and all its members, includingwiphy, dev and the pointer of sdio workqueue. Then the pointer of sdioworkqueue will be set to NULL due to CONFIG_INIT_ON_FREE_DEFAULT_ON.After device release, destroy_workqueue() will use NULL pointer then thekernel panic happen.Call trace:ath10k_sdio_remove  ->ath10k_core_unregister    ……    ->ath10k_core_stop      ->ath10k_hif_stop        ->ath10k_sdio_irq_disable    ->ath10k_hif_power_down      ->del_timer_sync(&ar_sdio->sleep_timer)  ->ath10k_core_destroy    ->ath10k_mac_destroy      ->ieee80211_free_hw        ->wiphy_free    ……          ->wiphy_dev_release  ->destroy_workqueueNeed to call destroy_workqueue() before ath10k_core_destroy(), freethe work queue buffer first and then free pointer of work queue byath10k_core_destroy(). This order matches the error path order inath10k_sdio_probe().No work will be queued on sdio workqueue between it is destroyed andath10k_core_destroy() is called. Based on the call_stack above, thereason is:Only ath10k_sdio_sleep_timer_handler(), ath10k_sdio_hif_tx_sg() andath10k_sdio_irq_disable() will queue work on sdio workqueue.Sleep timer will be deleted before ath10k_core_destroy() inath10k_hif_power_down().ath10k_sdio_irq_disable() only be called in ath10k_hif_stop().ath10k_core_unregister() will call ath10k_hif_power_down() to stop hifbus, so ath10k_sdio_hif_tx_sg() won't be called anymore.Tested-on: QCA6174 hw3.2 SDIO WLAN.RMH.4.4.1-00189",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-56599",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-56599"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-27 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-56599",
+				"href": "https://ubuntu.com/security/CVE-2024-56599",
+				"public": "20241227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

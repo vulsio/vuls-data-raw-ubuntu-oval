@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024532200000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-53220 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: fix to account dirty data in __get_secs_required()It will trigger system panic w/ testcase in [1]:------------[ cut here ]------------kernel BUG at fs/f2fs/segment.c:2752!RIP: 0010:new_curseg+0xc81/0x2110Call Trace: f2fs_allocate_data_block+0x1c91/0x4540 do_write_page+0x163/0xdf0 f2fs_outplace_write_data+0x1aa/0x340 f2fs_do_write_data_page+0x797/0x2280 f2fs_write_single_data_page+0x16cd/0x2190 f2fs_write_cache_pages+0x994/0x1c80 f2fs_write_data_pages+0x9cc/0xea0 do_writepages+0x194/0x7a0 filemap_fdatawrite_wbc+0x12b/0x1a0 __filemap_fdatawrite_range+0xbb/0xf0 file_write_and_wait_range+0xa1/0x110 f2fs_do_sync_file+0x26f/0x1c50 f2fs_sync_file+0x12b/0x1d0 vfs_fsync_range+0xfa/0x230 do_fsync+0x3d/0x80 __x64_sys_fsync+0x37/0x50 x64_sys_call+0x1e88/0x20d0 do_syscall_64+0x4b/0x110 entry_SYSCALL_64_after_hwframe+0x76/0x7eThe root cause is if checkpoint_disabling and lfs_mode are both on,it will trigger OPU for all overwritten data, it may cost more freesegment than expected, so f2fs must account those data correctly tocalculate cosumed free segments later, and return ENOSPC earlier toavoid run out of free segment during block allocation.[1]https://lore.kernel.org/fstests/20241015025106.3203676-1-chao@kernel.org/",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-53220",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-53220"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-27 14:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-53220",
+				"href": "https://ubuntu.com/security/CVE-2024-53220",
+				"public": "20241227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000000",
+						"comment": "linux package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

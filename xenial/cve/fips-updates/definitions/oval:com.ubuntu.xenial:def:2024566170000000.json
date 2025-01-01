@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024566170000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-56617 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cacheinfo: Allocate memory during CPU hotplug if not done from the primaryCPUCommit  5944ce092b97 (\"arch_topology: Build cacheinfo from primary CPU\")adds functionality that architectures can use to optionally allocate andbuild cacheinfo early during boot. Commit  6539cffa9495 (\"cacheinfo: Add arch specific early level initializer\")lets secondary CPUs correct (and reallocate memory) cacheinfo data ifneeded.If the early build functionality is not used and cacheinfo does not needcorrection, memory for cacheinfo is never allocated. x86 does not usethe early build functionality. Consequently, during the cacheinfo CPUhotplug callback, last_level_cache_is_valid() attempts to dereferencea NULL pointer:  BUG: kernel NULL pointer dereference, address: 0000000000000100  #PF: supervisor read access in kernel mode  #PF: error_code(0x0000) - not present page  PGD 0 P4D 0  Oops: 0000 [#1] PREEPMT SMP NOPTI  CPU: 0 PID 19 Comm: cpuhp/0 Not tainted 6.4.0-rc2 #1  RIP: 0010: last_level_cache_is_valid+0x95/0xe0aAllocate memory for cacheinfo during the cacheinfo CPU hotplug callbackif not done earlier.Moreover, before determining the validity of the last-level cache info,ensure that it has been allocated. Simply checking for non-zerocache_leaves() is not sufficient, as some architectures (e.g., Intelprocessors) have non-zero cache_leaves() before allocation.Dereferencing NULL cacheinfo can occur in update_per_cpu_data_slice_size().This function iterates over all online CPUs. However, a CPU may have comeonline recently, but its cacheinfo may not have been allocated yet.While here, remove an unnecessary indentation in allocate_cache_info().  [ bp: Massage. ]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-56617",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-56617"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-27 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-56617",
+				"href": "https://ubuntu.com/security/CVE-2024-56617",
+				"public": "20241227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

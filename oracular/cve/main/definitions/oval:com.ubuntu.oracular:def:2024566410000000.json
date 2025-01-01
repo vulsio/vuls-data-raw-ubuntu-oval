@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2024566410000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-56641 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/smc: initialize close_work early to avoid warningWe encountered a warning that close_work was canceled beforeinitialization.  WARNING: CPU: 7 PID: 111103 at kernel/workqueue.c:3047__flush_work+0x19e/0x1b0  Workqueue: events smc_lgr_terminate_work [smc]  RIP: 0010:__flush_work+0x19e/0x1b0  Call Trace:   ? __wake_up_common+0x7a/0x190   ? work_busy+0x80/0x80   __cancel_work_timer+0xe3/0x160   smc_close_cancel_work+0x1a/0x70 [smc]   smc_close_active_abort+0x207/0x360 [smc]   __smc_lgr_terminate.part.38+0xc8/0x180 [smc]   process_one_work+0x19e/0x340   worker_thread+0x30/0x370   ? process_one_work+0x340/0x340   kthread+0x117/0x130   ? __kthread_cancel_work+0x50/0x50   ret_from_fork+0x22/0x30This is because when smc_close_cancel_work is triggered, e.g. the RDMAdriver is rmmod and the LGR is terminated, the conn->close_work isflushed before initialization, resulting in WARN_ON(!work->func).__smc_lgr_terminate             | smc_connect_{rdma|ism}-------------------------------------------------------------                                | smc_conn_create\t\t\t\t| \\- smc_lgr_register_connfor conn in lgr->conns_all      |\\- smc_conn_kill                |   \\- smc_close_active_abort    |      \\- smc_close_cancel_work  |         \\- cancel_work_sync    |            \\- __flush_work     |\t         (close_work)   |\t                        | smc_close_init\t                        | \\- INIT_WORK(&close_work)So fix this by initializing close_work before establishing theconnection.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-56641",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-56641"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-27 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-56641",
+				"href": "https://ubuntu.com/security/CVE-2024-56641",
+				"public": "20241227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000000",
+						"comment": "linux package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

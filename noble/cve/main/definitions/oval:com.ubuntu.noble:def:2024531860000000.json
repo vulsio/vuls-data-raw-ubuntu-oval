@@ -1,0 +1,78 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024531860000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-53186 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ksmbd: fix use-after-free in SMB request handlingA race condition exists between SMB request handling in`ksmbd_conn_handler_loop()` and the freeing of `ksmbd_conn` in theworkqueue handler `handle_ksmbd_work()`. This leads to a UAF.- KASAN: slab-use-after-free Read in handle_ksmbd_work- KASAN: slab-use-after-free in rtlock_slowlock_lockedThis race condition arises as follows:- `ksmbd_conn_handler_loop()` waits for `conn->r_count` to reach zero:  `wait_event(conn->r_count_q, atomic_read(&conn->r_count) == 0);`- Meanwhile, `handle_ksmbd_work()` decrements `conn->r_count` using  `atomic_dec_return(&conn->r_count)`, and if it reaches zero, calls  `ksmbd_conn_free()`, which frees `conn`.- However, after `handle_ksmbd_work()` decrements `conn->r_count`,  it may still access `conn->r_count_q` in the following line:  `waitqueue_active(&conn->r_count_q)` or `wake_up(&conn->r_count_q)`  This results in a UAF, as `conn` has already been freed.The discovery of this UAF can be referenced in the following PR forsyzkaller's support for SMB requests.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-53186",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-53186"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-27 14:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-53186",
+				"href": "https://ubuntu.com/security/CVE-2024-53186",
+				"public": "20241227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

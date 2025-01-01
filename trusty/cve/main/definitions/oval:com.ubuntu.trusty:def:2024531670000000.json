@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024531670000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-53167 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nfs/blocklayout: Don't attempt unregister for invalid block deviceSince commit d869da91cccb (\"nfs/blocklayout: Fix premature PR keyunregistration\") an unmount of a pNFS SCSI layout-enabled NFS maydereference a NULL block_device in:  bl_unregister_scsi+0x16/0xe0 [blocklayoutdriver]  bl_free_device+0x70/0x80 [blocklayoutdriver]  bl_free_deviceid_node+0x12/0x30 [blocklayoutdriver]  nfs4_put_deviceid_node+0x60/0xc0 [nfsv4]  nfs4_deviceid_purge_client+0x132/0x190 [nfsv4]  unset_pnfs_layoutdriver+0x59/0x60 [nfsv4]  nfs4_destroy_server+0x36/0x70 [nfsv4]  nfs_free_server+0x23/0xe0 [nfs]  deactivate_locked_super+0x30/0xb0  cleanup_mnt+0xba/0x150  task_work_run+0x59/0x90  syscall_exit_to_user_mode+0x217/0x220  do_syscall_64+0x8e/0x160This happens because even though we were able to create thenfs4_deviceid_node, the lookup for the device was unable to attach theblock device to the pnfs_block_dev.If we never found a block device to register, we can avoid this case withthe PNFS_BDEV_REGISTERED flag.  Move the deref behind the test for theflag.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-53167",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-53167"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-27 14:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-53167",
+				"href": "https://ubuntu.com/security/CVE-2024-53167",
+				"public": "20241227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

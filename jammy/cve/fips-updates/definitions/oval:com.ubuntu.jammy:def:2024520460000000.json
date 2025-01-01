@@ -1,0 +1,49 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.jammy:def:2024520460000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-52046 on Ubuntu Pro FIPS-updates 22.04 LTS (jammy) - medium",
+		"description": "The ObjectSerializationDecoder in Apache MINA uses Java’s nativedeserialization protocol to processincoming serialized data but lacks the necessary security checks anddefenses. This vulnerability allowsattackers to exploit the deserialization process by sending speciallycrafted malicious serialized data,potentially leading to remote code execution (RCE) attacks.This issue affects MINA core versions 2.0.X, 2.1.X and 2.2.X, and will befixed by the releases 2.0.27, 2.1.10 and 2.2.4.It's also important to note that an application using MINA core librarywill only be affected if the IoBuffer#getObject() method is called, andthis specific method is potentially called when adding aProtocolCodecFilter instance using the ObjectSerializationCodecFactoryclass in the filter chain. If your application is specifically using thoseclasses, you have to upgrade to the latest version of MINA core library.Upgrading will  not be enough: you also need to explicitly allow theclasses the decoder will accept in the ObjectSerializationDecoder instance,using one of the three new methods:    /**     * Accept class names where the supplied ClassNameMatcher matches for     * deserialization, unless they are otherwise rejected.     *     * @param classNameMatcher the matcher to use     */    public void accept(ClassNameMatcher classNameMatcher)    /**     * Accept class names that match the supplied pattern for     * deserialization, unless they are otherwise rejected.     *     * @param pattern standard Java regexp     */    public void accept(Pattern pattern)    /**     * Accept the wildcard specified classes for deserialization,     * unless they are otherwise rejected.     *     * @param patterns Wildcard file name patterns as defined by     *                  {@linkorg.apache.commons.io.FilenameUtils#wildcardMatch(String, String)FilenameUtils.wildcardMatch}     */    public void accept(String... patterns)By default, the decoder will reject *all* classes that will be present inthe incoming data.Note: The FtpServer, SSHd and Vysper sub-project are not affected by thisissue.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS-updates 22.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-52046",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-52046"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-25 10:15:00 UTC",
+			"bug": [
+				"http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1091530"
+			],
+			"cve": {
+				"text": "CVE-2024-52046",
+				"href": "https://ubuntu.com/security/CVE-2024-52046",
+				"public": "20241225"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2024520460000000",
+						"comment": "mina package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2024520460000010",
+						"comment": "mina2 package in jammy is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,158 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.bionic:def:2024531900000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-53190 on Ubuntu Pro FIPS 18.04 LTS (bionic) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: rtlwifi: Drastically reduce the attempts to read efuse in case offailuresSyzkaller reported a hung task with uevent_show() on stack trace. Thatspecific issue was addressed by another commit [0], but even with thatfix applied (for example, running v6.12-rc5) we face another type of hungtask that comes from the same reproducer [1]. By investigating that, wecould narrow it to the following path:(a) Syzkaller emulates a Realtek USB WiFi adapter using raw-gadget anddummy_hcd infrastructure.(b) During the probe of rtl8192cu, the driver ends-up performing an efuseread procedure (which is related to EEPROM load IIUC), and here lies theissue: the function read_efuse() calls read_efuse_byte() many times, asloop iterations depending on the efuse size (in our example, 512 in total).This procedure for reading efuse bytes relies in a loop that performs anI/O read up to *10k* times in case of failures. We measured the time ofthe loop inside read_efuse_byte() alone, and in this reproducer (whichinvolves the dummy_hcd emulation layer), it takes 15 seconds each. As aconsequence, we have the driver stuck in its probe routine for big time,exposing a stack trace like below if we attempt to reboot the system, forexample:task:kworker/0:3 state:D stack:0 pid:662 tgid:662 ppid:2 flags:0x00004000Workqueue: usb_hub_wq hub_eventCall Trace: __schedule+0xe22/0xeb6 schedule_timeout+0xe7/0x132 __wait_for_common+0xb5/0x12e usb_start_wait_urb+0xc5/0x1ef ? usb_alloc_urb+0x95/0xa4 usb_control_msg+0xff/0x184 _usbctrl_vendorreq_sync+0xa0/0x161 _usb_read_sync+0xb3/0xc5 read_efuse_byte+0x13c/0x146 read_efuse+0x351/0x5f0 efuse_read_all_map+0x42/0x52 rtl_efuse_shadow_map_update+0x60/0xef rtl_get_hwinfo+0x5d/0x1c2 rtl92cu_read_eeprom_info+0x10a/0x8d5 ? rtl92c_read_chip_version+0x14f/0x17e rtl_usb_probe+0x323/0x851 usb_probe_interface+0x278/0x34b really_probe+0x202/0x4a4 __driver_probe_device+0x166/0x1b2 driver_probe_device+0x2f/0xd8 [...]We propose hereby to drastically reduce the attempts of doing the I/Oreads in case of failures, restricted to USB devices (given thatthey're inherently slower than PCIe ones). By retrying up to 10 times(instead of 10000), we got reponsiveness in the reproducer, while seemsreasonable to believe that there's no sane USB device implementation inthe field requiring this amount of retries at every I/O read in orderto properly work. Based on that assumption, it'd be good to have itbackported to stable but maybe not since driver implementation (the 10knumber comes from day 0), perhaps up to 6.x series makes sense.[0] Commit 15fffc6a5624 (\"driver core: Fix uevent_show() vs driver detachrace\")[1] A note about that: this syzkaller report presents multiple reproducersthat differs by the type of emulated USB device. For this specific case,check the entry from 2024/08/08 06:23 in the list of crashes; the C reprois available athttps://syzkaller.appspot.com/text?tag=ReproC&x=1521fc83980000.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 18.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-53190",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-53190"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-27 14:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-53190",
+				"href": "https://ubuntu.com/security/CVE-2024-53190",
+				"public": "20241227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
+						"comment": "linux package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
+						"comment": "linux-hwe: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
+						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
+						"comment": "linux-kvm package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
+						"comment": "linux-aws package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
+						"comment": "linux-aws-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000200",
+						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
+						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
+						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
+						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
+						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000350",
+						"comment": "linux-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000320",
+						"comment": "linux-aws-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000330",
+						"comment": "linux-azure-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000340",
+						"comment": "linux-gcp-fips package in fips/bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
+						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
+						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
+						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
+						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
+						"comment": "linux-gke-4.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gke-5.0')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000280",
+						"comment": "linux-gke-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000290",
+						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
+						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
+						"comment": "linux-oracle package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
+						"comment": "linux-oracle-5.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.3')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000180",
+						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
+						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
+						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

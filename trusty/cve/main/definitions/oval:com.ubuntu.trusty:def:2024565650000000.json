@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024565650000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-56565 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: fix to drop all discards after creating snapshot on lvm devicePiergiorgio reported a bug in bugzilla as below:------------[ cut here ]------------WARNING: CPU: 2 PID: 969 at fs/f2fs/segment.c:1330RIP: 0010:__submit_discard_cmd+0x27d/0x400 [f2fs]Call Trace: __issue_discard_cmd+0x1ca/0x350 [f2fs] issue_discard_thread+0x191/0x480 [f2fs] kthread+0xcf/0x100 ret_from_fork+0x31/0x50 ret_from_fork_asm+0x1a/0x30w/ below testcase, it can reproduce this bug quickly:- pvcreate /dev/vdb- vgcreate myvg1 /dev/vdb- lvcreate -L 1024m -n mylv1 myvg1- mount /dev/myvg1/mylv1 /mnt/f2fs- dd if=/dev/zero of=/mnt/f2fs/file bs=1M count=20- sync- rm /mnt/f2fs/file- sync- lvcreate -L 1024m -s -n mylv1-snapshot /dev/myvg1/mylv1- umount /mnt/f2fsThe root cause is: it will update discard_max_bytes of mounted lvmdevice to zero after creating snapshot on this lvm device, then,__submit_discard_cmd() will pass parameter @nr_sects w/ zero valueto __blkdev_issue_discard(), it returns a NULL bio pointer, resultin panic.This patch changes as below for fixing:1. Let's drop all remained discards in f2fs_unfreeze() if snapshotof lvm device is created.2. Checking discard_max_bytes before submitting discard during__submit_discard_cmd().",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-56565",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-56565"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2024 Canonical Ltd.",
+			"public_date": "2024-12-27 15:15:00 UTC",
+			"cve": {
+				"text": "CVE-2024-56565",
+				"href": "https://ubuntu.com/security/CVE-2024-56565",
+				"public": "20241227"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
