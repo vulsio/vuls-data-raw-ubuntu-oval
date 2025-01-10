@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-47713 on Ubuntu Pro FIPS 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: mac80211: use two-phase skb reclamation in ieee80211_do_stop()Since '__dev_queue_xmit()' should be called with interrupts enabled,the following backtrace:ieee80211_do_stop() ... spin_lock_irqsave(&local->queue_stop_reason_lock, flags) ... ieee80211_free_txskb()  ieee80211_report_used_skb()   ieee80211_report_ack_skb()    cfg80211_mgmt_tx_status_ext()     nl80211_frame_tx_status()      genlmsg_multicast_netns()       genlmsg_multicast_netns_filtered()        nlmsg_multicast_filtered()\t netlink_broadcast_filtered()\t  do_one_broadcast()\t   netlink_broadcast_deliver()\t    __netlink_sendskb()\t     netlink_deliver_tap()\t      __netlink_deliver_tap_skb()\t       dev_queue_xmit()\t        __dev_queue_xmit() ; with IRQS disabled ... spin_unlock_irqrestore(&local->queue_stop_reason_lock, flags)issues the warning (as reported by syzbot reproducer):WARNING: CPU: 2 PID: 5128 at kernel/softirq.c:362__local_bh_enable_ip+0xc3/0x120Fix this by implementing a two-phase skb reclamation in'ieee80211_do_stop()', where actual work is performedoutside of a section with interrupts disabled.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-47713` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-127-generic - 5.15.0-127.137~20.04.1\nlinux-image-5.15.0-127-generic-lpae - 5.15.0-127.137~20.04.1\nlinux-image-unsigned-5.15.0-127-generic - 5.15.0-127.137~20.04.1\nlinux-image-unsigned-5.15.0-127-generic-64k - 5.15.0-127.137~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1073-aws - 5.15.0-1073.79~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-gcp - 5.15.0-1072.80~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-ibm - 5.15.0-1066.69~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-127-lowlatency - 5.15.0-127.137~20.04.1\nlinux-image-unsigned-5.15.0-127-lowlatency-64k - 5.15.0-127.137~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-oracle - 5.15.0-1071.77~20.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: mac80211: use two-phase skb reclamation in ieee80211_do_stop()Since '__dev_queue_xmit()' should be called with interrupts enabled,the following backtrace:ieee80211_do_stop() ... spin_lock_irqsave(&local->queue_stop_reason_lock, flags) ... ieee80211_free_txskb()  ieee80211_report_used_skb()   ieee80211_report_ack_skb()    cfg80211_mgmt_tx_status_ext()     nl80211_frame_tx_status()      genlmsg_multicast_netns()       genlmsg_multicast_netns_filtered()        nlmsg_multicast_filtered()\t netlink_broadcast_filtered()\t  do_one_broadcast()\t   netlink_broadcast_deliver()\t    __netlink_sendskb()\t     netlink_deliver_tap()\t      __netlink_deliver_tap_skb()\t       dev_queue_xmit()\t        __dev_queue_xmit() ; with IRQS disabled ... spin_unlock_irqrestore(&local->queue_stop_reason_lock, flags)issues the warning (as reported by syzbot reproducer):WARNING: CPU: 2 PID: 5128 at kernel/softirq.c:362__local_bh_enable_ip+0xc3/0x120Fix this by implementing a two-phase skb reclamation in'ieee80211_do_stop()', where actual work is performedoutside of a section with interrupts disabled.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-47713` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-127-generic - 5.15.0-127.137~20.04.1\nlinux-image-5.15.0-127-generic-lpae - 5.15.0-127.137~20.04.1\nlinux-image-unsigned-5.15.0-127-generic - 5.15.0-127.137~20.04.1\nlinux-image-unsigned-5.15.0-127-generic-64k - 5.15.0-127.137~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1073-aws - 5.15.0-1073.79~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1078-azure - 5.15.0-1078.87~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-gcp - 5.15.0-1072.80~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-ibm - 5.15.0-1066.69~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-intel-iotg - 5.15.0-1071.77~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-127-lowlatency - 5.15.0-127.137~20.04.1\nlinux-image-unsigned-5.15.0-127-lowlatency-64k - 5.15.0-127.137~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-oracle - 5.15.0-1071.77~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 20.04 LTS"
@@ -24,14 +24,16 @@
 				"public": "20241021",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7166-1,7166-2,7166-3,7186-1"
+				"usns": "7166-1,7166-2,7166-3,7186-1,7186-2,7194-1"
 			},
 			"public_date_at_usn": "2024-10-21 12:15:00 UTC",
 			"ref": [
 				"https://ubuntu.com/security/notices/USN-7166-1",
 				"https://ubuntu.com/security/notices/USN-7166-2",
 				"https://ubuntu.com/security/notices/USN-7166-3",
-				"https://ubuntu.com/security/notices/USN-7186-1"
+				"https://ubuntu.com/security/notices/USN-7186-1",
+				"https://ubuntu.com/security/notices/USN-7186-2",
+				"https://ubuntu.com/security/notices/USN-7194-1"
 			]
 		}
 	},
@@ -102,8 +104,8 @@
 						"comment": "linux-azure-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000380",
-						"comment": "linux-azure-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1076.85~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2020123510000050",
+						"comment": "linux-azure-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1078.87~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000300",
@@ -182,8 +184,8 @@
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000320",
-						"comment": "linux-intel-iotg-5.15 package in focal is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1068.74~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2020123510000080",
+						"comment": "linux-intel-iotg-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1071.77~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000410",
