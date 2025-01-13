@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024546800000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-54680 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:smb: client: fix TCP timers deadlock after rmmodCommit ef7134c7fc48 (\"smb: client: Fix use-after-free of networknamespace.\")fixed a netns UAF by manually enabled socket refcounting(sk->sk_net_refcnt=1 and sock_inuse_add(net, 1)).The reason the patch worked for that bug was because we now holdreferences to the netns (get_net_track() gets a ref internally)and they're properly released (internally, on __sk_destruct()),but only because sk->sk_net_refcnt was set.Problem:(this happens regardless of CONFIG_NET_NS_REFCNT_TRACKER and regardlessif init_net or other)Setting sk->sk_net_refcnt=1 *manually* and *after* socket creation is notonly out of cifs scope, but also technically wrong -- it's setconditionallybased on user (=1) vs kernel (=0) sockets.  And net/ implementationsseem to base their user vs kernel space operations on it.e.g. upon TCP socket close, the TCP timers are not cleared becausesk->sk_net_refcnt=1:(cf. commit 151c9c724d05 (\"tcp: properly terminate timers for kernelsockets\"))net/ipv4/tcp.c:    void tcp_close(struct sock *sk, long timeout)    {    \tlock_sock(sk);    \t__tcp_close(sk, timeout);    \trelease_sock(sk);    \tif (!sk->sk_net_refcnt)    \t\tinet_csk_clear_xmit_timers_sync(sk);    \tsock_put(sk);    }Which will throw a lockdep warning and then, as expected, deadlock ontcp_write_timer().A way to reproduce this is by running the reproducer from ef7134c7fc48and then 'rmmod cifs'.  A few seconds later, the deadlock/lockdepwarning shows up.Fix:We shouldn't mess with socket internals ourselves, so do not setsk_net_refcnt manually.Also change __sock_create() to sock_create_kern() for explicitness.As for non-init_net network namespaces, we deal with it the best waywe can -- hold an extra netns reference for server->ssocket and drop itwhen it's released.  This ensures that the netns still exists wheneverwe need to create/destroy server->ssocket, but is not directly tied toit.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-54680",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-54680"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-01-13",
+			"cve": {
+				"text": "CVE-2024-54680",
+				"href": "https://ubuntu.com/security/CVE-2024-54680",
+				"public": "20250113"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

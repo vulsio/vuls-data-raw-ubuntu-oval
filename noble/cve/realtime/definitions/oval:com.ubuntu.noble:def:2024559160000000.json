@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024559160000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-55916 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:Drivers: hv: util: Avoid accessing a ringbuffer not initialized yetIf the KVP (or VSS) daemon starts before the VMBus channel's ringbuffer isfully initialized, we can hit the panic below:hv_utils: Registering HyperV Utility Driverhv_vmbus: registering driver hv_utils...BUG: kernel NULL pointer dereference, address: 0000000000000000CPU: 44 UID: 0 PID: 2552 Comm: hv_kvp_daemon Tainted: G E 6.11.0-rc3+ #1RIP: 0010:hv_pkt_iter_first+0x12/0xd0Call Trace:... vmbus_recvpacket hv_kvp_onchannelcallback vmbus_on_event tasklet_action_common tasklet_action handle_softirqs irq_exit_rcu sysvec_hyperv_stimer0 </IRQ> <TASK> asm_sysvec_hyperv_stimer0... kvp_register_done hvt_op_read vfs_read ksys_read __x64_sys_readThis can happen because the KVP/VSS channel callback can be invokedeven before the channel is fully opened:1) as soon as hv_kvp_init() -> hvutil_transport_init() creates/dev/vmbus/hv_kvp, the kvp daemon can open the device file immediately andregister itself to the driver by writing a message KVP_OP_REGISTER1 to thefile (which is handled by kvp_on_msg() ->kvp_handle_handshake()) andreading the file for the driver's response, which is handled byhvt_op_read(), which calls hvt->on_read(), i.e. kvp_register_done().2) the problem with kvp_register_done() is that it can cause thechannel callback to be called even before the channel is fully opened,and when the channel callback is starting to run, util_probe()->vmbus_open() may have not initialized the ringbuffer yet, so thecallback can hit the panic of NULL pointer dereference.To reproduce the panic consistently, we can add a \"ssleep(10)\" for KVP in__vmbus_open(), just before the first hv_ringbuffer_init(), and then weunload and reload the driver hv_utils, and run the daemon manually withinthe 10 seconds.Fix the panic by reordering the steps in util_probe() so the char deventry used by the KVP or VSS daemon is not created until aftervmbus_open() has completed. This reordering prevents the race conditionfrom happening.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-55916",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-55916"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-01-13",
+			"cve": {
+				"text": "CVE-2024-55916",
+				"href": "https://ubuntu.com/security/CVE-2024-55916",
+				"public": "20250113"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

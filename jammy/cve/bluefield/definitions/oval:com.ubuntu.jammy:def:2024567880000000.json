@@ -1,0 +1,218 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.jammy:def:2024567880000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-56788 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: ethernet: oa_tc6: fix tx skb race condition between reference pointersThere are two skb pointers to manage tx skb's enqueued from n/w stack.waiting_tx_skb pointer points to the tx skb which needs to be processedand ongoing_tx_skb pointer points to the tx skb which is being processed.SPI thread prepares the tx data chunks from the tx skb pointed by theongoing_tx_skb pointer. When the tx skb pointed by the ongoing_tx_skb isprocessed, the tx skb pointed by the waiting_tx_skb is assigned toongoing_tx_skb and the waiting_tx_skb pointer is assigned with NULL.Whenever there is a new tx skb from n/w stack, it will be assigned towaiting_tx_skb pointer if it is NULL. Enqueuing and processing of a tx skbhandled in two different threads.Consider a scenario where the SPI thread processed an ongoing_tx_skb andit moves next tx skb from waiting_tx_skb pointer to ongoing_tx_skb pointerwithout doing any NULL check. At this time, if the waiting_tx_skb pointeris NULL then ongoing_tx_skb pointer is also assigned with NULL. Afterthat, if a new tx skb is assigned to waiting_tx_skb pointer by the n/wstack and there is a chance to overwrite the tx skb pointer with NULL inthe SPI thread. Finally one of the tx skb will be left as unhandled,resulting packet missing and memory leak.- Consider the below scenario where the TXC reported from the previoustransfer is 10 and ongoing_tx_skb holds an tx ethernet frame which can betransported in 20 TXCs and waiting_tx_skb is still NULL.\ttx_credits = 10; /* 21 are filled in the previous transfer */\tongoing_tx_skb = 20;\twaiting_tx_skb = NULL; /* Still NULL */- So, (tc6->ongoing_tx_skb || tc6->waiting_tx_skb) becomes true.- After oa_tc6_prepare_spi_tx_buf_for_tx_skbs()\tongoing_tx_skb = 10;\twaiting_tx_skb = NULL; /* Still NULL */- Perform SPI transfer.- Process SPI rx buffer to get the TXC from footers.- Now let's assume previously filled 21 TXCs are freed so we are good totransport the next remaining 10 tx chunks from ongoing_tx_skb.\ttx_credits = 21;\tongoing_tx_skb = 10;\twaiting_tx_skb = NULL;- So, (tc6->ongoing_tx_skb || tc6->waiting_tx_skb) becomes true again.- In the oa_tc6_prepare_spi_tx_buf_for_tx_skbs()\tongoing_tx_skb = NULL;\twaiting_tx_skb = NULL;- Now the below bad case might happen,Thread1 (oa_tc6_start_xmit)\tThread2 (oa_tc6_spi_thread_handler)---------------------------\t------------------------------------ if waiting_tx_skb is NULL\t\t\t\t- if ongoing_tx_skb is NULL\t\t\t\t- ongoing_tx_skb = waiting_tx_skb- waiting_tx_skb = skb\t\t\t\t- waiting_tx_skb = NULL\t\t\t\t...\t\t\t\t- ongoing_tx_skb = NULL- if waiting_tx_skb is NULL- waiting_tx_skb = skbTo overcome the above issue, protect the moving of tx skb reference fromwaiting_tx_skb pointer to ongoing_tx_skb pointer and assigning new tx skbto waiting_tx_skb pointer, so that the other thread can't access thewaiting_tx_skb pointer until the current thread completes moving the txskb reference safely.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-56788",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-56788"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-01-13",
+			"cve": {
+				"text": "CVE-2024-56788",
+				"href": "https://ubuntu.com/security/CVE-2024-56788",
+				"public": "20250113"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000000",
+						"comment": "linux package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
+						"comment": "linux-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000280",
+						"comment": "linux-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000360",
+						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
+						"comment": "linux-kvm package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
+						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000010",
+						"comment": "linux-aws package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
+						"comment": "linux-aws-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000270",
+						"comment": "linux-aws-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000390",
+						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
+						"comment": "linux-azure package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
+						"comment": "linux-azure-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000310",
+						"comment": "linux-azure-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000400",
+						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
+						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
+						"comment": "linux-azure-fde-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
+						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
+						"comment": "linux-bluefield package in bluefield/jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
+						"comment": "linux-gcp package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
+						"comment": "linux-gcp-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000300",
+						"comment": "linux-gcp-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
+						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
+						"comment": "linux-gke package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000080",
+						"comment": "linux-gkeop package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
+						"comment": "linux-ibm package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
+						"comment": "linux-intel-iotg package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
+						"comment": "linux-lowlatency package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
+						"comment": "linux-lowlatency-hwe-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000290",
+						"comment": "linux-lowlatency-hwe-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000370",
+						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
+						"comment": "linux-nvidia package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
+						"comment": "linux-nvidia-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
+						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000060",
+						"comment": "linux-oracle package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
+						"comment": "linux-oracle-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-6.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
+						"comment": "linux-oem-5.17: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000150",
+						"comment": "linux-oem-6.0: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
+						"comment": "linux-oem-6.1: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000350",
+						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
+						"comment": "linux-raspi package in jammy is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
+						"comment": "linux-realtime: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by Ubuntu Pro ppa version')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000260",
+						"comment": "linux-starfive-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000340",
+						"comment": "linux-starfive-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-starfive-6.5')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000380",
+						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
+						"comment": "linux-xilinx-zynqmp package in jammy is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

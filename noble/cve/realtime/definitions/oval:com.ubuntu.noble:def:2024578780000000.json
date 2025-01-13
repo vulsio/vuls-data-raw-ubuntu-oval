@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024578780000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-57878 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:arm64: ptrace: fix partial SETREGSET for NT_ARM_FPMRCurrently fpmr_set() doesn't initialize the temporary 'fpmr' variable,and a SETREGSET call with a length of zero will leave thisuninitialized. Consequently an arbitrary value will be written back totarget->thread.uw.fpmr, potentially leaking up to 64 bits of memory fromthe kernel stack. The read is limited to a specific slot on the stack,and the issue does not provide a write mechanism.Fix this by initializing the temporary value before copying the regsetfrom userspace, as for other regsets (e.g. NT_PRSTATUS, NT_PRFPREG,NT_ARM_SYSTEM_CALL). In the case of a zero-length write, the existingcontents of FPMR will be retained.Before this patch:| # ./fpmr-test| Attempting to write NT_ARM_FPMR::fpmr = 0x900d900d900d900d| SETREGSET(nt=0x40e, len=8) wrote 8 bytes|| Attempting to read NT_ARM_FPMR::fpmr| GETREGSET(nt=0x40e, len=8) read 8 bytes| Read NT_ARM_FPMR::fpmr = 0x900d900d900d900d|| Attempting to write NT_ARM_FPMR (zero length)| SETREGSET(nt=0x40e, len=0) wrote 0 bytes|| Attempting to read NT_ARM_FPMR::fpmr| GETREGSET(nt=0x40e, len=8) read 8 bytes| Read NT_ARM_FPMR::fpmr = 0xffff800083963d50After this patch:| # ./fpmr-test| Attempting to write NT_ARM_FPMR::fpmr = 0x900d900d900d900d| SETREGSET(nt=0x40e, len=8) wrote 8 bytes|| Attempting to read NT_ARM_FPMR::fpmr| GETREGSET(nt=0x40e, len=8) read 8 bytes| Read NT_ARM_FPMR::fpmr = 0x900d900d900d900d|| Attempting to write NT_ARM_FPMR (zero length)| SETREGSET(nt=0x40e, len=0) wrote 0 bytes|| Attempting to read NT_ARM_FPMR::fpmr| GETREGSET(nt=0x40e, len=8) read 8 bytes| Read NT_ARM_FPMR::fpmr = 0x900d900d900d900d",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-57878",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-57878"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-01-13",
+			"cve": {
+				"text": "CVE-2024-57878",
+				"href": "https://ubuntu.com/security/CVE-2024-57878",
+				"public": "20250113"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

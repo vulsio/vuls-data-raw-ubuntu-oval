@@ -1,0 +1,86 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.noble:def:2024477940000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-47794 on Ubuntu 24.04 LTS (noble) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:bpf: Prevent tailcall infinite loop caused by freplaceThere is a potential infinite loop issue that can occur when using acombination of tail calls and freplace.In an upcoming selftest, the attach target for entry_freplace oftailcall_freplace.c is subprog_tc of tc_bpf2bpf.c, while the tail call inentry_freplace leads to entry_tc. This results in an infinite loop:entry_tc -> subprog_tc -> entry_freplace --tailcall-> entry_tc.The problem arises because the tail_call_cnt in entry_freplace resets tozero each time entry_freplace is executed, causing the tail call mechanismto never terminate, eventually leading to a kernel panic.To fix this issue, the solution is twofold:1. Prevent updating a program extended by an freplace program to a   prog_array map.2. Prevent extending a program that is already part of a prog_array map   with an freplace program.This ensures that:* If a program or its subprogram has been extended by an freplace program,  it can no longer be updated to a prog_array map.* If a program has been added to a prog_array map, neither it nor its  subprograms can be extended by an freplace program.Moreover, an extension program should not be tailcalled. As such, return-EINVAL if the program has a type of BPF_PROG_TYPE_EXT when adding it to aprog_array map.Additionally, fix a minor code style issue by replacing eight spaces with atab for proper formatting.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-47794",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-47794"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-01-13",
+			"cve": {
+				"text": "CVE-2024-47794",
+				"href": "https://ubuntu.com/security/CVE-2024-47794",
+				"public": "20250113"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
+						"comment": "linux-raspi-realtime package in realtime/noble is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
+						"comment": "linux-realtime package in realtime/noble is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
