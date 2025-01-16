@@ -1,0 +1,54 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.trusty:def:2024578880000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-57888 on Ubuntu 14.04 LTS (trusty) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:workqueue: Do not warn when cancelling WQ_MEM_RECLAIM work from!WQ_MEM_RECLAIM workerAfter commit746ae46c1113 (\"drm/sched: Mark scheduler work queues with WQ_MEM_RECLAIM\")amdgpu started seeing the following warning: [ ] workqueue: WQ_MEM_RECLAIM sdma0:drm_sched_run_job_work [gpu_sched] isflushing !WQ_MEM_RECLAIM events:amdgpu_device_delay_enable_gfx_off [amdgpu]... [ ] Workqueue: sdma0 drm_sched_run_job_work [gpu_sched]... [ ] Call Trace: [ ]  <TASK>... [ ]  ? check_flush_dependency+0xf5/0x110... [ ]  cancel_delayed_work_sync+0x6e/0x80 [ ]  amdgpu_gfx_off_ctrl+0xab/0x140 [amdgpu] [ ]  amdgpu_ring_alloc+0x40/0x50 [amdgpu] [ ]  amdgpu_ib_schedule+0xf4/0x810 [amdgpu] [ ]  ? drm_sched_run_job_work+0x22c/0x430 [gpu_sched] [ ]  amdgpu_job_run+0xaa/0x1f0 [amdgpu] [ ]  drm_sched_run_job_work+0x257/0x430 [gpu_sched] [ ]  process_one_work+0x217/0x720... [ ]  </TASK>The intent of the verifcation done in check_flush_depedency is to ensureforward progress during memory reclaim, by flagging cases when either amemory reclaim process, or a memory reclaim work item is flushed from acontext not marked as memory reclaim safe.This is correct when flushing, but when called from thecancel(_delayed)_work_sync() paths it is a false positive because work iseither already running, or will not be running at all. Thereforecancelling it is safe and we can relax the warning criteria by letting thehelper know of the calling context.References: 746ae46c1113 (\"drm/sched: Mark scheduler work queues withWQ_MEM_RECLAIM\")",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 14.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-57888",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-57888"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-01-16",
+			"cve": {
+				"text": "CVE-2024-57888",
+				"href": "https://ubuntu.com/security/CVE-2024-57888",
+				"public": "20250116"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
+						"comment": "linux package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
+						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
+						"comment": "linux-aws package in trusty is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
+						"comment": "linux-azure package in trusty is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
