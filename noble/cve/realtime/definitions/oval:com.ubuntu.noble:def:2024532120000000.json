@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-53212 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:netlink: fix false positive warning in extack during dumpsCommit under fixes extended extack reporting to dumps.It works under normal conditions, because extack errors areusually reported during ->start() or the first ->dump(),it's quite rare that the dump starts okay but fails later.If the dump does fail later, however, the input skb willalready have the initiating message pulled, so checkingif bad attr falls within skb->data will fail.Switch the check to using nlh, which is always valid.syzbot found a way to hit that scenario by filling upthe receive queue. In this case we initiate a dumpbut don't call ->dump() until there is read space foran skb.WARNING: CPU: 1 PID: 5845 at net/netlink/af_netlink.c:2210netlink_ack_tlv_fill+0x1a8/0x560 net/netlink/af_netlink.c:2209RIP: 0010:netlink_ack_tlv_fill+0x1a8/0x560 net/netlink/af_netlink.c:2209Call Trace: <TASK> netlink_dump_done+0x513/0x970 net/netlink/af_netlink.c:2250 netlink_dump+0x91f/0xe10 net/netlink/af_netlink.c:2351 netlink_recvmsg+0x6bb/0x11d0 net/netlink/af_netlink.c:1983 sock_recvmsg_nosec net/socket.c:1051 [inline] sock_recvmsg+0x22f/0x280 net/socket.c:1073 __sys_recvfrom+0x246/0x3d0 net/socket.c:2267 __do_sys_recvfrom net/socket.c:2285 [inline] __se_sys_recvfrom net/socket.c:2281 [inline] __x64_sys_recvfrom+0xde/0x100 net/socket.c:2281 do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0xf3/0x230 arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x77/0x7f RIP: 0033:0x7ff37dd17a79",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netlink: fix false positive warning in extack during dumpsCommit under fixes extended extack reporting to dumps.It works under normal conditions, because extack errors areusually reported during ->start() or the first ->dump(),it's quite rare that the dump starts okay but fails later.If the dump does fail later, however, the input skb willalready have the initiating message pulled, so checkingif bad attr falls within skb->data will fail.Switch the check to using nlh, which is always valid.syzbot found a way to hit that scenario by filling upthe receive queue. In this case we initiate a dumpbut don't call ->dump() until there is read space foran skb.WARNING: CPU: 1 PID: 5845 at net/netlink/af_netlink.c:2210netlink_ack_tlv_fill+0x1a8/0x560 net/netlink/af_netlink.c:2209RIP: 0010:netlink_ack_tlv_fill+0x1a8/0x560 net/netlink/af_netlink.c:2209Call Trace: <TASK> netlink_dump_done+0x513/0x970 net/netlink/af_netlink.c:2250 netlink_dump+0x91f/0xe10 net/netlink/af_netlink.c:2351 netlink_recvmsg+0x6bb/0x11d0 net/netlink/af_netlink.c:1983 sock_recvmsg_nosec net/socket.c:1051 [inline] sock_recvmsg+0x22f/0x280 net/socket.c:1073 __sys_recvfrom+0x246/0x3d0 net/socket.c:2267 __do_sys_recvfrom net/socket.c:2285 [inline] __se_sys_recvfrom net/socket.c:2281 [inline] __x64_sys_recvfrom+0xde/0x100 net/socket.c:2281 do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0xf3/0x230 arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x77/0x7f RIP: 0033:0x7ff37dd17a79\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-53212` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,52 +32,56 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000050",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000080",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000090",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000100",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
-						"comment": "linux-raspi-realtime package in realtime/noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000110",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
-						"comment": "linux-realtime package in realtime/noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000120",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

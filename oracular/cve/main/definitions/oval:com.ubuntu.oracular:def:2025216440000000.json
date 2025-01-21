@@ -1,0 +1,66 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.oracular:def:2025216440000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2025-21644 on Ubuntu 24.10 (oracular) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/xe: Fix tlb invalidation when wedgingIf GuC fails to load, the driver wedges, but in the process it tries todo stuff that may not be initialized yet. This moves thexe_gt_tlb_invalidation_init() to be done earlier: as its own doc says,it's a software-only initialization and should had been named with the_early() suffix.Move it to be called by xe_gt_init_early(), so the locks and seqno areinitialized, avoiding a NULL ptr deref when wedging:\txe 0000:03:00.0: [drm] *ERROR* GT0: load failed: status: Reset = 0,BootROM = 0x50, UKernel = 0x00, MIA = 0x00, Auth = 0x01\txe 0000:03:00.0: [drm] *ERROR* GT0: firmware signature verification failed\txe 0000:03:00.0: [drm] *ERROR* CRITICAL: Xe has declared device0000:03:00.0 as wedged.\t...\tBUG: kernel NULL pointer dereference, address: 0000000000000000\t#PF: supervisor read access in kernel mode\t#PF: error_code(0x0000) - not-present page\tPGD 0 P4D 0\tOops: Oops: 0000 [#1] PREEMPT SMP NOPTI\tCPU: 9 UID: 0 PID: 3908 Comm: modprobe Tainted: G     U  W6.13.0-rc4-xe+ #3\tTainted: [U]=USER, [W]=WARN\tHardware name: Intel Corporation Alder Lake Client Platform/AlderLake-SADP-S DDR5 UDIMM CRB, BIOS ADLSFWI1.R00.3275.A00.2207010640 07/01/2022\tRIP: 0010:xe_gt_tlb_invalidation_reset+0x75/0x110 [xe]This can be easily triggered by poking the GuC binary to force asignature failure. There will still be an extra message,\txe 0000:03:00.0: [drm] *ERROR* GT0: GuC mmio request 0x4100: no reply0x4100but that's better than a NULL ptr deref.(cherry picked from commit 5001ef3af8f2c972d6fd9c5221a8457556f8bea6)",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 24.10"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2025-21644",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2025-21644"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-01-20",
+			"cve": {
+				"text": "CVE-2025-21644",
+				"href": "https://ubuntu.com/security/CVE-2025-21644",
+				"public": "20250120"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000000",
+						"comment": "linux package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56555 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:binder: fix OOB in binder_add_freeze_work()In binder_add_freeze_work() we iterate over the proc->nodes with theproc->inner_lock held. However, this lock is temporarily dropped toacquire the node->lock first (lock nesting order). This can race withbinder_deferred_release() which removes the nodes from the proc->nodesrbtree and adds them into binder_dead_nodes list. This leads to a brokeniteration in binder_add_freeze_work() as rb_next() will use data frombinder_dead_nodes, triggering an out-of-bounds access:  ==================================================================  BUG: KASAN: global-out-of-bounds in rb_next+0xfc/0x124  Read of size 8 at addr ffffcb84285f7170 by task freeze/660  CPU: 8 UID: 0 PID: 660 Comm: freeze Not tainted6.11.0-07343-ga727812a8d45 #18  Hardware name: linux,dummy-virt (DT)  Call trace:   rb_next+0xfc/0x124   binder_add_freeze_work+0x344/0x534   binder_ioctl+0x1e70/0x25ac   __arm64_sys_ioctl+0x124/0x190  The buggy address belongs to the variable:   binder_dead_nodes+0x10/0x40  [...]  ==================================================================This is possible because proc->nodes (rbtree) and binder_dead_nodes(list) share entries in binder_node through a union:\tstruct binder_node {\t[...]\t\tunion {\t\t\tstruct rb_node rb_node;\t\t\tstruct hlist_node dead_node;\t\t};Fix the race by checking that the proc is still alive. If not, simplybreak out of the iteration.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:binder: fix OOB in binder_add_freeze_work()In binder_add_freeze_work() we iterate over the proc->nodes with theproc->inner_lock held. However, this lock is temporarily dropped toacquire the node->lock first (lock nesting order). This can race withbinder_deferred_release() which removes the nodes from the proc->nodesrbtree and adds them into binder_dead_nodes list. This leads to a brokeniteration in binder_add_freeze_work() as rb_next() will use data frombinder_dead_nodes, triggering an out-of-bounds access:  ==================================================================  BUG: KASAN: global-out-of-bounds in rb_next+0xfc/0x124  Read of size 8 at addr ffffcb84285f7170 by task freeze/660  CPU: 8 UID: 0 PID: 660 Comm: freeze Not tainted6.11.0-07343-ga727812a8d45 #18  Hardware name: linux,dummy-virt (DT)  Call trace:   rb_next+0xfc/0x124   binder_add_freeze_work+0x344/0x534   binder_ioctl+0x1e70/0x25ac   __arm64_sys_ioctl+0x124/0x190  The buggy address belongs to the variable:   binder_dead_nodes+0x10/0x40  [...]  ==================================================================This is possible because proc->nodes (rbtree) and binder_dead_nodes(list) share entries in binder_node through a union:\tstruct binder_node {\t[...]\t\tunion {\t\t\tstruct rb_node rb_node;\t\t\tstruct hlist_node dead_node;\t\t};Fix the race by checking that the proc is still alive. If not, simplybreak out of the iteration.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56555` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000050",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000080",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000090",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000100",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

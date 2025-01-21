@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-55642 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:block: Prevent potential deadlocks in zone write plug error recoveryZone write plugging for handling writes to zones of a zoned blockdevice always execute a zone report whenever a write BIO to a zonefails. The intent of this is to ensure that the tracking of a zone writepointer is always correct to ensure that the alignment to a zone writepointer of write BIOs can be checked on submission and that we canalways correctly emulate zone append operations using regular writeBIOs.However, this error recovery scheme introduces a potential deadlock if adevice queue freeze is initiated while BIOs are still plugged in a zonewrite plug and one of these write operation fails. In such case, thedisk zone write plug error recovery work is scheduled and executes areport zone. This in turn can result in a request allocation in theunderlying driver to issue the report zones command to the device. Butwith the device queue freeze already started, this allocation willblock, preventing the report zone execution and the continuation of theprocessing of the plugged BIOs. As plugged BIOs hold a queue usagereference, the queue freeze itself will never complete, resulting in adeadlock.Avoid this problem by completely removing from the zone write pluggingcode the use of report zones operations after a failed write operation,instead relying on the device user to either execute a report zones,reset the zone, finish the zone, or give up writing to the device (whichis a fairly common pattern for file systems which degrade to read-onlyafter write failures). This is not an unreasonnable requirement as allwell-behaved applications, FSes and device mapper already use reportzones to recover from write errors whenever possible by comparing thecurrent position of a zone write pointer with what their assumptionabout the position is.The changes to remove the automatic error recovery are as follows: - Completely remove the error recovery work and its associated   resources (zone write plug list head, disk error list, and disk   zone_wplugs_work work struct). This also removes the functions   disk_zone_wplug_set_error() and disk_zone_wplug_clear_error(). - Change the BLK_ZONE_WPLUG_ERROR zone write plug flag into   BLK_ZONE_WPLUG_NEED_WP_UPDATE. This new flag is set for a zone write   plug whenever a write opration targetting the zone of the zone write   plug fails. This flag indicates that the zone write pointer offset is   not reliable and that it must be updated when the next report zone,   reset zone, finish zone or disk revalidation is executed. - Modify blk_zone_write_plug_bio_endio() to set the   BLK_ZONE_WPLUG_NEED_WP_UPDATE flag for the target zone of a failed   write BIO. - Modify the function disk_zone_wplug_set_wp_offset() to clear this   new flag, thus implementing recovery of a correct write pointer   offset with the reset (all) zone and finish zone operations. - Modify blkdev_report_zones() to always use the disk_report_zones_cb()   callback so that disk_zone_wplug_sync_wp_offset() can be called for   any zone marked with the BLK_ZONE_WPLUG_NEED_WP_UPDATE flag.   This implements recovery of a correct write pointer offset for zone   write plugs marked with BLK_ZONE_WPLUG_NEED_WP_UPDATE and within   the range of the report zones operation executed by the user. - Modify blk_revalidate_seq_zone() to call   disk_zone_wplug_sync_wp_offset() for all sequential write required   zones when a zoned block device is revalidated, thus always resolving   any inconsistency between the write pointer offset of zone write   plugs and the actual write pointer position of sequential zones.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:block: Prevent potential deadlocks in zone write plug error recoveryZone write plugging for handling writes to zones of a zoned blockdevice always execute a zone report whenever a write BIO to a zonefails. The intent of this is to ensure that the tracking of a zone writepointer is always correct to ensure that the alignment to a zone writepointer of write BIOs can be checked on submission and that we canalways correctly emulate zone append operations using regular writeBIOs.However, this error recovery scheme introduces a potential deadlock if adevice queue freeze is initiated while BIOs are still plugged in a zonewrite plug and one of these write operation fails. In such case, thedisk zone write plug error recovery work is scheduled and executes areport zone. This in turn can result in a request allocation in theunderlying driver to issue the report zones command to the device. Butwith the device queue freeze already started, this allocation willblock, preventing the report zone execution and the continuation of theprocessing of the plugged BIOs. As plugged BIOs hold a queue usagereference, the queue freeze itself will never complete, resulting in adeadlock.Avoid this problem by completely removing from the zone write pluggingcode the use of report zones operations after a failed write operation,instead relying on the device user to either execute a report zones,reset the zone, finish the zone, or give up writing to the device (whichis a fairly common pattern for file systems which degrade to read-onlyafter write failures). This is not an unreasonnable requirement as allwell-behaved applications, FSes and device mapper already use reportzones to recover from write errors whenever possible by comparing thecurrent position of a zone write pointer with what their assumptionabout the position is.The changes to remove the automatic error recovery are as follows: - Completely remove the error recovery work and its associated   resources (zone write plug list head, disk error list, and disk   zone_wplugs_work work struct). This also removes the functions   disk_zone_wplug_set_error() and disk_zone_wplug_clear_error(). - Change the BLK_ZONE_WPLUG_ERROR zone write plug flag into   BLK_ZONE_WPLUG_NEED_WP_UPDATE. This new flag is set for a zone write   plug whenever a write opration targetting the zone of the zone write   plug fails. This flag indicates that the zone write pointer offset is   not reliable and that it must be updated when the next report zone,   reset zone, finish zone or disk revalidation is executed. - Modify blk_zone_write_plug_bio_endio() to set the   BLK_ZONE_WPLUG_NEED_WP_UPDATE flag for the target zone of a failed   write BIO. - Modify the function disk_zone_wplug_set_wp_offset() to clear this   new flag, thus implementing recovery of a correct write pointer   offset with the reset (all) zone and finish zone operations. - Modify blkdev_report_zones() to always use the disk_report_zones_cb()   callback so that disk_zone_wplug_sync_wp_offset() can be called for   any zone marked with the BLK_ZONE_WPLUG_NEED_WP_UPDATE flag.   This implements recovery of a correct write pointer offset for zone   write plugs marked with BLK_ZONE_WPLUG_NEED_WP_UPDATE and within   the range of the report zones operation executed by the user. - Modify blk_revalidate_seq_zone() to call   disk_zone_wplug_sync_wp_offset() for all sequential write required   zones when a zoned block device is revalidated, thus always resolving   any inconsistency between the write pointer offset of zone write   plugs and the actual write pointer position of sequential zones.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-55642` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -34,52 +34,56 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000050",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000080",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000090",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000100",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
-						"comment": "linux-raspi-realtime package in realtime/noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000110",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
-						"comment": "linux-realtime package in realtime/noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000120",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

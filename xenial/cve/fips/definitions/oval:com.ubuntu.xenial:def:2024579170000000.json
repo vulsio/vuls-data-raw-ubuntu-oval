@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024579170000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-57917 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:topology: Keep the cpumask unchanged when printing cpumapDuring fuzz testing, the following warning was discovered: different return values (15 and 11) from vsnprintf(\"%*pbl \", ...) test:keyward is WARNING in kvasprintf WARNING: CPU: 55 PID: 1168477 at lib/kasprintf.c:30 kvasprintf+0x121/0x130 Call Trace:  kvasprintf+0x121/0x130  kasprintf+0xa6/0xe0  bitmap_print_to_buf+0x89/0x100  core_siblings_list_read+0x7e/0xb0  kernfs_file_read_iter+0x15b/0x270  new_sync_read+0x153/0x260  vfs_read+0x215/0x290  ksys_read+0xb9/0x160  do_syscall_64+0x56/0x100  entry_SYSCALL_64_after_hwframe+0x78/0xe2The call trace shows that kvasprintf() reported this warning during theprinting of core_siblings_list. kvasprintf() has several steps: (1) First, calculate the length of the resulting formatted string. (2) Allocate a buffer based on the returned length. (3) Then, perform the actual string formatting. (4) Check whether the lengths of the formatted strings returned in     steps (1) and (2) are consistent.If the core_cpumask is modified between steps (1) and (3), the lengthsobtained in these two steps may not match. Indeed our test includes cpuhotplugging, which should modify core_cpumask while printing.To fix this issue, cache the cpumask into a temporary variable beforecalling cpumap_print_{list, cpumask}_to_buf(), to keep it unchangedduring the printing process.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-57917",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-57917"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-01-20",
+			"cve": {
+				"text": "CVE-2024-57917",
+				"href": "https://ubuntu.com/security/CVE-2024-57917",
+				"public": "20250120"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

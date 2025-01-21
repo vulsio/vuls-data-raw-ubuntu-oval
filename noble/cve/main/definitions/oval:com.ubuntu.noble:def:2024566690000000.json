@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56669 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:iommu/vt-d: Remove cache tags before disabling ATSThe current implementation removes cache tags after disabling ATS,leading to potential memory leaks and kernel crashes. Specifically,CACHE_TAG_DEVTLB type cache tags may still remain in the list evenafter the domain is freed, causing a use-after-free condition.This issue really shows up when multiple VFs from different PFspassed through to a single user-space process via vfio-pci. In suchcases, the kernel may crash with kernel messages like: BUG: kernel NULL pointer dereference, address: 0000000000000014 PGD 19036a067 P4D 1940a3067 PUD 136c9b067 PMD 0 Oops: Oops: 0000 [#1] PREEMPT SMP NOPTI CPU: 74 UID: 0 PID: 3183 Comm: testCli Not tainted 6.11.9 #2 RIP: 0010:cache_tag_flush_range+0x9b/0x250 Call Trace:  <TASK>  ? __die+0x1f/0x60  ? page_fault_oops+0x163/0x590  ? exc_page_fault+0x72/0x190  ? asm_exc_page_fault+0x22/0x30  ? cache_tag_flush_range+0x9b/0x250  ? cache_tag_flush_range+0x5d/0x250  intel_iommu_tlb_sync+0x29/0x40  intel_iommu_unmap_pages+0xfe/0x160  __iommu_unmap+0xd8/0x1a0  vfio_unmap_unpin+0x182/0x340 [vfio_iommu_type1]  vfio_remove_dma+0x2a/0xb0 [vfio_iommu_type1]  vfio_iommu_type1_ioctl+0xafa/0x18e0 [vfio_iommu_type1]Move cache_tag_unassign_domain() before iommu_disable_pci_caps() to fixit.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:iommu/vt-d: Remove cache tags before disabling ATSThe current implementation removes cache tags after disabling ATS,leading to potential memory leaks and kernel crashes. Specifically,CACHE_TAG_DEVTLB type cache tags may still remain in the list evenafter the domain is freed, causing a use-after-free condition.This issue really shows up when multiple VFs from different PFspassed through to a single user-space process via vfio-pci. In suchcases, the kernel may crash with kernel messages like: BUG: kernel NULL pointer dereference, address: 0000000000000014 PGD 19036a067 P4D 1940a3067 PUD 136c9b067 PMD 0 Oops: Oops: 0000 [#1] PREEMPT SMP NOPTI CPU: 74 UID: 0 PID: 3183 Comm: testCli Not tainted 6.11.9 #2 RIP: 0010:cache_tag_flush_range+0x9b/0x250 Call Trace:  <TASK>  ? __die+0x1f/0x60  ? page_fault_oops+0x163/0x590  ? exc_page_fault+0x72/0x190  ? asm_exc_page_fault+0x22/0x30  ? cache_tag_flush_range+0x9b/0x250  ? cache_tag_flush_range+0x5d/0x250  intel_iommu_tlb_sync+0x29/0x40  intel_iommu_unmap_pages+0xfe/0x160  __iommu_unmap+0xd8/0x1a0  vfio_unmap_unpin+0x182/0x340 [vfio_iommu_type1]  vfio_remove_dma+0x2a/0xb0 [vfio_iommu_type1]  vfio_iommu_type1_ioctl+0xafa/0x18e0 [vfio_iommu_type1]Move cache_tag_unassign_domain() before iommu_disable_pci_caps() to fixit.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56669` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -34,44 +34,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000050",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000080",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000090",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000100",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

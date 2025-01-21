@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56556 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:binder: fix node UAF in binder_add_freeze_work()In binder_add_freeze_work() we iterate over the proc->nodes with theproc->inner_lock held. However, this lock is temporarily dropped inorder to acquire the node->lock first (lock nesting order). This canrace with binder_node_release() and trigger a use-after-free:  ==================================================================  BUG: KASAN: slab-use-after-free in _raw_spin_lock+0xe4/0x19c  Write of size 4 at addr ffff53c04c29dd04 by task freeze/640  CPU: 5 UID: 0 PID: 640 Comm: freeze Not tainted6.11.0-07343-ga727812a8d45 #17  Hardware name: linux,dummy-virt (DT)  Call trace:   _raw_spin_lock+0xe4/0x19c   binder_add_freeze_work+0x148/0x478   binder_ioctl+0x1e70/0x25ac   __arm64_sys_ioctl+0x124/0x190  Allocated by task 637:   __kmalloc_cache_noprof+0x12c/0x27c   binder_new_node+0x50/0x700   binder_transaction+0x35ac/0x6f74   binder_thread_write+0xfb8/0x42a0   binder_ioctl+0x18f0/0x25ac   __arm64_sys_ioctl+0x124/0x190  Freed by task 637:   kfree+0xf0/0x330   binder_thread_read+0x1e88/0x3a68   binder_ioctl+0x16d8/0x25ac   __arm64_sys_ioctl+0x124/0x190  ==================================================================Fix the race by taking a temporary reference on the node beforereleasing the proc->inner lock. This ensures the node remains alivewhile in use.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:binder: fix node UAF in binder_add_freeze_work()In binder_add_freeze_work() we iterate over the proc->nodes with theproc->inner_lock held. However, this lock is temporarily dropped inorder to acquire the node->lock first (lock nesting order). This canrace with binder_node_release() and trigger a use-after-free:  ==================================================================  BUG: KASAN: slab-use-after-free in _raw_spin_lock+0xe4/0x19c  Write of size 4 at addr ffff53c04c29dd04 by task freeze/640  CPU: 5 UID: 0 PID: 640 Comm: freeze Not tainted6.11.0-07343-ga727812a8d45 #17  Hardware name: linux,dummy-virt (DT)  Call trace:   _raw_spin_lock+0xe4/0x19c   binder_add_freeze_work+0x148/0x478   binder_ioctl+0x1e70/0x25ac   __arm64_sys_ioctl+0x124/0x190  Allocated by task 637:   __kmalloc_cache_noprof+0x12c/0x27c   binder_new_node+0x50/0x700   binder_transaction+0x35ac/0x6f74   binder_thread_write+0xfb8/0x42a0   binder_ioctl+0x18f0/0x25ac   __arm64_sys_ioctl+0x124/0x190  Freed by task 637:   kfree+0xf0/0x330   binder_thread_read+0x1e88/0x3a68   binder_ioctl+0x16d8/0x25ac   __arm64_sys_ioctl+0x124/0x190  ==================================================================Fix the race by taking a temporary reference on the node beforereleasing the proc->inner lock. This ensures the node remains alivewhile in use.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56556` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -34,52 +34,56 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000050",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000080",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000090",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000100",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
-						"comment": "linux-raspi-realtime package in realtime/noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000110",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
-						"comment": "linux-realtime package in realtime/noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000120",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

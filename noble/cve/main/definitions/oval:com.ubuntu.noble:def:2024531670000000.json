@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-53167 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:nfs/blocklayout: Don't attempt unregister for invalid block deviceSince commit d869da91cccb (\"nfs/blocklayout: Fix premature PR keyunregistration\") an unmount of a pNFS SCSI layout-enabled NFS maydereference a NULL block_device in:  bl_unregister_scsi+0x16/0xe0 [blocklayoutdriver]  bl_free_device+0x70/0x80 [blocklayoutdriver]  bl_free_deviceid_node+0x12/0x30 [blocklayoutdriver]  nfs4_put_deviceid_node+0x60/0xc0 [nfsv4]  nfs4_deviceid_purge_client+0x132/0x190 [nfsv4]  unset_pnfs_layoutdriver+0x59/0x60 [nfsv4]  nfs4_destroy_server+0x36/0x70 [nfsv4]  nfs_free_server+0x23/0xe0 [nfs]  deactivate_locked_super+0x30/0xb0  cleanup_mnt+0xba/0x150  task_work_run+0x59/0x90  syscall_exit_to_user_mode+0x217/0x220  do_syscall_64+0x8e/0x160This happens because even though we were able to create thenfs4_deviceid_node, the lookup for the device was unable to attach theblock device to the pnfs_block_dev.If we never found a block device to register, we can avoid this case withthe PNFS_BDEV_REGISTERED flag.  Move the deref behind the test for theflag.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:nfs/blocklayout: Don't attempt unregister for invalid block deviceSince commit d869da91cccb (\"nfs/blocklayout: Fix premature PR keyunregistration\") an unmount of a pNFS SCSI layout-enabled NFS maydereference a NULL block_device in:  bl_unregister_scsi+0x16/0xe0 [blocklayoutdriver]  bl_free_device+0x70/0x80 [blocklayoutdriver]  bl_free_deviceid_node+0x12/0x30 [blocklayoutdriver]  nfs4_put_deviceid_node+0x60/0xc0 [nfsv4]  nfs4_deviceid_purge_client+0x132/0x190 [nfsv4]  unset_pnfs_layoutdriver+0x59/0x60 [nfsv4]  nfs4_destroy_server+0x36/0x70 [nfsv4]  nfs_free_server+0x23/0xe0 [nfs]  deactivate_locked_super+0x30/0xb0  cleanup_mnt+0xba/0x150  task_work_run+0x59/0x90  syscall_exit_to_user_mode+0x217/0x220  do_syscall_64+0x8e/0x160This happens because even though we were able to create thenfs4_deviceid_node, the lookup for the device was unable to attach theblock device to the pnfs_block_dev.If we never found a block device to register, we can avoid this case withthe PNFS_BDEV_REGISTERED flag.  Move the deref behind the test for theflag.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-53167` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000050",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000080",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000090",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000100",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}
