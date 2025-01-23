@@ -1,0 +1,70 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024579410000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-57941 on Ubuntu 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfs: Fix the (non-)cancellation of copy when cache is temporarilydisabledWhen the caching for a cookie is temporarily disabled (e.g. due to a DIOwrite on that file), future copying to the cache for that file is disableduntil all fds open on that file are closed.  However, if netfslib is usingthe deprecated PG_private_2 method (such as is currently used by ceph), anddecides it wants to copy to the cache, netfs_advance_write() will just bailat the first check seeing that the cache stream is unavailable, andindicate that it dealt with all the content.This means that we have no subrequests to provide notifications to drivethe state machine or even to pin the request and the request just getsdiscarded, leaving the folios with PG_private_2 set.Fix this by jumping directly to cancel the request if the cache is notavailable.  That way, we don't remove mark3 from the folio_queue list andnetfs_pgpriv2_cancel() will clean up the folios.This was found by running the generic/013 xfstest against ceph with anactive cache and the \"-o fsc\" option passed to ceph.  That would usuallyhang",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-57941",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-57941"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-01-21",
+			"cve": {
+				"text": "CVE-2024-57941",
+				"href": "https://ubuntu.com/security/CVE-2024-57941",
+				"public": "20250121"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
