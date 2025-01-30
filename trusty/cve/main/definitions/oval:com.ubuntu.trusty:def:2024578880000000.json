@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-57888 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:workqueue: Do not warn when cancelling WQ_MEM_RECLAIM work from!WQ_MEM_RECLAIM workerAfter commit746ae46c1113 (\"drm/sched: Mark scheduler work queues with WQ_MEM_RECLAIM\")amdgpu started seeing the following warning: [ ] workqueue: WQ_MEM_RECLAIM sdma0:drm_sched_run_job_work [gpu_sched] isflushing !WQ_MEM_RECLAIM events:amdgpu_device_delay_enable_gfx_off [amdgpu]... [ ] Workqueue: sdma0 drm_sched_run_job_work [gpu_sched]... [ ] Call Trace: [ ]  <TASK>... [ ]  ? check_flush_dependency+0xf5/0x110... [ ]  cancel_delayed_work_sync+0x6e/0x80 [ ]  amdgpu_gfx_off_ctrl+0xab/0x140 [amdgpu] [ ]  amdgpu_ring_alloc+0x40/0x50 [amdgpu] [ ]  amdgpu_ib_schedule+0xf4/0x810 [amdgpu] [ ]  ? drm_sched_run_job_work+0x22c/0x430 [gpu_sched] [ ]  amdgpu_job_run+0xaa/0x1f0 [amdgpu] [ ]  drm_sched_run_job_work+0x257/0x430 [gpu_sched] [ ]  process_one_work+0x217/0x720... [ ]  </TASK>The intent of the verifcation done in check_flush_depedency is to ensureforward progress during memory reclaim, by flagging cases when either amemory reclaim process, or a memory reclaim work item is flushed from acontext not marked as memory reclaim safe.This is correct when flushing, but when called from thecancel(_delayed)_work_sync() paths it is a false positive because work iseither already running, or will not be running at all. Thereforecancelling it is safe and we can relax the warning criteria by letting thehelper know of the calling context.References: 746ae46c1113 (\"drm/sched: Mark scheduler work queues withWQ_MEM_RECLAIM\")",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:workqueue: Do not warn when cancelling WQ_MEM_RECLAIM work from!WQ_MEM_RECLAIM workerAfter commit746ae46c1113 (\"drm/sched: Mark scheduler work queues with WQ_MEM_RECLAIM\")amdgpu started seeing the following warning: [ ] workqueue: WQ_MEM_RECLAIM sdma0:drm_sched_run_job_work [gpu_sched] isflushing !WQ_MEM_RECLAIM events:amdgpu_device_delay_enable_gfx_off [amdgpu]... [ ] Workqueue: sdma0 drm_sched_run_job_work [gpu_sched]... [ ] Call Trace: [ ]  <TASK>... [ ]  ? check_flush_dependency+0xf5/0x110... [ ]  cancel_delayed_work_sync+0x6e/0x80 [ ]  amdgpu_gfx_off_ctrl+0xab/0x140 [amdgpu] [ ]  amdgpu_ring_alloc+0x40/0x50 [amdgpu] [ ]  amdgpu_ib_schedule+0xf4/0x810 [amdgpu] [ ]  ? drm_sched_run_job_work+0x22c/0x430 [gpu_sched] [ ]  amdgpu_job_run+0xaa/0x1f0 [amdgpu] [ ]  drm_sched_run_job_work+0x257/0x430 [gpu_sched] [ ]  process_one_work+0x217/0x720... [ ]  </TASK>The intent of the verifcation done in check_flush_depedency is to ensureforward progress during memory reclaim, by flagging cases when either amemory reclaim process, or a memory reclaim work item is flushed from acontext not marked as memory reclaim safe.This is correct when flushing, but when called from thecancel(_delayed)_work_sync() paths it is a false positive because work iseither already running, or will not be running at all. Thereforecancelling it is safe and we can relax the warning criteria by letting thehelper know of the calling context.References: 746ae46c1113 (\"drm/sched: Mark scheduler work queues withWQ_MEM_RECLAIM\")\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-57888` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,16 +32,16 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:2023528180000000",
-						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000000",
-						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000010",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
