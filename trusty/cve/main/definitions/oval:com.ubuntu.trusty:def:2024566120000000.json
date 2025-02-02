@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56612 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/gup: handle NULL pages in unpin_user_pages()The recent addition of \"pofs\" (pages or folios) handling to gup has aflaw: it assumes that unpin_user_pages() handles NULL pages in the pages**array.  That's not the case, as I discovered when I ran on a newconfiguration on my test machine.Fix this by skipping NULL pages in unpin_user_pages(), just likeunpin_folios() already does.Details: when booting on x86 with \"numa=fake=2 movablecore=4G\" on Linux6.12, and running this:    tools/testing/selftests/mm/gup_longterm...I get the following crash:BUG: kernel NULL pointer dereference, address: 0000000000000008RIP: 0010:sanity_check_pinned_pages+0x3a/0x2d0...Call Trace: <TASK> ? __die_body+0x66/0xb0 ? page_fault_oops+0x30c/0x3b0 ? do_user_addr_fault+0x6c3/0x720 ? irqentry_enter+0x34/0x60 ? exc_page_fault+0x68/0x100 ? asm_exc_page_fault+0x22/0x30 ? sanity_check_pinned_pages+0x3a/0x2d0 unpin_user_pages+0x24/0xe0 check_and_migrate_movable_pages_or_folios+0x455/0x4b0 __gup_longterm_locked+0x3bf/0x820 ? mmap_read_lock_killable+0x12/0x50 ? __pfx_mmap_read_lock_killable+0x10/0x10 pin_user_pages+0x66/0xa0 gup_test_ioctl+0x358/0xb20 __se_sys_ioctl+0x6b/0xc0 do_syscall_64+0x7b/0x150 entry_SYSCALL_64_after_hwframe+0x76/0x7e",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm/gup: handle NULL pages in unpin_user_pages()The recent addition of \"pofs\" (pages or folios) handling to gup has aflaw: it assumes that unpin_user_pages() handles NULL pages in the pages**array.  That's not the case, as I discovered when I ran on a newconfiguration on my test machine.Fix this by skipping NULL pages in unpin_user_pages(), just likeunpin_folios() already does.Details: when booting on x86 with \"numa=fake=2 movablecore=4G\" on Linux6.12, and running this:    tools/testing/selftests/mm/gup_longterm...I get the following crash:BUG: kernel NULL pointer dereference, address: 0000000000000008RIP: 0010:sanity_check_pinned_pages+0x3a/0x2d0...Call Trace: <TASK> ? __die_body+0x66/0xb0 ? page_fault_oops+0x30c/0x3b0 ? do_user_addr_fault+0x6c3/0x720 ? irqentry_enter+0x34/0x60 ? exc_page_fault+0x68/0x100 ? asm_exc_page_fault+0x22/0x30 ? sanity_check_pinned_pages+0x3a/0x2d0 unpin_user_pages+0x24/0xe0 check_and_migrate_movable_pages_or_folios+0x455/0x4b0 __gup_longterm_locked+0x3bf/0x820 ? mmap_read_lock_killable+0x12/0x50 ? __pfx_mmap_read_lock_killable+0x10/0x10 pin_user_pages+0x66/0xa0 gup_test_ioctl+0x358/0xb20 __se_sys_ioctl+0x6b/0xc0 do_syscall_64+0x7b/0x150 entry_SYSCALL_64_after_hwframe+0x76/0x7e\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56612` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -34,20 +34,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:2023528180000000",
-						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000000",
-						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000010",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000020",
-						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}

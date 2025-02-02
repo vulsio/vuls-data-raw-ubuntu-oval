@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-53196 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: arm64: Don't retire aborted MMIO instructionReturning an abort to the guest for an unsupported MMIO access is adocumented feature of the KVM UAPI. Nevertheless, it's clear that thisplumbing has seen limited testing, since userspace can trivially cause aWARN in the MMIO return:  WARNING: CPU: 0 PID: 30558 at arch/arm64/include/asm/kvm_emulate.h:536kvm_handle_mmio_return+0x46c/0x5c4 arch/arm64/include/asm/kvm_emulate.h:536  Call trace:   kvm_handle_mmio_return+0x46c/0x5c4arch/arm64/include/asm/kvm_emulate.h:536   kvm_arch_vcpu_ioctl_run+0x98/0x15b4 arch/arm64/kvm/arm.c:1133   kvm_vcpu_ioctl+0x75c/0xa78 virt/kvm/kvm_main.c:4487   __do_sys_ioctl fs/ioctl.c:51 [inline]   __se_sys_ioctl fs/ioctl.c:893 [inline]   __arm64_sys_ioctl+0x14c/0x1c8 fs/ioctl.c:893   __invoke_syscall arch/arm64/kernel/syscall.c:35 [inline]   invoke_syscall+0x98/0x2b8 arch/arm64/kernel/syscall.c:49   el0_svc_common+0x1e0/0x23c arch/arm64/kernel/syscall.c:132   do_el0_svc+0x48/0x58 arch/arm64/kernel/syscall.c:151   el0_svc+0x38/0x68 arch/arm64/kernel/entry-common.c:712   el0t_64_sync_handler+0x90/0xfc arch/arm64/kernel/entry-common.c:730   el0t_64_sync+0x190/0x194 arch/arm64/kernel/entry.S:598The splat is complaining that KVM is advancing PC while an exception ispending, i.e. that KVM is retiring the MMIO instruction despite apending synchronous external abort. Womp womp.Fix the glaring UAPI bug by skipping over all the MMIO emulation incase there is a pending synchronous exception. Note that while userspaceis capable of pending an asynchronous exception (SError, IRQ, or FIQ),it is still safe to retire the MMIO instruction in this case as (1) theyare by definition asynchronous, and (2) KVM relies on hardware supportfor pending/delivering these exceptions instead of the software statemachine for advancing PC.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:KVM: arm64: Don't retire aborted MMIO instructionReturning an abort to the guest for an unsupported MMIO access is adocumented feature of the KVM UAPI. Nevertheless, it's clear that thisplumbing has seen limited testing, since userspace can trivially cause aWARN in the MMIO return:  WARNING: CPU: 0 PID: 30558 at arch/arm64/include/asm/kvm_emulate.h:536kvm_handle_mmio_return+0x46c/0x5c4 arch/arm64/include/asm/kvm_emulate.h:536  Call trace:   kvm_handle_mmio_return+0x46c/0x5c4arch/arm64/include/asm/kvm_emulate.h:536   kvm_arch_vcpu_ioctl_run+0x98/0x15b4 arch/arm64/kvm/arm.c:1133   kvm_vcpu_ioctl+0x75c/0xa78 virt/kvm/kvm_main.c:4487   __do_sys_ioctl fs/ioctl.c:51 [inline]   __se_sys_ioctl fs/ioctl.c:893 [inline]   __arm64_sys_ioctl+0x14c/0x1c8 fs/ioctl.c:893   __invoke_syscall arch/arm64/kernel/syscall.c:35 [inline]   invoke_syscall+0x98/0x2b8 arch/arm64/kernel/syscall.c:49   el0_svc_common+0x1e0/0x23c arch/arm64/kernel/syscall.c:132   do_el0_svc+0x48/0x58 arch/arm64/kernel/syscall.c:151   el0_svc+0x38/0x68 arch/arm64/kernel/entry-common.c:712   el0t_64_sync_handler+0x90/0xfc arch/arm64/kernel/entry-common.c:730   el0t_64_sync+0x190/0x194 arch/arm64/kernel/entry.S:598The splat is complaining that KVM is advancing PC while an exception ispending, i.e. that KVM is retiring the MMIO instruction despite apending synchronous external abort. Womp womp.Fix the glaring UAPI bug by skipping over all the MMIO emulation incase there is a pending synchronous exception. Note that while userspaceis capable of pending an asynchronous exception (SError, IRQ, or FIQ),it is still safe to retire the MMIO instruction in this case as (1) theyare by definition asynchronous, and (2) KVM relies on hardware supportfor pending/delivering these exceptions instead of the software statemachine for advancing PC.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-53196` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:2023528180000000",
-						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000000",
-						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000010",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000020",
-						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}

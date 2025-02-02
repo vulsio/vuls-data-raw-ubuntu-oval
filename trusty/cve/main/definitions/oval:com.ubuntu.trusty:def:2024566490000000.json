@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56649 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: enetc: Do not configure preemptible TCs if SIs do not supportBoth ENETC PF and VF drivers share enetc_setup_tc_mqprio() to configureMQPRIO. And enetc_setup_tc_mqprio() calls enetc_change_preemptible_tcs()to configure preemptible TCs. However, only PF is able to configurepreemptible TCs. Because only PF has related registers, while VF does nothave these registers. So for VF, its hw->port pointer is NULL. Therefore,VF will access an invalid pointer when accessing a non-existent register,which will cause a crash issue. The simplified log is as follows.root@ls1028ardb:~# tc qdisc add dev eno0vf0 parent root handle 100: \\mqprio num_tc 4 map 0 0 1 1 2 2 3 3 queues 1@0 1@1 1@2 1@3 hw 1[  187.290775] Unable to handle kernel paging request at virtual address0000000000001f00[  187.424831] pc : enetc_mm_commit_preemptible_tcs+0x1c4/0x400[  187.430518] lr : enetc_mm_commit_preemptible_tcs+0x30c/0x400[  187.511140] Call trace:[  187.513588]  enetc_mm_commit_preemptible_tcs+0x1c4/0x400[  187.518918]  enetc_setup_tc_mqprio+0x180/0x214[  187.523374]  enetc_vf_setup_tc+0x1c/0x30[  187.527306]  mqprio_enable_offload+0x144/0x178[  187.531766]  mqprio_init+0x3ec/0x668[  187.535351]  qdisc_create+0x15c/0x488[  187.539023]  tc_modify_qdisc+0x398/0x73c[  187.542958]  rtnetlink_rcv_msg+0x128/0x378[  187.547064]  netlink_rcv_skb+0x60/0x130[  187.550910]  rtnetlink_rcv+0x18/0x24[  187.554492]  netlink_unicast+0x300/0x36c[  187.558425]  netlink_sendmsg+0x1a8/0x420[  187.606759] ---[ end trace 0000000000000000 ]---In addition, some PFs also do not support configuring preemptible TCs,such as eno1 and eno3 on LS1028A. It won't crash like it does for VFs,but we should prevent these PFs from accessing these unimplementedregisters.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: enetc: Do not configure preemptible TCs if SIs do not supportBoth ENETC PF and VF drivers share enetc_setup_tc_mqprio() to configureMQPRIO. And enetc_setup_tc_mqprio() calls enetc_change_preemptible_tcs()to configure preemptible TCs. However, only PF is able to configurepreemptible TCs. Because only PF has related registers, while VF does nothave these registers. So for VF, its hw->port pointer is NULL. Therefore,VF will access an invalid pointer when accessing a non-existent register,which will cause a crash issue. The simplified log is as follows.root@ls1028ardb:~# tc qdisc add dev eno0vf0 parent root handle 100: \\mqprio num_tc 4 map 0 0 1 1 2 2 3 3 queues 1@0 1@1 1@2 1@3 hw 1[  187.290775] Unable to handle kernel paging request at virtual address0000000000001f00[  187.424831] pc : enetc_mm_commit_preemptible_tcs+0x1c4/0x400[  187.430518] lr : enetc_mm_commit_preemptible_tcs+0x30c/0x400[  187.511140] Call trace:[  187.513588]  enetc_mm_commit_preemptible_tcs+0x1c4/0x400[  187.518918]  enetc_setup_tc_mqprio+0x180/0x214[  187.523374]  enetc_vf_setup_tc+0x1c/0x30[  187.527306]  mqprio_enable_offload+0x144/0x178[  187.531766]  mqprio_init+0x3ec/0x668[  187.535351]  qdisc_create+0x15c/0x488[  187.539023]  tc_modify_qdisc+0x398/0x73c[  187.542958]  rtnetlink_rcv_msg+0x128/0x378[  187.547064]  netlink_rcv_skb+0x60/0x130[  187.550910]  rtnetlink_rcv+0x18/0x24[  187.554492]  netlink_unicast+0x300/0x36c[  187.558425]  netlink_sendmsg+0x1a8/0x420[  187.606759] ---[ end trace 0000000000000000 ]---In addition, some PFs also do not support configuring preemptible TCs,such as eno1 and eno3 on LS1028A. It won't crash like it does for VFs,but we should prevent these PFs from accessing these unimplementedregisters.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56649` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -34,20 +34,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:2023528180000000",
-						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000000",
-						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000010",
-						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:201871910000020",
-						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of ESM support')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
 					}
 				]
 			}
