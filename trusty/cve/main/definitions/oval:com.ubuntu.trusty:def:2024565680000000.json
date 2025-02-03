@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56568 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:iommu/arm-smmu: Defer probe of clients after smmu device boundNull pointer dereference occurs due to a race between smmudriver probe and client driver probe, when of_dma_configure()for client is called after the iommu_device_register() for smmu driverprobe has executed but before the driver_bound() for smmu driverhas been called.Following is how the race occurs:T1:Smmu device probe\t\tT2: Client device probereally_probe()arm_smmu_device_probe()iommu_device_register()\t\t\t\t\treally_probe()\t\t\t\t\tplatform_dma_configure()\t\t\t\t\tof_dma_configure()\t\t\t\t\tof_dma_configure_id()\t\t\t\t\tof_iommu_configure()\t\t\t\t\tiommu_probe_device()\t\t\t\t\tiommu_init_device()\t\t\t\t\tarm_smmu_probe_device()\t\t\t\t\tarm_smmu_get_by_fwnode()\t\t\t\t\t\tdriver_find_device_by_fwnode()\t\t\t\t\t\tdriver_find_device()\t\t\t\t\t\tnext_device()\t\t\t\t\t\tklist_next()\t\t\t\t\t\t    /* null ptr\t\t\t\t\t\t       assigned to smmu */\t\t\t\t\t/* null ptr dereference\t\t\t\t\t   while smmu->streamid_mask */driver_bound()\tklist_add_tail()When this null smmu pointer is dereferenced later inarm_smmu_probe_device, the device crashes.Fix this by deferring the probe of the client deviceuntil the smmu device has bound to the arm smmu driver.[will: Add comment]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56568` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:iommu/arm-smmu: Defer probe of clients after smmu device boundNull pointer dereference occurs due to a race between smmudriver probe and client driver probe, when of_dma_configure()for client is called after the iommu_device_register() for smmu driverprobe has executed but before the driver_bound() for smmu driverhas been called.Following is how the race occurs:T1:Smmu device probe\t\tT2: Client device probereally_probe()arm_smmu_device_probe()iommu_device_register()\t\t\t\t\treally_probe()\t\t\t\t\tplatform_dma_configure()\t\t\t\t\tof_dma_configure()\t\t\t\t\tof_dma_configure_id()\t\t\t\t\tof_iommu_configure()\t\t\t\t\tiommu_probe_device()\t\t\t\t\tiommu_init_device()\t\t\t\t\tarm_smmu_probe_device()\t\t\t\t\tarm_smmu_get_by_fwnode()\t\t\t\t\t\tdriver_find_device_by_fwnode()\t\t\t\t\t\tdriver_find_device()\t\t\t\t\t\tnext_device()\t\t\t\t\t\tklist_next()\t\t\t\t\t\t    /* null ptr\t\t\t\t\t\t       assigned to smmu */\t\t\t\t\t/* null ptr dereference\t\t\t\t\t   while smmu->streamid_mask */driver_bound()\tklist_add_tail()When this null smmu pointer is dereferenced later inarm_smmu_probe_device, the device crashes.Fix this by deferring the probe of the client deviceuntil the smmu device has bound to the arm smmu driver.[will: Add comment]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56568` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-3.13.0-199-generic - 3.13.0-173.224\nlinux-image-unsigned-3.13.0-199-lowlatency - 3.13.0-173.224\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro\n\nlinux-image-4.4.0-258-generic - 4.4.0-164.192~14.04.1\nlinux-image-unsigned-4.4.0-258-generic - 4.4.0-164.192~14.04.1\nlinux-image-unsigned-4.4.0-258-lowlatency - 4.4.0-164.192~14.04.1\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro\n\nlinux-image-4.4.0-1135-aws - 4.4.0-1054.58\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,16 +32,16 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
-						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2019114770000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.13.0-173.224')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
-						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2017185510000000",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-164.192~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
-						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2017185510000010",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1054.58')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",

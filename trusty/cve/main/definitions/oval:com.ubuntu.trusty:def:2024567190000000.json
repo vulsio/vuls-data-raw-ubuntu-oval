@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56719 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: stmmac: fix TSO DMA API usage causing oopsCommit 66600fac7a98 (\"net: stmmac: TSO: Fix unbalanced DMA map/unmapfor non-paged SKB data\") moved the assignment of tx_skbuff_dma[]'smembers to be later in stmmac_tso_xmit().The buf (dma cookie) and len stored in this structure are passed todma_unmap_single() by stmmac_tx_clean(). The DMA API requires thatthe dma cookie passed to dma_unmap_single() is the same as the valuereturned from dma_map_single(). However, by moving the assignmentlater, this is not the case when priv->dma_cap.addr64 > 32 as \"des\"is offset by proto_hdr_len.This causes problems such as:  dwc-eth-dwmac 2490000.ethernet eth0: Tx DMA map failedand with DMA_API_DEBUG enabled:  DMA-API: dwc-eth-dwmac 2490000.ethernet: device driver tries to +free DMAmemory it has not allocated [device address=0x000000ffffcf65c0] [size=66bytes]Fix this by maintaining \"des\" as the original DMA cookie, and usetso_des to pass the offset DMA cookie to stmmac_tso_allocator().Full details of the crashes can be found at:https://lore.kernel.org/all/d8112193-0386-4e14-b516-37c2d838171a@nvidia.com/https://lore.kernel.org/all/klkzp5yn5kq5efgtrow6wbvnc46bcqfxs65nz3qy77ujr5turc@bwwhelz2l4dw/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56719` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-generic-lpae - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-lowlatency - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-e500mc - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc-smp - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-emb - 4.4.0-13.29~14.04.1\nlinux-image-4.4.0-13-powerpc64-smp - 4.4.0-13.29~14.04.1\nlinux-image-extra-4.4.0-13-generic - 4.4.0-13.29~14.04.1\nNo subscription required\n\nlinux-image-4.4.0-1002-aws - 4.4.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1023-azure - 4.15.0-1023.24~14.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: stmmac: fix TSO DMA API usage causing oopsCommit 66600fac7a98 (\"net: stmmac: TSO: Fix unbalanced DMA map/unmapfor non-paged SKB data\") moved the assignment of tx_skbuff_dma[]'smembers to be later in stmmac_tso_xmit().The buf (dma cookie) and len stored in this structure are passed todma_unmap_single() by stmmac_tx_clean(). The DMA API requires thatthe dma cookie passed to dma_unmap_single() is the same as the valuereturned from dma_map_single(). However, by moving the assignmentlater, this is not the case when priv->dma_cap.addr64 > 32 as \"des\"is offset by proto_hdr_len.This causes problems such as:  dwc-eth-dwmac 2490000.ethernet eth0: Tx DMA map failedand with DMA_API_DEBUG enabled:  DMA-API: dwc-eth-dwmac 2490000.ethernet: device driver tries to +free DMAmemory it has not allocated [device address=0x000000ffffcf65c0] [size=66bytes]Fix this by maintaining \"des\" as the original DMA cookie, and usetso_des to pass the offset DMA cookie to stmmac_tso_allocator().Full details of the crashes can be found at:https://lore.kernel.org/all/d8112193-0386-4e14-b516-37c2d838171a@nvidia.com/https://lore.kernel.org/all/klkzp5yn5kq5efgtrow6wbvnc46bcqfxs65nz3qy77ujr5turc@bwwhelz2l4dw/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56719` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-3.13.0-199-generic - 3.13.0-173.224\nlinux-image-unsigned-3.13.0-199-lowlatency - 3.13.0-173.224\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro\n\nlinux-image-4.4.0-258-generic - 4.4.0-164.192~14.04.1\nlinux-image-unsigned-4.4.0-258-generic - 4.4.0-164.192~14.04.1\nlinux-image-unsigned-4.4.0-258-lowlatency - 4.4.0-164.192~14.04.1\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro\n\nlinux-image-4.4.0-1135-aws - 4.4.0-1054.58\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1180-azure - 4.15.0-1059.64~14.04.1\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -34,20 +34,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
-						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2019114770000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.13.0-173.224')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000100",
-						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-13.29~14.04.1')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2017185510000000",
+						"comment": "linux-lts-xenial package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-164.192~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000110",
-						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1002.2')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2017185510000010",
+						"comment": "linux-aws package in trusty, is related to the CVE in some way and has been fixed (note: '4.4.0-1054.58')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000120",
-						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1023.24~14.04.1')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2018130530000000",
+						"comment": "linux-azure package in trusty, is related to the CVE in some way and has been fixed (note: '4.15.0-1059.64~14.04.1')."
 					}
 				]
 			}
