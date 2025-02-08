@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52924 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: don't skip expired elements during walkThere is an asymmetry between commit/abort and preparation phase if thefollowing conditions are met:1. set is a verdict map (\"1.2.3.4 : jump foo\")2. timeouts are enabledIn this case, following sequence is problematic:1. element E in set S refers to chain C2. userspace requests removal of set S3. kernel does a set walk to decrement chain->use count for all elements   from preparation phase4. kernel does another set walk to remove elements from the commit phase   (or another walk to do a chain->use increment for all elements from    abort phase)If E has already expired in 1), it will be ignored during list walk, so itsuse countwon't have been changed.Then, when set is culled, ->destroy callback will zap the element vianf_tables_set_elem_destroy(), but this function is only safe forelements that have been deactivated earlier from the preparation phase:lack of earlier deactivate removes the element but leaks the chain usecount, which results in a WARN splat when the chain gets removed later,plus a leak of the nft_chain structure.Update pipapo_get() not to skip expired elements, otherwise flushcommand reports bogus ENOENT errors.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: don't skip expired elements during walkThere is an asymmetry between commit/abort and preparation phase if thefollowing conditions are met:1. set is a verdict map (\"1.2.3.4 : jump foo\")2. timeouts are enabledIn this case, following sequence is problematic:1. element E in set S refers to chain C2. userspace requests removal of set S3. kernel does a set walk to decrement chain->use count for all elements   from preparation phase4. kernel does another set walk to remove elements from the commit phase   (or another walk to do a chain->use increment for all elements from    abort phase)If E has already expired in 1), it will be ignored during list walk, so itsuse countwon't have been changed.Then, when set is culled, ->destroy callback will zap the element vianf_tables_set_elem_destroy(), but this function is only safe forelements that have been deactivated earlier from the preparation phase:lack of earlier deactivate removes the element but leaks the chain usecount, which results in a WARN splat when the chain gets removed later,plus a leak of the nft_chain structure.Update pipapo_get() not to skip expired elements, otherwise flushcommand reports bogus ENOENT errors.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52924` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -32,20 +32,20 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000000",
-						"comment": "linux package in trusty is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.trusty:tst:200636350000000",
+						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected and may need fixing."
+						"comment": "linux-lts-xenial: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected and may need fixing."
+						"comment": "linux-aws: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000030",
-						"comment": "linux-azure package in trusty is affected and may need fixing."
+						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					}
 				]
 			}

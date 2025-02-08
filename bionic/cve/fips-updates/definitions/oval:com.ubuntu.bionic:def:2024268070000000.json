@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26807 on Ubuntu Pro FIPS-updates 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: Bothcadence-quadspi ->runtime_suspend() and ->runtime_resume() implementationsstart with: struct cqspi_st *cqspi = dev_get_drvdata(dev); structspi_controller *host = dev_get_drvdata(dev); This obviously cannot becorrect, unless \"struct cqspi_st\" is the first member of \" structspi_controller\", or the other way around, but it is not the case. \"structspi_controller\" is allocated by devm_spi_alloc_host(), which allocates anextra amount of memory for private data, used to store \"struct cqspi_st\".The ->probe() function of the cadence-quadspi driver then sets the devicedrvdata to store the address of the \"struct cqspi_st\" structure. Therefore:struct cqspi_st *cqspi = dev_get_drvdata(dev); is correct, but: structspi_controller *host = dev_get_drvdata(dev); is not, as it makes \"host\"point not to a \"struct spi_controller\" but to the same \"struct cqspi_st\"structure as above. This obviously leads to bad things (memory corruption,kernel crashes) directly during ->probe(), as ->probe() enables the deviceusing PM runtime, leading the ->runtime_resume() hook being called, whichin turns calls spi_controller_resume() with the wrong pointer. This has atleast been reported [0] to cause a kernel crash, but the exact behaviorwill depend on the memory contents. [0]https://lore.kernel.org/all/20240226121803.5a7r5wkpbbowcxgx@dhruva/ Thisissue potentially affects all platforms that are currently using thecadence-quadspi driver.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26807` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nlinux-image-unsigned-hmac-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: Bothcadence-quadspi ->runtime_suspend() and ->runtime_resume() implementationsstart with: struct cqspi_st *cqspi = dev_get_drvdata(dev); structspi_controller *host = dev_get_drvdata(dev); This obviously cannot becorrect, unless \"struct cqspi_st\" is the first member of \" structspi_controller\", or the other way around, but it is not the case. \"structspi_controller\" is allocated by devm_spi_alloc_host(), which allocates anextra amount of memory for private data, used to store \"struct cqspi_st\".The ->probe() function of the cadence-quadspi driver then sets the devicedrvdata to store the address of the \"struct cqspi_st\" structure. Therefore:struct cqspi_st *cqspi = dev_get_drvdata(dev); is correct, but: structspi_controller *host = dev_get_drvdata(dev); is not, as it makes \"host\"point not to a \"struct spi_controller\" but to the same \"struct cqspi_st\"structure as above. This obviously leads to bad things (memory corruption,kernel crashes) directly during ->probe(), as ->probe() enables the deviceusing PM runtime, leading the ->runtime_resume() hook being called, whichin turns calls spi_controller_resume() with the wrong pointer. This has atleast been reported [0] to cause a kernel crash, but the exact behaviorwill depend on the memory contents. [0]https://lore.kernel.org/all/20240226121803.5a7r5wkpbbowcxgx@dhruva/ Thisissue potentially affects all platforms that are currently using thecadence-quadspi driver.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26807` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-4.15.0-1027-fips - 4.15.0-1027.32\nlinux-image-unsigned-hmac-4.15.0-1027-fips - 4.15.0-1027.32\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10\nNo subscription required\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nlinux-image-unsigned-hmac-4.15.0-2013-gcp-fips - 4.15.0-2013.14\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 18.04 LTS"
@@ -80,7 +80,7 @@
 						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000030",
 						"comment": "linux-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1027.32')."
 					},
 					{
@@ -116,8 +116,8 @@
 						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000130",
-						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -144,15 +144,15 @@
 						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000010",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000040",
 						"comment": "linux-aws-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000020",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000050",
 						"comment": "linux-azure-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000030",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000060",
 						"comment": "linux-gcp-fips package in fips-updates/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2013.14')."
 					}
 				]

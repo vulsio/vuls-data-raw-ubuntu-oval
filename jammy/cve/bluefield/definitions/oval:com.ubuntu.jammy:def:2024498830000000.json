@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-49883 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:ext4: aovid use-after-free in ext4_ext_insert_extent()As Ojaswin mentioned in Link, in ext4_ext_insert_extent(), if the path isreallocated in ext4_ext_create_new_leaf(), we'll use the stale path andcause UAF. Below is a sample trace with dummy values:ext4_ext_insert_extent  path = *ppath = 2000  ext4_ext_create_new_leaf(ppath)    ext4_find_extent(ppath)      path = *ppath = 2000      if (depth > path[0].p_maxdepth)            kfree(path = 2000);            *ppath = path = NULL;      path = kcalloc() = 3000      *ppath = 3000;      return path;  /* here path is still 2000, UAF! */  eh = path[depth].p_hdr==================================================================BUG: KASAN: slab-use-after-free in ext4_ext_insert_extent+0x26d4/0x3330Read of size 8 at addr ffff8881027bf7d0 by task kworker/u36:1/179CPU: 3 UID: 0 PID: 179 Comm: kworker/u6:1 Not tainted 6.11.0-rc2-dirty #866Call Trace: <TASK> ext4_ext_insert_extent+0x26d4/0x3330 ext4_ext_map_blocks+0xe22/0x2d40 ext4_map_blocks+0x71e/0x1700 ext4_do_writepages+0x1290/0x2800[...]Allocated by task 179: ext4_find_extent+0x81c/0x1f70 ext4_ext_map_blocks+0x146/0x2d40 ext4_map_blocks+0x71e/0x1700 ext4_do_writepages+0x1290/0x2800 ext4_writepages+0x26d/0x4e0 do_writepages+0x175/0x700[...]Freed by task 179: kfree+0xcb/0x240 ext4_find_extent+0x7c0/0x1f70 ext4_ext_insert_extent+0xa26/0x3330 ext4_ext_map_blocks+0xe22/0x2d40 ext4_map_blocks+0x71e/0x1700 ext4_do_writepages+0x1290/0x2800 ext4_writepages+0x26d/0x4e0 do_writepages+0x175/0x700[...]==================================================================So use *ppath to update the path to avoid the above problem.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-49883` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-127-generic - 5.15.0-127.137\nlinux-image-5.15.0-127-generic-lpae - 5.15.0-127.137\nlinux-image-unsigned-5.15.0-127-generic - 5.15.0-127.137\nlinux-image-unsigned-5.15.0-127-generic-64k - 5.15.0-127.137\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-kvm - 5.15.0-1070.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1073-aws - 5.15.0-1073.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1078-azure - 5.15.0-1078.87\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-gcp - 5.15.0-1072.80\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-gke - 5.15.0-1070.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-gkeop - 5.15.0-1056.63\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-ibm - 5.15.0-1066.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-intel-iotg - 5.15.0-1071.77\nNo subscription required\n\nlinux-image-unsigned-5.15.0-127-lowlatency - 5.15.0-127.137\nlinux-image-unsigned-5.15.0-127-lowlatency-64k - 5.15.0-127.137\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-nvidia - 5.15.0-1068.69\nlinux-image-unsigned-5.15.0-1068-nvidia-lowlatency - 5.15.0-1068.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-oracle - 5.15.0-1071.77\nNo subscription required\n\nlinux-image-5.15.0-1066-raspi - 5.15.0-1066.69\nNo subscription required\n\nlinux-image-5.15.0-1039-xilinx-zynqmp - 5.15.0-1039.43\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ext4: aovid use-after-free in ext4_ext_insert_extent()As Ojaswin mentioned in Link, in ext4_ext_insert_extent(), if the path isreallocated in ext4_ext_create_new_leaf(), we'll use the stale path andcause UAF. Below is a sample trace with dummy values:ext4_ext_insert_extent  path = *ppath = 2000  ext4_ext_create_new_leaf(ppath)    ext4_find_extent(ppath)      path = *ppath = 2000      if (depth > path[0].p_maxdepth)            kfree(path = 2000);            *ppath = path = NULL;      path = kcalloc() = 3000      *ppath = 3000;      return path;  /* here path is still 2000, UAF! */  eh = path[depth].p_hdr==================================================================BUG: KASAN: slab-use-after-free in ext4_ext_insert_extent+0x26d4/0x3330Read of size 8 at addr ffff8881027bf7d0 by task kworker/u36:1/179CPU: 3 UID: 0 PID: 179 Comm: kworker/u6:1 Not tainted 6.11.0-rc2-dirty #866Call Trace: <TASK> ext4_ext_insert_extent+0x26d4/0x3330 ext4_ext_map_blocks+0xe22/0x2d40 ext4_map_blocks+0x71e/0x1700 ext4_do_writepages+0x1290/0x2800[...]Allocated by task 179: ext4_find_extent+0x81c/0x1f70 ext4_ext_map_blocks+0x146/0x2d40 ext4_map_blocks+0x71e/0x1700 ext4_do_writepages+0x1290/0x2800 ext4_writepages+0x26d/0x4e0 do_writepages+0x175/0x700[...]Freed by task 179: kfree+0xcb/0x240 ext4_find_extent+0x7c0/0x1f70 ext4_ext_insert_extent+0xa26/0x3330 ext4_ext_map_blocks+0xe22/0x2d40 ext4_map_blocks+0x71e/0x1700 ext4_do_writepages+0x1290/0x2800 ext4_writepages+0x26d/0x4e0 do_writepages+0x175/0x700[...]==================================================================So use *ppath to update the path to avoid the above problem.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-49883` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-127-generic - 5.15.0-127.137\nlinux-image-5.15.0-127-generic-lpae - 5.15.0-127.137\nlinux-image-unsigned-5.15.0-127-generic - 5.15.0-127.137\nlinux-image-unsigned-5.15.0-127-generic-64k - 5.15.0-127.137\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-kvm - 5.15.0-1070.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1073-aws - 5.15.0-1073.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1078-azure - 5.15.0-1078.87\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1057-bluefield - 5.15.0-1057.59\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.15.0-1072-gcp - 5.15.0-1072.80\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-gke - 5.15.0-1070.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-gkeop - 5.15.0-1056.63\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-ibm - 5.15.0-1066.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-intel-iotg - 5.15.0-1071.77\nNo subscription required\n\nlinux-image-unsigned-5.15.0-127-lowlatency - 5.15.0-127.137\nlinux-image-unsigned-5.15.0-127-lowlatency-64k - 5.15.0-127.137\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-nvidia - 5.15.0-1068.69\nlinux-image-unsigned-5.15.0-1068-nvidia-lowlatency - 5.15.0-1068.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-oracle - 5.15.0-1071.77\nNo subscription required\n\nlinux-image-5.15.0-1066-raspi - 5.15.0-1066.69\nNo subscription required\n\nlinux-image-5.15.0-1039-xilinx-zynqmp - 5.15.0-1039.43\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
@@ -113,11 +113,11 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-bluefield package in bluefield/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1057.59')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000030",
+						"comment": "linux-bluefield package in bluefield/jammy was vulnerable but has been fixed (note: '5.15.0-1057.59')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000030",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000040",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1072.80')."
 					},
 					{
@@ -133,23 +133,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000040",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000050",
 						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1070.76')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000060",
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1056.63')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000070",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.69')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2020123510000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2020123510000110",
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1071.77')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000080",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-127.137')."
 					},
 					{
@@ -165,7 +165,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000090",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1068.69')."
 					},
 					{
@@ -177,7 +177,7 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000100",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1071.77')."
 					},
 					{
@@ -201,7 +201,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000110",
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.69')."
 					},
 					{
@@ -221,7 +221,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525320000120",
 						"comment": "linux-xilinx-zynqmp package in jammy was vulnerable but has been fixed (note: '5.15.0-1039.43')."
 					}
 				]

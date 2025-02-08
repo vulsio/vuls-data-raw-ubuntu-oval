@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2025-21677 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:pfcp: Destroy device along with udp socket's netns dismantle.pfcp_newlink() links the device to a list in dev_net(dev) insteadof net, where a udp tunnel socket is created.Even when net is removed, the device stays alive on dev_net(dev).Then, removing net triggers the splat below. [0]In this example, pfcp0 is created in ns2, but the udp socket iscreated in ns1.  ip netns add ns1  ip netns add ns2  ip -n ns1 link add netns ns2 name pfcp0 type pfcp  ip netns del ns1Let's link the device to the socket's netns instead.Now, pfcp_net_exit() needs another netdev iteration to removeall pfcp devices in the netns.pfcp_dev_list is not used under RCU, so the list API is convertedto the non-RCU variant.pfcp_net_exit() can be converted to .exit_batch_rtnl() in net-next.[0]:ref_tracker: net notrefcnt@00000000128b34dc has 1/1 users at     sk_alloc (./include/net/net_namespace.h:345 net/core/sock.c:2236)     inet_create (net/ipv4/af_inet.c:326 net/ipv4/af_inet.c:252)     __sock_create (net/socket.c:1558)     udp_sock_create4 (net/ipv4/udp_tunnel_core.c:18)     pfcp_create_sock (drivers/net/pfcp.c:168)     pfcp_newlink (drivers/net/pfcp.c:182 drivers/net/pfcp.c:197)     rtnl_newlink (net/core/rtnetlink.c:3786 net/core/rtnetlink.c:3897net/core/rtnetlink.c:4012)     rtnetlink_rcv_msg (net/core/rtnetlink.c:6922)     netlink_rcv_skb (net/netlink/af_netlink.c:2542)     netlink_unicast (net/netlink/af_netlink.c:1321net/netlink/af_netlink.c:1347)     netlink_sendmsg (net/netlink/af_netlink.c:1891)     ____sys_sendmsg (net/socket.c:711 net/socket.c:726 net/socket.c:2583)     ___sys_sendmsg (net/socket.c:2639)     __sys_sendmsg (net/socket.c:2669)     do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)     entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)WARNING: CPU: 1 PID: 11 at lib/ref_tracker.c:179 ref_tracker_dir_exit(lib/ref_tracker.c:179)Modules linked in:CPU: 1 UID: 0 PID: 11 Comm: kworker/u16:0 Not tainted6.13.0-rc5-00147-g4c1224501e9d #5Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.16.0-0-gd239552ce722-prebuilt.qemu.org 04/01/2014Workqueue: netns cleanup_netRIP: 0010:ref_tracker_dir_exit (lib/ref_tracker.c:179)Code: 00 00 00 fc ff df 4d 8b 26 49 bd 00 01 00 00 00 00 ad de 4c 39 f5 0f85 df 00 00 00 48 8b 74 24 08 48 89 df e8 a5 cc 12 02 90 <0f> 0b 90 48 8d6b 44 be 04 00 00 00 48 89 ef e8 80 de 67 ff 48 89RSP: 0018:ff11000007f3fb60 EFLAGS: 00010286RAX: 00000000000020ef RBX: ff1100000d6481e0 RCX: 1ffffffff0e40d82RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffffff8423ee3cRBP: ff1100000d648230 R08: 0000000000000001 R09: fffffbfff0e395afR10: 0000000000000001 R11: 0000000000000000 R12: ff1100000d648230R13: dead000000000100 R14: ff1100000d648230 R15: dffffc0000000000FS:  0000000000000000(0000) GS:ff1100006ce80000(0000)knlGS:0000000000000000CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033CR2: 00005620e1363990 CR3: 000000000eeb2002 CR4: 0000000000771ef0DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000DR3: 0000000000000000 DR6: 00000000fffe07f0 DR7: 0000000000000400PKRU: 55555554Call Trace: <TASK> ? __warn (kernel/panic.c:748) ? ref_tracker_dir_exit (lib/ref_tracker.c:179) ? report_bug (lib/bug.c:201 lib/bug.c:219) ? handle_bug (arch/x86/kernel/traps.c:285) ? exc_invalid_op (arch/x86/kernel/traps.c:309 (discriminator 1)) ? asm_exc_invalid_op (./arch/x86/include/asm/idtentry.h:621) ? _raw_spin_unlock_irqrestore (./arch/x86/include/asm/irqflags.h:42./arch/x86/include/asm/irqflags.h:97 ./arch/x86/include/asm/irqflags.h:155./include/linux/spinlock_api_smp.h:151 kernel/locking/spinlock.c:194) ? ref_tracker_dir_exit (lib/ref_tracker.c:179) ? __pfx_ref_tracker_dir_exit (lib/ref_tracker.c:158) ? kfree (mm/slub.c:4613 mm/slub.c:4761) net_free (net/core/net_namespace.c:476 net/core/net_namespace.c:467) cleanup_net (net/cor---truncated---",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:pfcp: Destroy device along with udp socket's netns dismantle.pfcp_newlink() links the device to a list in dev_net(dev) insteadof net, where a udp tunnel socket is created.Even when net is removed, the device stays alive on dev_net(dev).Then, removing net triggers the splat below. [0]In this example, pfcp0 is created in ns2, but the udp socket iscreated in ns1.  ip netns add ns1  ip netns add ns2  ip -n ns1 link add netns ns2 name pfcp0 type pfcp  ip netns del ns1Let's link the device to the socket's netns instead.Now, pfcp_net_exit() needs another netdev iteration to removeall pfcp devices in the netns.pfcp_dev_list is not used under RCU, so the list API is convertedto the non-RCU variant.pfcp_net_exit() can be converted to .exit_batch_rtnl() in net-next.[0]:ref_tracker: net notrefcnt@00000000128b34dc has 1/1 users at     sk_alloc (./include/net/net_namespace.h:345 net/core/sock.c:2236)     inet_create (net/ipv4/af_inet.c:326 net/ipv4/af_inet.c:252)     __sock_create (net/socket.c:1558)     udp_sock_create4 (net/ipv4/udp_tunnel_core.c:18)     pfcp_create_sock (drivers/net/pfcp.c:168)     pfcp_newlink (drivers/net/pfcp.c:182 drivers/net/pfcp.c:197)     rtnl_newlink (net/core/rtnetlink.c:3786 net/core/rtnetlink.c:3897net/core/rtnetlink.c:4012)     rtnetlink_rcv_msg (net/core/rtnetlink.c:6922)     netlink_rcv_skb (net/netlink/af_netlink.c:2542)     netlink_unicast (net/netlink/af_netlink.c:1321net/netlink/af_netlink.c:1347)     netlink_sendmsg (net/netlink/af_netlink.c:1891)     ____sys_sendmsg (net/socket.c:711 net/socket.c:726 net/socket.c:2583)     ___sys_sendmsg (net/socket.c:2639)     __sys_sendmsg (net/socket.c:2669)     do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)     entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)WARNING: CPU: 1 PID: 11 at lib/ref_tracker.c:179 ref_tracker_dir_exit(lib/ref_tracker.c:179)Modules linked in:CPU: 1 UID: 0 PID: 11 Comm: kworker/u16:0 Not tainted6.13.0-rc5-00147-g4c1224501e9d #5Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOSrel-1.16.0-0-gd239552ce722-prebuilt.qemu.org 04/01/2014Workqueue: netns cleanup_netRIP: 0010:ref_tracker_dir_exit (lib/ref_tracker.c:179)Code: 00 00 00 fc ff df 4d 8b 26 49 bd 00 01 00 00 00 00 ad de 4c 39 f5 0f85 df 00 00 00 48 8b 74 24 08 48 89 df e8 a5 cc 12 02 90 <0f> 0b 90 48 8d6b 44 be 04 00 00 00 48 89 ef e8 80 de 67 ff 48 89RSP: 0018:ff11000007f3fb60 EFLAGS: 00010286RAX: 00000000000020ef RBX: ff1100000d6481e0 RCX: 1ffffffff0e40d82RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffffff8423ee3cRBP: ff1100000d648230 R08: 0000000000000001 R09: fffffbfff0e395afR10: 0000000000000001 R11: 0000000000000000 R12: ff1100000d648230R13: dead000000000100 R14: ff1100000d648230 R15: dffffc0000000000FS:  0000000000000000(0000) GS:ff1100006ce80000(0000)knlGS:0000000000000000CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033CR2: 00005620e1363990 CR3: 000000000eeb2002 CR4: 0000000000771ef0DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000DR3: 0000000000000000 DR6: 00000000fffe07f0 DR7: 0000000000000400PKRU: 55555554Call Trace: <TASK> ? __warn (kernel/panic.c:748) ? ref_tracker_dir_exit (lib/ref_tracker.c:179) ? report_bug (lib/bug.c:201 lib/bug.c:219) ? handle_bug (arch/x86/kernel/traps.c:285) ? exc_invalid_op (arch/x86/kernel/traps.c:309 (discriminator 1)) ? asm_exc_invalid_op (./arch/x86/include/asm/idtentry.h:621) ? _raw_spin_unlock_irqrestore (./arch/x86/include/asm/irqflags.h:42./arch/x86/include/asm/irqflags.h:97 ./arch/x86/include/asm/irqflags.h:155./include/linux/spinlock_api_smp.h:151 kernel/locking/spinlock.c:194) ? ref_tracker_dir_exit (lib/ref_tracker.c:179) ? __pfx_ref_tracker_dir_exit (lib/ref_tracker.c:158) ? kfree (mm/slub.c:4613 mm/slub.c:4761) net_free (net/core/net_namespace.c:476 net/core/net_namespace.c:467) cleanup_net (net/cor---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2025-21677` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,44 +32,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000050",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000080",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000090",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000100",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

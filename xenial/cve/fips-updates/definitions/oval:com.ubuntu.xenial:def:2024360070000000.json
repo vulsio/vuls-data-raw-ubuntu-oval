@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36007 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: mlxsw:spectrum_acl_tcam: Fix warning during rehash As previously explained, therehash delayed work migrates filters from one region to another. This isdone by iterating over all chunks (all the filters with the same priority)in the region and in each chunk iterating over all the filters. When thework runs out of credits it stores the current chunk and entry as markersin the per-work context so that it would know where to resume the migrationfrom the next time the work is scheduled. Upon error, the chunk marker isreset to NULL, but without resetting the entry markers despite beingrelative to it. This can result in migration being resumed from an entrythat does not belong to the chunk being migrated. In turn, this willeventually lead to a chunk being iterated over as if it is an entry.Because of how the two structures happen to be defined, this does not leadto KASAN splats, but to warnings such as [1]. Fix by creating a helper thatresets all the markers and call it from all the places the currently onlyreset the chunk marker. For good measures also call it when starting acompletely new rehash. Add a warning to avoid future cases. [1] WARNING:CPU: 7 PID: 1076 atdrivers/net/ethernet/mellanox/mlxsw/core_acl_flex_keys.c:407mlxsw_afk_encode+0x242/0x2f0 Modules linked in: CPU: 7 PID: 1076 Comm:kworker/7:24 Tainted: G W 6.9.0-rc3-custom-00880-g29e61d91b77b #29 Hardwarename: Mellanox Technologies Ltd. MSN3700/VMOD0005, BIOS 5.11 01/06/2019Workqueue: mlxsw_core mlxsw_sp_acl_tcam_vregion_rehash_work RIP:0010:mlxsw_afk_encode+0x242/0x2f0 [...] Call Trace: <TASK>mlxsw_sp_acl_atcam_entry_add+0xd9/0x3c0mlxsw_sp_acl_tcam_entry_create+0x5e/0xa0mlxsw_sp_acl_tcam_vchunk_migrate_all+0x109/0x290mlxsw_sp_acl_tcam_vregion_rehash_work+0x6c/0x470process_one_work+0x151/0x370 worker_thread+0x2cb/0x3e0 kthread+0xd0/0x100ret_from_fork+0x34/0x50 </TASK>\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36007` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mlxsw:spectrum_acl_tcam: Fix warning during rehash As previously explained, therehash delayed work migrates filters from one region to another. This isdone by iterating over all chunks (all the filters with the same priority)in the region and in each chunk iterating over all the filters. When thework runs out of credits it stores the current chunk and entry as markersin the per-work context so that it would know where to resume the migrationfrom the next time the work is scheduled. Upon error, the chunk marker isreset to NULL, but without resetting the entry markers despite beingrelative to it. This can result in migration being resumed from an entrythat does not belong to the chunk being migrated. In turn, this willeventually lead to a chunk being iterated over as if it is an entry.Because of how the two structures happen to be defined, this does not leadto KASAN splats, but to warnings such as [1]. Fix by creating a helper thatresets all the markers and call it from all the places the currently onlyreset the chunk marker. For good measures also call it when starting acompletely new rehash. Add a warning to avoid future cases. [1] WARNING:CPU: 7 PID: 1076 atdrivers/net/ethernet/mellanox/mlxsw/core_acl_flex_keys.c:407mlxsw_afk_encode+0x242/0x2f0 Modules linked in: CPU: 7 PID: 1076 Comm:kworker/7:24 Tainted: G W 6.9.0-rc3-custom-00880-g29e61d91b77b #29 Hardwarename: Mellanox Technologies Ltd. MSN3700/VMOD0005, BIOS 5.11 01/06/2019Workqueue: mlxsw_core mlxsw_sp_acl_tcam_vregion_rehash_work RIP:0010:mlxsw_afk_encode+0x242/0x2f0 [...] Call Trace: <TASK>mlxsw_sp_acl_atcam_entry_add+0xd9/0x3c0mlxsw_sp_acl_tcam_entry_create+0x5e/0xa0mlxsw_sp_acl_tcam_vchunk_migrate_all+0x109/0x290mlxsw_sp_acl_tcam_vregion_rehash_work+0x6c/0x470process_one_work+0x151/0x370 worker_thread+0x2cb/0x3e0 kthread+0xd0/0x100ret_from_fork+0x34/0x50 </TASK>\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36007` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1007-kvm - 4.4.0-1007.12\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1031-aws - 4.15.0-1031.33~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1015-azure - 4.11.0-1015.15\nlinux-image-extra-4.11.0-1015-azure - 4.11.0-1015.15\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 16.04 LTS"
@@ -61,23 +61,23 @@
 						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
-						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1007.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
 						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
-						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000030",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1031.33~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
-						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000040",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1015.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000060",
 						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1003.3')."
 					},
 					{
@@ -89,8 +89,8 @@
 						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
-						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000050",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10~16.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",

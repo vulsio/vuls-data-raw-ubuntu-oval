@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36889 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: mptcp:ensure snd_nxt is properly initialized on connect Christoph reported asplat hinting at a corrupted snd_una: WARNING: CPU: 1 PID: 38 atnet/mptcp/protocol.c:1005 __mptcp_clean_una+0x4b3/0x620net/mptcp/protocol.c:1005 Modules linked in: CPU: 1 PID: 38 Comm:kworker/1:1 Not tainted 6.9.0-rc1-gbbeac67456c9 #59 Hardware name: QEMUStandard PC (i440FX + PIIX, 1996), BIOS 1.11.0-2.el7 04/01/2014 Workqueue:events mptcp_worker RIP: 0010:__mptcp_clean_una+0x4b3/0x620net/mptcp/protocol.c:1005 Code: be 06 01 00 00 bf 06 01 00 00 e8 a8 12 e7fe e9 00 fe ff ff e8 8e 1a e7 fe 0f b7 ab 3e 02 00 00 e9 d3 fd ff ff e8 7d1a e7 fe <0f> 0b 4c 8b bb e0 05 00 00 e9 74 fc ff ff e8 6a 1a e7 fe 0f 0be9 RSP: 0018:ffffc9000013fd48 EFLAGS: 00010293 RAX: 0000000000000000 RBX:ffff8881029bd280 RCX: ffffffff82382fe4 RDX: ffff8881003cbd00 RSI:ffffffff823833c3 RDI: 0000000000000001 RBP: 0000000000000000 R08:0000000000000001 R09: 0000000000000000 R10: 0000000000000000 R11:fefefefefefefeff R12: ffff888138ba8000 R13: 0000000000000106 R14:ffff8881029bd908 R15: ffff888126560000 FS: 0000000000000000(0000)GS:ffff88813bd00000(0000) knlGS:0000000000000000 CS: 0010 DS: 0000 ES: 0000CR0: 0000000080050033 CR2: 00007f604a5dae38 CR3: 0000000101dac002 CR4:0000000000170ef0 Call Trace: <TASK> __mptcp_clean_una_wakeupnet/mptcp/protocol.c:1055 [inline] mptcp_clean_una_wakeupnet/mptcp/protocol.c:1062 [inline] __mptcp_retrans+0x7f/0x7e0net/mptcp/protocol.c:2615 mptcp_worker+0x434/0x740net/mptcp/protocol.c:2767 process_one_work+0x1e0/0x560kernel/workqueue.c:3254 process_scheduled_works kernel/workqueue.c:3335[inline] worker_thread+0x3c7/0x640 kernel/workqueue.c:3416kthread+0x121/0x170 kernel/kthread.c:388 ret_from_fork+0x44/0x50arch/x86/kernel/process.c:147 ret_from_fork_asm+0x1a/0x30arch/x86/entry/entry_64.S:243 </TASK> When fallback to TCP happens early ona client socket, snd_nxt is not yet initialized and any incoming ack willcopy such value into snd_una. If the mptcp worker (dumbly) triesmptcp-level re-injection after such ack, that would unconditionally triggera send buffer cleanup using 'bad' snd_una values. We could easily disablere-injection for fallback sockets, but such dumb behavior already helpedcatching a few subtle issues and a very low to zero impact in practice.Instead address the issue always initializing snd_nxt (and write_seq, forconsistency) at connect time.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36889` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-118-generic - 5.15.0-118.128\nlinux-image-5.15.0-118-generic-lpae - 5.15.0-118.128\nlinux-image-unsigned-5.15.0-118-generic - 5.15.0-118.128\nlinux-image-unsigned-5.15.0-118-generic-64k - 5.15.0-118.128\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-kvm - 5.15.0-1064.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-aws - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-azure - 5.15.0-1070.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-azure-fde - 5.15.0-1070.79.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-gcp - 5.15.0-1066.74\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-gke - 5.15.0-1064.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1050-gkeop - 5.15.0-1050.57\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-ibm - 5.15.0-1060.63\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-intel-iotg - 5.15.0-1062.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-118-lowlatency - 5.15.0-118.128\nlinux-image-unsigned-5.15.0-118-lowlatency-64k - 5.15.0-118.128\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-nvidia - 5.15.0-1062.63\nlinux-image-unsigned-5.15.0-1062-nvidia-lowlatency - 5.15.0-1062.63\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-oracle - 5.15.0-1065.71\nNo subscription required\n\nlinux-image-5.15.0-1060-raspi - 5.15.0-1060.63\nNo subscription required\n\nlinux-image-5.15.0-1035-xilinx-zynqmp - 5.15.0-1035.39\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: mptcp:ensure snd_nxt is properly initialized on connect Christoph reported asplat hinting at a corrupted snd_una: WARNING: CPU: 1 PID: 38 atnet/mptcp/protocol.c:1005 __mptcp_clean_una+0x4b3/0x620net/mptcp/protocol.c:1005 Modules linked in: CPU: 1 PID: 38 Comm:kworker/1:1 Not tainted 6.9.0-rc1-gbbeac67456c9 #59 Hardware name: QEMUStandard PC (i440FX + PIIX, 1996), BIOS 1.11.0-2.el7 04/01/2014 Workqueue:events mptcp_worker RIP: 0010:__mptcp_clean_una+0x4b3/0x620net/mptcp/protocol.c:1005 Code: be 06 01 00 00 bf 06 01 00 00 e8 a8 12 e7fe e9 00 fe ff ff e8 8e 1a e7 fe 0f b7 ab 3e 02 00 00 e9 d3 fd ff ff e8 7d1a e7 fe <0f> 0b 4c 8b bb e0 05 00 00 e9 74 fc ff ff e8 6a 1a e7 fe 0f 0be9 RSP: 0018:ffffc9000013fd48 EFLAGS: 00010293 RAX: 0000000000000000 RBX:ffff8881029bd280 RCX: ffffffff82382fe4 RDX: ffff8881003cbd00 RSI:ffffffff823833c3 RDI: 0000000000000001 RBP: 0000000000000000 R08:0000000000000001 R09: 0000000000000000 R10: 0000000000000000 R11:fefefefefefefeff R12: ffff888138ba8000 R13: 0000000000000106 R14:ffff8881029bd908 R15: ffff888126560000 FS: 0000000000000000(0000)GS:ffff88813bd00000(0000) knlGS:0000000000000000 CS: 0010 DS: 0000 ES: 0000CR0: 0000000080050033 CR2: 00007f604a5dae38 CR3: 0000000101dac002 CR4:0000000000170ef0 Call Trace: <TASK> __mptcp_clean_una_wakeupnet/mptcp/protocol.c:1055 [inline] mptcp_clean_una_wakeupnet/mptcp/protocol.c:1062 [inline] __mptcp_retrans+0x7f/0x7e0net/mptcp/protocol.c:2615 mptcp_worker+0x434/0x740net/mptcp/protocol.c:2767 process_one_work+0x1e0/0x560kernel/workqueue.c:3254 process_scheduled_works kernel/workqueue.c:3335[inline] worker_thread+0x3c7/0x640 kernel/workqueue.c:3416kthread+0x121/0x170 kernel/kthread.c:388 ret_from_fork+0x44/0x50arch/x86/kernel/process.c:147 ret_from_fork_asm+0x1a/0x30arch/x86/entry/entry_64.S:243 </TASK> When fallback to TCP happens early ona client socket, snd_nxt is not yet initialized and any incoming ack willcopy such value into snd_una. If the mptcp worker (dumbly) triesmptcp-level re-injection after such ack, that would unconditionally triggera send buffer cleanup using 'bad' snd_una values. We could easily disablere-injection for fallback sockets, but such dumb behavior already helpedcatching a few subtle issues and a very low to zero impact in practice.Instead address the issue always initializing snd_nxt (and write_seq, forconsistency) at connect time.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36889` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-118-generic - 5.15.0-118.128\nlinux-image-5.15.0-118-generic-lpae - 5.15.0-118.128\nlinux-image-unsigned-5.15.0-118-generic - 5.15.0-118.128\nlinux-image-unsigned-5.15.0-118-generic-64k - 5.15.0-118.128\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-kvm - 5.15.0-1064.69\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-aws - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-azure - 5.15.0-1070.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-azure-fde - 5.15.0-1070.79.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1050-bluefield - 5.15.0-1050.52\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.15.0-1066-gcp - 5.15.0-1066.74\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-gke - 5.15.0-1064.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1050-gkeop - 5.15.0-1050.57\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-ibm - 5.15.0-1060.63\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-intel-iotg - 5.15.0-1062.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-118-lowlatency - 5.15.0-118.128\nlinux-image-unsigned-5.15.0-118-lowlatency-64k - 5.15.0-118.128\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-nvidia - 5.15.0-1062.63\nlinux-image-unsigned-5.15.0-1062-nvidia-lowlatency - 5.15.0-1062.63\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-oracle - 5.15.0-1065.71\nNo subscription required\n\nlinux-image-5.15.0-1060-raspi - 5.15.0-1060.63\nNo subscription required\n\nlinux-image-5.15.0-1035-xilinx-zynqmp - 5.15.0-1035.39\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
@@ -115,11 +115,11 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-bluefield package in bluefield/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1050.52')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000050",
+						"comment": "linux-bluefield package in bluefield/jammy was vulnerable but has been fixed (note: '5.15.0-1050.52')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000060",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.74')."
 					},
 					{
@@ -135,23 +135,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000070",
 						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1064.70')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000080",
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1050.57')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000090",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1060.63')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000100",
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.68')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000110",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-118.128')."
 					},
 					{
@@ -167,7 +167,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000120",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.63')."
 					},
 					{
@@ -179,7 +179,7 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000130",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.71')."
 					},
 					{
@@ -203,7 +203,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023525850000140",
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1060.63')."
 					},
 					{
@@ -219,7 +219,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000140",
 						"comment": "linux-xilinx-zynqmp package in jammy was vulnerable but has been fixed (note: '5.15.0-1035.39')."
 					},
 					{

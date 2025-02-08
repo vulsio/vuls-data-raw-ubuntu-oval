@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-53071 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/panthor: Be stricter about IO mapping flagsThe current panthor_device_mmap_io() implementation has two issues:1. For mapping DRM_PANTHOR_USER_FLUSH_ID_MMIO_OFFSET,   panthor_device_mmap_io() bails if VM_WRITE is set, but does not clear   VM_MAYWRITE. That means userspace can use mprotect() to make the mapping   writable later on. This is a classic Linux driver gotcha.   I don't think this actually has any impact in practice:   When the GPU is powered, writes to the FLUSH_ID seem to be ignored; and   when the GPU is not powered, the dummy_latest_flush page provided by the   driver is deliberately designed to not do any flushes, so the only thing   writing to the dummy_latest_flush could achieve would be to make *more*   flushes happen.2. panthor_device_mmap_io() does not block MAP_PRIVATE mappings (which are   mappings without the VM_SHARED flag).   MAP_PRIVATE in combination with VM_MAYWRITE indicates that the VMA has   copy-on-write semantics, which for VM_PFNMAP are semi-supported but   fairly cursed.   In particular, in such a mapping, the driver can only install PTEs   during mmap() by calling remap_pfn_range() (because remap_pfn_range()   wants to **store the physical address of the mapped physical memory into   the vm_pgoff of the VMA**); installing PTEs later on with a fault   handler (as panthor does) is not supported in private mappings, and so   if you try to fault in such a mapping, vmf_insert_pfn_prot() splats when   it hits a BUG() check.Fix it by clearing the VM_MAYWRITE flag (userspace writing to the FLUSH_IDdoesn't make sense) and requiring VM_SHARED (copy-on-write semantics forthe FLUSH_ID don't make sense).Reproducers for both scenarios are in the notes of my patch on the mailinglist; I tested that these bugs exist on a Rock 5B machine.Note that I only compile-tested the patch, I haven't tested it; I don'thave a working kernel build setup for the test machine yet. Please test itbefore applying it.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-53071` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/panthor: Be stricter about IO mapping flagsThe current panthor_device_mmap_io() implementation has two issues:1. For mapping DRM_PANTHOR_USER_FLUSH_ID_MMIO_OFFSET,   panthor_device_mmap_io() bails if VM_WRITE is set, but does not clear   VM_MAYWRITE. That means userspace can use mprotect() to make the mapping   writable later on. This is a classic Linux driver gotcha.   I don't think this actually has any impact in practice:   When the GPU is powered, writes to the FLUSH_ID seem to be ignored; and   when the GPU is not powered, the dummy_latest_flush page provided by the   driver is deliberately designed to not do any flushes, so the only thing   writing to the dummy_latest_flush could achieve would be to make *more*   flushes happen.2. panthor_device_mmap_io() does not block MAP_PRIVATE mappings (which are   mappings without the VM_SHARED flag).   MAP_PRIVATE in combination with VM_MAYWRITE indicates that the VMA has   copy-on-write semantics, which for VM_PFNMAP are semi-supported but   fairly cursed.   In particular, in such a mapping, the driver can only install PTEs   during mmap() by calling remap_pfn_range() (because remap_pfn_range()   wants to **store the physical address of the mapped physical memory into   the vm_pgoff of the VMA**); installing PTEs later on with a fault   handler (as panthor does) is not supported in private mappings, and so   if you try to fault in such a mapping, vmf_insert_pfn_prot() splats when   it hits a BUG() check.Fix it by clearing the VM_MAYWRITE flag (userspace writing to the FLUSH_IDdoesn't make sense) and requiring VM_SHARED (copy-on-write semantics forthe FLUSH_ID don't make sense).Reproducers for both scenarios are in the notes of my patch on the mailinglist; I tested that these bugs exist on a Rock 5B machine.Note that I only compile-tested the patch, I haven't tested it; I don'thave a working kernel build setup for the test machine yet. Please test itbefore applying it.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-53071` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -90,8 +90,8 @@
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -118,23 +118,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
@@ -150,7 +150,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
@@ -186,7 +186,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
@@ -206,7 +206,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]

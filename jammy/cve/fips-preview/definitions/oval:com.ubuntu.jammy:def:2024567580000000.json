@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56758 on Ubuntu Pro FIPS-preview 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: check folio mapping after unlock in relocate_one_folio()When we call btrfs_read_folio() to bring a folio uptodate, we unlock thefolio. The result of that is that a different thread can modify themapping (like remove it with invalidate) before we call folio_lock().This results in an invalid page and we need to try again.In particular, if we are relocating concurrently with aborting atransaction, this can result in a crash like the following:  BUG: kernel NULL pointer dereference, address: 0000000000000000  PGD 0 P4D 0  Oops: 0000 [#1] SMP  CPU: 76 PID: 1411631 Comm: kworker/u322:5  Workqueue: events_unbound btrfs_reclaim_bgs_work  RIP: 0010:set_page_extent_mapped+0x20/0xb0  RSP: 0018:ffffc900516a7be8 EFLAGS: 00010246  RAX: ffffea009e851d08 RBX: ffffea009e0b1880 RCX: 0000000000000000  RDX: 0000000000000000 RSI: ffffc900516a7b90 RDI: ffffea009e0b1880  RBP: 0000000003573000 R08: 0000000000000001 R09: ffff88c07fd2f3f0  R10: 0000000000000000 R11: 0000194754b575be R12: 0000000003572000  R13: 0000000003572fff R14: 0000000000100cca R15: 0000000005582fff  FS:  0000000000000000(0000) GS:ffff88c07fd00000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 0000000000000000 CR3: 000000407d00f002 CR4: 00000000007706f0  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000  DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400  PKRU: 55555554  Call Trace:  <TASK>  ? __die+0x78/0xc0  ? page_fault_oops+0x2a8/0x3a0  ? __switch_to+0x133/0x530  ? wq_worker_running+0xa/0x40  ? exc_page_fault+0x63/0x130  ? asm_exc_page_fault+0x22/0x30  ? set_page_extent_mapped+0x20/0xb0  relocate_file_extent_cluster+0x1a7/0x940  relocate_data_extent+0xaf/0x120  relocate_block_group+0x20f/0x480  btrfs_relocate_block_group+0x152/0x320  btrfs_relocate_chunk+0x3d/0x120  btrfs_reclaim_bgs_work+0x2ae/0x4e0  process_scheduled_works+0x184/0x370  worker_thread+0xc6/0x3e0  ? blk_add_timer+0xb0/0xb0  kthread+0xae/0xe0  ? flush_tlb_kernel_range+0x90/0x90  ret_from_fork+0x2f/0x40  ? flush_tlb_kernel_range+0x90/0x90  ret_from_fork_asm+0x11/0x20  </TASK>This occurs because cleanup_one_transaction() callsdestroy_delalloc_inodes() which calls invalidate_inode_pages2() whichtakes the folio_lock before setting mapping to NULL. We fail to checkthis, and subsequently call set_extent_mapping(), which assumes thatmapping != NULL (in fact it asserts that in debug mode)Note that the \"fixes\" patch here is not the one that introduced therace (the very first iteration of this code from 2009) but a more recentchange that made this particular crash happen in practice.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56758` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-73-fips - 5.15.0-73.80+fips1\nlinux-image-unsigned-hmac-5.15.0-73-fips - 5.15.0-73.80+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nlinux-image-unsigned-hmac-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: check folio mapping after unlock in relocate_one_folio()When we call btrfs_read_folio() to bring a folio uptodate, we unlock thefolio. The result of that is that a different thread can modify themapping (like remove it with invalidate) before we call folio_lock().This results in an invalid page and we need to try again.In particular, if we are relocating concurrently with aborting atransaction, this can result in a crash like the following:  BUG: kernel NULL pointer dereference, address: 0000000000000000  PGD 0 P4D 0  Oops: 0000 [#1] SMP  CPU: 76 PID: 1411631 Comm: kworker/u322:5  Workqueue: events_unbound btrfs_reclaim_bgs_work  RIP: 0010:set_page_extent_mapped+0x20/0xb0  RSP: 0018:ffffc900516a7be8 EFLAGS: 00010246  RAX: ffffea009e851d08 RBX: ffffea009e0b1880 RCX: 0000000000000000  RDX: 0000000000000000 RSI: ffffc900516a7b90 RDI: ffffea009e0b1880  RBP: 0000000003573000 R08: 0000000000000001 R09: ffff88c07fd2f3f0  R10: 0000000000000000 R11: 0000194754b575be R12: 0000000003572000  R13: 0000000003572fff R14: 0000000000100cca R15: 0000000005582fff  FS:  0000000000000000(0000) GS:ffff88c07fd00000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 0000000000000000 CR3: 000000407d00f002 CR4: 00000000007706f0  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000  DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400  PKRU: 55555554  Call Trace:  <TASK>  ? __die+0x78/0xc0  ? page_fault_oops+0x2a8/0x3a0  ? __switch_to+0x133/0x530  ? wq_worker_running+0xa/0x40  ? exc_page_fault+0x63/0x130  ? asm_exc_page_fault+0x22/0x30  ? set_page_extent_mapped+0x20/0xb0  relocate_file_extent_cluster+0x1a7/0x940  relocate_data_extent+0xaf/0x120  relocate_block_group+0x20f/0x480  btrfs_relocate_block_group+0x152/0x320  btrfs_relocate_chunk+0x3d/0x120  btrfs_reclaim_bgs_work+0x2ae/0x4e0  process_scheduled_works+0x184/0x370  worker_thread+0xc6/0x3e0  ? blk_add_timer+0xb0/0xb0  kthread+0xae/0xe0  ? flush_tlb_kernel_range+0x90/0x90  ret_from_fork+0x2f/0x40  ? flush_tlb_kernel_range+0x90/0x90  ret_from_fork_asm+0x11/0x20  </TASK>This occurs because cleanup_one_transaction() callsdestroy_delalloc_inodes() which calls invalidate_inode_pages2() whichtakes the folio_lock before setting mapping to NULL. We fail to checkthis, and subsequently call set_extent_mapping(), which assumes thatmapping != NULL (in fact it asserts that in debug mode)Note that the \"fixes\" patch here is not the one that introduced therace (the very first iteration of this code from 2009) but a more recentchange that made this particular crash happen in practice.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56758` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-73-fips - 5.15.0-73.80+fips1\nlinux-image-unsigned-hmac-5.15.0-73-fips - 5.15.0-73.80+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nlinux-image-unsigned-hmac-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-preview 22.04 LTS"
@@ -90,8 +90,8 @@
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -102,19 +102,19 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
 						"comment": "linux-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-73.80+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
 						"comment": "linux-aws-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1051.56+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
 						"comment": "linux-azure-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1053.61+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
 						"comment": "linux-gcp-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1048.56+fips1')."
 					},
 					{
@@ -134,23 +134,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
@@ -166,7 +166,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000160",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
@@ -202,7 +202,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000170",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
@@ -222,7 +222,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000180",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]

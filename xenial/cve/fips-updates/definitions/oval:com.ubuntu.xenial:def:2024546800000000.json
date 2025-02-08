@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-54680 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:smb: client: fix TCP timers deadlock after rmmodCommit ef7134c7fc48 (\"smb: client: Fix use-after-free of networknamespace.\")fixed a netns UAF by manually enabled socket refcounting(sk->sk_net_refcnt=1 and sock_inuse_add(net, 1)).The reason the patch worked for that bug was because we now holdreferences to the netns (get_net_track() gets a ref internally)and they're properly released (internally, on __sk_destruct()),but only because sk->sk_net_refcnt was set.Problem:(this happens regardless of CONFIG_NET_NS_REFCNT_TRACKER and regardlessif init_net or other)Setting sk->sk_net_refcnt=1 *manually* and *after* socket creation is notonly out of cifs scope, but also technically wrong -- it's setconditionallybased on user (=1) vs kernel (=0) sockets.  And net/ implementationsseem to base their user vs kernel space operations on it.e.g. upon TCP socket close, the TCP timers are not cleared becausesk->sk_net_refcnt=1:(cf. commit 151c9c724d05 (\"tcp: properly terminate timers for kernelsockets\"))net/ipv4/tcp.c:    void tcp_close(struct sock *sk, long timeout)    {    \tlock_sock(sk);    \t__tcp_close(sk, timeout);    \trelease_sock(sk);    \tif (!sk->sk_net_refcnt)    \t\tinet_csk_clear_xmit_timers_sync(sk);    \tsock_put(sk);    }Which will throw a lockdep warning and then, as expected, deadlock ontcp_write_timer().A way to reproduce this is by running the reproducer from ef7134c7fc48and then 'rmmod cifs'.  A few seconds later, the deadlock/lockdepwarning shows up.Fix:We shouldn't mess with socket internals ourselves, so do not setsk_net_refcnt manually.Also change __sock_create() to sock_create_kern() for explicitness.As for non-init_net network namespaces, we deal with it the best waywe can -- hold an extra netns reference for server->ssocket and drop itwhen it's released.  This ensures that the netns still exists wheneverwe need to create/destroy server->ssocket, but is not directly tied toit.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-54680` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:smb: client: fix TCP timers deadlock after rmmodCommit ef7134c7fc48 (\"smb: client: Fix use-after-free of networknamespace.\")fixed a netns UAF by manually enabled socket refcounting(sk->sk_net_refcnt=1 and sock_inuse_add(net, 1)).The reason the patch worked for that bug was because we now holdreferences to the netns (get_net_track() gets a ref internally)and they're properly released (internally, on __sk_destruct()),but only because sk->sk_net_refcnt was set.Problem:(this happens regardless of CONFIG_NET_NS_REFCNT_TRACKER and regardlessif init_net or other)Setting sk->sk_net_refcnt=1 *manually* and *after* socket creation is notonly out of cifs scope, but also technically wrong -- it's setconditionallybased on user (=1) vs kernel (=0) sockets.  And net/ implementationsseem to base their user vs kernel space operations on it.e.g. upon TCP socket close, the TCP timers are not cleared becausesk->sk_net_refcnt=1:(cf. commit 151c9c724d05 (\"tcp: properly terminate timers for kernelsockets\"))net/ipv4/tcp.c:    void tcp_close(struct sock *sk, long timeout)    {    \tlock_sock(sk);    \t__tcp_close(sk, timeout);    \trelease_sock(sk);    \tif (!sk->sk_net_refcnt)    \t\tinet_csk_clear_xmit_timers_sync(sk);    \tsock_put(sk);    }Which will throw a lockdep warning and then, as expected, deadlock ontcp_write_timer().A way to reproduce this is by running the reproducer from ef7134c7fc48and then 'rmmod cifs'.  A few seconds later, the deadlock/lockdepwarning shows up.Fix:We shouldn't mess with socket internals ourselves, so do not setsk_net_refcnt manually.Also change __sock_create() to sock_create_kern() for explicitness.As for non-init_net network namespaces, we deal with it the best waywe can -- hold an extra netns reference for server->ssocket and drop itwhen it's released.  This ensures that the netns still exists wheneverwe need to create/destroy server->ssocket, but is not directly tied toit.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-54680` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1007-kvm - 4.4.0-1007.12\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1031-aws - 4.15.0-1031.33~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1015-azure - 4.11.0-1015.15\nlinux-image-extra-4.11.0-1015-azure - 4.11.0-1015.15\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 16.04 LTS"
@@ -42,23 +42,23 @@
 						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
-						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1007.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
 						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
-						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000030",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1031.33~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
-						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000040",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1015.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000060",
 						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1003.3')."
 					},
 					{
@@ -70,8 +70,8 @@
 						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
-						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000050",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10~16.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",

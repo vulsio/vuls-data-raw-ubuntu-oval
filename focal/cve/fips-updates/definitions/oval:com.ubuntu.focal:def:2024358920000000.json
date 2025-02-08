@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35892 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net/sched: fix lockdep splat in qdisc_tree_reduce_backlog()qdisc_tree_reduce_backlog() is called with the qdisc lock held, not RTNL.We must use qdisc_lookup_rcu() instead of qdisc_lookup() syzbot reported:WARNING: suspicious RCU usage 6.1.74-syzkaller #0 Not tainted----------------------------- net/sched/sch_api.c:305 suspiciousrcu_dereference_protected() usage! other info that might help us debugthis: rcu_scheduler_active = 2, debug_locks = 1 3 locks held by udevd/1142:#0: ffffffff87c729a0 (rcu_read_lock){....}-{1:2}, at: rcu_lock_acquireinclude/linux/rcupdate.h:306 [inline] #0: ffffffff87c729a0(rcu_read_lock){....}-{1:2}, at: rcu_read_lock include/linux/rcupdate.h:747[inline] #0: ffffffff87c729a0 (rcu_read_lock){....}-{1:2}, at:net_tx_action+0x64a/0x970 net/core/dev.c:5282 #1: ffff888171861108(&sch->q.lock){+.-.}-{2:2}, at: spin_lock include/linux/spinlock.h:350[inline] #1: ffff888171861108 (&sch->q.lock){+.-.}-{2:2}, at:net_tx_action+0x754/0x970 net/core/dev.c:5297 #2: ffffffff87c729a0(rcu_read_lock){....}-{1:2}, at: rcu_lock_acquireinclude/linux/rcupdate.h:306 [inline] #2: ffffffff87c729a0(rcu_read_lock){....}-{1:2}, at: rcu_read_lock include/linux/rcupdate.h:747[inline] #2: ffffffff87c729a0 (rcu_read_lock){....}-{1:2}, at:qdisc_tree_reduce_backlog+0x84/0x580 net/sched/sch_api.c:792 stackbacktrace: CPU: 1 PID: 1142 Comm: udevd Not tainted 6.1.74-syzkaller #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 01/25/2024 Call Trace: <TASK> [<ffffffff85b85f14>] __dump_stacklib/dump_stack.c:88 [inline] [<ffffffff85b85f14>]dump_stack_lvl+0x1b1/0x28f lib/dump_stack.c:106 [<ffffffff85b86007>]dump_stack+0x15/0x1e lib/dump_stack.c:113 [<ffffffff81802299>]lockdep_rcu_suspicious+0x1b9/0x260 kernel/locking/lockdep.c:6592[<ffffffff84f0054c>] qdisc_lookup+0xac/0x6f0 net/sched/sch_api.c:305[<ffffffff84f037c3>] qdisc_tree_reduce_backlog+0x243/0x580net/sched/sch_api.c:811 [<ffffffff84f5b78c>] pfifo_tail_enqueue+0x32c/0x4b0net/sched/sch_fifo.c:51 [<ffffffff84fbcf63>] qdisc_enqueueinclude/net/sch_generic.h:833 [inline] [<ffffffff84fbcf63>]netem_dequeue+0xeb3/0x15d0 net/sched/sch_netem.c:723 [<ffffffff84eecab9>]dequeue_skb net/sched/sch_generic.c:292 [inline] [<ffffffff84eecab9>]qdisc_restart net/sched/sch_generic.c:397 [inline] [<ffffffff84eecab9>]__qdisc_run+0x249/0x1e60 net/sched/sch_generic.c:415 [<ffffffff84d7aa96>]qdisc_run+0xd6/0x260 include/net/pkt_sched.h:125 [<ffffffff84d85d29>]net_tx_action+0x7c9/0x970 net/core/dev.c:5313 [<ffffffff85e002bd>]__do_softirq+0x2bd/0x9bd kernel/softirq.c:616 [<ffffffff81568bca>]invoke_softirq kernel/softirq.c:447 [inline] [<ffffffff81568bca>]__irq_exit_rcu+0xca/0x230 kernel/softirq.c:700 [<ffffffff81568ae9>]irq_exit_rcu+0x9/0x20 kernel/softirq.c:712 [<ffffffff85b89f52>]sysvec_apic_timer_interrupt+0x42/0x90 arch/x86/kernel/apic/apic.c:1107[<ffffffff85c00ccb>] asm_sysvec_apic_timer_interrupt+0x1b/0x20arch/x86/include/asm/idtentry.h:656\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35892` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net/sched: fix lockdep splat in qdisc_tree_reduce_backlog()qdisc_tree_reduce_backlog() is called with the qdisc lock held, not RTNL.We must use qdisc_lookup_rcu() instead of qdisc_lookup() syzbot reported:WARNING: suspicious RCU usage 6.1.74-syzkaller #0 Not tainted----------------------------- net/sched/sch_api.c:305 suspiciousrcu_dereference_protected() usage! other info that might help us debugthis: rcu_scheduler_active = 2, debug_locks = 1 3 locks held by udevd/1142:#0: ffffffff87c729a0 (rcu_read_lock){....}-{1:2}, at: rcu_lock_acquireinclude/linux/rcupdate.h:306 [inline] #0: ffffffff87c729a0(rcu_read_lock){....}-{1:2}, at: rcu_read_lock include/linux/rcupdate.h:747[inline] #0: ffffffff87c729a0 (rcu_read_lock){....}-{1:2}, at:net_tx_action+0x64a/0x970 net/core/dev.c:5282 #1: ffff888171861108(&sch->q.lock){+.-.}-{2:2}, at: spin_lock include/linux/spinlock.h:350[inline] #1: ffff888171861108 (&sch->q.lock){+.-.}-{2:2}, at:net_tx_action+0x754/0x970 net/core/dev.c:5297 #2: ffffffff87c729a0(rcu_read_lock){....}-{1:2}, at: rcu_lock_acquireinclude/linux/rcupdate.h:306 [inline] #2: ffffffff87c729a0(rcu_read_lock){....}-{1:2}, at: rcu_read_lock include/linux/rcupdate.h:747[inline] #2: ffffffff87c729a0 (rcu_read_lock){....}-{1:2}, at:qdisc_tree_reduce_backlog+0x84/0x580 net/sched/sch_api.c:792 stackbacktrace: CPU: 1 PID: 1142 Comm: udevd Not tainted 6.1.74-syzkaller #0Hardware name: Google Google Compute Engine/Google Compute Engine, BIOSGoogle 01/25/2024 Call Trace: <TASK> [<ffffffff85b85f14>] __dump_stacklib/dump_stack.c:88 [inline] [<ffffffff85b85f14>]dump_stack_lvl+0x1b1/0x28f lib/dump_stack.c:106 [<ffffffff85b86007>]dump_stack+0x15/0x1e lib/dump_stack.c:113 [<ffffffff81802299>]lockdep_rcu_suspicious+0x1b9/0x260 kernel/locking/lockdep.c:6592[<ffffffff84f0054c>] qdisc_lookup+0xac/0x6f0 net/sched/sch_api.c:305[<ffffffff84f037c3>] qdisc_tree_reduce_backlog+0x243/0x580net/sched/sch_api.c:811 [<ffffffff84f5b78c>] pfifo_tail_enqueue+0x32c/0x4b0net/sched/sch_fifo.c:51 [<ffffffff84fbcf63>] qdisc_enqueueinclude/net/sch_generic.h:833 [inline] [<ffffffff84fbcf63>]netem_dequeue+0xeb3/0x15d0 net/sched/sch_netem.c:723 [<ffffffff84eecab9>]dequeue_skb net/sched/sch_generic.c:292 [inline] [<ffffffff84eecab9>]qdisc_restart net/sched/sch_generic.c:397 [inline] [<ffffffff84eecab9>]__qdisc_run+0x249/0x1e60 net/sched/sch_generic.c:415 [<ffffffff84d7aa96>]qdisc_run+0xd6/0x260 include/net/pkt_sched.h:125 [<ffffffff84d85d29>]net_tx_action+0x7c9/0x970 net/core/dev.c:5313 [<ffffffff85e002bd>]__do_softirq+0x2bd/0x9bd kernel/softirq.c:616 [<ffffffff81568bca>]invoke_softirq kernel/softirq.c:447 [inline] [<ffffffff81568bca>]__irq_exit_rcu+0xca/0x230 kernel/softirq.c:700 [<ffffffff81568ae9>]irq_exit_rcu+0x9/0x20 kernel/softirq.c:712 [<ffffffff85b89f52>]sysvec_apic_timer_interrupt+0x42/0x90 arch/x86/kernel/apic/apic.c:1107[<ffffffff85c00ccb>] asm_sysvec_apic_timer_interrupt+0x1b/0x20arch/x86/include/asm/idtentry.h:656\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35892` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1011-bluefield - 5.4.0-1011.14\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-ibm - 5.4.0-1004.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
@@ -80,7 +80,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
@@ -107,27 +107,27 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and needs fixing."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
-						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
-						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1011.14')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
-						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
+						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-gcp-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
@@ -147,7 +147,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -167,27 +167,27 @@
 						"comment": "linux-gkeop-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
-						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -207,7 +207,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -235,7 +235,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000170",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

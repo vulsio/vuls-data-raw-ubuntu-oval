@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52924 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: don't skip expired elements during walkThere is an asymmetry between commit/abort and preparation phase if thefollowing conditions are met:1. set is a verdict map (\"1.2.3.4 : jump foo\")2. timeouts are enabledIn this case, following sequence is problematic:1. element E in set S refers to chain C2. userspace requests removal of set S3. kernel does a set walk to decrement chain->use count for all elements   from preparation phase4. kernel does another set walk to remove elements from the commit phase   (or another walk to do a chain->use increment for all elements from    abort phase)If E has already expired in 1), it will be ignored during list walk, so itsuse countwon't have been changed.Then, when set is culled, ->destroy callback will zap the element vianf_tables_set_elem_destroy(), but this function is only safe forelements that have been deactivated earlier from the preparation phase:lack of earlier deactivate removes the element but leaks the chain usecount, which results in a WARN splat when the chain gets removed later,plus a leak of the nft_chain structure.Update pipapo_get() not to skip expired elements, otherwise flushcommand reports bogus ENOENT errors.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: don't skip expired elements during walkThere is an asymmetry between commit/abort and preparation phase if thefollowing conditions are met:1. set is a verdict map (\"1.2.3.4 : jump foo\")2. timeouts are enabledIn this case, following sequence is problematic:1. element E in set S refers to chain C2. userspace requests removal of set S3. kernel does a set walk to decrement chain->use count for all elements   from preparation phase4. kernel does another set walk to remove elements from the commit phase   (or another walk to do a chain->use increment for all elements from    abort phase)If E has already expired in 1), it will be ignored during list walk, so itsuse countwon't have been changed.Then, when set is culled, ->destroy callback will zap the element vianf_tables_set_elem_destroy(), but this function is only safe forelements that have been deactivated earlier from the preparation phase:lack of earlier deactivate removes the element but leaks the chain usecount, which results in a WARN splat when the chain gets removed later,plus a leak of the nft_chain structure.Update pipapo_get() not to skip expired elements, otherwise flushcommand reports bogus ENOENT errors.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52924` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-6.7.0-2001-raspi-realtime - 6.7.0-2001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1008-realtime - 6.8.0-1008.19\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -32,52 +32,56 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
-						"comment": "linux package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000000",
+						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
-						"comment": "linux-aws package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000010",
+						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
-						"comment": "linux-azure package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000020",
+						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
-						"comment": "linux-gcp package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000030",
+						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
-						"comment": "linux-gke package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000050",
+						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
-						"comment": "linux-ibm package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000060",
+						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
-						"comment": "linux-lowlatency package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000080",
+						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
-						"comment": "linux-oracle package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000040",
+						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
-						"comment": "linux-oem-6.8 package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000090",
+						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
-						"comment": "linux-raspi package in noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000100",
+						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000110",
-						"comment": "linux-raspi-realtime package in realtime/noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000110",
+						"comment": "linux-raspi-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.7.0-2001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201245420000120",
-						"comment": "linux-realtime package in realtime/noble is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000120",
+						"comment": "linux-realtime package in realtime/noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.19')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.noble:tst:201431800000070",
+						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
 					}
 				]
 			}

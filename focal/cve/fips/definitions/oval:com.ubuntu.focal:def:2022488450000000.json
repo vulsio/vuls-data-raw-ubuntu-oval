@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48845 on Ubuntu Pro FIPS 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:MIPS: smp: fill in sibling and core maps earlierAfter enabling CONFIG_SCHED_CORE (landed during 5.14 cycle),2-core 2-thread-per-core interAptiv (CPS-driven) started emittingthe following:[    0.025698] CPU1 revision is: 0001a120 (MIPS interAptiv (multi))[    0.048183] ------------[ cut here ]------------[    0.048187] WARNING: CPU: 1 PID: 0 at kernel/sched/core.c:6025sched_core_cpu_starting+0x198/0x240[    0.048220] Modules linked in:[    0.048233] CPU: 1 PID: 0 Comm: swapper/1 Not tainted 5.17.0-rc3+ #35b7b319f24073fd9a3c2aa7ad15fb7993eec0b26f[    0.048247] Stack : 817f0000 00000004 327804c8 810eb050 0000000000000004 00000000 c314fdd1[    0.048278]         830cbd64 819c0000 81800000 817f0000 83070bf400000001 830cbd08 00000000[    0.048307]         00000000 00000000 815fcbc4 00000000 0000000000000000 00000000 00000000[    0.048334]         00000000 00000000 00000000 00000000 817f000000000000 00000000 817f6f34[    0.048361]         817f0000 818a3c00 817f0000 00000004 0000000000000000 4dc33260 0018c933[    0.048389]         ...[    0.048396] Call Trace:[    0.048399] [<8105a7bc>] show_stack+0x3c/0x140[    0.048424] [<8131c2a0>] dump_stack_lvl+0x60/0x80[    0.048440] [<8108b5c0>] __warn+0xc0/0xf4[    0.048454] [<8108b658>] warn_slowpath_fmt+0x64/0x10c[    0.048467] [<810bd418>] sched_core_cpu_starting+0x198/0x240[    0.048483] [<810c6514>] sched_cpu_starting+0x14/0x80[    0.048497] [<8108c0f8>] cpuhp_invoke_callback_range+0x78/0x140[    0.048510] [<8108d914>] notify_cpu_starting+0x94/0x140[    0.048523] [<8106593c>] start_secondary+0xbc/0x280[    0.048539][    0.048543] ---[ end trace 0000000000000000 ]---[    0.048636] Synchronize counters for CPU 1: done....for each but CPU 0/boot.Basic debug printks right before the mentioned line say:[    0.048170] CPU: 1, smt_mask:So smt_mask, which is sibling mask obviously, is empty when enteringthe function.This is critical, as sched_core_cpu_starting() calculatescore-scheduling parameters only once per CPU start, and it's crucialto have all the parameters filled in at that moment (at least ituses cpu_smt_mask() which in fact is `&cpu_sibling_map[cpu]` onMIPS).A bit of debugging led me to that set_cpu_sibling_map() performingthe actual map calculation, was being invocated afternotify_cpu_start(), and exactly the latter function starts CPU HPcallback round (sched_core_cpu_starting() is basically a CPU HPcallback).While the flow is same on ARM64 (maps after the notifier, althoughbefore calling set_cpu_online()), x86 started calculating siblingmaps earlier than starting the CPU HP callbacks in Linux 4.14 (see[0] for the reference). Neither me nor my brief tests couldn't findany potential caveats in calculating the maps right after performingdelay calibration, but the WARN splat is now gone.The very same debug prints now yield exactly what I expected fromthem:[    0.048433] CPU: 1, smt_mask: 0-1[0]https://git.kernel.org/pub/scm/linux/kernel/git/mips/linux.git/commit/?id=76ce7cfe35ef\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48845` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-117-generic - 5.4.0-117.132\nlinux-image-5.4.0-117-generic-lpae - 5.4.0-117.132\nlinux-image-unsigned-5.4.0-117-generic - 5.4.0-117.132\nlinux-image-unsigned-5.4.0-117-lowlatency - 5.4.0-117.132\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1068-kvm - 5.4.0-1068.72\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1078-aws - 5.4.0-1078.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1083-azure - 5.4.0-1083.87\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1040-bluefield - 5.4.0-1040.44\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1078-gcp - 5.4.0-1078.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1046-gkeop - 5.4.0-1046.48\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-ibm - 5.4.0-1026.29\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-intel-iotg - 5.15.0-1008.11~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-iot - 5.4.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1076-oracle - 5.4.0-1076.83\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1065-raspi - 5.4.0-1065.75\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:MIPS: smp: fill in sibling and core maps earlierAfter enabling CONFIG_SCHED_CORE (landed during 5.14 cycle),2-core 2-thread-per-core interAptiv (CPS-driven) started emittingthe following:[    0.025698] CPU1 revision is: 0001a120 (MIPS interAptiv (multi))[    0.048183] ------------[ cut here ]------------[    0.048187] WARNING: CPU: 1 PID: 0 at kernel/sched/core.c:6025sched_core_cpu_starting+0x198/0x240[    0.048220] Modules linked in:[    0.048233] CPU: 1 PID: 0 Comm: swapper/1 Not tainted 5.17.0-rc3+ #35b7b319f24073fd9a3c2aa7ad15fb7993eec0b26f[    0.048247] Stack : 817f0000 00000004 327804c8 810eb050 0000000000000004 00000000 c314fdd1[    0.048278]         830cbd64 819c0000 81800000 817f0000 83070bf400000001 830cbd08 00000000[    0.048307]         00000000 00000000 815fcbc4 00000000 0000000000000000 00000000 00000000[    0.048334]         00000000 00000000 00000000 00000000 817f000000000000 00000000 817f6f34[    0.048361]         817f0000 818a3c00 817f0000 00000004 0000000000000000 4dc33260 0018c933[    0.048389]         ...[    0.048396] Call Trace:[    0.048399] [<8105a7bc>] show_stack+0x3c/0x140[    0.048424] [<8131c2a0>] dump_stack_lvl+0x60/0x80[    0.048440] [<8108b5c0>] __warn+0xc0/0xf4[    0.048454] [<8108b658>] warn_slowpath_fmt+0x64/0x10c[    0.048467] [<810bd418>] sched_core_cpu_starting+0x198/0x240[    0.048483] [<810c6514>] sched_cpu_starting+0x14/0x80[    0.048497] [<8108c0f8>] cpuhp_invoke_callback_range+0x78/0x140[    0.048510] [<8108d914>] notify_cpu_starting+0x94/0x140[    0.048523] [<8106593c>] start_secondary+0xbc/0x280[    0.048539][    0.048543] ---[ end trace 0000000000000000 ]---[    0.048636] Synchronize counters for CPU 1: done....for each but CPU 0/boot.Basic debug printks right before the mentioned line say:[    0.048170] CPU: 1, smt_mask:So smt_mask, which is sibling mask obviously, is empty when enteringthe function.This is critical, as sched_core_cpu_starting() calculatescore-scheduling parameters only once per CPU start, and it's crucialto have all the parameters filled in at that moment (at least ituses cpu_smt_mask() which in fact is `&cpu_sibling_map[cpu]` onMIPS).A bit of debugging led me to that set_cpu_sibling_map() performingthe actual map calculation, was being invocated afternotify_cpu_start(), and exactly the latter function starts CPU HPcallback round (sched_core_cpu_starting() is basically a CPU HPcallback).While the flow is same on ARM64 (maps after the notifier, althoughbefore calling set_cpu_online()), x86 started calculating siblingmaps earlier than starting the CPU HP callbacks in Linux 4.14 (see[0] for the reference). Neither me nor my brief tests couldn't findany potential caveats in calculating the maps right after performingdelay calibration, but the WARN splat is now gone.The very same debug prints now yield exactly what I expected fromthem:[    0.048433] CPU: 1, smt_mask: 0-1[0]https://git.kernel.org/pub/scm/linux/kernel/git/mips/linux.git/commit/?id=76ce7cfe35ef\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48845` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-117-generic - 5.4.0-117.132\nlinux-image-5.4.0-117-generic-lpae - 5.4.0-117.132\nlinux-image-unsigned-5.4.0-117-generic - 5.4.0-117.132\nlinux-image-unsigned-5.4.0-117-lowlatency - 5.4.0-117.132\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1068-kvm - 5.4.0-1068.72\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1078-aws - 5.4.0-1078.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1083-azure - 5.4.0-1083.87\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1040-bluefield - 5.4.0-1040.44\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1078-gcp - 5.4.0-1078.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1046-gkeop - 5.4.0-1046.48\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-ibm - 5.4.0-1026.29\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-intel-iotg - 5.15.0-1008.11~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-iot - 5.4.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1076-oracle - 5.4.0-1076.83\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1065-raspi - 5.4.0-1065.75\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 20.04 LTS"
@@ -75,7 +75,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:202137720000030",
@@ -102,7 +102,7 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
@@ -142,7 +142,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -158,7 +158,7 @@
 						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1046.48')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
@@ -166,8 +166,8 @@
 						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1026.29')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -182,7 +182,7 @@
 						"comment": "linux-iot package in focal was vulnerable but has been fixed (note: '5.4.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -202,7 +202,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -230,7 +230,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000170",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

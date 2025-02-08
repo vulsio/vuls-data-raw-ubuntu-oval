@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-40949 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: shmem: fix getting incorrect lruvec when replacing a shmem folioWhen testing shmem swapin, I encountered the warning below on my machine.The reason is that replacing an old shmem folio with a new one causesmem_cgroup_migrate() to clear the old folio's memcg data.  As a result,the old folio cannot get the correct memcg's lruvec needed to removeitself from the LRU list when it is being freed.  This could lead topossible serious problems, such as LRU list crashes due to holding thewrong LRU lock, and incorrect LRU statistics.To fix this issue, we can fallback to use the mem_cgroup_replace_folio()to replace the old shmem folio.[ 5241.100311] page: refcount:0 mapcount:0 mapping:0000000000000000index:0x0 pfn:0x5d9960[ 5241.100317] head: order:4 mapcount:0 entire_mapcount:0 nr_pages_mapped:0pincount:0[ 5241.100319] flags:0x17fffe0000040068(uptodate|lru|head|swapbacked|node=0|zone=2|lastcpupid=0x3ffff)[ 5241.100323] raw: 17fffe0000040068 fffffdffd6687948 fffffdffd69ae0080000000000000000[ 5241.100325] raw: 0000000000000000 0000000000000000 00000000ffffffff0000000000000000[ 5241.100326] head: 17fffe0000040068 fffffdffd6687948 fffffdffd69ae0080000000000000000[ 5241.100327] head: 0000000000000000 0000000000000000 00000000ffffffff0000000000000000[ 5241.100328] head: 17fffe0000000204 fffffdffd6665801 ffffffffffffffff0000000000000000[ 5241.100329] head: 0000000a00000010 0000000000000000 00000000ffffffff0000000000000000[ 5241.100330] page dumped because: VM_WARN_ON_ONCE_FOLIO(!memcg &&!mem_cgroup_disabled())[ 5241.100338] ------------[ cut here ]------------[ 5241.100339] WARNING: CPU: 19 PID: 78402 atinclude/linux/memcontrol.h:775 folio_lruvec_lock_irqsave+0x140/0x150[...][ 5241.100374] pc : folio_lruvec_lock_irqsave+0x140/0x150[ 5241.100375] lr : folio_lruvec_lock_irqsave+0x138/0x150[ 5241.100376] sp : ffff80008b38b930[...][ 5241.100398] Call trace:[ 5241.100399]  folio_lruvec_lock_irqsave+0x140/0x150[ 5241.100401]  __page_cache_release+0x90/0x300[ 5241.100404]  __folio_put+0x50/0x108[ 5241.100406]  shmem_replace_folio+0x1b4/0x240[ 5241.100409]  shmem_swapin_folio+0x314/0x528[ 5241.100411]  shmem_get_folio_gfp+0x3b4/0x930[ 5241.100412]  shmem_fault+0x74/0x160[ 5241.100414]  __do_fault+0x40/0x218[ 5241.100417]  do_shared_fault+0x34/0x1b0[ 5241.100419]  do_fault+0x40/0x168[ 5241.100420]  handle_pte_fault+0x80/0x228[ 5241.100422]  __handle_mm_fault+0x1c4/0x440[ 5241.100424]  handle_mm_fault+0x60/0x1f0[ 5241.100426]  do_page_fault+0x120/0x488[ 5241.100429]  do_translation_fault+0x4c/0x68[ 5241.100431]  do_mem_abort+0x48/0xa0[ 5241.100434]  el0_da+0x38/0xc0[ 5241.100436]  el0t_64_sync_handler+0x68/0xc0[ 5241.100437]  el0t_64_sync+0x14c/0x150[ 5241.100439] ---[ end trace 0000000000000000 ]---[baolin.wang@linux.alibaba.com: remove less helpful comments, per Matthew]  Link:https://lkml.kernel.org/r/ccad3fe1375b468ebca3227b6b729f3eaf9d8046.1718423197.git.baolin.wang@linux.alibaba.com\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40949` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: shmem: fix getting incorrect lruvec when replacing a shmem folioWhen testing shmem swapin, I encountered the warning below on my machine.The reason is that replacing an old shmem folio with a new one causesmem_cgroup_migrate() to clear the old folio's memcg data.  As a result,the old folio cannot get the correct memcg's lruvec needed to removeitself from the LRU list when it is being freed.  This could lead topossible serious problems, such as LRU list crashes due to holding thewrong LRU lock, and incorrect LRU statistics.To fix this issue, we can fallback to use the mem_cgroup_replace_folio()to replace the old shmem folio.[ 5241.100311] page: refcount:0 mapcount:0 mapping:0000000000000000index:0x0 pfn:0x5d9960[ 5241.100317] head: order:4 mapcount:0 entire_mapcount:0 nr_pages_mapped:0pincount:0[ 5241.100319] flags:0x17fffe0000040068(uptodate|lru|head|swapbacked|node=0|zone=2|lastcpupid=0x3ffff)[ 5241.100323] raw: 17fffe0000040068 fffffdffd6687948 fffffdffd69ae0080000000000000000[ 5241.100325] raw: 0000000000000000 0000000000000000 00000000ffffffff0000000000000000[ 5241.100326] head: 17fffe0000040068 fffffdffd6687948 fffffdffd69ae0080000000000000000[ 5241.100327] head: 0000000000000000 0000000000000000 00000000ffffffff0000000000000000[ 5241.100328] head: 17fffe0000000204 fffffdffd6665801 ffffffffffffffff0000000000000000[ 5241.100329] head: 0000000a00000010 0000000000000000 00000000ffffffff0000000000000000[ 5241.100330] page dumped because: VM_WARN_ON_ONCE_FOLIO(!memcg &&!mem_cgroup_disabled())[ 5241.100338] ------------[ cut here ]------------[ 5241.100339] WARNING: CPU: 19 PID: 78402 atinclude/linux/memcontrol.h:775 folio_lruvec_lock_irqsave+0x140/0x150[...][ 5241.100374] pc : folio_lruvec_lock_irqsave+0x140/0x150[ 5241.100375] lr : folio_lruvec_lock_irqsave+0x138/0x150[ 5241.100376] sp : ffff80008b38b930[...][ 5241.100398] Call trace:[ 5241.100399]  folio_lruvec_lock_irqsave+0x140/0x150[ 5241.100401]  __page_cache_release+0x90/0x300[ 5241.100404]  __folio_put+0x50/0x108[ 5241.100406]  shmem_replace_folio+0x1b4/0x240[ 5241.100409]  shmem_swapin_folio+0x314/0x528[ 5241.100411]  shmem_get_folio_gfp+0x3b4/0x930[ 5241.100412]  shmem_fault+0x74/0x160[ 5241.100414]  __do_fault+0x40/0x218[ 5241.100417]  do_shared_fault+0x34/0x1b0[ 5241.100419]  do_fault+0x40/0x168[ 5241.100420]  handle_pte_fault+0x80/0x228[ 5241.100422]  __handle_mm_fault+0x1c4/0x440[ 5241.100424]  handle_mm_fault+0x60/0x1f0[ 5241.100426]  do_page_fault+0x120/0x488[ 5241.100429]  do_translation_fault+0x4c/0x68[ 5241.100431]  do_mem_abort+0x48/0xa0[ 5241.100434]  el0_da+0x38/0xc0[ 5241.100436]  el0t_64_sync_handler+0x68/0xc0[ 5241.100437]  el0t_64_sync+0x14c/0x150[ 5241.100439] ---[ end trace 0000000000000000 ]---[baolin.wang@linux.alibaba.com: remove less helpful comments, per Matthew]  Link:https://lkml.kernel.org/r/ccad3fe1375b468ebca3227b6b729f3eaf9d8046.1718423197.git.baolin.wang@linux.alibaba.com\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40949` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1011-bluefield - 5.4.0-1011.14\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-ibm - 5.4.0-1004.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
@@ -83,7 +83,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
@@ -110,27 +110,27 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
-						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
-						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1011.14')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
-						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
+						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-gcp-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
@@ -150,7 +150,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -166,31 +166,31 @@
 						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
-						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -210,7 +210,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -238,7 +238,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000170",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

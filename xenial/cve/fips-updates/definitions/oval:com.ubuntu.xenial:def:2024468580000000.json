@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-46858 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mptcp: pm: Fix uaf in __timer_delete_syncThere are two paths to access mptcp_pm_del_add_timer, result in a racecondition:     CPU1\t\t\t\tCPU2     ====                               ====     net_rx_action     napi_poll                          netlink_sendmsg     __napi_poll                        netlink_unicast     process_backlog                    netlink_unicast_kernel     __netif_receive_skb                genl_rcv     __netif_receive_skb_one_core       netlink_rcv_skb     NF_HOOK                            genl_rcv_msg     ip_local_deliver_finish            genl_family_rcv_msg     ip_protocol_deliver_rcu            genl_family_rcv_msg_doit     tcp_v4_rcv                         mptcp_pm_nl_flush_addrs_doit     tcp_v4_do_rcv                      mptcp_nl_remove_addrs_list     tcp_rcv_established                mptcp_pm_remove_addrs_and_subflows     tcp_data_queue                     remove_anno_list_by_saddr     mptcp_incoming_options             mptcp_pm_del_add_timer     mptcp_pm_del_add_timer             kfree(entry)In remove_anno_list_by_saddr(running on CPU2), after leaving the criticalzone protected by \"pm.lock\", the entry will be released, which leads to theoccurrence of uaf in the mptcp_pm_del_add_timer(running on CPU1).Keeping a reference to add_timer inside the lock, and callingsk_stop_timer_sync() with this reference, instead of \"entry->add_timer\".Move list_del(&entry->list) to mptcp_pm_del_add_timer and inside the pmlock,do not directly access any members of the entry outside the pm lock, whichcan avoid similar \"entry->x\" uaf.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46858` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mptcp: pm: Fix uaf in __timer_delete_syncThere are two paths to access mptcp_pm_del_add_timer, result in a racecondition:     CPU1\t\t\t\tCPU2     ====                               ====     net_rx_action     napi_poll                          netlink_sendmsg     __napi_poll                        netlink_unicast     process_backlog                    netlink_unicast_kernel     __netif_receive_skb                genl_rcv     __netif_receive_skb_one_core       netlink_rcv_skb     NF_HOOK                            genl_rcv_msg     ip_local_deliver_finish            genl_family_rcv_msg     ip_protocol_deliver_rcu            genl_family_rcv_msg_doit     tcp_v4_rcv                         mptcp_pm_nl_flush_addrs_doit     tcp_v4_do_rcv                      mptcp_nl_remove_addrs_list     tcp_rcv_established                mptcp_pm_remove_addrs_and_subflows     tcp_data_queue                     remove_anno_list_by_saddr     mptcp_incoming_options             mptcp_pm_del_add_timer     mptcp_pm_del_add_timer             kfree(entry)In remove_anno_list_by_saddr(running on CPU2), after leaving the criticalzone protected by \"pm.lock\", the entry will be released, which leads to theoccurrence of uaf in the mptcp_pm_del_add_timer(running on CPU1).Keeping a reference to add_timer inside the lock, and callingsk_stop_timer_sync() with this reference, instead of \"entry->add_timer\".Move list_del(&entry->list) to mptcp_pm_del_add_timer and inside the pmlock,do not directly access any members of the entry outside the pm lock, whichcan avoid similar \"entry->x\" uaf.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-46858` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1007-kvm - 4.4.0-1007.12\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1031-aws - 4.15.0-1031.33~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1015-azure - 4.11.0-1015.15\nlinux-image-extra-4.11.0-1015-azure - 4.11.0-1015.15\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 16.04 LTS"
@@ -58,23 +58,23 @@
 						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
-						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1007.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
 						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
-						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000030",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1031.33~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
-						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000040",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1015.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000060",
 						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1003.3')."
 					},
 					{
@@ -86,8 +86,8 @@
 						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
-						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000050",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10~16.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",

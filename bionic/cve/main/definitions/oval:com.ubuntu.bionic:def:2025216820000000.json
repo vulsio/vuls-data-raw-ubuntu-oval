@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2025-21682 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:eth: bnxt: always recalculate features after XDP clearing, fix null-derefRecalculate features when XDP is detached.Before:  # ip li set dev eth0 xdp obj xdp_dummy.bpf.o sec xdp  # ip li set dev eth0 xdp off  # ethtool -k eth0 | grep gro  rx-gro-hw: off [requested on]After:  # ip li set dev eth0 xdp obj xdp_dummy.bpf.o sec xdp  # ip li set dev eth0 xdp off  # ethtool -k eth0 | grep gro  rx-gro-hw: onThe fact that HW-GRO doesn't get re-enabled automatically is justa minor annoyance. The real issue is that the features will randomlycome back during another reconfiguration which just happens to invokenetdev_update_features(). The driver doesn't handle reconfiguringtwo things at a time very robustly.Starting with commit 98ba1d931f61 (\"bnxt_en: Fix RSS logic in__bnxt_reserve_rings()\") we only reconfigure the RSS hash tableif the \"effective\" number of Rx rings has changed. If HW-GRO isenabled \"effective\" number of rings is 2x what user sees.So if we are in the bad state, with HW-GRO re-enablement \"pending\"after XDP off, and we lower the rings by / 2 - the HW-GRO ringsdoing 2x and the ethtool -L doing / 2 may cancel each other out,and the:  if (old_rx_rings != bp->hw_resc.resv_rx_rings &&condition in __bnxt_reserve_rings() will be false.The RSS map won't get updated, and we'll crash with:  BUG: kernel NULL pointer dereference, address: 0000000000000168  RIP: 0010:__bnxt_hwrm_vnic_set_rss+0x13a/0x1a0    bnxt_hwrm_vnic_rss_cfg_p5+0x47/0x180    __bnxt_setup_vnic_p5+0x58/0x110    bnxt_init_nic+0xb72/0xf50    __bnxt_open_nic+0x40d/0xab0    bnxt_open_nic+0x2b/0x60    ethtool_set_channels+0x18c/0x1d0As we try to access a freed ring.The issue is present since XDP support was added, really, butprior to commit 98ba1d931f61 (\"bnxt_en: Fix RSS logic in__bnxt_reserve_rings()\") it wasn't causing major issues.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:eth: bnxt: always recalculate features after XDP clearing, fix null-derefRecalculate features when XDP is detached.Before:  # ip li set dev eth0 xdp obj xdp_dummy.bpf.o sec xdp  # ip li set dev eth0 xdp off  # ethtool -k eth0 | grep gro  rx-gro-hw: off [requested on]After:  # ip li set dev eth0 xdp obj xdp_dummy.bpf.o sec xdp  # ip li set dev eth0 xdp off  # ethtool -k eth0 | grep gro  rx-gro-hw: onThe fact that HW-GRO doesn't get re-enabled automatically is justa minor annoyance. The real issue is that the features will randomlycome back during another reconfiguration which just happens to invokenetdev_update_features(). The driver doesn't handle reconfiguringtwo things at a time very robustly.Starting with commit 98ba1d931f61 (\"bnxt_en: Fix RSS logic in__bnxt_reserve_rings()\") we only reconfigure the RSS hash tableif the \"effective\" number of Rx rings has changed. If HW-GRO isenabled \"effective\" number of rings is 2x what user sees.So if we are in the bad state, with HW-GRO re-enablement \"pending\"after XDP off, and we lower the rings by / 2 - the HW-GRO ringsdoing 2x and the ethtool -L doing / 2 may cancel each other out,and the:  if (old_rx_rings != bp->hw_resc.resv_rx_rings &&condition in __bnxt_reserve_rings() will be false.The RSS map won't get updated, and we'll crash with:  BUG: kernel NULL pointer dereference, address: 0000000000000168  RIP: 0010:__bnxt_hwrm_vnic_set_rss+0x13a/0x1a0    bnxt_hwrm_vnic_rss_cfg_p5+0x47/0x180    __bnxt_setup_vnic_p5+0x58/0x110    bnxt_init_nic+0xb72/0xf50    __bnxt_open_nic+0x40d/0xab0    bnxt_open_nic+0x2b/0x60    ethtool_set_channels+0x18c/0x1d0As we try to access a freed ring.The issue is present since XDP support was added, really, butprior to commit 98ba1d931f61 (\"bnxt_en: Fix RSS logic in__bnxt_reserve_rings()\") it wasn't causing major issues.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2025-21682` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -34,8 +34,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000000",
-						"comment": "linux package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000000",
+						"comment": "linux package in bionic, is related to the CVE in some way and has been fixed (note: '4.13.0-16.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000040",
@@ -43,15 +43,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000220",
-						"comment": "linux-hwe-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-hwe-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000090",
-						"comment": "linux-kvm package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000040",
+						"comment": "linux-kvm package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000030",
-						"comment": "linux-aws package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000050",
+						"comment": "linux-aws package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000150",
@@ -63,15 +63,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000270",
-						"comment": "linux-aws-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-aws-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
 						"comment": "linux-azure: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000190",
-						"comment": "linux-azure-4.15 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000010",
+						"comment": "linux-azure-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1082.92')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201585530000000",
@@ -79,15 +79,15 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000240",
-						"comment": "linux-azure-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-azure-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
 						"comment": "linux-gcp: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000210",
-						"comment": "linux-gcp-4.15 package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000050",
+						"comment": "linux-gcp-4.15 package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1071.81')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000130",
@@ -95,7 +95,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000260",
-						"comment": "linux-gcp-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-gcp-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -111,11 +111,11 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000310",
-						"comment": "linux-ibm-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-ibm-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000110",
-						"comment": "linux-oracle package in bionic is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -127,15 +127,19 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000250",
-						"comment": "linux-oracle-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-oracle-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
 						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.4')."
 					},
 					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000230",
-						"comment": "linux-raspi-5.4 package in bionic is affected and may need fixing."
+						"comment": "linux-raspi-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					}
 				]
 			}

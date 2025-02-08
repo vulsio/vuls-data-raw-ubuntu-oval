@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-57919 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/amd/display: fix divide error in DM plane scale calcsdm_get_plane_scale doesn't take into account plane scaled size equal tozero, leading to a kernel oops due to division by zero. Fix by settingout-scale size as zero when the dst size is zero, similar to what isdone by drm_calc_scale(). This issue started with the introduction ofcursor ovelay mode that uses this function to assess cursor mode changesvia dm_crtc_get_cursor_mode() before checking plane state.[Dec17 17:14] Oops: divide error: 0000 [#1] PREEMPT SMP NOPTI[  +0.000018] CPU: 5 PID: 1660 Comm: surface-DP-1 Not tainted 6.10.0+ #231[  +0.000007] Hardware name: Valve Jupiter/Jupiter, BIOS F7A0131 01/30/2024[  +0.000004] RIP: 0010:dm_get_plane_scale+0x3f/0x60 [amdgpu][  +0.000553] Code: 44 0f b7 41 3a 44 0f b7 49 3e 83 e0 0f 48 0f a3 c2 7321 69 41 28 e8 03 00 00 31 d2 41 f7 f1 31 d2 89 06 69 41 2c e8 03 00 00<41> f7 f0 89 07 e9 d7 d8 7e e9 44 89 c8 45 89 c1 41 89 c0 eb d4 66[  +0.000005] RSP: 0018:ffffa8df0de6b8a0 EFLAGS: 00010246[  +0.000006] RAX: 00000000000003e8 RBX: ffff9ac65c1f6e00 RCX:ffff9ac65d055500[  +0.000003] RDX: 0000000000000000 RSI: ffffa8df0de6b8b0 RDI:ffffa8df0de6b8b4[  +0.000004] RBP: ffff9ac64e7a5800 R08: 0000000000000000 R09:0000000000000a00[  +0.000003] R10: 00000000000000ff R11: 0000000000000054 R12:ffff9ac6d0700010[  +0.000003] R13: ffff9ac65d054f00 R14: ffff9ac65d055500 R15:ffff9ac64e7a60a0[  +0.000004] FS:  00007f869ea00640(0000) GS:ffff9ac970080000(0000)knlGS:0000000000000000[  +0.000004] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[  +0.000003] CR2: 000055ca701becd0 CR3: 000000010e7f2000 CR4:0000000000350ef0[  +0.000004] Call Trace:[  +0.000007]  <TASK>[  +0.000006]  ? __die_body.cold+0x19/0x27[  +0.000009]  ? die+0x2e/0x50[  +0.000007]  ? do_trap+0xca/0x110[  +0.000007]  ? do_error_trap+0x6a/0x90[  +0.000006]  ? dm_get_plane_scale+0x3f/0x60 [amdgpu][  +0.000504]  ? exc_divide_error+0x38/0x50[  +0.000005]  ? dm_get_plane_scale+0x3f/0x60 [amdgpu][  +0.000488]  ? asm_exc_divide_error+0x1a/0x20[  +0.000011]  ? dm_get_plane_scale+0x3f/0x60 [amdgpu][  +0.000593]  dm_crtc_get_cursor_mode+0x33f/0x430 [amdgpu][  +0.000562]  amdgpu_dm_atomic_check+0x2ef/0x1770 [amdgpu][  +0.000501]  drm_atomic_check_only+0x5e1/0xa30 [drm][  +0.000047]  drm_mode_atomic_ioctl+0x832/0xcb0 [drm][  +0.000050]  ? __pfx_drm_mode_atomic_ioctl+0x10/0x10 [drm][  +0.000047]  drm_ioctl_kernel+0xb3/0x100 [drm][  +0.000062]  drm_ioctl+0x27a/0x4f0 [drm][  +0.000049]  ? __pfx_drm_mode_atomic_ioctl+0x10/0x10 [drm][  +0.000055]  amdgpu_drm_ioctl+0x4e/0x90 [amdgpu][  +0.000360]  __x64_sys_ioctl+0x97/0xd0[  +0.000010]  do_syscall_64+0x82/0x190[  +0.000008]  ? __pfx_drm_mode_createblob_ioctl+0x10/0x10 [drm][  +0.000044]  ? srso_return_thunk+0x5/0x5f[  +0.000006]  ? drm_ioctl_kernel+0xb3/0x100 [drm][  +0.000040]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? __check_object_size+0x50/0x220[  +0.000007]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? drm_ioctl+0x2a4/0x4f0 [drm][  +0.000039]  ? __pfx_drm_mode_createblob_ioctl+0x10/0x10 [drm][  +0.000043]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? __pm_runtime_suspend+0x69/0xc0[  +0.000006]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? amdgpu_drm_ioctl+0x71/0x90 [amdgpu][  +0.000366]  ? srso_return_thunk+0x5/0x5f[  +0.000006]  ? syscall_exit_to_user_mode+0x77/0x210[  +0.000007]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? do_syscall_64+0x8e/0x190[  +0.000006]  ? srso_return_thunk+0x5/0x5f[  +0.000006]  ? do_syscall_64+0x8e/0x190[  +0.000006]  ? srso_return_thunk+0x5/0x5f[  +0.000007]  entry_SYSCALL_64_after_hwframe+0x76/0x7e[  +0.000008] RIP: 0033:0x55bb7cd962bc[  +0.000007] Code: 4c 89 6c 24 18 4c 89 64 24 20 4c 89 74 24 28 0f 57 c00f 11 44 24 30 89 c7 48 8d 54 24 08 b8 10 00 00 00 be bc 64---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-57919` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1011-bluefield - 5.15.0-1011.13\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/amd/display: fix divide error in DM plane scale calcsdm_get_plane_scale doesn't take into account plane scaled size equal tozero, leading to a kernel oops due to division by zero. Fix by settingout-scale size as zero when the dst size is zero, similar to what isdone by drm_calc_scale(). This issue started with the introduction ofcursor ovelay mode that uses this function to assess cursor mode changesvia dm_crtc_get_cursor_mode() before checking plane state.[Dec17 17:14] Oops: divide error: 0000 [#1] PREEMPT SMP NOPTI[  +0.000018] CPU: 5 PID: 1660 Comm: surface-DP-1 Not tainted 6.10.0+ #231[  +0.000007] Hardware name: Valve Jupiter/Jupiter, BIOS F7A0131 01/30/2024[  +0.000004] RIP: 0010:dm_get_plane_scale+0x3f/0x60 [amdgpu][  +0.000553] Code: 44 0f b7 41 3a 44 0f b7 49 3e 83 e0 0f 48 0f a3 c2 7321 69 41 28 e8 03 00 00 31 d2 41 f7 f1 31 d2 89 06 69 41 2c e8 03 00 00<41> f7 f0 89 07 e9 d7 d8 7e e9 44 89 c8 45 89 c1 41 89 c0 eb d4 66[  +0.000005] RSP: 0018:ffffa8df0de6b8a0 EFLAGS: 00010246[  +0.000006] RAX: 00000000000003e8 RBX: ffff9ac65c1f6e00 RCX:ffff9ac65d055500[  +0.000003] RDX: 0000000000000000 RSI: ffffa8df0de6b8b0 RDI:ffffa8df0de6b8b4[  +0.000004] RBP: ffff9ac64e7a5800 R08: 0000000000000000 R09:0000000000000a00[  +0.000003] R10: 00000000000000ff R11: 0000000000000054 R12:ffff9ac6d0700010[  +0.000003] R13: ffff9ac65d054f00 R14: ffff9ac65d055500 R15:ffff9ac64e7a60a0[  +0.000004] FS:  00007f869ea00640(0000) GS:ffff9ac970080000(0000)knlGS:0000000000000000[  +0.000004] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[  +0.000003] CR2: 000055ca701becd0 CR3: 000000010e7f2000 CR4:0000000000350ef0[  +0.000004] Call Trace:[  +0.000007]  <TASK>[  +0.000006]  ? __die_body.cold+0x19/0x27[  +0.000009]  ? die+0x2e/0x50[  +0.000007]  ? do_trap+0xca/0x110[  +0.000007]  ? do_error_trap+0x6a/0x90[  +0.000006]  ? dm_get_plane_scale+0x3f/0x60 [amdgpu][  +0.000504]  ? exc_divide_error+0x38/0x50[  +0.000005]  ? dm_get_plane_scale+0x3f/0x60 [amdgpu][  +0.000488]  ? asm_exc_divide_error+0x1a/0x20[  +0.000011]  ? dm_get_plane_scale+0x3f/0x60 [amdgpu][  +0.000593]  dm_crtc_get_cursor_mode+0x33f/0x430 [amdgpu][  +0.000562]  amdgpu_dm_atomic_check+0x2ef/0x1770 [amdgpu][  +0.000501]  drm_atomic_check_only+0x5e1/0xa30 [drm][  +0.000047]  drm_mode_atomic_ioctl+0x832/0xcb0 [drm][  +0.000050]  ? __pfx_drm_mode_atomic_ioctl+0x10/0x10 [drm][  +0.000047]  drm_ioctl_kernel+0xb3/0x100 [drm][  +0.000062]  drm_ioctl+0x27a/0x4f0 [drm][  +0.000049]  ? __pfx_drm_mode_atomic_ioctl+0x10/0x10 [drm][  +0.000055]  amdgpu_drm_ioctl+0x4e/0x90 [amdgpu][  +0.000360]  __x64_sys_ioctl+0x97/0xd0[  +0.000010]  do_syscall_64+0x82/0x190[  +0.000008]  ? __pfx_drm_mode_createblob_ioctl+0x10/0x10 [drm][  +0.000044]  ? srso_return_thunk+0x5/0x5f[  +0.000006]  ? drm_ioctl_kernel+0xb3/0x100 [drm][  +0.000040]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? __check_object_size+0x50/0x220[  +0.000007]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? drm_ioctl+0x2a4/0x4f0 [drm][  +0.000039]  ? __pfx_drm_mode_createblob_ioctl+0x10/0x10 [drm][  +0.000043]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? __pm_runtime_suspend+0x69/0xc0[  +0.000006]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? amdgpu_drm_ioctl+0x71/0x90 [amdgpu][  +0.000366]  ? srso_return_thunk+0x5/0x5f[  +0.000006]  ? syscall_exit_to_user_mode+0x77/0x210[  +0.000007]  ? srso_return_thunk+0x5/0x5f[  +0.000005]  ? do_syscall_64+0x8e/0x190[  +0.000006]  ? srso_return_thunk+0x5/0x5f[  +0.000006]  ? do_syscall_64+0x8e/0x190[  +0.000006]  ? srso_return_thunk+0x5/0x5f[  +0.000007]  entry_SYSCALL_64_after_hwframe+0x76/0x7e[  +0.000008] RIP: 0033:0x55bb7cd962bc[  +0.000007] Code: 4c 89 6c 24 18 4c 89 64 24 20 4c 89 74 24 28 0f 57 c00f 11 44 24 30 89 c7 48 8d 54 24 08 b8 10 00 00 00 be bc 64---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-57919` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1011-bluefield - 5.15.0-1011.13\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
@@ -88,8 +88,8 @@
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
@@ -100,7 +100,7 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
 						"comment": "linux-bluefield package in bluefield/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1011.13')."
 					},
 					{
@@ -120,23 +120,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
@@ -152,7 +152,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
@@ -188,7 +188,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
@@ -208,7 +208,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]

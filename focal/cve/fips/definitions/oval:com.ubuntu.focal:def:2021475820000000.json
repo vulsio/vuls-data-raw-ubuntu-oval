@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47582 on Ubuntu Pro FIPS 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: USB:core: Make do_proc_control() and do_proc_bulk() killable TheUSBDEVFS_CONTROL and USBDEVFS_BULK ioctls invoke usb_start_wait_urb(),which contains an uninterruptible wait with a user-specified timeout value.If timeout value is very large and the device being accessed does notrespond in a reasonable amount of time, the kernel will complain about\"Task X blocked for more than N seconds\", as found in testing by syzbot:INFO: task syz-executor.0:8700 blocked for more than 143 seconds. Nottainted 5.14.0-rc7-syzkaller #0 \"echo 0 >/proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:syz-executor.0 state:D stack:23192 pid: 8700 ppid: 8455flags:0x00004004 Call Trace: context_switch kernel/sched/core.c:4681[inline] __schedule+0xc07/0x11f0 kernel/sched/core.c:5938schedule+0x14b/0x210 kernel/sched/core.c:6017 schedule_timeout+0x98/0x2f0kernel/time/timer.c:1857 do_wait_for_common+0x2da/0x480kernel/sched/completion.c:85 __wait_for_commonkernel/sched/completion.c:106 [inline] wait_for_commonkernel/sched/completion.c:117 [inline]wait_for_completion_timeout+0x46/0x60 kernel/sched/completion.c:157usb_start_wait_urb+0x167/0x550 drivers/usb/core/message.c:63do_proc_bulk+0x978/0x1080 drivers/usb/core/devio.c:1236 proc_bulkdrivers/usb/core/devio.c:1273 [inline] usbdev_do_ioctldrivers/usb/core/devio.c:2547 [inline] usbdev_ioctl+0x3441/0x6b10drivers/usb/core/devio.c:2713 ... To fix this problem, this patch replacesusbfs's calls to usb_control_msg() and usb_bulk_msg() with special-purposecode that does essentially the same thing (as recommended in the commentfor usb_start_wait_urb()), except that it always uses a killable wait andit uses GFP_KERNEL rather than GFP_NOIO.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47582` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: USB:core: Make do_proc_control() and do_proc_bulk() killable TheUSBDEVFS_CONTROL and USBDEVFS_BULK ioctls invoke usb_start_wait_urb(),which contains an uninterruptible wait with a user-specified timeout value.If timeout value is very large and the device being accessed does notrespond in a reasonable amount of time, the kernel will complain about\"Task X blocked for more than N seconds\", as found in testing by syzbot:INFO: task syz-executor.0:8700 blocked for more than 143 seconds. Nottainted 5.14.0-rc7-syzkaller #0 \"echo 0 >/proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:syz-executor.0 state:D stack:23192 pid: 8700 ppid: 8455flags:0x00004004 Call Trace: context_switch kernel/sched/core.c:4681[inline] __schedule+0xc07/0x11f0 kernel/sched/core.c:5938schedule+0x14b/0x210 kernel/sched/core.c:6017 schedule_timeout+0x98/0x2f0kernel/time/timer.c:1857 do_wait_for_common+0x2da/0x480kernel/sched/completion.c:85 __wait_for_commonkernel/sched/completion.c:106 [inline] wait_for_commonkernel/sched/completion.c:117 [inline]wait_for_completion_timeout+0x46/0x60 kernel/sched/completion.c:157usb_start_wait_urb+0x167/0x550 drivers/usb/core/message.c:63do_proc_bulk+0x978/0x1080 drivers/usb/core/devio.c:1236 proc_bulkdrivers/usb/core/devio.c:1273 [inline] usbdev_do_ioctldrivers/usb/core/devio.c:2547 [inline] usbdev_ioctl+0x3441/0x6b10drivers/usb/core/devio.c:2713 ... To fix this problem, this patch replacesusbfs's calls to usb_control_msg() and usb_bulk_msg() with special-purposecode that does essentially the same thing (as recommended in the commentfor usb_start_wait_urb()), except that it always uses a killable wait andit uses GFP_KERNEL rather than GFP_NOIO.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47582` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 20.04 LTS"
@@ -73,7 +73,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000040",
@@ -100,7 +100,7 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
@@ -140,7 +140,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -156,7 +156,7 @@
 						"comment": "linux-gkeop: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
@@ -164,15 +164,15 @@
 						"comment": "linux-ibm package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
@@ -180,7 +180,7 @@
 						"comment": "linux-iot package in focal is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -200,7 +200,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{

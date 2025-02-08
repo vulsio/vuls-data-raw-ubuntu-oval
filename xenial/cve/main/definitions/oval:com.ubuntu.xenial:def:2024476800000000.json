@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-47680 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: check discard support for conventional zonesAs the helper function f2fs_bdev_support_discard() shows, f2fs checks ifthe target block devices support discard by callingbdev_max_discard_sectors() and bdev_is_zoned(). This check works wellfor most cases, but it does not work for conventional zones on zonedblock devices. F2fs assumes that zoned block devices support discard,and calls __submit_discard_cmd(). When __submit_discard_cmd() is calledfor sequential write required zones, it works fine since__submit_discard_cmd() issues zone reset commands instead of discardcommands. However, when __submit_discard_cmd() is called forconventional zones, __blkdev_issue_discard() is called even when thedevices do not support discard.The inappropriate __blkdev_issue_discard() call was not a problem beforethe commit 30f1e7241422 (\"block: move discard checks into the ioctlhandler\") because __blkdev_issue_discard() checked if the target devicessupport discard or not. If not, it returned EOPNOTSUPP. After thecommit, __blkdev_issue_discard() no longer checks it. It always returnszero and sets NULL to the given bio pointer. This NULL pointer triggersf2fs_bug_on() in __submit_discard_cmd(). The BUG is recreated with thecommands below at the umount step, where /dev/nullb0 is a zoned null_blkwith 5GB total size, 128MB zone size and 10 conventional zones.$ mkfs.f2fs -f -m /dev/nullb0$ mount /dev/nullb0 /mnt$ for ((i=0;i<5;i++)); do dd if=/dev/zero of=/mnt/test bs=65536 count=1600conv=fsync; done$ umount /mntTo fix the BUG, avoid the inappropriate __blkdev_issue_discard() call.When discard is requested for conventional zones, check if the devicesupports discard or not. If not, return EOPNOTSUPP.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-47680` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:f2fs: check discard support for conventional zonesAs the helper function f2fs_bdev_support_discard() shows, f2fs checks ifthe target block devices support discard by callingbdev_max_discard_sectors() and bdev_is_zoned(). This check works wellfor most cases, but it does not work for conventional zones on zonedblock devices. F2fs assumes that zoned block devices support discard,and calls __submit_discard_cmd(). When __submit_discard_cmd() is calledfor sequential write required zones, it works fine since__submit_discard_cmd() issues zone reset commands instead of discardcommands. However, when __submit_discard_cmd() is called forconventional zones, __blkdev_issue_discard() is called even when thedevices do not support discard.The inappropriate __blkdev_issue_discard() call was not a problem beforethe commit 30f1e7241422 (\"block: move discard checks into the ioctlhandler\") because __blkdev_issue_discard() checked if the target devicessupport discard or not. If not, it returned EOPNOTSUPP. After thecommit, __blkdev_issue_discard() no longer checks it. It always returnszero and sets NULL to the given bio pointer. This NULL pointer triggersf2fs_bug_on() in __submit_discard_cmd(). The BUG is recreated with thecommands below at the umount step, where /dev/nullb0 is a zoned null_blkwith 5GB total size, 128MB zone size and 10 conventional zones.$ mkfs.f2fs -f -m /dev/nullb0$ mount /dev/nullb0 /mnt$ for ((i=0;i<5;i++)); do dd if=/dev/zero of=/mnt/test bs=65536 count=1600conv=fsync; done$ umount /mntTo fix the BUG, avoid the inappropriate __blkdev_issue_discard() call.When discard is requested for conventional zones, check if the devicesupports discard or not. If not, return EOPNOTSUPP.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-47680` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1007-kvm - 4.4.0-1007.12\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1031-aws - 4.15.0-1031.33~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1015-azure - 4.11.0-1015.15\nlinux-image-extra-4.11.0-1015-azure - 4.11.0-1015.15\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -42,20 +42,20 @@
 						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
-						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1007.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
 						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
-						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000030",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1031.33~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
-						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000040",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1015.15')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
@@ -66,8 +66,8 @@
 						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
-						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000050",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10~16.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",

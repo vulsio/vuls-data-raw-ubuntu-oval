@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-44959 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:tracefs: Use generic inode RCU for synchronizing freeingWith structure layout randomization enabled for 'struct inode' we need toavoid overlapping any of the RCU-used / initialized-only-once members,e.g. i_lru or i_sb_list to not corrupt related list traversals when makinguse of the rcu_head.For an unlucky structure layout of 'struct inode' we may end up with thefollowing splat when running the ftrace selftests:[<...>] list_del corruption, ffff888103ee2cb0->next(tracefs_inode_cache+0x0/0x4e0 [slab object]) is NULL (prev istracefs_inode_cache+0x78/0x4e0 [slab object])[<...>] ------------[ cut here ]------------[<...>] kernel BUG at lib/list_debug.c:54![<...>] invalid opcode: 0000 [#1] PREEMPT SMP KASAN[<...>] CPU: 3 PID: 2550 Comm: mount Tainted: G                 N6.8.12-grsec+ #122 ed2f536ca62f28b087b90e3cc906a8d25b3ddc65[<...>] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.14.0-2 04/01/2014[<...>] RIP: 0010:[<ffffffff84656018>]__list_del_entry_valid_or_report+0x138/0x3e0[<...>] Code: 48 b8 99 fb 65 f2 ff ff ff ff e9 03 5c d9 fc cc 48 b8 99 fb65 f2 ff ff ff ff e9 33 5a d9 fc cc 48 b8 99 fb 65 f2 ff ff ff ff <0f> 0b4c 89 e9 48 89 ea 48 89 ee 48 c7 c7 60 8f dd 89 31 c0 e8 2f[<...>] RSP: 0018:fffffe80416afaf0 EFLAGS: 00010283[<...>] RAX: 0000000000000098 RBX: ffff888103ee2cb0 RCX: 0000000000000000[<...>] RDX: ffffffff84655fe8 RSI: ffffffff89dd8b60 RDI: 0000000000000001[<...>] RBP: ffff888103ee2cb0 R08: 0000000000000001 R09: fffffbd0082d5f25[<...>] R10: fffffe80416af92f R11: 0000000000000001 R12: fdf99c16731d9b6d[<...>] R13: 0000000000000000 R14: ffff88819ad4b8b8 R15: 0000000000000000[<...>] RBX: tracefs_inode_cache+0x0/0x4e0 [slab object][<...>] RDX: __list_del_entry_valid_or_report+0x108/0x3e0[<...>] RSI: __func__.47+0x4340/0x4400[<...>] RBP: tracefs_inode_cache+0x0/0x4e0 [slab object][<...>] RSP: process kstack fffffe80416afaf0+0x7af0/0x8000 [mount 25502550][<...>] R09: kasan shadow of process kstack fffffe80416af928+0x7928/0x8000[mount 2550 2550][<...>] R10: process kstack fffffe80416af92f+0x792f/0x8000 [mount 25502550][<...>] R14: tracefs_inode_cache+0x78/0x4e0 [slab object][<...>] FS:  00006dcb380c1840(0000) GS:ffff8881e0600000(0000)knlGS:0000000000000000[<...>] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[<...>] CR2: 000076ab72b30e84 CR3: 000000000b088004 CR4: 0000000000360ef0shadow CR4: 0000000000360ef0[<...>] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000[<...>] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400[<...>] ASID: 0003[<...>] Stack:[<...>]  ffffffff818a2315 00000000f5c856ee ffffffff896f1840ffff888103ee2cb0[<...>]  ffff88812b6b9750 0000000079d714b6 fffffbfff1e9280bffffffff8f49405f[<...>]  0000000000000001 0000000000000000 ffff888104457280ffffffff8248b392[<...>] Call Trace:[<...>]  <TASK>[<...>]  [<ffffffff818a2315>] ? lock_release+0x175/0x380 fffffe80416afaf0[<...>]  [<ffffffff8248b392>] list_lru_del+0x152/0x740 fffffe80416afb48[<...>]  [<ffffffff8248ba93>] list_lru_del_obj+0x113/0x280 fffffe80416afb88[<...>]  [<ffffffff8940fd19>] ? _atomic_dec_and_lock+0x119/0x200fffffe80416afb90[<...>]  [<ffffffff8295b244>] iput_final+0x1c4/0x9a0 fffffe80416afbb8[<...>]  [<ffffffff8293a52b>] dentry_unlink_inode+0x44b/0xaa0fffffe80416afbf8[<...>]  [<ffffffff8293fefc>] __dentry_kill+0x23c/0xf00 fffffe80416afc40[<...>]  [<ffffffff8953a85f>] ? __this_cpu_preempt_check+0x1f/0xa0fffffe80416afc48[<...>]  [<ffffffff82949ce5>] ? shrink_dentry_list+0x1c5/0x760fffffe80416afc70[<...>]  [<ffffffff82949b71>] ? shrink_dentry_list+0x51/0x760fffffe80416afc78[<...>]  [<ffffffff82949da8>] shrink_dentry_list+0x288/0x760fffffe80416afc80[<...>]  [<ffffffff8294ae75>] shrink_dcache_sb+0x155/0x420 fffffe80416afcc8[<...>]  [<ffffffff8953a7c3>] ? debug_smp_processor_id+0x23/0xa0fffffe80416afce0[<...>]  [<ffffffff8294ad20>] ? do_one_tre---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-44959` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:tracefs: Use generic inode RCU for synchronizing freeingWith structure layout randomization enabled for 'struct inode' we need toavoid overlapping any of the RCU-used / initialized-only-once members,e.g. i_lru or i_sb_list to not corrupt related list traversals when makinguse of the rcu_head.For an unlucky structure layout of 'struct inode' we may end up with thefollowing splat when running the ftrace selftests:[<...>] list_del corruption, ffff888103ee2cb0->next(tracefs_inode_cache+0x0/0x4e0 [slab object]) is NULL (prev istracefs_inode_cache+0x78/0x4e0 [slab object])[<...>] ------------[ cut here ]------------[<...>] kernel BUG at lib/list_debug.c:54![<...>] invalid opcode: 0000 [#1] PREEMPT SMP KASAN[<...>] CPU: 3 PID: 2550 Comm: mount Tainted: G                 N6.8.12-grsec+ #122 ed2f536ca62f28b087b90e3cc906a8d25b3ddc65[<...>] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.14.0-2 04/01/2014[<...>] RIP: 0010:[<ffffffff84656018>]__list_del_entry_valid_or_report+0x138/0x3e0[<...>] Code: 48 b8 99 fb 65 f2 ff ff ff ff e9 03 5c d9 fc cc 48 b8 99 fb65 f2 ff ff ff ff e9 33 5a d9 fc cc 48 b8 99 fb 65 f2 ff ff ff ff <0f> 0b4c 89 e9 48 89 ea 48 89 ee 48 c7 c7 60 8f dd 89 31 c0 e8 2f[<...>] RSP: 0018:fffffe80416afaf0 EFLAGS: 00010283[<...>] RAX: 0000000000000098 RBX: ffff888103ee2cb0 RCX: 0000000000000000[<...>] RDX: ffffffff84655fe8 RSI: ffffffff89dd8b60 RDI: 0000000000000001[<...>] RBP: ffff888103ee2cb0 R08: 0000000000000001 R09: fffffbd0082d5f25[<...>] R10: fffffe80416af92f R11: 0000000000000001 R12: fdf99c16731d9b6d[<...>] R13: 0000000000000000 R14: ffff88819ad4b8b8 R15: 0000000000000000[<...>] RBX: tracefs_inode_cache+0x0/0x4e0 [slab object][<...>] RDX: __list_del_entry_valid_or_report+0x108/0x3e0[<...>] RSI: __func__.47+0x4340/0x4400[<...>] RBP: tracefs_inode_cache+0x0/0x4e0 [slab object][<...>] RSP: process kstack fffffe80416afaf0+0x7af0/0x8000 [mount 25502550][<...>] R09: kasan shadow of process kstack fffffe80416af928+0x7928/0x8000[mount 2550 2550][<...>] R10: process kstack fffffe80416af92f+0x792f/0x8000 [mount 25502550][<...>] R14: tracefs_inode_cache+0x78/0x4e0 [slab object][<...>] FS:  00006dcb380c1840(0000) GS:ffff8881e0600000(0000)knlGS:0000000000000000[<...>] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033[<...>] CR2: 000076ab72b30e84 CR3: 000000000b088004 CR4: 0000000000360ef0shadow CR4: 0000000000360ef0[<...>] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000[<...>] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400[<...>] ASID: 0003[<...>] Stack:[<...>]  ffffffff818a2315 00000000f5c856ee ffffffff896f1840ffff888103ee2cb0[<...>]  ffff88812b6b9750 0000000079d714b6 fffffbfff1e9280bffffffff8f49405f[<...>]  0000000000000001 0000000000000000 ffff888104457280ffffffff8248b392[<...>] Call Trace:[<...>]  <TASK>[<...>]  [<ffffffff818a2315>] ? lock_release+0x175/0x380 fffffe80416afaf0[<...>]  [<ffffffff8248b392>] list_lru_del+0x152/0x740 fffffe80416afb48[<...>]  [<ffffffff8248ba93>] list_lru_del_obj+0x113/0x280 fffffe80416afb88[<...>]  [<ffffffff8940fd19>] ? _atomic_dec_and_lock+0x119/0x200fffffe80416afb90[<...>]  [<ffffffff8295b244>] iput_final+0x1c4/0x9a0 fffffe80416afbb8[<...>]  [<ffffffff8293a52b>] dentry_unlink_inode+0x44b/0xaa0fffffe80416afbf8[<...>]  [<ffffffff8293fefc>] __dentry_kill+0x23c/0xf00 fffffe80416afc40[<...>]  [<ffffffff8953a85f>] ? __this_cpu_preempt_check+0x1f/0xa0fffffe80416afc48[<...>]  [<ffffffff82949ce5>] ? shrink_dentry_list+0x1c5/0x760fffffe80416afc70[<...>]  [<ffffffff82949b71>] ? shrink_dentry_list+0x51/0x760fffffe80416afc78[<...>]  [<ffffffff82949da8>] shrink_dentry_list+0x288/0x760fffffe80416afc80[<...>]  [<ffffffff8294ae75>] shrink_dcache_sb+0x155/0x420 fffffe80416afcc8[<...>]  [<ffffffff8953a7c3>] ? debug_smp_processor_id+0x23/0xa0fffffe80416afce0[<...>]  [<ffffffff8294ad20>] ? do_one_tre---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-44959` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1011-bluefield - 5.4.0-1011.14\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-ibm - 5.4.0-1004.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
@@ -84,7 +84,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
@@ -111,27 +111,27 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
-						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
-						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1011.14')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
-						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
+						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-gcp-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
@@ -151,7 +151,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -167,31 +167,31 @@
 						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
-						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -211,7 +211,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -239,7 +239,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000170",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

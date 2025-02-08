@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56649 on Ubuntu 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: enetc: Do not configure preemptible TCs if SIs do not supportBoth ENETC PF and VF drivers share enetc_setup_tc_mqprio() to configureMQPRIO. And enetc_setup_tc_mqprio() calls enetc_change_preemptible_tcs()to configure preemptible TCs. However, only PF is able to configurepreemptible TCs. Because only PF has related registers, while VF does nothave these registers. So for VF, its hw->port pointer is NULL. Therefore,VF will access an invalid pointer when accessing a non-existent register,which will cause a crash issue. The simplified log is as follows.root@ls1028ardb:~# tc qdisc add dev eno0vf0 parent root handle 100: \\mqprio num_tc 4 map 0 0 1 1 2 2 3 3 queues 1@0 1@1 1@2 1@3 hw 1[  187.290775] Unable to handle kernel paging request at virtual address0000000000001f00[  187.424831] pc : enetc_mm_commit_preemptible_tcs+0x1c4/0x400[  187.430518] lr : enetc_mm_commit_preemptible_tcs+0x30c/0x400[  187.511140] Call trace:[  187.513588]  enetc_mm_commit_preemptible_tcs+0x1c4/0x400[  187.518918]  enetc_setup_tc_mqprio+0x180/0x214[  187.523374]  enetc_vf_setup_tc+0x1c/0x30[  187.527306]  mqprio_enable_offload+0x144/0x178[  187.531766]  mqprio_init+0x3ec/0x668[  187.535351]  qdisc_create+0x15c/0x488[  187.539023]  tc_modify_qdisc+0x398/0x73c[  187.542958]  rtnetlink_rcv_msg+0x128/0x378[  187.547064]  netlink_rcv_skb+0x60/0x130[  187.550910]  rtnetlink_rcv+0x18/0x24[  187.554492]  netlink_unicast+0x300/0x36c[  187.558425]  netlink_sendmsg+0x1a8/0x420[  187.606759] ---[ end trace 0000000000000000 ]---In addition, some PFs also do not support configuring preemptible TCs,such as eno1 and eno3 on LS1028A. It won't crash like it does for VFs,but we should prevent these PFs from accessing these unimplementedregisters.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56649` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: enetc: Do not configure preemptible TCs if SIs do not supportBoth ENETC PF and VF drivers share enetc_setup_tc_mqprio() to configureMQPRIO. And enetc_setup_tc_mqprio() calls enetc_change_preemptible_tcs()to configure preemptible TCs. However, only PF is able to configurepreemptible TCs. Because only PF has related registers, while VF does nothave these registers. So for VF, its hw->port pointer is NULL. Therefore,VF will access an invalid pointer when accessing a non-existent register,which will cause a crash issue. The simplified log is as follows.root@ls1028ardb:~# tc qdisc add dev eno0vf0 parent root handle 100: \\mqprio num_tc 4 map 0 0 1 1 2 2 3 3 queues 1@0 1@1 1@2 1@3 hw 1[  187.290775] Unable to handle kernel paging request at virtual address0000000000001f00[  187.424831] pc : enetc_mm_commit_preemptible_tcs+0x1c4/0x400[  187.430518] lr : enetc_mm_commit_preemptible_tcs+0x30c/0x400[  187.511140] Call trace:[  187.513588]  enetc_mm_commit_preemptible_tcs+0x1c4/0x400[  187.518918]  enetc_setup_tc_mqprio+0x180/0x214[  187.523374]  enetc_vf_setup_tc+0x1c/0x30[  187.527306]  mqprio_enable_offload+0x144/0x178[  187.531766]  mqprio_init+0x3ec/0x668[  187.535351]  qdisc_create+0x15c/0x488[  187.539023]  tc_modify_qdisc+0x398/0x73c[  187.542958]  rtnetlink_rcv_msg+0x128/0x378[  187.547064]  netlink_rcv_skb+0x60/0x130[  187.550910]  rtnetlink_rcv+0x18/0x24[  187.554492]  netlink_unicast+0x300/0x36c[  187.558425]  netlink_sendmsg+0x1a8/0x420[  187.606759] ---[ end trace 0000000000000000 ]---In addition, some PFs also do not support configuring preemptible TCs,such as eno1 and eno3 on LS1028A. It won't crash like it does for VFs,but we should prevent these PFs from accessing these unimplementedregisters.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56649` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1007-kvm - 4.4.0-1007.12\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1031-aws - 4.15.0-1031.33~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1015-azure - 4.11.0-1015.15\nlinux-image-extra-4.11.0-1015-azure - 4.11.0-1015.15\nNo subscription required\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 16.04 LTS"
@@ -42,20 +42,20 @@
 						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
-						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1007.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
 						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
-						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000030",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1031.33~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
-						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000040",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1015.15')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
@@ -66,8 +66,8 @@
 						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
-						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000050",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10~16.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",

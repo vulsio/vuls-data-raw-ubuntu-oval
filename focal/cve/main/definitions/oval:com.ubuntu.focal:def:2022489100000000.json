@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48910 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: ipv6: ensure we call ipv6_mc_down() at most onceThere are two reasons for addrconf_notify() to be called with NETDEV_DOWN:either the network device is actually going down, or IPv6 was disabledon the interface.If either of them stays down while the other is toggled, we repeatedlycall the code for NETDEV_DOWN, including ipv6_mc_down(), while nevercalling the corresponding ipv6_mc_up() in between. This will cause anew entry in idev->mc_tomb to be allocated for each multicast groupthe interface is subscribed to, which in turn leaks one struct ifmcaddr6per nontrivial multicast group the interface is subscribed to.The following reproducer will leak at least $n objects:ip addr add ff2e::4242/32 dev eth0 autojoinsysctl -w net.ipv6.conf.eth0.disable_ipv6=1for i in $(seq 1 $n); do\tip link set up eth0; ip link set down eth0doneJoining groups with IPV6_ADD_MEMBERSHIP (unprivileged) or setting thesysctl net.ipv6.conf.eth0.forwarding to 1 (=> subscribing to ff02::2)can also be used to create a nontrivial idev->mc_list, which will theleak objects with the right up-down-sequence.Based on both sources for NETDEV_DOWN events the interface IPv6 stateshould be considered: - not ready if the network interface is not ready OR IPv6 is disabled   for it - ready if the network interface is ready AND IPv6 is enabled for itThe functions ipv6_mc_up() and ipv6_down() should only be run when thisstate changes.Implement this by remembering when the IPv6 state is ready, and onlyrun ipv6_mc_down() if it actually changed from ready to not ready.The other direction (not ready -> ready) already works correctly, as: - the interface notification triggered codepath for NETDEV_UP /   NETDEV_CHANGE returns early if ipv6 is disabled, and - the disable_ipv6=0 triggered codepath skips fully initializing the   interface as long as addrconf_link_ready(dev) returns false - calling ipv6_mc_up() repeatedly does not leak anything\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48910` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-124-generic - 5.4.0-124.140\nlinux-image-5.4.0-124-generic-lpae - 5.4.0-124.140\nlinux-image-unsigned-5.4.0-124-generic - 5.4.0-124.140\nlinux-image-unsigned-5.4.0-124-lowlatency - 5.4.0-124.140\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1073-kvm - 5.4.0-1073.78\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1083-aws - 5.4.0-1083.90\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1089-azure - 5.4.0-1089.94\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1044-bluefield - 5.4.0-1044.49\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1086-gcp - 5.4.0-1086.94\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1051-gkeop - 5.4.0-1051.54\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1031-ibm - 5.4.0-1031.35\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-intel-iotg - 5.15.0-1008.11~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-iot - 5.4.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1081-oracle - 5.4.0-1081.89\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1068-raspi - 5.4.0-1068.78\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: ipv6: ensure we call ipv6_mc_down() at most onceThere are two reasons for addrconf_notify() to be called with NETDEV_DOWN:either the network device is actually going down, or IPv6 was disabledon the interface.If either of them stays down while the other is toggled, we repeatedlycall the code for NETDEV_DOWN, including ipv6_mc_down(), while nevercalling the corresponding ipv6_mc_up() in between. This will cause anew entry in idev->mc_tomb to be allocated for each multicast groupthe interface is subscribed to, which in turn leaks one struct ifmcaddr6per nontrivial multicast group the interface is subscribed to.The following reproducer will leak at least $n objects:ip addr add ff2e::4242/32 dev eth0 autojoinsysctl -w net.ipv6.conf.eth0.disable_ipv6=1for i in $(seq 1 $n); do\tip link set up eth0; ip link set down eth0doneJoining groups with IPV6_ADD_MEMBERSHIP (unprivileged) or setting thesysctl net.ipv6.conf.eth0.forwarding to 1 (=> subscribing to ff02::2)can also be used to create a nontrivial idev->mc_list, which will theleak objects with the right up-down-sequence.Based on both sources for NETDEV_DOWN events the interface IPv6 stateshould be considered: - not ready if the network interface is not ready OR IPv6 is disabled   for it - ready if the network interface is ready AND IPv6 is enabled for itThe functions ipv6_mc_up() and ipv6_down() should only be run when thisstate changes.Implement this by remembering when the IPv6 state is ready, and onlyrun ipv6_mc_down() if it actually changed from ready to not ready.The other direction (not ready -> ready) already works correctly, as: - the interface notification triggered codepath for NETDEV_UP /   NETDEV_CHANGE returns early if ipv6 is disabled, and - the disable_ipv6=0 triggered codepath skips fully initializing the   interface as long as addrconf_link_ready(dev) returns false - calling ipv6_mc_up() repeatedly does not leak anything\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48910` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-124-generic - 5.4.0-124.140\nlinux-image-5.4.0-124-generic-lpae - 5.4.0-124.140\nlinux-image-unsigned-5.4.0-124-generic - 5.4.0-124.140\nlinux-image-unsigned-5.4.0-124-lowlatency - 5.4.0-124.140\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1073-kvm - 5.4.0-1073.78\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1083-aws - 5.4.0-1083.90\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1089-azure - 5.4.0-1089.94\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1044-bluefield - 5.4.0-1044.49\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1086-gcp - 5.4.0-1086.94\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1051-gkeop - 5.4.0-1051.54\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1031-ibm - 5.4.0-1031.35\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-intel-iotg - 5.15.0-1008.11~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-iot - 5.4.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1081-oracle - 5.4.0-1081.89\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1068-raspi - 5.4.0-1068.78\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -75,7 +75,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2021474350000030",
@@ -102,7 +102,7 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
@@ -126,7 +126,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -142,7 +142,7 @@
 						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1051.54')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
@@ -150,8 +150,8 @@
 						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1031.35')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -166,7 +166,7 @@
 						"comment": "linux-iot package in focal was vulnerable but has been fixed (note: '5.4.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -186,7 +186,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -214,7 +214,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

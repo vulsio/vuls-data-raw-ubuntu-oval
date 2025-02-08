@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52924 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: don't skip expired elements during walkThere is an asymmetry between commit/abort and preparation phase if thefollowing conditions are met:1. set is a verdict map (\"1.2.3.4 : jump foo\")2. timeouts are enabledIn this case, following sequence is problematic:1. element E in set S refers to chain C2. userspace requests removal of set S3. kernel does a set walk to decrement chain->use count for all elements   from preparation phase4. kernel does another set walk to remove elements from the commit phase   (or another walk to do a chain->use increment for all elements from    abort phase)If E has already expired in 1), it will be ignored during list walk, so itsuse countwon't have been changed.Then, when set is culled, ->destroy callback will zap the element vianf_tables_set_elem_destroy(), but this function is only safe forelements that have been deactivated earlier from the preparation phase:lack of earlier deactivate removes the element but leaks the chain usecount, which results in a WARN splat when the chain gets removed later,plus a leak of the nft_chain structure.Update pipapo_get() not to skip expired elements, otherwise flushcommand reports bogus ENOENT errors.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netfilter: nf_tables: don't skip expired elements during walkThere is an asymmetry between commit/abort and preparation phase if thefollowing conditions are met:1. set is a verdict map (\"1.2.3.4 : jump foo\")2. timeouts are enabledIn this case, following sequence is problematic:1. element E in set S refers to chain C2. userspace requests removal of set S3. kernel does a set walk to decrement chain->use count for all elements   from preparation phase4. kernel does another set walk to remove elements from the commit phase   (or another walk to do a chain->use increment for all elements from    abort phase)If E has already expired in 1), it will be ignored during list walk, so itsuse countwon't have been changed.Then, when set is culled, ->destroy callback will zap the element vianf_tables_set_elem_destroy(), but this function is only safe forelements that have been deactivated earlier from the preparation phase:lack of earlier deactivate removes the element but leaks the chain usecount, which results in a WARN splat when the chain gets removed later,plus a leak of the nft_chain structure.Update pipapo_get() not to skip expired elements, otherwise flushcommand reports bogus ENOENT errors.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52924` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-5.15.0-1028-bluefield - 5.15.0-1028.30\nAvailable for NVIDIA BlueField platforms",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
@@ -33,7 +33,7 @@
 				"criterions": [
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000000",
-						"comment": "linux package in jammy is affected and may need fixing."
+						"comment": "linux package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-87.97')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
@@ -49,7 +49,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
-						"comment": "linux-kvm package in jammy is affected and may need fixing."
+						"comment": "linux-kvm package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1045.50')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000250",
@@ -57,7 +57,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000010",
-						"comment": "linux-aws package in jammy is affected and may need fixing."
+						"comment": "linux-aws package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1048.53')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
@@ -73,7 +73,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
-						"comment": "linux-azure package in jammy is affected and may need fixing."
+						"comment": "linux-azure package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1050.57')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -100,12 +100,12 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-bluefield package in bluefield/jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2023343190000050",
+						"comment": "linux-bluefield package in bluefield/jammy was vulnerable but has been fixed (note: '5.15.0-1028.30')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
-						"comment": "linux-gcp package in jammy is affected and may need fixing."
+						"comment": "linux-gcp package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1045.53')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
@@ -121,23 +121,23 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
-						"comment": "linux-gke package in jammy is affected and may need fixing."
+						"comment": "linux-gke package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1045.50')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000080",
-						"comment": "linux-gkeop package in jammy is affected and may need fixing."
+						"comment": "linux-gkeop package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1031.37')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-ibm package in jammy is affected and may need fixing."
+						"comment": "linux-ibm package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1041.44')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000140",
-						"comment": "linux-intel-iotg package in jammy is affected and may need fixing."
+						"comment": "linux-intel-iotg package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1043.49')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000120",
-						"comment": "linux-lowlatency package in jammy is affected and may need fixing."
+						"comment": "linux-lowlatency package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-87.96')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
@@ -153,7 +153,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
-						"comment": "linux-nvidia package in jammy is affected and may need fixing."
+						"comment": "linux-nvidia package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1039.39')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000330",
@@ -165,7 +165,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000060",
-						"comment": "linux-oracle package in jammy is affected and may need fixing."
+						"comment": "linux-oracle package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1046.52')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000420",
@@ -189,7 +189,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
-						"comment": "linux-raspi package in jammy is affected and may need fixing."
+						"comment": "linux-raspi package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1041.44')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
@@ -209,7 +209,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
-						"comment": "linux-xilinx-zynqmp package in jammy is affected and may need fixing."
+						"comment": "linux-xilinx-zynqmp package in jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1025.29')."
 					}
 				]
 			}

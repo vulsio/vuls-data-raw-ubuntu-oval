@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26802 on Ubuntu Pro FIPS 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: stmmac:Clear variable when destroying workqueue Currently when suspending driverand stopping workqueue it is checked whether workqueue is not NULL and ifso, it is destroyed. Function destroy_workqueue() does drain queue and doesclear variable, but it does not set workqueue variable to NULL. This cancause kernel/module panic if code attempts to clear workqueue that was notinitialized. This scenario is possible when resuming suspended driver instmmac_resume(), because there is no handling for failed stmmac_hw_setup(),which can fail and return if DMA engine has failed to initialize, andworkqueue is initialized after DMA engine. Should DMA engine fail toinitialize, resume will proceed normally, but interface won't work and TXqueue will eventually timeout, causing 'Reset adapter' error. This thendoes destroy workqueue during reset process. And since workqueue isinitialized after DMA engine and can be skipped, it will causekernel/module panic. To secure against this possible crash, set workqueuevariable to NULL when destroying workqueue. Log/backtrace from crash goesas follows: [88.031977]------------[ cut here ]------------[88.031985]NETDEV WATCHDOG: eth0 (sxgmac): transmit queue 1 timed out[88.032017]WARNING: CPU: 0 PID: 0 at net/sched/sch_generic.c:477dev_watchdog+0x390/0x398 <Skipping backtrace for watchdog timeout>[88.032251]---[ end trace e70de432e4d5c2c0 ]--- [88.032282]sxgmac16d88000.ethernet eth0: Reset adapter. [88.036359]------------[ cut here]------------ [88.036519]Call trace: [88.036523]flush_workqueue+0x3e4/0x430 [88.036528] drain_workqueue+0xc4/0x160[88.036533] destroy_workqueue+0x40/0x270 [88.036537]stmmac_fpe_stop_wq+0x4c/0x70 [88.036541] stmmac_release+0x278/0x280[88.036546] __dev_close_many+0xcc/0x158 [88.036551]dev_close_many+0xbc/0x190 [88.036555] dev_close.part.0+0x70/0xc0[88.036560] dev_close+0x24/0x30 [88.036564] stmmac_service_task+0x110/0x140[88.036569] process_one_work+0x1d8/0x4a0 [88.036573]worker_thread+0x54/0x408 [88.036578] kthread+0x164/0x170 [88.036583]ret_from_fork+0x10/0x20 [88.036588]---[ end trace e70de432e4d5c2c1 ]---[88.036597]Unable to handle kernel NULL pointer dereference at virtualaddress 0000000000000004\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26802` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1018-aws - 5.4.0-1018.18~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1020-azure - 5.4.0-1020.20~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-gcp - 5.4.0-1019.19~18.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-oracle - 5.4.0-1019.19~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: stmmac:Clear variable when destroying workqueue Currently when suspending driverand stopping workqueue it is checked whether workqueue is not NULL and ifso, it is destroyed. Function destroy_workqueue() does drain queue and doesclear variable, but it does not set workqueue variable to NULL. This cancause kernel/module panic if code attempts to clear workqueue that was notinitialized. This scenario is possible when resuming suspended driver instmmac_resume(), because there is no handling for failed stmmac_hw_setup(),which can fail and return if DMA engine has failed to initialize, andworkqueue is initialized after DMA engine. Should DMA engine fail toinitialize, resume will proceed normally, but interface won't work and TXqueue will eventually timeout, causing 'Reset adapter' error. This thendoes destroy workqueue during reset process. And since workqueue isinitialized after DMA engine and can be skipped, it will causekernel/module panic. To secure against this possible crash, set workqueuevariable to NULL when destroying workqueue. Log/backtrace from crash goesas follows: [88.031977]------------[ cut here ]------------[88.031985]NETDEV WATCHDOG: eth0 (sxgmac): transmit queue 1 timed out[88.032017]WARNING: CPU: 0 PID: 0 at net/sched/sch_generic.c:477dev_watchdog+0x390/0x398 <Skipping backtrace for watchdog timeout>[88.032251]---[ end trace e70de432e4d5c2c0 ]--- [88.032282]sxgmac16d88000.ethernet eth0: Reset adapter. [88.036359]------------[ cut here]------------ [88.036519]Call trace: [88.036523]flush_workqueue+0x3e4/0x430 [88.036528] drain_workqueue+0xc4/0x160[88.036533] destroy_workqueue+0x40/0x270 [88.036537]stmmac_fpe_stop_wq+0x4c/0x70 [88.036541] stmmac_release+0x278/0x280[88.036546] __dev_close_many+0xcc/0x158 [88.036551]dev_close_many+0xbc/0x190 [88.036555] dev_close.part.0+0x70/0xc0[88.036560] dev_close+0x24/0x30 [88.036564] stmmac_service_task+0x110/0x140[88.036569] process_one_work+0x1d8/0x4a0 [88.036573]worker_thread+0x54/0x408 [88.036578] kthread+0x164/0x170 [88.036583]ret_from_fork+0x10/0x20 [88.036588]---[ end trace e70de432e4d5c2c1 ]---[88.036597]Unable to handle kernel NULL pointer dereference at virtualaddress 0000000000000004\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26802` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1020-aws - 5.4.0-1020.20~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1022-azure - 5.4.0-1022.22~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-gcp - 5.4.0-1021.21~18.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-oracle - 5.4.0-1021.21~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 18.04 LTS"
@@ -78,8 +78,8 @@
 						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000110",
-						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1018.18~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000010",
+						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -94,11 +94,11 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000080",
-						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000020",
+						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000030",
 						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
 					},
 					{
@@ -114,8 +114,8 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000100",
-						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.2')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000070",
+						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -130,12 +130,12 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000040",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000080",
 						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1010.11~18.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000130",
-						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -146,8 +146,8 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000090",
-						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000090",
+						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",
@@ -162,15 +162,15 @@
 						"comment": "linux-raspi-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1013.13~18.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000010",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000040",
 						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000020",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000050",
 						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000030",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000060",
 						"comment": "linux-gcp-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					}
 				]

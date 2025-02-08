@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2025-21682 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:eth: bnxt: always recalculate features after XDP clearing, fix null-derefRecalculate features when XDP is detached.Before:  # ip li set dev eth0 xdp obj xdp_dummy.bpf.o sec xdp  # ip li set dev eth0 xdp off  # ethtool -k eth0 | grep gro  rx-gro-hw: off [requested on]After:  # ip li set dev eth0 xdp obj xdp_dummy.bpf.o sec xdp  # ip li set dev eth0 xdp off  # ethtool -k eth0 | grep gro  rx-gro-hw: onThe fact that HW-GRO doesn't get re-enabled automatically is justa minor annoyance. The real issue is that the features will randomlycome back during another reconfiguration which just happens to invokenetdev_update_features(). The driver doesn't handle reconfiguringtwo things at a time very robustly.Starting with commit 98ba1d931f61 (\"bnxt_en: Fix RSS logic in__bnxt_reserve_rings()\") we only reconfigure the RSS hash tableif the \"effective\" number of Rx rings has changed. If HW-GRO isenabled \"effective\" number of rings is 2x what user sees.So if we are in the bad state, with HW-GRO re-enablement \"pending\"after XDP off, and we lower the rings by / 2 - the HW-GRO ringsdoing 2x and the ethtool -L doing / 2 may cancel each other out,and the:  if (old_rx_rings != bp->hw_resc.resv_rx_rings &&condition in __bnxt_reserve_rings() will be false.The RSS map won't get updated, and we'll crash with:  BUG: kernel NULL pointer dereference, address: 0000000000000168  RIP: 0010:__bnxt_hwrm_vnic_set_rss+0x13a/0x1a0    bnxt_hwrm_vnic_rss_cfg_p5+0x47/0x180    __bnxt_setup_vnic_p5+0x58/0x110    bnxt_init_nic+0xb72/0xf50    __bnxt_open_nic+0x40d/0xab0    bnxt_open_nic+0x2b/0x60    ethtool_set_channels+0x18c/0x1d0As we try to access a freed ring.The issue is present since XDP support was added, really, butprior to commit 98ba1d931f61 (\"bnxt_en: Fix RSS logic in__bnxt_reserve_rings()\") it wasn't causing major issues.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:eth: bnxt: always recalculate features after XDP clearing, fix null-derefRecalculate features when XDP is detached.Before:  # ip li set dev eth0 xdp obj xdp_dummy.bpf.o sec xdp  # ip li set dev eth0 xdp off  # ethtool -k eth0 | grep gro  rx-gro-hw: off [requested on]After:  # ip li set dev eth0 xdp obj xdp_dummy.bpf.o sec xdp  # ip li set dev eth0 xdp off  # ethtool -k eth0 | grep gro  rx-gro-hw: onThe fact that HW-GRO doesn't get re-enabled automatically is justa minor annoyance. The real issue is that the features will randomlycome back during another reconfiguration which just happens to invokenetdev_update_features(). The driver doesn't handle reconfiguringtwo things at a time very robustly.Starting with commit 98ba1d931f61 (\"bnxt_en: Fix RSS logic in__bnxt_reserve_rings()\") we only reconfigure the RSS hash tableif the \"effective\" number of Rx rings has changed. If HW-GRO isenabled \"effective\" number of rings is 2x what user sees.So if we are in the bad state, with HW-GRO re-enablement \"pending\"after XDP off, and we lower the rings by / 2 - the HW-GRO ringsdoing 2x and the ethtool -L doing / 2 may cancel each other out,and the:  if (old_rx_rings != bp->hw_resc.resv_rx_rings &&condition in __bnxt_reserve_rings() will be false.The RSS map won't get updated, and we'll crash with:  BUG: kernel NULL pointer dereference, address: 0000000000000168  RIP: 0010:__bnxt_hwrm_vnic_set_rss+0x13a/0x1a0    bnxt_hwrm_vnic_rss_cfg_p5+0x47/0x180    __bnxt_setup_vnic_p5+0x58/0x110    bnxt_init_nic+0xb72/0xf50    __bnxt_open_nic+0x40d/0xab0    bnxt_open_nic+0x2b/0x60    ethtool_set_channels+0x18c/0x1d0As we try to access a freed ring.The issue is present since XDP support was added, really, butprior to commit 98ba1d931f61 (\"bnxt_en: Fix RSS logic in__bnxt_reserve_rings()\") it wasn't causing major issues.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2025-21682` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1007-kvm - 4.4.0-1007.12\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1031-aws - 4.15.0-1031.33~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1015-azure - 4.11.0-1015.15\nlinux-image-extra-4.11.0-1015-azure - 4.11.0-1015.15\nNo subscription required\n\nlinux-image-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-extra-4.4.0-1001-fips - 4.4.0-1001.1\nlinux-image-hmac-4.4.0-1001-fips - 4.4.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 16.04 LTS"
@@ -34,40 +34,52 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
-						"comment": "linux package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000000",
+						"comment": "linux package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-2.16')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
-						"comment": "linux-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000010",
+						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
-						"comment": "linux-kvm package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1007.12')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
-						"comment": "linux-aws package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
+						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
-						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000030",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1031.33~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
-						"comment": "linux-azure package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000040",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1015.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
-						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000060",
+						"comment": "linux-fips package in fips/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
-						"comment": "linux-gcp package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000100",
+						"comment": "linux-gcp package in xenial, is related to the CVE in some way and has been fixed (note: '4.10.0-1004.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
-						"comment": "linux-oracle package in xenial is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000010",
+						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000050",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10~16.04.1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",
+						"comment": "linux-oem: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000010",
+						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					}
 				]
 			}

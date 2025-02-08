@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-36939 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: nfs:Handle error of rpc_proc_register() in nfs_net_init(). syzkaller reported awarning [0] triggered while destroying immature netns. rpc_proc_register()was called in init_nfs_fs(), but its error has been ignored since at leastthe initial commit 1da177e4c3f4 (\"Linux-2.6.12-rc2\"). Recently, commitd47151b79e32 (\"nfs: expose /proc/net/sunrpc/nfs in net namespaces\")converted the procfs to per-netns and made the problem more visible. Evenwhen rpc_proc_register() fails, nfs_net_init() could succeed, and thusnfs_net_exit() will be called while destroying the netns. Then,remove_proc_entry() will be called for non-existing proc directory andtrigger the warning below. Let's handle the error of rpc_proc_register()properly in nfs_net_init(). [0]: name 'nfs' WARNING: CPU: 1 PID: 1710 atfs/proc/generic.c:711 remove_proc_entry+0x1bb/0x2d0 fs/proc/generic.c:711Modules linked in: CPU: 1 PID: 1710 Comm: syz-executor.2 Not tainted6.8.0-12822-gcd51db110a7e #12 Hardware name: QEMU Standard PC (i440FX +PIIX, 1996), BIOS rel-1.16.0-0-gd239552ce722-prebuilt.qemu.org 04/01/2014RIP: 0010:remove_proc_entry+0x1bb/0x2d0 fs/proc/generic.c:711 Code: 41 5d41 5e c3 e8 85 09 b5 ff 48 c7 c7 88 58 64 86 e8 09 0e 71 02 e8 74 09 b5 ff4c 89 e6 48 c7 c7 de 1b 80 84 e8 c5 ad 97 ff <0f> 0b eb b1 e8 5c 09 b5 ff48 c7 c7 88 58 64 86 e8 e0 0d 71 02 eb RSP: 0018:ffffc9000c6d7ce0 EFLAGS:00010286 RAX: 0000000000000000 RBX: ffff8880422b8b00 RCX: ffffffff8110503cRDX: ffff888030652f00 RSI: ffffffff81105045 RDI: 0000000000000001 RBP:0000000000000000 R08: 0000000000000001 R09: 0000000000000000 R10:0000000000000001 R11: ffffffff81bb62cb R12: ffffffff84807ffc R13:ffff88804ad6fcc0 R14: ffffffff84807ffc R15: ffffffff85741ff8 FS:00007f30cfba8640(0000) GS:ffff88807dd00000(0000) knlGS:0000000000000000 CS:0010 DS: 0000 ES: 0000 CR0: 0000000080050033 CR2: 00007ff51afe8000 CR3:000000005a60a005 CR4: 0000000000770ef0 DR0: 0000000000000000 DR1:0000000000000000 DR2: 0000000000000000 DR3: 0000000000000000 DR6:00000000fffe0ff0 DR7: 0000000000000400 PKRU: 55555554 Call Trace: <TASK>rpc_proc_unregister+0x64/0x70 net/sunrpc/stats.c:310 nfs_net_exit+0x1c/0x30fs/nfs/inode.c:2438 ops_exit_list+0x62/0xb0 net/core/net_namespace.c:170setup_net+0x46c/0x660 net/core/net_namespace.c:372 copy_net_ns+0x244/0x590net/core/net_namespace.c:505 create_new_namespaces+0x2ed/0x770kernel/nsproxy.c:110 unshare_nsproxy_namespaces+0xae/0x160kernel/nsproxy.c:228 ksys_unshare+0x342/0x760 kernel/fork.c:3322__do_sys_unshare kernel/fork.c:3393 [inline] __se_sys_unsharekernel/fork.c:3391 [inline] __x64_sys_unshare+0x1f/0x30 kernel/fork.c:3391do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0x4f/0x110arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x46/0x4e RIP:0033:0x7f30d0febe5d Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1efa 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 73 9f 1b 00 f7 d8 64 89 01 48 RSP:002b:00007f30cfba7cc8 EFLAGS: 00000246 ORIG_RAX: 0000000000000110 RAX:ffffffffffffffda RBX: 00000000004bbf80 RCX: 00007f30d0febe5d RDX:0000000000000000 RSI: 0000000000000000 RDI: 000000006c020600 RBP:00000000004bbf80 R08: 0000000000000000 R09: 0000000000000000 R10:0000000000000000 R11: 0000000000000246 R12: 0000000000000002 R13:000000000000000b R14: 00007f30d104c530 R15: 0000000000000000 </TASK>\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36939` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-192-generic - 5.4.0-192.212\nlinux-image-5.4.0-192-generic-lpae - 5.4.0-192.212\nlinux-image-unsigned-5.4.0-192-generic - 5.4.0-192.212\nlinux-image-unsigned-5.4.0-192-lowlatency - 5.4.0-192.212\nNo subscription required\n\nlinux-image-5.15.0-118-generic - 5.15.0-118.128~20.04.1\nlinux-image-5.15.0-118-generic-lpae - 5.15.0-118.128~20.04.1\nlinux-image-unsigned-5.15.0-118-generic - 5.15.0-118.128~20.04.1\nlinux-image-unsigned-5.15.0-118-generic-64k - 5.15.0-118.128~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1118-kvm - 5.4.0-1118.125\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1130-aws - 5.4.0-1130.140\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-aws - 5.15.0-1067.73~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1135-azure - 5.4.0-1135.142\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-azure - 5.15.0-1070.79~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-azure-fde - 5.15.0-1070.79~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1090-bluefield - 5.4.0-1090.97\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1134-gcp - 5.4.0-1134.143\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-gcp - 5.15.0-1066.74~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1097-gkeop - 5.4.0-1097.101\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1050-gkeop - 5.15.0-1050.57~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1077-ibm - 5.4.0-1077.82\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-ibm - 5.15.0-1060.63~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-intel-iotg - 5.15.0-1062.68~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1042-iot - 5.4.0-1042.43\nlinux-image-unsigned-5.4.0-1042-iot - 5.4.0-1042.43\nNo subscription required\n\nlinux-image-unsigned-5.15.0-118-lowlatency - 5.15.0-118.128~20.04.1\nlinux-image-unsigned-5.15.0-118-lowlatency-64k - 5.15.0-118.128~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1129-oracle - 5.4.0-1129.138\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-oracle - 5.15.0-1065.71~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1114-raspi - 5.4.0-1114.126\nNo subscription required\n\nlinux-image-5.4.0-1049-xilinx-zynqmp - 5.4.0-1049.53\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: nfs:Handle error of rpc_proc_register() in nfs_net_init(). syzkaller reported awarning [0] triggered while destroying immature netns. rpc_proc_register()was called in init_nfs_fs(), but its error has been ignored since at leastthe initial commit 1da177e4c3f4 (\"Linux-2.6.12-rc2\"). Recently, commitd47151b79e32 (\"nfs: expose /proc/net/sunrpc/nfs in net namespaces\")converted the procfs to per-netns and made the problem more visible. Evenwhen rpc_proc_register() fails, nfs_net_init() could succeed, and thusnfs_net_exit() will be called while destroying the netns. Then,remove_proc_entry() will be called for non-existing proc directory andtrigger the warning below. Let's handle the error of rpc_proc_register()properly in nfs_net_init(). [0]: name 'nfs' WARNING: CPU: 1 PID: 1710 atfs/proc/generic.c:711 remove_proc_entry+0x1bb/0x2d0 fs/proc/generic.c:711Modules linked in: CPU: 1 PID: 1710 Comm: syz-executor.2 Not tainted6.8.0-12822-gcd51db110a7e #12 Hardware name: QEMU Standard PC (i440FX +PIIX, 1996), BIOS rel-1.16.0-0-gd239552ce722-prebuilt.qemu.org 04/01/2014RIP: 0010:remove_proc_entry+0x1bb/0x2d0 fs/proc/generic.c:711 Code: 41 5d41 5e c3 e8 85 09 b5 ff 48 c7 c7 88 58 64 86 e8 09 0e 71 02 e8 74 09 b5 ff4c 89 e6 48 c7 c7 de 1b 80 84 e8 c5 ad 97 ff <0f> 0b eb b1 e8 5c 09 b5 ff48 c7 c7 88 58 64 86 e8 e0 0d 71 02 eb RSP: 0018:ffffc9000c6d7ce0 EFLAGS:00010286 RAX: 0000000000000000 RBX: ffff8880422b8b00 RCX: ffffffff8110503cRDX: ffff888030652f00 RSI: ffffffff81105045 RDI: 0000000000000001 RBP:0000000000000000 R08: 0000000000000001 R09: 0000000000000000 R10:0000000000000001 R11: ffffffff81bb62cb R12: ffffffff84807ffc R13:ffff88804ad6fcc0 R14: ffffffff84807ffc R15: ffffffff85741ff8 FS:00007f30cfba8640(0000) GS:ffff88807dd00000(0000) knlGS:0000000000000000 CS:0010 DS: 0000 ES: 0000 CR0: 0000000080050033 CR2: 00007ff51afe8000 CR3:000000005a60a005 CR4: 0000000000770ef0 DR0: 0000000000000000 DR1:0000000000000000 DR2: 0000000000000000 DR3: 0000000000000000 DR6:00000000fffe0ff0 DR7: 0000000000000400 PKRU: 55555554 Call Trace: <TASK>rpc_proc_unregister+0x64/0x70 net/sunrpc/stats.c:310 nfs_net_exit+0x1c/0x30fs/nfs/inode.c:2438 ops_exit_list+0x62/0xb0 net/core/net_namespace.c:170setup_net+0x46c/0x660 net/core/net_namespace.c:372 copy_net_ns+0x244/0x590net/core/net_namespace.c:505 create_new_namespaces+0x2ed/0x770kernel/nsproxy.c:110 unshare_nsproxy_namespaces+0xae/0x160kernel/nsproxy.c:228 ksys_unshare+0x342/0x760 kernel/fork.c:3322__do_sys_unshare kernel/fork.c:3393 [inline] __se_sys_unsharekernel/fork.c:3391 [inline] __x64_sys_unshare+0x1f/0x30 kernel/fork.c:3391do_syscall_x64 arch/x86/entry/common.c:52 [inline] do_syscall_64+0x4f/0x110arch/x86/entry/common.c:83 entry_SYSCALL_64_after_hwframe+0x46/0x4e RIP:0033:0x7f30d0febe5d Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1efa 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 73 9f 1b 00 f7 d8 64 89 01 48 RSP:002b:00007f30cfba7cc8 EFLAGS: 00000246 ORIG_RAX: 0000000000000110 RAX:ffffffffffffffda RBX: 00000000004bbf80 RCX: 00007f30d0febe5d RDX:0000000000000000 RSI: 0000000000000000 RDI: 000000006c020600 RBP:00000000004bbf80 R08: 0000000000000000 R09: 0000000000000000 R10:0000000000000000 R11: 0000000000000246 R12: 0000000000000002 R13:000000000000000b R14: 00007f30d104c530 R15: 0000000000000000 </TASK>\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-36939` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-192-generic - 5.4.0-192.212\nlinux-image-5.4.0-192-generic-lpae - 5.4.0-192.212\nlinux-image-unsigned-5.4.0-192-generic - 5.4.0-192.212\nlinux-image-unsigned-5.4.0-192-lowlatency - 5.4.0-192.212\nNo subscription required\n\nlinux-image-5.15.0-118-generic - 5.15.0-118.128~20.04.1\nlinux-image-5.15.0-118-generic-lpae - 5.15.0-118.128~20.04.1\nlinux-image-unsigned-5.15.0-118-generic - 5.15.0-118.128~20.04.1\nlinux-image-unsigned-5.15.0-118-generic-64k - 5.15.0-118.128~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1118-kvm - 5.4.0-1118.125\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1130-aws - 5.4.0-1130.140\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-aws - 5.15.0-1067.73~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1135-azure - 5.4.0-1135.142\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-azure - 5.15.0-1070.79~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-azure-fde - 5.15.0-1070.79~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1090-bluefield - 5.4.0-1090.97\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1104-fips - 5.4.0-1104.114\nlinux-image-unsigned-hmac-5.4.0-1104-fips - 5.4.0-1104.114\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1130-aws-fips - 5.4.0-1130.140+fips1\nlinux-image-unsigned-hmac-5.4.0-1130-aws-fips - 5.4.0-1130.140+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1135-azure-fips - 5.4.0-1135.142+fips1\nlinux-image-unsigned-hmac-5.4.0-1135-azure-fips - 5.4.0-1135.142+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-gcp-fips - 5.4.0-1134.143+fips1\nlinux-image-unsigned-hmac-5.4.0-1134-gcp-fips - 5.4.0-1134.143+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1134-gcp - 5.4.0-1134.143\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-gcp - 5.15.0-1066.74~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1097-gkeop - 5.4.0-1097.101\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1050-gkeop - 5.15.0-1050.57~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1077-ibm - 5.4.0-1077.82\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-ibm - 5.15.0-1060.63~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-intel-iotg - 5.15.0-1062.68~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1042-iot - 5.4.0-1042.43\nlinux-image-unsigned-5.4.0-1042-iot - 5.4.0-1042.43\nNo subscription required\n\nlinux-image-unsigned-5.15.0-118-lowlatency - 5.15.0-118.128~20.04.1\nlinux-image-unsigned-5.15.0-118-lowlatency-64k - 5.15.0-118.128~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1129-oracle - 5.4.0-1129.138\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-oracle - 5.15.0-1065.71~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1114-raspi - 5.4.0-1114.126\nNo subscription required\n\nlinux-image-5.4.0-1049-xilinx-zynqmp - 5.4.0-1049.53\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
@@ -129,23 +129,23 @@
 						"comment": "linux-bluefield package in focal was vulnerable but has been fixed (note: '5.4.0-1090.97')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000480",
-						"comment": "linux-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1104.114')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1130.140+fips1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1135.142+fips1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1134.143+fips1')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000050",
+						"comment": "linux-fips package in fips-updates/focal was vulnerable but has been fixed (note: '5.4.0-1104.114')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000120",
+						"comment": "linux-aws-fips package in fips-updates/focal was vulnerable but has been fixed (note: '5.4.0-1130.140+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000130",
+						"comment": "linux-azure-fips package in fips-updates/focal was vulnerable but has been fixed (note: '5.4.0-1135.142+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000140",
+						"comment": "linux-gcp-fips package in fips-updates/focal was vulnerable but has been fixed (note: '5.4.0-1134.143+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000060",
 						"comment": "linux-gcp package in focal was vulnerable but has been fixed (note: '5.4.0-1134.143')."
 					},
 					{
@@ -173,7 +173,7 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000060",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000070",
 						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1097.101')."
 					},
 					{
@@ -181,7 +181,7 @@
 						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1050.57~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000070",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000080",
 						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1077.82')."
 					},
 					{
@@ -197,7 +197,7 @@
 						"comment": "linux-intel-iotg-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1062.68~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000080",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000090",
 						"comment": "linux-iot package in focal was vulnerable but has been fixed (note: '5.4.0-1042.43')."
 					},
 					{
@@ -205,7 +205,7 @@
 						"comment": "linux-lowlatency-hwe-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-118.128~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2021471310000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:2021471310000100",
 						"comment": "linux-oracle package in focal was vulnerable but has been fixed (note: '5.4.0-1129.138')."
 					},
 					{
@@ -241,7 +241,7 @@
 						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000100",
 						"comment": "linux-raspi package in focal was vulnerable but has been fixed (note: '5.4.0-1114.126')."
 					},
 					{
@@ -249,7 +249,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486740000110",
 						"comment": "linux-xilinx-zynqmp package in focal was vulnerable but has been fixed (note: '5.4.0-1049.53')."
 					}
 				]

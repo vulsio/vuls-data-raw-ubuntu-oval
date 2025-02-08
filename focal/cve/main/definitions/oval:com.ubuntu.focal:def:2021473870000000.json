@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2021-47387 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:cpufreq: schedutil: Use kobject release() method to free sugov_tunables Thestruct sugov_tunables is protected by the kobject, so we can't free itdirectly. Otherwise we would get a call trace like this: ODEBUG: freeactive (active state 0) object type: timer_list hint:delayed_work_timer_fn+0x0/0x30 WARNING: CPU: 3 PID: 720 atlib/debugobjects.c:505 debug_print_object+0xb8/0x100 Modules linked in:CPU: 3 PID: 720 Comm: a.sh Tainted: G W5.14.0-rc1-next-20210715-yocto-standard+ #507 Hardware name: MarvellOcteonTX CN96XX board (DT) pstate: 40400009 (nZcv daif +PAN -UAO -TCOBTYPE=--) pc : debug_print_object+0xb8/0x100 lr :debug_print_object+0xb8/0x100 sp : ffff80001ecaf910 x29: ffff80001ecaf910x28: ffff00011b10b8d0 x27: ffff800011043d80 x26: ffff00011a8f0000 x25:ffff800013cb3ff0 x24: 0000000000000000 x23: ffff80001142aa68 x22:ffff800011043d80 x21: ffff00010de46f20 x20: ffff800013c0c520 x19:ffff800011d8f5b0 x18: 0000000000000010 x17: 6e6968207473696c x16:5f72656d6974203a x15: 6570797420746365 x14: 6a626f2029302065 x13:303378302f307830 x12: 2b6e665f72656d69 x11: ffff8000124b1560 x10:ffff800012331520 x9 : ffff8000100ca6b0 x8 : 000000000017ffe8 x7 :c0000000fffeffff x6 : 0000000000000001 x5 : ffff800011d8c000 x4 :ffff800011d8c740 x3 : 0000000000000000 x2 : ffff0001108301c0 x1 :ab3c90eedf9c0f00 x0 : 0000000000000000 Call trace:debug_print_object+0xb8/0x100 __debug_check_no_obj_freed+0x1c0/0x230debug_check_no_obj_freed+0x20/0x88 slab_free_freelist_hook+0x154/0x1c8kfree+0x114/0x5d0 sugov_exit+0xbc/0xc0 cpufreq_exit_governor+0x44/0x90cpufreq_set_policy+0x268/0x4a8 store_scaling_governor+0xe0/0x128store+0xc0/0xf0 sysfs_kf_write+0x54/0x80 kernfs_fop_write_iter+0x128/0x1c0new_sync_write+0xf0/0x190 vfs_write+0x2d4/0x478 ksys_write+0x74/0x100__arm64_sys_write+0x24/0x30 invoke_syscall.constprop.0+0x54/0xe0do_el0_svc+0x64/0x158 el0_svc+0x2c/0xb0 el0t_64_sync_handler+0xb0/0xb8el0t_64_sync+0x198/0x19c irq event stamp: 5518 hardirqs last enabled at(5517): [<ffff8000100cbd7c>] console_unlock+0x554/0x6c8 hardirqs lastdisabled at (5518): [<ffff800010fc0638>] el1_dbg+0x28/0xa0 softirqs lastenabled at (5504): [<ffff8000100106e0>] __do_softirq+0x4d0/0x6c0 softirqslast disabled at (5483): [<ffff800010049548>] irq_exit+0x1b0/0x1b8 So splitthe original sugov_tunables_free() into two functions,sugov_clear_global_tunables() is just used to clear the global_tunables andthe new sugov_tunables_free() is used as kobj_type::release to release thesugov_tunables safely.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47387` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-91-generic - 5.4.0-91.102\nlinux-image-5.4.0-91-generic-lpae - 5.4.0-91.102\nlinux-image-unsigned-5.4.0-91-generic - 5.4.0-91.102\nlinux-image-unsigned-5.4.0-91-lowlatency - 5.4.0-91.102\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1050-kvm - 5.4.0-1050.52\nNo subscription required\n\nlinux-image-5.4.0-1060-aws - 5.4.0-1060.63\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1064-azure - 5.4.0-1064.67\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1022-bluefield - 5.4.0-1022.25\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1058-gcp - 5.4.0-1058.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1027-gkeop - 5.4.0-1027.28\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-ibm - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1058-oracle - 5.4.0-1058.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1047-raspi - 5.4.0-1047.52\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cpufreq: schedutil: Use kobject release() method to free sugov_tunables Thestruct sugov_tunables is protected by the kobject, so we can't free itdirectly. Otherwise we would get a call trace like this: ODEBUG: freeactive (active state 0) object type: timer_list hint:delayed_work_timer_fn+0x0/0x30 WARNING: CPU: 3 PID: 720 atlib/debugobjects.c:505 debug_print_object+0xb8/0x100 Modules linked in:CPU: 3 PID: 720 Comm: a.sh Tainted: G W5.14.0-rc1-next-20210715-yocto-standard+ #507 Hardware name: MarvellOcteonTX CN96XX board (DT) pstate: 40400009 (nZcv daif +PAN -UAO -TCOBTYPE=--) pc : debug_print_object+0xb8/0x100 lr :debug_print_object+0xb8/0x100 sp : ffff80001ecaf910 x29: ffff80001ecaf910x28: ffff00011b10b8d0 x27: ffff800011043d80 x26: ffff00011a8f0000 x25:ffff800013cb3ff0 x24: 0000000000000000 x23: ffff80001142aa68 x22:ffff800011043d80 x21: ffff00010de46f20 x20: ffff800013c0c520 x19:ffff800011d8f5b0 x18: 0000000000000010 x17: 6e6968207473696c x16:5f72656d6974203a x15: 6570797420746365 x14: 6a626f2029302065 x13:303378302f307830 x12: 2b6e665f72656d69 x11: ffff8000124b1560 x10:ffff800012331520 x9 : ffff8000100ca6b0 x8 : 000000000017ffe8 x7 :c0000000fffeffff x6 : 0000000000000001 x5 : ffff800011d8c000 x4 :ffff800011d8c740 x3 : 0000000000000000 x2 : ffff0001108301c0 x1 :ab3c90eedf9c0f00 x0 : 0000000000000000 Call trace:debug_print_object+0xb8/0x100 __debug_check_no_obj_freed+0x1c0/0x230debug_check_no_obj_freed+0x20/0x88 slab_free_freelist_hook+0x154/0x1c8kfree+0x114/0x5d0 sugov_exit+0xbc/0xc0 cpufreq_exit_governor+0x44/0x90cpufreq_set_policy+0x268/0x4a8 store_scaling_governor+0xe0/0x128store+0xc0/0xf0 sysfs_kf_write+0x54/0x80 kernfs_fop_write_iter+0x128/0x1c0new_sync_write+0xf0/0x190 vfs_write+0x2d4/0x478 ksys_write+0x74/0x100__arm64_sys_write+0x24/0x30 invoke_syscall.constprop.0+0x54/0xe0do_el0_svc+0x64/0x158 el0_svc+0x2c/0xb0 el0t_64_sync_handler+0xb0/0xb8el0t_64_sync+0x198/0x19c irq event stamp: 5518 hardirqs last enabled at(5517): [<ffff8000100cbd7c>] console_unlock+0x554/0x6c8 hardirqs lastdisabled at (5518): [<ffff800010fc0638>] el1_dbg+0x28/0xa0 softirqs lastenabled at (5504): [<ffff8000100106e0>] __do_softirq+0x4d0/0x6c0 softirqslast disabled at (5483): [<ffff800010049548>] irq_exit+0x1b0/0x1b8 So splitthe original sugov_tunables_free() into two functions,sugov_clear_global_tunables() is just used to clear the global_tunables andthe new sugov_tunables_free() is used as kobj_type::release to release thesugov_tunables safely.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2021-47387` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-91-generic - 5.4.0-91.102\nlinux-image-5.4.0-91-generic-lpae - 5.4.0-91.102\nlinux-image-unsigned-5.4.0-91-generic - 5.4.0-91.102\nlinux-image-unsigned-5.4.0-91-lowlatency - 5.4.0-91.102\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1050-kvm - 5.4.0-1050.52\nNo subscription required\n\nlinux-image-5.4.0-1060-aws - 5.4.0-1060.63\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1064-azure - 5.4.0-1064.67\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1022-bluefield - 5.4.0-1022.25\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1058-gcp - 5.4.0-1058.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1027-gkeop - 5.4.0-1027.28\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-ibm - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1058-oracle - 5.4.0-1058.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1047-raspi - 5.4.0-1047.52\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -73,7 +73,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:202136550000030",
@@ -100,7 +100,7 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
@@ -124,7 +124,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -140,7 +140,7 @@
 						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1027.28')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
@@ -148,23 +148,23 @@
 						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -184,7 +184,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -212,7 +212,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

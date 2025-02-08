@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26976 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: KVM:Always flush async #PF workqueue when vCPU is being destroyed Always flushthe per-vCPU async #PF workqueue when a vCPU is clearing its completionqueue, e.g. when a VM and all its vCPUs is being destroyed. KVM must ensurethat none of its workqueue callbacks is running when the last reference tothe KVM _module_ is put. Gifting a reference to the associated VM preventsthe workqueue callback from dereferencing freed vCPU/VM memory, but doesnot prevent the KVM module from being unloaded before the callbackcompletes. Drop the misguided VM refcount gifting, as calling kvm_put_kvm()from async_pf_execute() if kvm_put_kvm() flushes the async #PF workqueuewill result in deadlock. async_pf_execute() can't return untilkvm_put_kvm() finishes, and kvm_put_kvm() can't return untilasync_pf_execute() finishes: WARNING: CPU: 8 PID: 251 atvirt/kvm/kvm_main.c:1435 kvm_put_kvm+0x2d/0x320 [kvm] Modules linked in:vhost_net vhost vhost_iotlb tap kvm_intel kvm irqbypass CPU: 8 PID: 251Comm: kworker/8:1 Tainted: G W 6.6.0-rc1-e7af8d17224a-x86/gmem-vm #119Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 0.0.0 02/06/2015Workqueue: events async_pf_execute [kvm] RIP: 0010:kvm_put_kvm+0x2d/0x320[kvm] Call Trace: <TASK> async_pf_execute+0x198/0x260 [kvm]process_one_work+0x145/0x2d0 worker_thread+0x27e/0x3a0 kthread+0xba/0xe0ret_from_fork+0x2d/0x50 ret_from_fork_asm+0x11/0x20 </TASK> ---[ end trace0000000000000000 ]--- INFO: task kworker/8:1:251 blocked for more than 120seconds. Tainted: G W 6.6.0-rc1-e7af8d17224a-x86/gmem-vm #119 \"echo 0 >/proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:kworker/8:1 state:D stack:0 pid:251 ppid:2 flags:0x00004000 Workqueue:events async_pf_execute [kvm] Call Trace: <TASK> __schedule+0x33f/0xa40schedule+0x53/0xc0 schedule_timeout+0x12a/0x140__wait_for_common+0x8d/0x1d0 __flush_work.isra.0+0x19f/0x2c0kvm_clear_async_pf_completion_queue+0x129/0x190 [kvm]kvm_arch_destroy_vm+0x78/0x1b0 [kvm] kvm_put_kvm+0x1c1/0x320 [kvm]async_pf_execute+0x198/0x260 [kvm] process_one_work+0x145/0x2d0worker_thread+0x27e/0x3a0 kthread+0xba/0xe0 ret_from_fork+0x2d/0x50ret_from_fork_asm+0x11/0x20 </TASK> Ifkvm_clear_async_pf_completion_queue() actually flushes the workqueue, thenthere's no need to gift async_pf_execute() a reference because allinvocations of async_pf_execute() will be forced to complete before thevCPU and its VM are destroyed/freed. And that in turn fixes the moduleunloading bug as __fput() won't do module_put() on the last vCPU referenceuntil the vCPU has been freed, e.g. if closing the vCPU file also puts thelast reference to the KVM module. Note that kvm_check_async_pf_completion()may also take the work item off the completion queue and so also needs toflush the work queue, as the work will not be seen bykvm_clear_async_pf_completion_queue(). Waiting on the workqueue couldtheoretically delay a vCPU due to waiting for the work to complete, butthat's a very, very small chance, and likely a very small delay.kvm_arch_async_page_present_queued() unconditionally makes a new request,i.e. will effectively delay entering the guest, so the remaining work isreally just: trace_kvm_async_pf_completed(addr, cr2_or_gpa);__kvm_vcpu_wake_up(vcpu); mmput(mm); and mmput() can't drop the lastreference to the page tables if the vCPU is still alive, i.e. the vCPUwon't get stuck tearing down page tables. Add a helper to do the flushing,specifically to deal with \"wakeup all\" work items, as they aren't actuallywork items, i.e. are never placed in a workqueue. Trying to flush a bogusworkqueue entry rightly makes __flush_work() complain (kudos to whoeveradded that sanity check). Note, commit 5f6de5cbebee (\"KVM: Prevent moduleexit until al ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26976` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-5.4.0-189-generic-lpae - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209\nNo subscription required\n\nlinux-image-5.15.0-116-generic - 5.15.0-116.126~20.04.1\nlinux-image-5.15.0-116-generic-lpae - 5.15.0-116.126~20.04.1\nlinux-image-unsigned-5.15.0-116-generic - 5.15.0-116.126~20.04.1\nlinux-image-unsigned-5.15.0-116-generic-64k - 5.15.0-116.126~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1116-kvm - 5.4.0-1116.123\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1128-aws - 5.4.0-1128.138\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-aws - 5.15.0-1065.71~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1133-azure - 5.4.0-1133.140\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-azure - 5.15.0-1068.77~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-azure-fde - 5.15.0-1068.77~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1088-bluefield - 5.4.0-1088.95\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1132-gcp - 5.4.0-1132.141\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-gcp - 5.15.0-1065.73~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1095-gkeop - 5.4.0-1095.99\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1048-gkeop - 5.15.0-1048.55~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1075-ibm - 5.4.0-1075.80\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-ibm - 5.15.0-1058.61~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-intel-iotg - 5.15.0-1060.66~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1040-iot - 5.4.0-1040.41\nlinux-image-unsigned-5.4.0-1040-iot - 5.4.0-1040.41\nNo subscription required\n\nlinux-image-unsigned-5.15.0-116-lowlatency - 5.15.0-116.126~20.04.1\nlinux-image-unsigned-5.15.0-116-lowlatency-64k - 5.15.0-116.126~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1127-oracle - 5.4.0-1127.136\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-oracle - 5.15.0-1063.69~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1112-raspi - 5.4.0-1112.124\nNo subscription required\n\nlinux-image-5.4.0-1047-xilinx-zynqmp - 5.4.0-1047.51\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: KVM:Always flush async #PF workqueue when vCPU is being destroyed Always flushthe per-vCPU async #PF workqueue when a vCPU is clearing its completionqueue, e.g. when a VM and all its vCPUs is being destroyed. KVM must ensurethat none of its workqueue callbacks is running when the last reference tothe KVM _module_ is put. Gifting a reference to the associated VM preventsthe workqueue callback from dereferencing freed vCPU/VM memory, but doesnot prevent the KVM module from being unloaded before the callbackcompletes. Drop the misguided VM refcount gifting, as calling kvm_put_kvm()from async_pf_execute() if kvm_put_kvm() flushes the async #PF workqueuewill result in deadlock. async_pf_execute() can't return untilkvm_put_kvm() finishes, and kvm_put_kvm() can't return untilasync_pf_execute() finishes: WARNING: CPU: 8 PID: 251 atvirt/kvm/kvm_main.c:1435 kvm_put_kvm+0x2d/0x320 [kvm] Modules linked in:vhost_net vhost vhost_iotlb tap kvm_intel kvm irqbypass CPU: 8 PID: 251Comm: kworker/8:1 Tainted: G W 6.6.0-rc1-e7af8d17224a-x86/gmem-vm #119Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 0.0.0 02/06/2015Workqueue: events async_pf_execute [kvm] RIP: 0010:kvm_put_kvm+0x2d/0x320[kvm] Call Trace: <TASK> async_pf_execute+0x198/0x260 [kvm]process_one_work+0x145/0x2d0 worker_thread+0x27e/0x3a0 kthread+0xba/0xe0ret_from_fork+0x2d/0x50 ret_from_fork_asm+0x11/0x20 </TASK> ---[ end trace0000000000000000 ]--- INFO: task kworker/8:1:251 blocked for more than 120seconds. Tainted: G W 6.6.0-rc1-e7af8d17224a-x86/gmem-vm #119 \"echo 0 >/proc/sys/kernel/hung_task_timeout_secs\" disables this message.task:kworker/8:1 state:D stack:0 pid:251 ppid:2 flags:0x00004000 Workqueue:events async_pf_execute [kvm] Call Trace: <TASK> __schedule+0x33f/0xa40schedule+0x53/0xc0 schedule_timeout+0x12a/0x140__wait_for_common+0x8d/0x1d0 __flush_work.isra.0+0x19f/0x2c0kvm_clear_async_pf_completion_queue+0x129/0x190 [kvm]kvm_arch_destroy_vm+0x78/0x1b0 [kvm] kvm_put_kvm+0x1c1/0x320 [kvm]async_pf_execute+0x198/0x260 [kvm] process_one_work+0x145/0x2d0worker_thread+0x27e/0x3a0 kthread+0xba/0xe0 ret_from_fork+0x2d/0x50ret_from_fork_asm+0x11/0x20 </TASK> Ifkvm_clear_async_pf_completion_queue() actually flushes the workqueue, thenthere's no need to gift async_pf_execute() a reference because allinvocations of async_pf_execute() will be forced to complete before thevCPU and its VM are destroyed/freed. And that in turn fixes the moduleunloading bug as __fput() won't do module_put() on the last vCPU referenceuntil the vCPU has been freed, e.g. if closing the vCPU file also puts thelast reference to the KVM module. Note that kvm_check_async_pf_completion()may also take the work item off the completion queue and so also needs toflush the work queue, as the work will not be seen bykvm_clear_async_pf_completion_queue(). Waiting on the workqueue couldtheoretically delay a vCPU due to waiting for the work to complete, butthat's a very, very small chance, and likely a very small delay.kvm_arch_async_page_present_queued() unconditionally makes a new request,i.e. will effectively delay entering the guest, so the remaining work isreally just: trace_kvm_async_pf_completed(addr, cr2_or_gpa);__kvm_vcpu_wake_up(vcpu); mmput(mm); and mmput() can't drop the lastreference to the page tables if the vCPU is still alive, i.e. the vCPUwon't get stuck tearing down page tables. Add a helper to do the flushing,specifically to deal with \"wakeup all\" work items, as they aren't actuallywork items, i.e. are never placed in a workqueue. Trying to flush a bogusworkqueue entry rightly makes __flush_work() complain (kudos to whoeveradded that sanity check). Note, commit 5f6de5cbebee (\"KVM: Prevent moduleexit until al ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26976` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-5.4.0-189-generic-lpae - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-generic - 5.4.0-189.209\nlinux-image-unsigned-5.4.0-189-lowlatency - 5.4.0-189.209\nNo subscription required\n\nlinux-image-5.15.0-116-generic - 5.15.0-116.126~20.04.1\nlinux-image-5.15.0-116-generic-lpae - 5.15.0-116.126~20.04.1\nlinux-image-unsigned-5.15.0-116-generic - 5.15.0-116.126~20.04.1\nlinux-image-unsigned-5.15.0-116-generic-64k - 5.15.0-116.126~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1116-kvm - 5.4.0-1116.123\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1128-aws - 5.4.0-1128.138\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-aws - 5.15.0-1065.71~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1133-azure - 5.4.0-1133.140\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-azure - 5.15.0-1068.77~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-azure-fde - 5.15.0-1068.77~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1088-bluefield - 5.4.0-1088.95\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1102-fips - 5.4.0-1102.112\nlinux-image-unsigned-hmac-5.4.0-1102-fips - 5.4.0-1102.112\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1132-gcp - 5.4.0-1132.141\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-gcp - 5.15.0-1065.73~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1095-gkeop - 5.4.0-1095.99\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1048-gkeop - 5.15.0-1048.55~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1075-ibm - 5.4.0-1075.80\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-ibm - 5.15.0-1058.61~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-intel-iotg - 5.15.0-1060.66~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1040-iot - 5.4.0-1040.41\nlinux-image-unsigned-5.4.0-1040-iot - 5.4.0-1040.41\nNo subscription required\n\nlinux-image-unsigned-5.15.0-116-lowlatency - 5.15.0-116.126~20.04.1\nlinux-image-unsigned-5.15.0-116-lowlatency-64k - 5.15.0-116.126~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1127-oracle - 5.4.0-1127.136\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-oracle - 5.15.0-1063.69~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1112-raspi - 5.4.0-1112.124\nNo subscription required\n\nlinux-image-5.4.0-1047-xilinx-zynqmp - 5.4.0-1047.51\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1128-aws-fips - 5.4.0-1128.138+fips1\nlinux-image-unsigned-hmac-5.4.0-1128-aws-fips - 5.4.0-1128.138+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1133-azure-fips - 5.4.0-1133.140+fips1\nlinux-image-unsigned-hmac-5.4.0-1133-azure-fips - 5.4.0-1133.140+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1132-gcp-fips - 5.4.0-1132.141+fips1\nlinux-image-unsigned-hmac-5.4.0-1132-gcp-fips - 5.4.0-1132.141+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
@@ -129,11 +129,11 @@
 						"comment": "linux-bluefield package in focal was vulnerable but has been fixed (note: '5.4.0-1088.95')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000480",
-						"comment": "linux-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1102.112')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000050",
+						"comment": "linux-fips package in fips-updates/focal was vulnerable but has been fixed (note: '5.4.0-1102.112')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000050",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000060",
 						"comment": "linux-gcp package in focal was vulnerable but has been fixed (note: '5.4.0-1132.141')."
 					},
 					{
@@ -161,7 +161,7 @@
 						"comment": "linux-gke-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000060",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000070",
 						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1095.99')."
 					},
 					{
@@ -169,7 +169,7 @@
 						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1048.55~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000070",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000080",
 						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1075.80')."
 					},
 					{
@@ -185,7 +185,7 @@
 						"comment": "linux-intel-iotg-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1060.66~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000080",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000090",
 						"comment": "linux-iot package in focal was vulnerable but has been fixed (note: '5.4.0-1040.41')."
 					},
 					{
@@ -193,7 +193,7 @@
 						"comment": "linux-lowlatency-hwe-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-116.126~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000100",
 						"comment": "linux-oracle package in focal was vulnerable but has been fixed (note: '5.4.0-1127.136')."
 					},
 					{
@@ -229,7 +229,7 @@
 						"comment": "linux-oem-5.14: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-hwe-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000110",
 						"comment": "linux-raspi package in focal was vulnerable but has been fixed (note: '5.4.0-1112.124')."
 					},
 					{
@@ -237,20 +237,20 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000110",
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000120",
 						"comment": "linux-xilinx-zynqmp package in focal was vulnerable but has been fixed (note: '5.4.0-1047.51')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000450",
-						"comment": "linux-aws-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1128.138+fips1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000130",
+						"comment": "linux-aws-fips package in fips-updates/focal was vulnerable but has been fixed (note: '5.4.0-1128.138+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000460",
-						"comment": "linux-azure-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1133.140+fips1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000140",
+						"comment": "linux-azure-fips package in fips-updates/focal was vulnerable but has been fixed (note: '5.4.0-1133.140+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000470",
-						"comment": "linux-gcp-fips package in fips-updates/focal is affected. An update containing the fix has been completed and is pending publication (note: '5.4.0-1132.141+fips1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:2022486270000150",
+						"comment": "linux-gcp-fips package in fips-updates/focal was vulnerable but has been fixed (note: '5.4.0-1132.141+fips1')."
 					}
 				]
 			}

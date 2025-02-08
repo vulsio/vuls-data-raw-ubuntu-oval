@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-41085 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:cxl/mem: Fix no cxl_nvd during pmem region auto-assemblingWhen CXL subsystem is auto-assembling a pmem region during cxlendpoint port probing, always hit below calltrace. BUG: kernel NULL pointer dereference, address: 0000000000000078 #PF: supervisor read access in kernel mode #PF: error_code(0x0000) - not-present page RIP: 0010:cxl_pmem_region_probe+0x22e/0x360 [cxl_pmem] Call Trace:  <TASK>  ? __die+0x24/0x70  ? page_fault_oops+0x82/0x160  ? do_user_addr_fault+0x65/0x6b0  ? exc_page_fault+0x7d/0x170  ? asm_exc_page_fault+0x26/0x30  ? cxl_pmem_region_probe+0x22e/0x360 [cxl_pmem]  ? cxl_pmem_region_probe+0x1ac/0x360 [cxl_pmem]  cxl_bus_probe+0x1b/0x60 [cxl_core]  really_probe+0x173/0x410  ? __pfx___device_attach_driver+0x10/0x10  __driver_probe_device+0x80/0x170  driver_probe_device+0x1e/0x90  __device_attach_driver+0x90/0x120  bus_for_each_drv+0x84/0xe0  __device_attach+0xbc/0x1f0  bus_probe_device+0x90/0xa0  device_add+0x51c/0x710  devm_cxl_add_pmem_region+0x1b5/0x380 [cxl_core]  cxl_bus_probe+0x1b/0x60 [cxl_core]The cxl_nvd of the memdev needs to be available during the pmem regionprobe. Currently the cxl_nvd is registered after the endpoint port probe.The endpoint probe, in the case of autoassembly of regions, can cause apmem region probe requiring the not yet available cxl_nvd. Adjust thesequence so this dependency is met.This requires adding a port parameter to cxl_find_nvdimm_bridge() thatcan be used to query the ancestor root port. The endpoint port is notyet available, but will share a common ancestor with its parent, sostart the query from there instead.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41085` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cxl/mem: Fix no cxl_nvd during pmem region auto-assemblingWhen CXL subsystem is auto-assembling a pmem region during cxlendpoint port probing, always hit below calltrace. BUG: kernel NULL pointer dereference, address: 0000000000000078 #PF: supervisor read access in kernel mode #PF: error_code(0x0000) - not-present page RIP: 0010:cxl_pmem_region_probe+0x22e/0x360 [cxl_pmem] Call Trace:  <TASK>  ? __die+0x24/0x70  ? page_fault_oops+0x82/0x160  ? do_user_addr_fault+0x65/0x6b0  ? exc_page_fault+0x7d/0x170  ? asm_exc_page_fault+0x26/0x30  ? cxl_pmem_region_probe+0x22e/0x360 [cxl_pmem]  ? cxl_pmem_region_probe+0x1ac/0x360 [cxl_pmem]  cxl_bus_probe+0x1b/0x60 [cxl_core]  really_probe+0x173/0x410  ? __pfx___device_attach_driver+0x10/0x10  __driver_probe_device+0x80/0x170  driver_probe_device+0x1e/0x90  __device_attach_driver+0x90/0x120  bus_for_each_drv+0x84/0xe0  __device_attach+0xbc/0x1f0  bus_probe_device+0x90/0xa0  device_add+0x51c/0x710  devm_cxl_add_pmem_region+0x1b5/0x380 [cxl_core]  cxl_bus_probe+0x1b/0x60 [cxl_core]The cxl_nvd of the memdev needs to be available during the pmem regionprobe. Currently the cxl_nvd is registered after the endpoint port probe.The endpoint probe, in the case of autoassembly of regions, can cause apmem region probe requiring the not yet available cxl_nvd. Adjust thesequence so this dependency is met.This requires adding a port parameter to cxl_find_nvdimm_bridge() thatcan be used to query the ancestor root port. The endpoint port is notyet available, but will share a common ancestor with its parent, sostart the query from there instead.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41085` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1007-kvm - 4.4.0-1007.12\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1031-aws - 4.15.0-1031.33~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1015-azure - 4.11.0-1015.15\nlinux-image-extra-4.11.0-1015-azure - 4.11.0-1015.15\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 16.04 LTS"
@@ -56,23 +56,23 @@
 						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
-						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1007.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
 						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
-						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000030",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1031.33~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
-						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000040",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1015.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000060",
 						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1003.3')."
 					},
 					{
@@ -84,8 +84,8 @@
 						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
-						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000050",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10~16.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56617 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:cacheinfo: Allocate memory during CPU hotplug if not done from the primaryCPUCommit  5944ce092b97 (\"arch_topology: Build cacheinfo from primary CPU\")adds functionality that architectures can use to optionally allocate andbuild cacheinfo early during boot. Commit  6539cffa9495 (\"cacheinfo: Add arch specific early level initializer\")lets secondary CPUs correct (and reallocate memory) cacheinfo data ifneeded.If the early build functionality is not used and cacheinfo does not needcorrection, memory for cacheinfo is never allocated. x86 does not usethe early build functionality. Consequently, during the cacheinfo CPUhotplug callback, last_level_cache_is_valid() attempts to dereferencea NULL pointer:  BUG: kernel NULL pointer dereference, address: 0000000000000100  #PF: supervisor read access in kernel mode  #PF: error_code(0x0000) - not present page  PGD 0 P4D 0  Oops: 0000 [#1] PREEPMT SMP NOPTI  CPU: 0 PID 19 Comm: cpuhp/0 Not tainted 6.4.0-rc2 #1  RIP: 0010: last_level_cache_is_valid+0x95/0xe0aAllocate memory for cacheinfo during the cacheinfo CPU hotplug callbackif not done earlier.Moreover, before determining the validity of the last-level cache info,ensure that it has been allocated. Simply checking for non-zerocache_leaves() is not sufficient, as some architectures (e.g., Intelprocessors) have non-zero cache_leaves() before allocation.Dereferencing NULL cacheinfo can occur in update_per_cpu_data_slice_size().This function iterates over all online CPUs. However, a CPU may have comeonline recently, but its cacheinfo may not have been allocated yet.While here, remove an unnecessary indentation in allocate_cache_info().  [ bp: Massage. ]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56617` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1004-kvm - 4.4.0-1004.9\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1030-aws - 4.15.0-1030.31~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1009-azure - 4.11.0-1009.9\nlinux-image-extra-4.11.0-1009-azure - 4.11.0-1009.9\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9~16.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:cacheinfo: Allocate memory during CPU hotplug if not done from the primaryCPUCommit  5944ce092b97 (\"arch_topology: Build cacheinfo from primary CPU\")adds functionality that architectures can use to optionally allocate andbuild cacheinfo early during boot. Commit  6539cffa9495 (\"cacheinfo: Add arch specific early level initializer\")lets secondary CPUs correct (and reallocate memory) cacheinfo data ifneeded.If the early build functionality is not used and cacheinfo does not needcorrection, memory for cacheinfo is never allocated. x86 does not usethe early build functionality. Consequently, during the cacheinfo CPUhotplug callback, last_level_cache_is_valid() attempts to dereferencea NULL pointer:  BUG: kernel NULL pointer dereference, address: 0000000000000100  #PF: supervisor read access in kernel mode  #PF: error_code(0x0000) - not present page  PGD 0 P4D 0  Oops: 0000 [#1] PREEPMT SMP NOPTI  CPU: 0 PID 19 Comm: cpuhp/0 Not tainted 6.4.0-rc2 #1  RIP: 0010: last_level_cache_is_valid+0x95/0xe0aAllocate memory for cacheinfo during the cacheinfo CPU hotplug callbackif not done earlier.Moreover, before determining the validity of the last-level cache info,ensure that it has been allocated. Simply checking for non-zerocache_leaves() is not sufficient, as some architectures (e.g., Intelprocessors) have non-zero cache_leaves() before allocation.Dereferencing NULL cacheinfo can occur in update_per_cpu_data_slice_size().This function iterates over all online CPUs. However, a CPU may have comeonline recently, but its cacheinfo may not have been allocated yet.While here, remove an unnecessary indentation in allocate_cache_info().  [ bp: Massage. ]\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56617` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-2-generic - 4.4.0-2.16\nlinux-image-4.4.0-2-generic-lpae - 4.4.0-2.16\nlinux-image-4.4.0-2-lowlatency - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-e500mc - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc-smp - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-emb - 4.4.0-2.16\nlinux-image-4.4.0-2-powerpc64-smp - 4.4.0-2.16\nlinux-image-extra-4.4.0-2-generic - 4.4.0-2.16\nNo subscription required\n\nlinux-image-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-generic-lpae - 4.8.0-39.42~16.04.1\nlinux-image-4.8.0-39-lowlatency - 4.8.0-39.42~16.04.1\nlinux-image-extra-4.8.0-39-generic - 4.8.0-39.42~16.04.1\nNo subscription required\n\nlinux-image-4.4.0-1007-kvm - 4.4.0-1007.12\nNo subscription required\n\nlinux-image-4.4.0-1001-aws - 4.4.0-1001.10\nlinux-image-extra-4.4.0-1001-aws - 4.4.0-1001.10\nNo subscription required\n\nlinux-image-4.15.0-1031-aws - 4.15.0-1031.33~16.04.1\nNo subscription required\n\nlinux-image-4.11.0-1015-azure - 4.11.0-1015.15\nlinux-image-extra-4.11.0-1015-azure - 4.11.0-1015.15\nNo subscription required\n\nlinux-image-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-extra-4.4.0-1003-fips - 4.4.0-1003.3\nlinux-image-hmac-4.4.0-1003-fips - 4.4.0-1003.3\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-4.10.0-1004-gcp - 4.10.0-1004.4\nlinux-image-extra-4.10.0-1004-gcp - 4.10.0-1004.4\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10~16.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 16.04 LTS"
@@ -42,23 +42,23 @@
 						"comment": "linux-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.8.0-39.42~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000110",
-						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1004.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"comment": "linux-kvm package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1007.12')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000060",
 						"comment": "linux-aws package in xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1001.10')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000010",
-						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1030.31~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000030",
+						"comment": "linux-aws-hwe package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1031.33~16.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200636350000090",
-						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1009.9')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000040",
+						"comment": "linux-azure package in xenial, is related to the CVE in some way and has been fixed (note: '4.11.0-1015.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000020",
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000060",
 						"comment": "linux-fips package in fips-updates/xenial, is related to the CVE in some way and has been fixed (note: '4.4.0-1003.3')."
 					},
 					{
@@ -70,8 +70,8 @@
 						"comment": "linux-gke: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of standard support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.xenial:tst:200747740000020",
-						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9~16.04.1')."
+						"test_ref": "oval:com.ubuntu.xenial:tst:201431800000050",
+						"comment": "linux-oracle package in xenial, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10~16.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.xenial:tst:200767620000030",

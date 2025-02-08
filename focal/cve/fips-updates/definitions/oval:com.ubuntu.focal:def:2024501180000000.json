@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-50118 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: reject ro->rw reconfiguration if there are hard ro requirements[BUG]Syzbot reports the following crash:  BTRFS info (device loop0 state MCS): disabling free space tree  BTRFS info (device loop0 state MCS): clearing compat-ro feature flag forFREE_SPACE_TREE (0x1)  BTRFS info (device loop0 state MCS): clearing compat-ro feature flag forFREE_SPACE_TREE_VALID (0x2)  Oops: general protection fault, probably for non-canonical address0xdffffc0000000003: 0000 [#1] PREEMPT SMP KASAN NOPTI  KASAN: null-ptr-deref in range [0x0000000000000018-0x000000000000001f]  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS1.16.3-debian-1.16.3-2~bpo12+1 04/01/2014  RIP: 0010:backup_super_roots fs/btrfs/disk-io.c:1691 [inline]  RIP: 0010:write_all_supers+0x97a/0x40f0 fs/btrfs/disk-io.c:4041  Call Trace:   <TASK>   btrfs_commit_transaction+0x1eae/0x3740 fs/btrfs/transaction.c:2530   btrfs_delete_free_space_tree+0x383/0x730 fs/btrfs/free-space-tree.c:1312   btrfs_start_pre_rw_mount+0xf28/0x1300 fs/btrfs/disk-io.c:3012   btrfs_remount_rw fs/btrfs/super.c:1309 [inline]   btrfs_reconfigure+0xae6/0x2d40 fs/btrfs/super.c:1534   btrfs_reconfigure_for_mount fs/btrfs/super.c:2020 [inline]   btrfs_get_tree_subvol fs/btrfs/super.c:2079 [inline]   btrfs_get_tree+0x918/0x1920 fs/btrfs/super.c:2115   vfs_get_tree+0x90/0x2b0 fs/super.c:1800   do_new_mount+0x2be/0xb40 fs/namespace.c:3472   do_mount fs/namespace.c:3812 [inline]   __do_sys_mount fs/namespace.c:4020 [inline]   __se_sys_mount+0x2d6/0x3c0 fs/namespace.c:3997   do_syscall_x64 arch/x86/entry/common.c:52 [inline]   do_syscall_64+0xf3/0x230 arch/x86/entry/common.c:83   entry_SYSCALL_64_after_hwframe+0x77/0x7f[CAUSE]To support mounting different subvolume with different RO/RW flags forthe new mount APIs, btrfs introduced two workaround to support thisfeature:- Skip mount option/feature checks if we are mounting a different  subvolume- Reconfigure the fs to RW if the initial mount is ROCombining these two, we can have the following sequence:- Mount the fs ro,rescue=all,clear_cache,space_cache=v1  rescue=all will mark the fs as hard read-only, so no v2 cache clearing  will happen.- Mount a subvolume rw of the same fs.  We go into btrfs_get_tree_subvol(), but fc_mount() returns EBUSY  because our new fc is RW, different from the original fs.  Now we enter btrfs_reconfigure_for_mount(), which switches the RO flag  first so that we can grab the existing fs_info.  Then we reconfigure the fs to RW.- During reconfiguration, option/features check is skipped  This means we will restart the v2 cache clearing, and convert back to  v1 cache.  This will trigger fs writes, and since the original fs has \"rescue=all\"  option, it skips the csum tree read.  And eventually causing NULL pointer dereference in super block  writeback.[FIX]For reconfiguration caused by different subvolume RO/RW flags, ensure wealways run btrfs_check_options() to ensure we have proper hard ROrequirements met.In fact the function btrfs_check_options() doesn't really do manycomplex checks, but hard RO requirement and some feature dependencychecks, thus there is no special reason not to do the check for mountreconfiguration.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50118` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:btrfs: reject ro->rw reconfiguration if there are hard ro requirements[BUG]Syzbot reports the following crash:  BTRFS info (device loop0 state MCS): disabling free space tree  BTRFS info (device loop0 state MCS): clearing compat-ro feature flag forFREE_SPACE_TREE (0x1)  BTRFS info (device loop0 state MCS): clearing compat-ro feature flag forFREE_SPACE_TREE_VALID (0x2)  Oops: general protection fault, probably for non-canonical address0xdffffc0000000003: 0000 [#1] PREEMPT SMP KASAN NOPTI  KASAN: null-ptr-deref in range [0x0000000000000018-0x000000000000001f]  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS1.16.3-debian-1.16.3-2~bpo12+1 04/01/2014  RIP: 0010:backup_super_roots fs/btrfs/disk-io.c:1691 [inline]  RIP: 0010:write_all_supers+0x97a/0x40f0 fs/btrfs/disk-io.c:4041  Call Trace:   <TASK>   btrfs_commit_transaction+0x1eae/0x3740 fs/btrfs/transaction.c:2530   btrfs_delete_free_space_tree+0x383/0x730 fs/btrfs/free-space-tree.c:1312   btrfs_start_pre_rw_mount+0xf28/0x1300 fs/btrfs/disk-io.c:3012   btrfs_remount_rw fs/btrfs/super.c:1309 [inline]   btrfs_reconfigure+0xae6/0x2d40 fs/btrfs/super.c:1534   btrfs_reconfigure_for_mount fs/btrfs/super.c:2020 [inline]   btrfs_get_tree_subvol fs/btrfs/super.c:2079 [inline]   btrfs_get_tree+0x918/0x1920 fs/btrfs/super.c:2115   vfs_get_tree+0x90/0x2b0 fs/super.c:1800   do_new_mount+0x2be/0xb40 fs/namespace.c:3472   do_mount fs/namespace.c:3812 [inline]   __do_sys_mount fs/namespace.c:4020 [inline]   __se_sys_mount+0x2d6/0x3c0 fs/namespace.c:3997   do_syscall_x64 arch/x86/entry/common.c:52 [inline]   do_syscall_64+0xf3/0x230 arch/x86/entry/common.c:83   entry_SYSCALL_64_after_hwframe+0x77/0x7f[CAUSE]To support mounting different subvolume with different RO/RW flags forthe new mount APIs, btrfs introduced two workaround to support thisfeature:- Skip mount option/feature checks if we are mounting a different  subvolume- Reconfigure the fs to RW if the initial mount is ROCombining these two, we can have the following sequence:- Mount the fs ro,rescue=all,clear_cache,space_cache=v1  rescue=all will mark the fs as hard read-only, so no v2 cache clearing  will happen.- Mount a subvolume rw of the same fs.  We go into btrfs_get_tree_subvol(), but fc_mount() returns EBUSY  because our new fc is RW, different from the original fs.  Now we enter btrfs_reconfigure_for_mount(), which switches the RO flag  first so that we can grab the existing fs_info.  Then we reconfigure the fs to RW.- During reconfiguration, option/features check is skipped  This means we will restart the v2 cache clearing, and convert back to  v1 cache.  This will trigger fs writes, and since the original fs has \"rescue=all\"  option, it skips the csum tree read.  And eventually causing NULL pointer dereference in super block  writeback.[FIX]For reconfiguration caused by different subvolume RO/RW flags, ensure wealways run btrfs_check_options() to ensure we have proper hard ROrequirements met.In fact the function btrfs_check_options() doesn't really do manycomplex checks, but hard RO requirement and some feature dependencychecks, thus there is no special reason not to do the check for mountreconfiguration.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50118` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1011-bluefield - 5.4.0-1011.14\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-ibm - 5.4.0-1004.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
@@ -75,7 +75,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
@@ -102,27 +102,27 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
-						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
-						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1011.14')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
-						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
+						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-gcp-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
@@ -142,7 +142,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -158,31 +158,31 @@
 						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
-						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -202,7 +202,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -230,7 +230,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000170",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

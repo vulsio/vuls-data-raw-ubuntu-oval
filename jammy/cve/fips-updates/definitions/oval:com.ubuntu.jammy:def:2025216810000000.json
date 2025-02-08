@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2025-21681 on Ubuntu Pro FIPS-updates 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:openvswitch: fix lockup on tx to unregistering netdev with carrierCommit in a fixes tag attempted to fix the issue in the followingsequence of calls:    do_output    -> ovs_vport_send       -> dev_queue_xmit          -> __dev_queue_xmit             -> netdev_core_pick_tx                -> skb_tx_hashWhen device is unregistering, the 'dev->real_num_tx_queues' goes tozero and the 'while (unlikely(hash >= qcount))' loop inside the'skb_tx_hash' becomes infinite, locking up the core forever.But unfortunately, checking just the carrier status is not enough tofix the issue, because some devices may still be in unregisteringstate while reporting carrier status OK.One example of such device is a net/dummy.  It sets carrier ONon start, but it doesn't implement .ndo_stop to set the carrier off.And it makes sense, because dummy doesn't really have a carrier.Therefore, while this device is unregistering, it's still easy to hitthe infinite loop in the skb_tx_hash() from the OVS datapath.  Theremight be other drivers that do the same, but dummy by itself isimportant for the OVS ecosystem, because it is frequently used as apacket sink for tcpdump while debugging OVS deployments.  And when theissue is hit, the only way to recover is to reboot.Fix that by also checking if the device is running.  The runningstate is handled by the net core during unregistering, so it coversunregistering case better, and we don't really need to send packetsto devices that are not running anyway.While only checking the running state might be enough, the carriercheck is preserved.  The running and the carrier states seem disjoinedthroughout the code and different drivers.  And other core functionslike __dev_direct_xmit() check both before attempting to transmita packet.  So, it seems safer to check both flags in OVS as well.",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:openvswitch: fix lockup on tx to unregistering netdev with carrierCommit in a fixes tag attempted to fix the issue in the followingsequence of calls:    do_output    -> ovs_vport_send       -> dev_queue_xmit          -> __dev_queue_xmit             -> netdev_core_pick_tx                -> skb_tx_hashWhen device is unregistering, the 'dev->real_num_tx_queues' goes tozero and the 'while (unlikely(hash >= qcount))' loop inside the'skb_tx_hash' becomes infinite, locking up the core forever.But unfortunately, checking just the carrier status is not enough tofix the issue, because some devices may still be in unregisteringstate while reporting carrier status OK.One example of such device is a net/dummy.  It sets carrier ONon start, but it doesn't implement .ndo_stop to set the carrier off.And it makes sense, because dummy doesn't really have a carrier.Therefore, while this device is unregistering, it's still easy to hitthe infinite loop in the skb_tx_hash() from the OVS datapath.  Theremight be other drivers that do the same, but dummy by itself isimportant for the OVS ecosystem, because it is frequently used as apacket sink for tcpdump while debugging OVS deployments.  And when theissue is hit, the only way to recover is to reboot.Fix that by also checking if the device is running.  The runningstate is handled by the net core during unregistering, so it coversunregistering case better, and we don't really need to send packetsto devices that are not running anyway.While only checking the running state might be enough, the carriercheck is preserved.  The running and the carrier states seem disjoinedthroughout the code and different drivers.  And other core functionslike __dev_direct_xmit() check both before attempting to transmita packet.  So, it seems safer to check both flags in OVS as well.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2025-21681` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-92-fips - 5.15.0-92.102+fips1\nlinux-image-unsigned-hmac-5.15.0-92-fips - 5.15.0-92.102+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1052-aws-fips - 5.15.0-1052.57+fips1\nlinux-image-unsigned-hmac-5.15.0-1052-aws-fips - 5.15.0-1052.57+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1058-azure-fips - 5.15.0-1058.66+fips1\nlinux-image-unsigned-hmac-5.15.0-1058-azure-fips - 5.15.0-1058.66+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 22.04 LTS"
@@ -32,8 +32,8 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000000",
-						"comment": "linux package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000000",
+						"comment": "linux package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-19.19')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000160",
@@ -48,16 +48,16 @@
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000050",
-						"comment": "linux-kvm package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000010",
+						"comment": "linux-kvm package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1004.4')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000240",
 						"comment": "linux-allwinner-5.19: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000010",
-						"comment": "linux-aws package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000020",
+						"comment": "linux-aws package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000220",
@@ -72,8 +72,8 @@
 						"comment": "linux-aws-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000030",
-						"comment": "linux-azure package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000030",
+						"comment": "linux-azure package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1006.7')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000180",
@@ -88,8 +88,8 @@
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -100,24 +100,24 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000460",
-						"comment": "linux-fips package in fips-updates/jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
+						"comment": "linux-fips package in fips-updates/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-92.102+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
-						"comment": "linux-aws-fips package in fips-updates/jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
+						"comment": "linux-aws-fips package in fips-updates/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1052.57+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
-						"comment": "linux-azure-fips package in fips-updates/jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
+						"comment": "linux-azure-fips package in fips-updates/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1058.66+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000450",
-						"comment": "linux-gcp-fips package in fips-updates/jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
+						"comment": "linux-gcp-fips package in fips-updates/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1048.56+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000040",
-						"comment": "linux-gcp package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000040",
+						"comment": "linux-gcp package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1005.6')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000230",
@@ -132,24 +132,24 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000020",
-						"comment": "linux-gke package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
+						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000080",
-						"comment": "linux-gkeop package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
+						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-ibm package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
+						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000130",
-						"comment": "linux-intel-iotg package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
+						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000110",
-						"comment": "linux-lowlatency package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
+						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000170",
@@ -164,8 +164,8 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000210",
-						"comment": "linux-nvidia package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000160",
+						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000320",
@@ -176,8 +176,8 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000060",
-						"comment": "linux-oracle package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000050",
+						"comment": "linux-oracle package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000410",
@@ -200,8 +200,8 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000070",
-						"comment": "linux-raspi package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000170",
+						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000470",
@@ -220,8 +220,8 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000200",
-						"comment": "linux-xilinx-zynqmp package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000180",
+						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]
 			}

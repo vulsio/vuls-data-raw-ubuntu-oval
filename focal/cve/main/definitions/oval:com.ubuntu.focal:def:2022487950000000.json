@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2022-48795 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:parisc: Fix data TLB miss in sba_unmap_sgRolf Eike Beer reported the following bug:[1274934.746891] Bad Address (null pointer deref?): Code=15 (Data TLB missfault) at addr 0000004140000018[1274934.746891] CPU: 3 PID: 5549 Comm: cmake Not tainted5.15.4-gentoo-parisc64 #4[1274934.746891] Hardware name: 9000/785/C8000[1274934.746891][1274934.746891]      YZrvWESTHLNXBCVMcbcbcbcbOGFRQPDI[1274934.746891] PSW: 00001000000001001111111000001110 Not tainted[1274934.746891] r00-03  000000ff0804fe0e 0000000040bc9bc0 00000000406760e40000004140000000[1274934.746891] r04-07  0000000040b693c0 0000004140000000 000000004a2b08b00000000000000001[1274934.746891] r08-11  0000000041f98810 0000000000000000 000000004a0a70000000000000000001[1274934.746891] r12-15  0000000040bddbc0 0000000040c0cbc0 0000000040bddbc00000000040bddbc0[1274934.746891] r16-19  0000000040bde3c0 0000000040bddbc0 0000000040bde3c00000000000000007[1274934.746891] r20-23  0000000000000006 000000004a368950 00000000000000000000000000000001[1274934.746891] r24-27  0000000000001fff 000000000800000e 000000004a1710f00000000040b693c0[1274934.746891] r28-31  0000000000000001 0000000041f988b0 0000000041f98840000000004a171118[1274934.746891] sr00-03  00000000066e5800 00000000000000000000000000000000 00000000066e5800[1274934.746891] sr04-07  0000000000000000 00000000000000000000000000000000 0000000000000000[1274934.746891][1274934.746891] IASQ: 0000000000000000 0000000000000000 IAOQ:00000000406760e8 00000000406760ec[1274934.746891]  IIR: 48780030    ISR: 0000000000000000  IOR:0000004140000018[1274934.746891]  CPU:        3   CR30: 00000040e3a9c000 CR31:ffffffffffffffff[1274934.746891]  ORIG_R28: 0000000040acdd58[1274934.746891]  IAOQ[0]: sba_unmap_sg+0xb0/0x118[1274934.746891]  IAOQ[1]: sba_unmap_sg+0xb4/0x118[1274934.746891]  RP(r2): sba_unmap_sg+0xac/0x118[1274934.746891] Backtrace:[1274934.746891]  [<00000000402740cc>] dma_unmap_sg_attrs+0x6c/0x70[1274934.746891]  [<000000004074d6bc>] scsi_dma_unmap+0x54/0x60[1274934.746891]  [<00000000407a3488>] mptscsih_io_done+0x150/0xd70[1274934.746891]  [<0000000040798600>] mpt_interrupt+0x168/0xa68[1274934.746891]  [<0000000040255a48>] __handle_irq_event_percpu+0xc8/0x278[1274934.746891]  [<0000000040255c34>] handle_irq_event_percpu+0x3c/0xd8[1274934.746891]  [<000000004025ecb4>] handle_percpu_irq+0xb4/0xf0[1274934.746891]  [<00000000402548e0>] generic_handle_irq+0x50/0x70[1274934.746891]  [<000000004019a254>] call_on_stack+0x18/0x24[1274934.746891][1274934.746891] Kernel panic - not syncing: Bad Address (null pointerderef?)The bug is caused by overrunning the sglist and incorrectly testingsg_dma_len(sglist) before nents. Normally this doesn't cause a crash,but in this case sglist crossed a page boundary. This occurs in thefollowing code:\twhile (sg_dma_len(sglist) && nents--) {The fix is simply to test nents first and move the decrement of nentsinto the loop.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48795` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-110-generic - 5.4.0-110.124\nlinux-image-5.4.0-110-generic-lpae - 5.4.0-110.124\nlinux-image-unsigned-5.4.0-110-generic - 5.4.0-110.124\nlinux-image-unsigned-5.4.0-110-lowlatency - 5.4.0-110.124\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1063-kvm - 5.4.0-1063.66\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1073-aws - 5.4.0-1073.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1078-azure - 5.4.0-1078.81\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1040-bluefield - 5.4.0-1040.44\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1073-gcp - 5.4.0-1073.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1040-gkeop - 5.4.0-1040.41\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-ibm - 5.4.0-1021.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-intel-iotg - 5.15.0-1008.11~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-iot - 5.4.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1071-oracle - 5.4.0-1071.77\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1060-raspi - 5.4.0-1060.68\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:parisc: Fix data TLB miss in sba_unmap_sgRolf Eike Beer reported the following bug:[1274934.746891] Bad Address (null pointer deref?): Code=15 (Data TLB missfault) at addr 0000004140000018[1274934.746891] CPU: 3 PID: 5549 Comm: cmake Not tainted5.15.4-gentoo-parisc64 #4[1274934.746891] Hardware name: 9000/785/C8000[1274934.746891][1274934.746891]      YZrvWESTHLNXBCVMcbcbcbcbOGFRQPDI[1274934.746891] PSW: 00001000000001001111111000001110 Not tainted[1274934.746891] r00-03  000000ff0804fe0e 0000000040bc9bc0 00000000406760e40000004140000000[1274934.746891] r04-07  0000000040b693c0 0000004140000000 000000004a2b08b00000000000000001[1274934.746891] r08-11  0000000041f98810 0000000000000000 000000004a0a70000000000000000001[1274934.746891] r12-15  0000000040bddbc0 0000000040c0cbc0 0000000040bddbc00000000040bddbc0[1274934.746891] r16-19  0000000040bde3c0 0000000040bddbc0 0000000040bde3c00000000000000007[1274934.746891] r20-23  0000000000000006 000000004a368950 00000000000000000000000000000001[1274934.746891] r24-27  0000000000001fff 000000000800000e 000000004a1710f00000000040b693c0[1274934.746891] r28-31  0000000000000001 0000000041f988b0 0000000041f98840000000004a171118[1274934.746891] sr00-03  00000000066e5800 00000000000000000000000000000000 00000000066e5800[1274934.746891] sr04-07  0000000000000000 00000000000000000000000000000000 0000000000000000[1274934.746891][1274934.746891] IASQ: 0000000000000000 0000000000000000 IAOQ:00000000406760e8 00000000406760ec[1274934.746891]  IIR: 48780030    ISR: 0000000000000000  IOR:0000004140000018[1274934.746891]  CPU:        3   CR30: 00000040e3a9c000 CR31:ffffffffffffffff[1274934.746891]  ORIG_R28: 0000000040acdd58[1274934.746891]  IAOQ[0]: sba_unmap_sg+0xb0/0x118[1274934.746891]  IAOQ[1]: sba_unmap_sg+0xb4/0x118[1274934.746891]  RP(r2): sba_unmap_sg+0xac/0x118[1274934.746891] Backtrace:[1274934.746891]  [<00000000402740cc>] dma_unmap_sg_attrs+0x6c/0x70[1274934.746891]  [<000000004074d6bc>] scsi_dma_unmap+0x54/0x60[1274934.746891]  [<00000000407a3488>] mptscsih_io_done+0x150/0xd70[1274934.746891]  [<0000000040798600>] mpt_interrupt+0x168/0xa68[1274934.746891]  [<0000000040255a48>] __handle_irq_event_percpu+0xc8/0x278[1274934.746891]  [<0000000040255c34>] handle_irq_event_percpu+0x3c/0xd8[1274934.746891]  [<000000004025ecb4>] handle_percpu_irq+0xb4/0xf0[1274934.746891]  [<00000000402548e0>] generic_handle_irq+0x50/0x70[1274934.746891]  [<000000004019a254>] call_on_stack+0x18/0x24[1274934.746891][1274934.746891] Kernel panic - not syncing: Bad Address (null pointerderef?)The bug is caused by overrunning the sglist and incorrectly testingsg_dma_len(sglist) before nents. Normally this doesn't cause a crash,but in this case sglist crossed a page boundary. This occurs in thefollowing code:\twhile (sg_dma_len(sglist) && nents--) {The fix is simply to test nents first and move the decrement of nentsinto the loop.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2022-48795` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-110-generic - 5.4.0-110.124\nlinux-image-5.4.0-110-generic-lpae - 5.4.0-110.124\nlinux-image-unsigned-5.4.0-110-generic - 5.4.0-110.124\nlinux-image-unsigned-5.4.0-110-lowlatency - 5.4.0-110.124\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1063-kvm - 5.4.0-1063.66\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1073-aws - 5.4.0-1073.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1078-azure - 5.4.0-1078.81\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1040-bluefield - 5.4.0-1040.44\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1073-gcp - 5.4.0-1073.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1040-gkeop - 5.4.0-1040.41\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-ibm - 5.4.0-1021.23\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1008-intel-iotg - 5.15.0-1008.11~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-iot - 5.4.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1071-oracle - 5.4.0-1071.77\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1060-raspi - 5.4.0-1060.68\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -73,7 +73,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:2020278200000030",
@@ -100,7 +100,7 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
@@ -124,7 +124,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -140,7 +140,7 @@
 						"comment": "linux-gkeop package in focal was vulnerable but has been fixed (note: '5.4.0-1040.41')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
@@ -148,8 +148,8 @@
 						"comment": "linux-ibm package in focal was vulnerable but has been fixed (note: '5.4.0-1021.23')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -164,7 +164,7 @@
 						"comment": "linux-iot package in focal was vulnerable but has been fixed (note: '5.4.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -184,7 +184,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -212,7 +212,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

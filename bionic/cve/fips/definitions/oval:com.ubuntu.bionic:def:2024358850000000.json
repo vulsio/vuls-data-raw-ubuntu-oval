@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-35885 on Ubuntu Pro FIPS 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:mlxbf_gige: stop interface during shutdown The mlxbf_gige driverintermittantly encounters a NULL pointer exception while the system isshutting down via \"reboot\" command. The mlxbf_driver will experience anexception right after executing its shutdown() method. One example of thisexception is: Unable to handle kernel NULL pointer dereference at virtualaddress 0000000000000070 Mem abort info: ESR = 0x0000000096000004 EC =0x25: DABT (current EL), IL = 32 bits SET = 0, FnV = 0 EA = 0, S1PTW = 0FSC = 0x04: level 0 translation fault Data abort info: ISV = 0, ISS =0x00000004 CM = 0, WnR = 0 user pgtable: 4k pages, 48-bit VAs,pgdp=000000011d373000 [0000000000000070] pgd=0000000000000000,p4d=0000000000000000 Internal error: Oops: 96000004 [#1] SMP CPU: 0 PID: 13Comm: ksoftirqd/0 Tainted: G S OE 5.15.0-bf.6.gef6992a #1 Hardware name:https://www.mellanox.com BlueField SoC/BlueField SoC, BIOS 4.0.2.12669 Apr21 2023 pstate: 20400009 (nzCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--) pc: mlxbf_gige_handle_tx_complete+0xc8/0x170 [mlxbf_gige] lr :mlxbf_gige_poll+0x54/0x160 [mlxbf_gige] sp : ffff8000080d3c10 x29:ffff8000080d3c10 x28: ffffcce72cbb7000 x27: ffff8000080d3d58 x26:ffff0000814e7340 x25: ffff331cd1a05000 x24: ffffcce72c4ea008 x23:ffff0000814e4b40 x22: ffff0000814e4d10 x21: ffff0000814e4128 x20:0000000000000000 x19: ffff0000814e4a80 x18: ffffffffffffffff x17:000000000000001c x16: ffffcce72b4553f4 x15: ffff80008805b8a7 x14:0000000000000000 x13: 0000000000000030 x12: 0101010101010101 x11:7f7f7f7f7f7f7f7f x10: c2ac898b17576267 x9 : ffffcce720fa5404 x8 :ffff000080812138 x7 : 0000000000002e9a x6 : 0000000000000080 x5 :ffff00008de3b000 x4 : 0000000000000000 x3 : 0000000000000001 x2 :0000000000000000 x1 : 0000000000000000 x0 : 0000000000000000 Call trace:mlxbf_gige_handle_tx_complete+0xc8/0x170 [mlxbf_gige]mlxbf_gige_poll+0x54/0x160 [mlxbf_gige] __napi_poll+0x40/0x1c8net_rx_action+0x314/0x3a0 __do_softirq+0x128/0x334 run_ksoftirqd+0x54/0x6csmpboot_thread_fn+0x14c/0x190 kthread+0x10c/0x110 ret_from_fork+0x10/0x20Code: 8b070000 f9000ea0 f95056c0 f86178a1 (b9407002) ---[ end trace7cc3941aa0d8e6a4 ]--- Kernel panic - not syncing: Oops: Fatal exception ininterrupt Kernel Offset: 0x4ce722520000 from 0xffff800008000000PHYS_OFFSET: 0x80000000 CPU features: 0x000005c1,a3330e5a Memory Limit:none ---[ end Kernel panic - not syncing: Oops: Fatal exception ininterrupt ]--- During system shutdown, the mlxbf_gige driver's shutdown()is always executed. However, the driver's stop() method will only executeif networking interface configuration logic within the Linux distributionhas been setup to do so. If shutdown() executes but stop() does notexecute, NAPI remains enabled and this can lead to an exception if NAPI isscheduled while the hardware interface has only been partiallydeinitialized. The networking interface managed by the mlxbf_gige drivermust be properly stopped during system shutdown so that IFF_UP is cleared,the hardware interface is put into a clean state, and NAPI is fullydeinitialized.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35885` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1018-aws - 5.4.0-1018.18~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1020-azure - 5.4.0-1020.20~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-gcp - 5.4.0-1019.19~18.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-oracle - 5.4.0-1019.19~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mlxbf_gige: stop interface during shutdown The mlxbf_gige driverintermittantly encounters a NULL pointer exception while the system isshutting down via \"reboot\" command. The mlxbf_driver will experience anexception right after executing its shutdown() method. One example of thisexception is: Unable to handle kernel NULL pointer dereference at virtualaddress 0000000000000070 Mem abort info: ESR = 0x0000000096000004 EC =0x25: DABT (current EL), IL = 32 bits SET = 0, FnV = 0 EA = 0, S1PTW = 0FSC = 0x04: level 0 translation fault Data abort info: ISV = 0, ISS =0x00000004 CM = 0, WnR = 0 user pgtable: 4k pages, 48-bit VAs,pgdp=000000011d373000 [0000000000000070] pgd=0000000000000000,p4d=0000000000000000 Internal error: Oops: 96000004 [#1] SMP CPU: 0 PID: 13Comm: ksoftirqd/0 Tainted: G S OE 5.15.0-bf.6.gef6992a #1 Hardware name:https://www.mellanox.com BlueField SoC/BlueField SoC, BIOS 4.0.2.12669 Apr21 2023 pstate: 20400009 (nzCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--) pc: mlxbf_gige_handle_tx_complete+0xc8/0x170 [mlxbf_gige] lr :mlxbf_gige_poll+0x54/0x160 [mlxbf_gige] sp : ffff8000080d3c10 x29:ffff8000080d3c10 x28: ffffcce72cbb7000 x27: ffff8000080d3d58 x26:ffff0000814e7340 x25: ffff331cd1a05000 x24: ffffcce72c4ea008 x23:ffff0000814e4b40 x22: ffff0000814e4d10 x21: ffff0000814e4128 x20:0000000000000000 x19: ffff0000814e4a80 x18: ffffffffffffffff x17:000000000000001c x16: ffffcce72b4553f4 x15: ffff80008805b8a7 x14:0000000000000000 x13: 0000000000000030 x12: 0101010101010101 x11:7f7f7f7f7f7f7f7f x10: c2ac898b17576267 x9 : ffffcce720fa5404 x8 :ffff000080812138 x7 : 0000000000002e9a x6 : 0000000000000080 x5 :ffff00008de3b000 x4 : 0000000000000000 x3 : 0000000000000001 x2 :0000000000000000 x1 : 0000000000000000 x0 : 0000000000000000 Call trace:mlxbf_gige_handle_tx_complete+0xc8/0x170 [mlxbf_gige]mlxbf_gige_poll+0x54/0x160 [mlxbf_gige] __napi_poll+0x40/0x1c8net_rx_action+0x314/0x3a0 __do_softirq+0x128/0x334 run_ksoftirqd+0x54/0x6csmpboot_thread_fn+0x14c/0x190 kthread+0x10c/0x110 ret_from_fork+0x10/0x20Code: 8b070000 f9000ea0 f95056c0 f86178a1 (b9407002) ---[ end trace7cc3941aa0d8e6a4 ]--- Kernel panic - not syncing: Oops: Fatal exception ininterrupt Kernel Offset: 0x4ce722520000 from 0xffff800008000000PHYS_OFFSET: 0x80000000 CPU features: 0x000005c1,a3330e5a Memory Limit:none ---[ end Kernel panic - not syncing: Oops: Fatal exception ininterrupt ]--- During system shutdown, the mlxbf_gige driver's shutdown()is always executed. However, the driver's stop() method will only executeif networking interface configuration logic within the Linux distributionhas been setup to do so. If shutdown() executes but stop() does notexecute, NAPI remains enabled and this can lead to an exception if NAPI isscheduled while the hardware interface has only been partiallydeinitialized. The networking interface managed by the mlxbf_gige drivermust be properly stopped during system shutdown so that IFF_UP is cleared,the hardware interface is put into a clean state, and NAPI is fullydeinitialized.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-35885` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1020-aws - 5.4.0-1020.20~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1022-azure - 5.4.0-1022.22~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-gcp - 5.4.0-1021.21~18.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-oracle - 5.4.0-1021.21~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 18.04 LTS"
@@ -78,8 +78,8 @@
 						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000110",
-						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1018.18~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000010",
+						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -94,23 +94,23 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000080",
-						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
-						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000010",
-						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000020",
-						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
+						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000030",
+						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000040",
+						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000050",
+						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000060",
 						"comment": "linux-gcp-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					},
 					{
@@ -126,8 +126,8 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000100",
-						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.2')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000070",
+						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -142,12 +142,12 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000040",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000080",
 						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1010.11~18.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000130",
-						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -158,8 +158,8 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000090",
-						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000090",
+						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",

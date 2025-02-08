@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56687 on Ubuntu Pro FIPS-preview 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: musb: Fix hardware lockup on first Rx endpoint requestThere is a possibility that a request's callback could be invoked fromusb_ep_queue() (call trace below, supplemented with missing calls):req->complete from usb_gadget_giveback_request\t(drivers/usb/gadget/udc/core.c:999)usb_gadget_giveback_request from musb_g_giveback\t(drivers/usb/musb/musb_gadget.c:147)musb_g_giveback from rxstate\t(drivers/usb/musb/musb_gadget.c:784)rxstate from musb_ep_restart\t(drivers/usb/musb/musb_gadget.c:1169)musb_ep_restart from musb_ep_restart_resume_work\t(drivers/usb/musb/musb_gadget.c:1176)musb_ep_restart_resume_work from musb_queue_resume_work\t(drivers/usb/musb/musb_core.c:2279)musb_queue_resume_work from musb_gadget_queue\t(drivers/usb/musb/musb_gadget.c:1241)musb_gadget_queue from usb_ep_queue\t(drivers/usb/gadget/udc/core.c:300)According to the docstring of usb_ep_queue(), this should not happen:\"Note that @req's ->complete() callback must never be called from withinusb_ep_queue() as that can create deadlock situations.\"In fact, a hardware lockup might occur in the following sequence:1. The gadget is initialized using musb_gadget_enable().2. Meanwhile, a packet arrives, and the RXPKTRDY flag is set, raising an   interrupt.3. If IRQs are enabled, the interrupt is handled, but musb_g_rx() finds an   empty queue (next_request() returns NULL). The interrupt flag has   already been cleared by the glue layer handler, but the RXPKTRDY flag   remains set.4. The first request is enqueued using usb_ep_queue(), leading to the call   of req->complete(), as shown in the call trace above.5. If the callback enables IRQs and another packet is waiting, step (3)   repeats. The request queue is empty because usb_g_giveback() removes the   request before invoking the callback.6. The endpoint remains locked up, as the interrupt triggered by hardware   setting the RXPKTRDY flag has been handled, but the flag itself remains   set.For this scenario to occur, it is only necessary for IRQs to be enabled atsome point during the complete callback. This happens with the USB Ethernetgadget, whose rx_complete() callback calls netif_rx(). If called in thetask context, netif_rx() disables the bottom halves (BHs). When the BHs arere-enabled, IRQs are also enabled to allow soft IRQs to be processed. Thegadget itself is initialized at module load (or at boot if built-in), butthe first request is enqueued when the network interface is brought up,triggering rx_complete() in the task context via ioctl(). If a packetarrives while the interface is down, it can prevent the interface fromreceiving any further packets from the USB host.The situation is quite complicated with many parties involved. Thisparticular issue can be resolved in several possible ways:1. Ensure that callbacks never enable IRQs. This would be difficult to   enforce, as discovering how netif_rx() interacts with interrupts was   already quite challenging and u_ether is not the only function driver.   Similar \"bugs\" could be hidden in other drivers as well.2. Disable MUSB interrupts in musb_g_giveback() before calling the callback   and re-enable them afterwars (by calling musb_{dis,en}able_interrupts(),   for example). This would ensure that MUSB interrupts are not handled   during the callback, even if IRQs are enabled. In fact, it would allow   IRQs to be enabled when releasing the lock. However, this feels like an   inelegant hack.3. Modify the interrupt handler to clear the RXPKTRDY flag if the request   queue is empty. While this approach also feels like a hack, it wastes   CPU time by attempting to handle incoming packets when the software is   not ready to process them.4. Flush the Rx FIFO instead of calling rxstate() in musb_ep_restart().   This ensures that the hardware can receive packets when there is at   least one request in the queue. Once I---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56687` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-73-fips - 5.15.0-73.80+fips1\nlinux-image-unsigned-hmac-5.15.0-73-fips - 5.15.0-73.80+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nlinux-image-unsigned-hmac-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:usb: musb: Fix hardware lockup on first Rx endpoint requestThere is a possibility that a request's callback could be invoked fromusb_ep_queue() (call trace below, supplemented with missing calls):req->complete from usb_gadget_giveback_request\t(drivers/usb/gadget/udc/core.c:999)usb_gadget_giveback_request from musb_g_giveback\t(drivers/usb/musb/musb_gadget.c:147)musb_g_giveback from rxstate\t(drivers/usb/musb/musb_gadget.c:784)rxstate from musb_ep_restart\t(drivers/usb/musb/musb_gadget.c:1169)musb_ep_restart from musb_ep_restart_resume_work\t(drivers/usb/musb/musb_gadget.c:1176)musb_ep_restart_resume_work from musb_queue_resume_work\t(drivers/usb/musb/musb_core.c:2279)musb_queue_resume_work from musb_gadget_queue\t(drivers/usb/musb/musb_gadget.c:1241)musb_gadget_queue from usb_ep_queue\t(drivers/usb/gadget/udc/core.c:300)According to the docstring of usb_ep_queue(), this should not happen:\"Note that @req's ->complete() callback must never be called from withinusb_ep_queue() as that can create deadlock situations.\"In fact, a hardware lockup might occur in the following sequence:1. The gadget is initialized using musb_gadget_enable().2. Meanwhile, a packet arrives, and the RXPKTRDY flag is set, raising an   interrupt.3. If IRQs are enabled, the interrupt is handled, but musb_g_rx() finds an   empty queue (next_request() returns NULL). The interrupt flag has   already been cleared by the glue layer handler, but the RXPKTRDY flag   remains set.4. The first request is enqueued using usb_ep_queue(), leading to the call   of req->complete(), as shown in the call trace above.5. If the callback enables IRQs and another packet is waiting, step (3)   repeats. The request queue is empty because usb_g_giveback() removes the   request before invoking the callback.6. The endpoint remains locked up, as the interrupt triggered by hardware   setting the RXPKTRDY flag has been handled, but the flag itself remains   set.For this scenario to occur, it is only necessary for IRQs to be enabled atsome point during the complete callback. This happens with the USB Ethernetgadget, whose rx_complete() callback calls netif_rx(). If called in thetask context, netif_rx() disables the bottom halves (BHs). When the BHs arere-enabled, IRQs are also enabled to allow soft IRQs to be processed. Thegadget itself is initialized at module load (or at boot if built-in), butthe first request is enqueued when the network interface is brought up,triggering rx_complete() in the task context via ioctl(). If a packetarrives while the interface is down, it can prevent the interface fromreceiving any further packets from the USB host.The situation is quite complicated with many parties involved. Thisparticular issue can be resolved in several possible ways:1. Ensure that callbacks never enable IRQs. This would be difficult to   enforce, as discovering how netif_rx() interacts with interrupts was   already quite challenging and u_ether is not the only function driver.   Similar \"bugs\" could be hidden in other drivers as well.2. Disable MUSB interrupts in musb_g_giveback() before calling the callback   and re-enable them afterwars (by calling musb_{dis,en}able_interrupts(),   for example). This would ensure that MUSB interrupts are not handled   during the callback, even if IRQs are enabled. In fact, it would allow   IRQs to be enabled when releasing the lock. However, this feels like an   inelegant hack.3. Modify the interrupt handler to clear the RXPKTRDY flag if the request   queue is empty. While this approach also feels like a hack, it wastes   CPU time by attempting to handle incoming packets when the software is   not ready to process them.4. Flush the Rx FIFO instead of calling rxstate() in musb_ep_restart().   This ensures that the hardware can receive packets when there is at   least one request in the queue. Once I---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56687` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-73-fips - 5.15.0-73.80+fips1\nlinux-image-unsigned-hmac-5.15.0-73-fips - 5.15.0-73.80+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nlinux-image-unsigned-hmac-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-preview 22.04 LTS"
@@ -90,8 +90,8 @@
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -102,19 +102,19 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
 						"comment": "linux-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-73.80+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
 						"comment": "linux-aws-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1051.56+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
 						"comment": "linux-azure-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1053.61+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
 						"comment": "linux-gcp-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1048.56+fips1')."
 					},
 					{
@@ -134,23 +134,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
@@ -166,7 +166,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000160",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
@@ -202,7 +202,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000170",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
@@ -222,7 +222,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000180",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]

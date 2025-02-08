@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56541 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: ath12k: fix use-after-free in ath12k_dp_cc_cleanup()During ath12k module removal, in ath12k_core_deinit(),ath12k_mac_destroy() un-registers ah->hw from mac80211 and freesthe ah->hw as well as all the ar's in it. After thisath12k_core_soc_destroy()-> ath12k_dp_free()-> ath12k_dp_cc_cleanup()tries to access one of the freed ar's from pending skb.This is because during mac destroy, driver failed to flush fewdata packets, which were accessed later in ath12k_dp_cc_cleanup()and freed, but using ar from the packet led to this use-after-free.BUG: KASAN: use-after-free in ath12k_dp_cc_cleanup.part.0+0x5e2/0xd40[ath12k]Write of size 4 at addr ffff888150bd3514 by task modprobe/8926CPU: 0 UID: 0 PID: 8926 Comm: modprobe Not tainted6.11.0-rc2-wt-ath+ #1746Hardware name: Intel(R) Client Systems NUC8i7HVK/NUC8i7HVB, BIOSHNKBLi70.86A.0067.2021.0528.1339 05/28/2021Call Trace:  <TASK>  dump_stack_lvl+0x7d/0xe0  print_address_description.constprop.0+0x33/0x3a0  print_report+0xb5/0x260  ? kasan_addr_to_slab+0x24/0x80  kasan_report+0xd8/0x110  ? ath12k_dp_cc_cleanup.part.0+0x5e2/0xd40 [ath12k]  ? ath12k_dp_cc_cleanup.part.0+0x5e2/0xd40 [ath12k]  kasan_check_range+0xf3/0x1a0  __kasan_check_write+0x14/0x20  ath12k_dp_cc_cleanup.part.0+0x5e2/0xd40 [ath12k]  ath12k_dp_free+0x178/0x420 [ath12k]  ath12k_core_stop+0x176/0x200 [ath12k]  ath12k_core_deinit+0x13f/0x210 [ath12k]  ath12k_pci_remove+0xad/0x1c0 [ath12k]  pci_device_remove+0x9b/0x1b0  device_remove+0xbf/0x150  device_release_driver_internal+0x3c3/0x580  ? __kasan_check_read+0x11/0x20  driver_detach+0xc4/0x190  bus_remove_driver+0x130/0x2a0  driver_unregister+0x68/0x90  pci_unregister_driver+0x24/0x240  ? find_module_all+0x13e/0x1e0  ath12k_pci_exit+0x10/0x20 [ath12k]  __do_sys_delete_module+0x32c/0x580  ? module_flags+0x2f0/0x2f0  ? kmem_cache_free+0xf0/0x410  ? __fput+0x56f/0xab0  ? __fput+0x56f/0xab0  ? debug_smp_processor_id+0x17/0x20  __x64_sys_delete_module+0x4f/0x70  x64_sys_call+0x522/0x9f0  do_syscall_64+0x64/0x130  entry_SYSCALL_64_after_hwframe+0x4b/0x53RIP: 0033:0x7f8182c6ac8bCommit 24de1b7b231c (\"wifi: ath12k: fix flush failure in recoveryscenarios\") added the change to decrement the pending packets countin case of recovery which make sense as ah->hw as well allar's in it are intact during recovery, but during core deinit thereis no use in decrementing packets count or waking up the empty waitqas the module is going to be removed also ar's from pending skb'scan't be used and the packets should just be released back.To fix this, avoid accessing ar from skb->cb when driver is beingunregistered.Tested-on: QCN9274 hw2.0 PCI WLAN.WBE.1.1.1-00214-QCAHKSWPL_SILICONZ-1Tested-on: WCN7850 hw2.0 PCIWLAN.HMT.1.0.c5-00481-QCAHMTSWPL_V1.0_V2.0_SILICONZ-3\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56541` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:wifi: ath12k: fix use-after-free in ath12k_dp_cc_cleanup()During ath12k module removal, in ath12k_core_deinit(),ath12k_mac_destroy() un-registers ah->hw from mac80211 and freesthe ah->hw as well as all the ar's in it. After thisath12k_core_soc_destroy()-> ath12k_dp_free()-> ath12k_dp_cc_cleanup()tries to access one of the freed ar's from pending skb.This is because during mac destroy, driver failed to flush fewdata packets, which were accessed later in ath12k_dp_cc_cleanup()and freed, but using ar from the packet led to this use-after-free.BUG: KASAN: use-after-free in ath12k_dp_cc_cleanup.part.0+0x5e2/0xd40[ath12k]Write of size 4 at addr ffff888150bd3514 by task modprobe/8926CPU: 0 UID: 0 PID: 8926 Comm: modprobe Not tainted6.11.0-rc2-wt-ath+ #1746Hardware name: Intel(R) Client Systems NUC8i7HVK/NUC8i7HVB, BIOSHNKBLi70.86A.0067.2021.0528.1339 05/28/2021Call Trace:  <TASK>  dump_stack_lvl+0x7d/0xe0  print_address_description.constprop.0+0x33/0x3a0  print_report+0xb5/0x260  ? kasan_addr_to_slab+0x24/0x80  kasan_report+0xd8/0x110  ? ath12k_dp_cc_cleanup.part.0+0x5e2/0xd40 [ath12k]  ? ath12k_dp_cc_cleanup.part.0+0x5e2/0xd40 [ath12k]  kasan_check_range+0xf3/0x1a0  __kasan_check_write+0x14/0x20  ath12k_dp_cc_cleanup.part.0+0x5e2/0xd40 [ath12k]  ath12k_dp_free+0x178/0x420 [ath12k]  ath12k_core_stop+0x176/0x200 [ath12k]  ath12k_core_deinit+0x13f/0x210 [ath12k]  ath12k_pci_remove+0xad/0x1c0 [ath12k]  pci_device_remove+0x9b/0x1b0  device_remove+0xbf/0x150  device_release_driver_internal+0x3c3/0x580  ? __kasan_check_read+0x11/0x20  driver_detach+0xc4/0x190  bus_remove_driver+0x130/0x2a0  driver_unregister+0x68/0x90  pci_unregister_driver+0x24/0x240  ? find_module_all+0x13e/0x1e0  ath12k_pci_exit+0x10/0x20 [ath12k]  __do_sys_delete_module+0x32c/0x580  ? module_flags+0x2f0/0x2f0  ? kmem_cache_free+0xf0/0x410  ? __fput+0x56f/0xab0  ? __fput+0x56f/0xab0  ? debug_smp_processor_id+0x17/0x20  __x64_sys_delete_module+0x4f/0x70  x64_sys_call+0x522/0x9f0  do_syscall_64+0x64/0x130  entry_SYSCALL_64_after_hwframe+0x4b/0x53RIP: 0033:0x7f8182c6ac8bCommit 24de1b7b231c (\"wifi: ath12k: fix flush failure in recoveryscenarios\") added the change to decrement the pending packets countin case of recovery which make sense as ah->hw as well allar's in it are intact during recovery, but during core deinit thereis no use in decrementing packets count or waking up the empty waitqas the module is going to be removed also ar's from pending skb'scan't be used and the packets should just be released back.To fix this, avoid accessing ar from skb->cb when driver is beingunregistered.Tested-on: QCN9274 hw2.0 PCI WLAN.WBE.1.1.1-00214-QCAHKSWPL_SILICONZ-1Tested-on: WCN7850 hw2.0 PCIWLAN.HMT.1.0.c5-00481-QCAHMTSWPL_V1.0_V2.0_SILICONZ-3\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56541` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1011-bluefield - 5.4.0-1011.14\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-ibm - 5.4.0-1004.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
@@ -75,7 +75,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
@@ -102,27 +102,27 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
-						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
-						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1011.14')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
-						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
+						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-gcp-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
@@ -142,7 +142,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -162,27 +162,27 @@
 						"comment": "linux-gkeop-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of life, was needs-triage')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
-						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -202,7 +202,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -230,7 +230,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000170",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

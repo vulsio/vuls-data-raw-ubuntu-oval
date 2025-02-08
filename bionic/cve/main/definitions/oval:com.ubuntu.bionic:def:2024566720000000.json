@@ -3,8 +3,8 @@
 	"id": "oval:com.ubuntu.bionic:def:2024566720000000",
 	"version": "1",
 	"metadata": {
-		"title": "CVE-2024-56672 on Ubuntu 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:blk-cgroup: Fix UAF in blkcg_unpin_online()blkcg_unpin_online() walks up the blkcg hierarchy putting the online pin.Towalk up, it uses blkcg_parent(blkcg) but it was calling that afterblkcg_destroy_blkgs(blkcg) which could free the blkcg, leading to thefollowing UAF:  ==================================================================  BUG: KASAN: slab-use-after-free in blkcg_unpin_online+0x15a/0x270  Read of size 8 at addr ffff8881057678c0 by task kworker/9:1/117  CPU: 9 UID: 0 PID: 117 Comm: kworker/9:1 Not tainted6.13.0-rc1-work-00182-gb8f52214c61a-dirty #48  Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS unknown02/02/2022  Workqueue: cgwb_release cgwb_release_workfn  Call Trace:   <TASK>   dump_stack_lvl+0x27/0x80   print_report+0x151/0x710   kasan_report+0xc0/0x100   blkcg_unpin_online+0x15a/0x270   cgwb_release_workfn+0x194/0x480   process_scheduled_works+0x71b/0xe20   worker_thread+0x82a/0xbd0   kthread+0x242/0x2c0   ret_from_fork+0x33/0x70   ret_from_fork_asm+0x1a/0x30   </TASK>  ...  Freed by task 1944:   kasan_save_track+0x2b/0x70   kasan_save_free_info+0x3c/0x50   __kasan_slab_free+0x33/0x50   kfree+0x10c/0x330   css_free_rwork_fn+0xe6/0xb30   process_scheduled_works+0x71b/0xe20   worker_thread+0x82a/0xbd0   kthread+0x242/0x2c0   ret_from_fork+0x33/0x70   ret_from_fork_asm+0x1a/0x30Note that the UAF is not easy to trigger as the free path is indirectedbehind a couple RCU grace periods and a work item execution. I could onlytrigger it with artifical msleep() injected in blkcg_unpin_online().Fix it by reading the parent pointer before destroying the blkcg's blkg's.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56672` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1018-aws - 5.4.0-1018.18~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1020-azure - 5.4.0-1020.20~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-gcp - 5.4.0-1019.19~18.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-oracle - 5.4.0-1019.19~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required",
+		"title": "CVE-2024-56672 on Ubuntu 18.04 LTS (bionic) - high",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:blk-cgroup: Fix UAF in blkcg_unpin_online()blkcg_unpin_online() walks up the blkcg hierarchy putting the online pin.Towalk up, it uses blkcg_parent(blkcg) but it was calling that afterblkcg_destroy_blkgs(blkcg) which could free the blkcg, leading to thefollowing UAF:  ==================================================================  BUG: KASAN: slab-use-after-free in blkcg_unpin_online+0x15a/0x270  Read of size 8 at addr ffff8881057678c0 by task kworker/9:1/117  CPU: 9 UID: 0 PID: 117 Comm: kworker/9:1 Not tainted6.13.0-rc1-work-00182-gb8f52214c61a-dirty #48  Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS unknown02/02/2022  Workqueue: cgwb_release cgwb_release_workfn  Call Trace:   <TASK>   dump_stack_lvl+0x27/0x80   print_report+0x151/0x710   kasan_report+0xc0/0x100   blkcg_unpin_online+0x15a/0x270   cgwb_release_workfn+0x194/0x480   process_scheduled_works+0x71b/0xe20   worker_thread+0x82a/0xbd0   kthread+0x242/0x2c0   ret_from_fork+0x33/0x70   ret_from_fork_asm+0x1a/0x30   </TASK>  ...  Freed by task 1944:   kasan_save_track+0x2b/0x70   kasan_save_free_info+0x3c/0x50   __kasan_slab_free+0x33/0x50   kfree+0x10c/0x330   css_free_rwork_fn+0xe6/0xb30   process_scheduled_works+0x71b/0xe20   worker_thread+0x82a/0xbd0   kthread+0x242/0x2c0   ret_from_fork+0x33/0x70   ret_from_fork_asm+0x1a/0x30Note that the UAF is not easy to trigger as the free path is indirectedbehind a couple RCU grace periods and a work item execution. I could onlytrigger it with artifical msleep() injected in blkcg_unpin_online().Fix it by reading the parent pointer before destroying the blkcg's blkg's.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56672` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1020-aws - 5.4.0-1020.20~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1022-azure - 5.4.0-1022.22~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-gcp - 5.4.0-1021.21~18.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-oracle - 5.4.0-1021.21~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 18.04 LTS"
@@ -15,7 +15,7 @@
 			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-56672"
 		},
 		"advisory": {
-			"severity": "Medium",
+			"severity": "High",
 			"rights": "Copyright (C) 2024 Canonical Ltd.",
 			"public_date": "2024-12-27 15:15:00 UTC",
 			"cve": {
@@ -62,8 +62,8 @@
 						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000110",
-						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1018.18~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000010",
+						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -78,8 +78,8 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000080",
-						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000020",
+						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000080",
@@ -94,8 +94,8 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000100",
-						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.2')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000030",
+						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -110,12 +110,12 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000040",
 						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1010.11~18.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000130",
-						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -126,8 +126,8 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000090",
-						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000050",
+						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",

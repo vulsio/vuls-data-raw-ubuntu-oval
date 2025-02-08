@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-41006 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:netrom: Fix a memory leak in nr_heartbeat_expiry()syzbot reported a memory leak in nr_create() [0].Commit 409db27e3a2e (\"netrom: Fix use-after-free of a listening socket.\")added sock_hold() to the nr_heartbeat_expiry() function, wherea) a socket has a SOCK_DESTROY flag orb) a listening socket has a SOCK_DEAD flag.But in the case \"a,\" when the SOCK_DESTROY flag is set, the file descriptorhas already been closed and the nr_release() function has been called.So it makes no sense to hold the reference count because no one willcall another nr_destroy_socket() and put it as in the case \"b.\"nr_connect  nr_establish_data_link    nr_start_heartbeatnr_release  switch (nr->state)  case NR_STATE_3    nr->state = NR_STATE_2    sock_set_flag(sk, SOCK_DESTROY);                        nr_rx_frame                          nr_process_rx_frame                            switch (nr->state)                            case NR_STATE_2                              nr_state2_machine()                                nr_disconnect()                                  nr_sk(sk)->state = NR_STATE_0                                  sock_set_flag(sk, SOCK_DEAD)                        nr_heartbeat_expiry                          switch (nr->state)                          case NR_STATE_0                            if (sock_flag(sk, SOCK_DESTROY) ||                               (sk->sk_state == TCP_LISTEN                                 && sock_flag(sk, SOCK_DEAD)))                               sock_hold()  // ( !!! )                               nr_destroy_socket()To fix the memory leak, let's call sock_hold() only for a listening socket.Found by InfoTeCS on behalf of Linux Verification Center(linuxtesting.org) with Syzkaller.[0]: https://syzkaller.appspot.com/bug?extid=d327a1f3b12e1e206c16\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41006` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-kvm - 5.15.0-1066.71\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure - 5.15.0-1072.81\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure-fde - 5.15.0-1072.81.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-gke - 5.15.0-1066.72\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-ibm - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-121-lowlatency - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-lowlatency-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-nvidia - 5.15.0-1064.65\nlinux-image-unsigned-5.15.0-1064-nvidia-lowlatency - 5.15.0-1064.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-oracle - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-5.15.0-1062-raspi - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-5.15.0-1035-xilinx-zynqmp - 5.15.0-1035.39\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:netrom: Fix a memory leak in nr_heartbeat_expiry()syzbot reported a memory leak in nr_create() [0].Commit 409db27e3a2e (\"netrom: Fix use-after-free of a listening socket.\")added sock_hold() to the nr_heartbeat_expiry() function, wherea) a socket has a SOCK_DESTROY flag orb) a listening socket has a SOCK_DEAD flag.But in the case \"a,\" when the SOCK_DESTROY flag is set, the file descriptorhas already been closed and the nr_release() function has been called.So it makes no sense to hold the reference count because no one willcall another nr_destroy_socket() and put it as in the case \"b.\"nr_connect  nr_establish_data_link    nr_start_heartbeatnr_release  switch (nr->state)  case NR_STATE_3    nr->state = NR_STATE_2    sock_set_flag(sk, SOCK_DESTROY);                        nr_rx_frame                          nr_process_rx_frame                            switch (nr->state)                            case NR_STATE_2                              nr_state2_machine()                                nr_disconnect()                                  nr_sk(sk)->state = NR_STATE_0                                  sock_set_flag(sk, SOCK_DEAD)                        nr_heartbeat_expiry                          switch (nr->state)                          case NR_STATE_0                            if (sock_flag(sk, SOCK_DESTROY) ||                               (sk->sk_state == TCP_LISTEN                                 && sock_flag(sk, SOCK_DEAD)))                               sock_hold()  // ( !!! )                               nr_destroy_socket()To fix the memory leak, let's call sock_hold() only for a listening socket.Found by InfoTeCS on behalf of Linux Verification Center(linuxtesting.org) with Syzkaller.[0]: https://syzkaller.appspot.com/bug?extid=d327a1f3b12e1e206c16\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41006` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-kvm - 5.15.0-1066.71\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure - 5.15.0-1072.81\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure-fde - 5.15.0-1072.81.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-bluefield - 5.15.0-1052.54\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-gke - 5.15.0-1066.72\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-ibm - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-121-lowlatency - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-lowlatency-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-nvidia - 5.15.0-1064.65\nlinux-image-unsigned-5.15.0-1064-nvidia-lowlatency - 5.15.0-1064.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-oracle - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-5.15.0-1062-raspi - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-5.15.0-1035-xilinx-zynqmp - 5.15.0-1035.39\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
@@ -125,11 +125,11 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-bluefield package in bluefield/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1052.54')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000050",
+						"comment": "linux-bluefield package in bluefield/jammy was vulnerable but has been fixed (note: '5.15.0-1052.54')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000060",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1068.76')."
 					},
 					{
@@ -145,23 +145,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000070",
 						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.72')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000080",
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1052.59')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000090",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.65')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000100",
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1064.70')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000110",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-121.131')."
 					},
 					{
@@ -177,7 +177,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000120",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1064.65')."
 					},
 					{
@@ -189,7 +189,7 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000130",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.73')."
 					},
 					{
@@ -213,7 +213,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000140",
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.65')."
 					},
 					{
@@ -229,7 +229,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000140",
 						"comment": "linux-xilinx-zynqmp package in jammy was vulnerable but has been fixed (note: '5.15.0-1035.39')."
 					},
 					{

@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26893 on Ubuntu 22.04 LTS for NVIDIA BlueField (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:firmware: arm_scmi: Fix double free in SMC transport cleanup path When thegeneric SCMI code tears down a channel, it calls the chan_free callbackfunction, defined by each transport. Since multiple protocols might sharethe same transport_info member, chan_free() might want to clean up the samemember multiple times within the given SCMI transport implementation. Inthis case, it is SMC transport. This will lead to a NULL pointerdereference at the second time: | scmi_protocol scmi_dev.1: Enabled pollingmode TX channel - prot_id:16 | arm-scmi firmware:scmi: SCMI Notifications -Core Enabled. | arm-scmi firmware:scmi: unable to communicate with SCMI |Unable to handle kernel NULL pointer dereference at virtual address0000000000000000 | Mem abort info: | ESR = 0x0000000096000004 | EC = 0x25:DABT (current EL), IL = 32 bits | SET = 0, FnV = 0 | EA = 0, S1PTW = 0 |FSC = 0x04: level 0 translation fault | Data abort info: | ISV = 0, ISS =0x00000004, ISS2 = 0x00000000 | CM = 0, WnR = 0, TnD = 0, TagAccess = 0 |GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0 | user pgtable: 4k pages, 48-bitVAs, pgdp=0000000881ef8000 | [0000000000000000] pgd=0000000000000000,p4d=0000000000000000 | Internal error: Oops: 0000000096000004 [#1] PREEMPTSMP | Modules linked in: | CPU: 4 PID: 1 Comm: swapper/0 Not tainted6.7.0-rc2-00124-g455ef3d016c9-dirty #793 | Hardware name: FVP Base RevC(DT) | pstate: 61400009 (nZCv daif +PAN -UAO -TCO +DIT -SSBS BTYPE=--) | pc: smc_chan_free+0x3c/0x6c | lr : smc_chan_free+0x3c/0x6c | Call trace: |smc_chan_free+0x3c/0x6c | idr_for_each+0x68/0xf8 |scmi_cleanup_channels.isra.0+0x2c/0x58 | scmi_probe+0x434/0x734 |platform_probe+0x68/0xd8 | really_probe+0x110/0x27c |__driver_probe_device+0x78/0x12c | driver_probe_device+0x3c/0x118 |__driver_attach+0x74/0x128 | bus_for_each_dev+0x78/0xe0 |driver_attach+0x24/0x30 | bus_add_driver+0xe4/0x1e8 |driver_register+0x60/0x128 | __platform_driver_register+0x28/0x34 |scmi_driver_init+0x84/0xc0 | do_one_initcall+0x78/0x33c |kernel_init_freeable+0x2b8/0x51c | kernel_init+0x24/0x130 |ret_from_fork+0x10/0x20 | Code: f0004701 910a0021 aa1403e5 97b91c70(b9400280) | ---[ end trace 0000000000000000 ]--- Simply check for thestruct pointer being NULL before trying to access its members, to avoidthis situation. This was found when a transport doesn't really work (forinstance no SMC service), the probe routines then tries to clean up, andtriggers a crash.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26893` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-5.15.0-125-generic-lpae - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-kvm - 5.15.0-1069.74\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-aws - 5.15.0-1072.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1075-azure - 5.15.0-1075.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1071-gcp - 5.15.0-1071.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-gke - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1055-gkeop - 5.15.0-1055.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-ibm - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-intel-iotg - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-unsigned-5.15.0-125-lowlatency - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-lowlatency-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-nvidia - 5.15.0-1067.68\nlinux-image-unsigned-5.15.0-1067-nvidia-lowlatency - 5.15.0-1067.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-oracle - 5.15.0-1070.76\nNo subscription required\n\nlinux-image-5.15.0-1065-raspi - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-5.15.0-1038-xilinx-zynqmp - 5.15.0-1038.42\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:firmware: arm_scmi: Fix double free in SMC transport cleanup path When thegeneric SCMI code tears down a channel, it calls the chan_free callbackfunction, defined by each transport. Since multiple protocols might sharethe same transport_info member, chan_free() might want to clean up the samemember multiple times within the given SCMI transport implementation. Inthis case, it is SMC transport. This will lead to a NULL pointerdereference at the second time: | scmi_protocol scmi_dev.1: Enabled pollingmode TX channel - prot_id:16 | arm-scmi firmware:scmi: SCMI Notifications -Core Enabled. | arm-scmi firmware:scmi: unable to communicate with SCMI |Unable to handle kernel NULL pointer dereference at virtual address0000000000000000 | Mem abort info: | ESR = 0x0000000096000004 | EC = 0x25:DABT (current EL), IL = 32 bits | SET = 0, FnV = 0 | EA = 0, S1PTW = 0 |FSC = 0x04: level 0 translation fault | Data abort info: | ISV = 0, ISS =0x00000004, ISS2 = 0x00000000 | CM = 0, WnR = 0, TnD = 0, TagAccess = 0 |GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0 | user pgtable: 4k pages, 48-bitVAs, pgdp=0000000881ef8000 | [0000000000000000] pgd=0000000000000000,p4d=0000000000000000 | Internal error: Oops: 0000000096000004 [#1] PREEMPTSMP | Modules linked in: | CPU: 4 PID: 1 Comm: swapper/0 Not tainted6.7.0-rc2-00124-g455ef3d016c9-dirty #793 | Hardware name: FVP Base RevC(DT) | pstate: 61400009 (nZCv daif +PAN -UAO -TCO +DIT -SSBS BTYPE=--) | pc: smc_chan_free+0x3c/0x6c | lr : smc_chan_free+0x3c/0x6c | Call trace: |smc_chan_free+0x3c/0x6c | idr_for_each+0x68/0xf8 |scmi_cleanup_channels.isra.0+0x2c/0x58 | scmi_probe+0x434/0x734 |platform_probe+0x68/0xd8 | really_probe+0x110/0x27c |__driver_probe_device+0x78/0x12c | driver_probe_device+0x3c/0x118 |__driver_attach+0x74/0x128 | bus_for_each_dev+0x78/0xe0 |driver_attach+0x24/0x30 | bus_add_driver+0xe4/0x1e8 |driver_register+0x60/0x128 | __platform_driver_register+0x28/0x34 |scmi_driver_init+0x84/0xc0 | do_one_initcall+0x78/0x33c |kernel_init_freeable+0x2b8/0x51c | kernel_init+0x24/0x130 |ret_from_fork+0x10/0x20 | Code: f0004701 910a0021 aa1403e5 97b91c70(b9400280) | ---[ end trace 0000000000000000 ]--- Simply check for thestruct pointer being NULL before trying to access its members, to avoidthis situation. This was found when a transport doesn't really work (forinstance no SMC service), the probe routines then tries to clean up, andtriggers a crash.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26893` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-5.15.0-125-generic-lpae - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-generic-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-kvm - 5.15.0-1069.74\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-aws - 5.15.0-1072.78\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1075-azure - 5.15.0-1075.84\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1056-bluefield - 5.15.0-1056.58\nAvailable for NVIDIA BlueField platforms\n\nlinux-image-unsigned-5.15.0-1071-gcp - 5.15.0-1071.79\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-gke - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1055-gkeop - 5.15.0-1055.62\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-ibm - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-intel-iotg - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-unsigned-5.15.0-125-lowlatency - 5.15.0-125.135\nlinux-image-unsigned-5.15.0-125-lowlatency-64k - 5.15.0-125.135\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-nvidia - 5.15.0-1067.68\nlinux-image-unsigned-5.15.0-1067-nvidia-lowlatency - 5.15.0-1067.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1070-oracle - 5.15.0-1070.76\nNo subscription required\n\nlinux-image-5.15.0-1065-raspi - 5.15.0-1065.68\nNo subscription required\n\nlinux-image-5.15.0-1038-xilinx-zynqmp - 5.15.0-1038.42\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS for NVIDIA BlueField"
@@ -116,11 +116,11 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000090",
-						"comment": "linux-bluefield package in bluefield/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1056.58')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000040",
+						"comment": "linux-bluefield package in bluefield/jammy was vulnerable but has been fixed (note: '5.15.0-1056.58')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000040",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000050",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1071.79')."
 					},
 					{
@@ -136,23 +136,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000060",
 						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1069.75')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000070",
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1055.62')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000080",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.68')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000090",
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.73')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000100",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-125.135')."
 					},
 					{
@@ -168,7 +168,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000110",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.68')."
 					},
 					{
@@ -180,7 +180,7 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000120",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1070.76')."
 					},
 					{
@@ -204,7 +204,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000130",
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1065.68')."
 					},
 					{
@@ -220,7 +220,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022486660000140",
 						"comment": "linux-xilinx-zynqmp package in jammy was vulnerable but has been fixed (note: '5.15.0-1038.42')."
 					},
 					{

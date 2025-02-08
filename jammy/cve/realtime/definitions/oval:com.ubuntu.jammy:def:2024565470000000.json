@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56547 on Ubuntu 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:rcu/nocb: Fix missed RCU barrier on deoffloadingCurrently, running rcutorture test with torture_type=rcu fwd_progress=8n_barrier_cbs=8 nocbs_nthreads=8 nocbs_toggle=100 onoff_interval=60test_boost=2, will trigger the following warning:\tWARNING: CPU: 19 PID: 100 at kernel/rcu/tree_nocb.h:1061rcu_nocb_rdp_deoffload+0x292/0x2a0\tRIP: 0010:rcu_nocb_rdp_deoffload+0x292/0x2a0\t Call Trace:\t  <TASK>\t  ? __warn+0x7e/0x120\t  ? rcu_nocb_rdp_deoffload+0x292/0x2a0\t  ? report_bug+0x18e/0x1a0\t  ? handle_bug+0x3d/0x70\t  ? exc_invalid_op+0x18/0x70\t  ? asm_exc_invalid_op+0x1a/0x20\t  ? rcu_nocb_rdp_deoffload+0x292/0x2a0\t  rcu_nocb_cpu_deoffload+0x70/0xa0\t  rcu_nocb_toggle+0x136/0x1c0\t  ? __pfx_rcu_nocb_toggle+0x10/0x10\t  kthread+0xd1/0x100\t  ? __pfx_kthread+0x10/0x10\t  ret_from_fork+0x2f/0x50\t  ? __pfx_kthread+0x10/0x10\t  ret_from_fork_asm+0x1a/0x30\t  </TASK>CPU0                               CPU2                          CPU3//rcu_nocb_toggle             //nocb_cb_wait                   //rcutorture// deoffload CPU1             // process CPU1's rdprcu_barrier()    rcu_segcblist_entrain()        rcu_segcblist_add_len(1);        // len == 2        // enqueue barrier        // callback to CPU1's        // rdp->cblist                             rcu_do_batch()                                 // invoke CPU1's rdp->cblist                                 // callback                                 rcu_barrier_callback()                                                             rcu_barrier()mutex_lock(&rcu_state.barrier_mutex);                                                               // still seelen == 2                                                               // enqueuebarrier callback                                                               // to CPU1'srdp->cblistrcu_segcblist_entrain()rcu_segcblist_add_len(1);                                                                   // len== 3                                 // decrement len                                 rcu_segcblist_add_len(-2);                             kthread_parkme()// CPU1's rdp->cblist len == 1// Warn because there is// still a pending barrier// trigger warningWARN_ON_ONCE(rcu_segcblist_n_cbs(&rdp->cblist));cpus_read_unlock();                                                                // waitCPU1 to comes online and                                                                // invokebarrier callback on                                                                // CPU1rdp's->cblistwait_for_completion(&rcu_state.barrier_completion);// deoffload CPU4cpus_read_lock()  rcu_barrier()    mutex_lock(&rcu_state.barrier_mutex);    // block on barrier_mutex    // wait rcu_barrier() on    // CPU3 to unlock barrier_mutex    // but CPU3 unlock barrier_mutex    // need to wait CPU1 comes online    // when CPU1 going online will block on cpus_write_lockThe above scenario will not only trigger a WARN_ON_ONCE(), but alsotrigger a deadlock.Thanks to nocb locking, a second racing rcu_barrier() on an offline CPUwill either observe the decremented callback counter down to 0 and sparethe callback enqueue, or rcuo will observe the new callback and keeprdp->nocb_cb_sleep to false.Therefore check rdp->nocb_cb_sleep before parking to make sure nofurther rcu_barrier() is waiting on the rdp.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56547` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1021-intel-iot-realtime - 5.15.0-1021.26\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1006-realtime - 5.15.0-1006.6\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:rcu/nocb: Fix missed RCU barrier on deoffloadingCurrently, running rcutorture test with torture_type=rcu fwd_progress=8n_barrier_cbs=8 nocbs_nthreads=8 nocbs_toggle=100 onoff_interval=60test_boost=2, will trigger the following warning:\tWARNING: CPU: 19 PID: 100 at kernel/rcu/tree_nocb.h:1061rcu_nocb_rdp_deoffload+0x292/0x2a0\tRIP: 0010:rcu_nocb_rdp_deoffload+0x292/0x2a0\t Call Trace:\t  <TASK>\t  ? __warn+0x7e/0x120\t  ? rcu_nocb_rdp_deoffload+0x292/0x2a0\t  ? report_bug+0x18e/0x1a0\t  ? handle_bug+0x3d/0x70\t  ? exc_invalid_op+0x18/0x70\t  ? asm_exc_invalid_op+0x1a/0x20\t  ? rcu_nocb_rdp_deoffload+0x292/0x2a0\t  rcu_nocb_cpu_deoffload+0x70/0xa0\t  rcu_nocb_toggle+0x136/0x1c0\t  ? __pfx_rcu_nocb_toggle+0x10/0x10\t  kthread+0xd1/0x100\t  ? __pfx_kthread+0x10/0x10\t  ret_from_fork+0x2f/0x50\t  ? __pfx_kthread+0x10/0x10\t  ret_from_fork_asm+0x1a/0x30\t  </TASK>CPU0                               CPU2                          CPU3//rcu_nocb_toggle             //nocb_cb_wait                   //rcutorture// deoffload CPU1             // process CPU1's rdprcu_barrier()    rcu_segcblist_entrain()        rcu_segcblist_add_len(1);        // len == 2        // enqueue barrier        // callback to CPU1's        // rdp->cblist                             rcu_do_batch()                                 // invoke CPU1's rdp->cblist                                 // callback                                 rcu_barrier_callback()                                                             rcu_barrier()mutex_lock(&rcu_state.barrier_mutex);                                                               // still seelen == 2                                                               // enqueuebarrier callback                                                               // to CPU1'srdp->cblistrcu_segcblist_entrain()rcu_segcblist_add_len(1);                                                                   // len== 3                                 // decrement len                                 rcu_segcblist_add_len(-2);                             kthread_parkme()// CPU1's rdp->cblist len == 1// Warn because there is// still a pending barrier// trigger warningWARN_ON_ONCE(rcu_segcblist_n_cbs(&rdp->cblist));cpus_read_unlock();                                                                // waitCPU1 to comes online and                                                                // invokebarrier callback on                                                                // CPU1rdp's->cblistwait_for_completion(&rcu_state.barrier_completion);// deoffload CPU4cpus_read_lock()  rcu_barrier()    mutex_lock(&rcu_state.barrier_mutex);    // block on barrier_mutex    // wait rcu_barrier() on    // CPU3 to unlock barrier_mutex    // but CPU3 unlock barrier_mutex    // need to wait CPU1 comes online    // when CPU1 going online will block on cpus_write_lockThe above scenario will not only trigger a WARN_ON_ONCE(), but alsotrigger a deadlock.Thanks to nocb locking, a second racing rcu_barrier() on an offline CPUwill either observe the decremented callback counter down to 0 and sparethe callback enqueue, or rcuo will observe the new callback and keeprdp->nocb_cb_sleep to false.Therefore check rdp->nocb_cb_sleep before parking to make sure nofurther rcu_barrier() is waiting on the rdp.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56547` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1021-intel-iot-realtime - 5.15.0-1021.26\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1006-realtime - 5.15.0-1006.6\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 22.04 LTS"
@@ -88,8 +88,8 @@
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -116,27 +116,27 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
 						"comment": "linux-intel-iot-realtime package in realtime/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1021.26')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
@@ -152,7 +152,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
@@ -188,11 +188,11 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
 						"comment": "linux-realtime package in realtime/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.6')."
 					},
 					{
@@ -208,7 +208,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000160",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]

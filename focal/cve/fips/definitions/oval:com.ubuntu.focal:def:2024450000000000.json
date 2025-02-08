@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-45000 on Ubuntu Pro FIPS 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:fs/netfs/fscache_cookie: add missing \"n_accesses\" checkThis fixes a NULL pointer dereference bug due to a data race whichlooks like this:  BUG: kernel NULL pointer dereference, address: 0000000000000008  #PF: supervisor read access in kernel mode  #PF: error_code(0x0000) - not-present page  PGD 0 P4D 0  Oops: 0000 [#1] SMP PTI  CPU: 33 PID: 16573 Comm: kworker/u97:799 Not tainted 6.8.7-cm4all1-hp+#43  Hardware name: HP ProLiant DL380 Gen9/ProLiant DL380 Gen9, BIOS P8910/17/2018  Workqueue: events_unbound netfs_rreq_write_to_cache_work  RIP: 0010:cachefiles_prepare_write+0x30/0xa0  Code: 57 41 56 45 89 ce 41 55 49 89 cd 41 54 49 89 d4 55 53 48 89 fb 4883 ec 08 48 8b 47 08 48 83 7f 10 00 48 89 34 24 48 8b 68 20 <48> 8b 45 084c 8b 38 74 45 49 8b 7f 50 e8 4e a9 b0 ff 48 8b 73 10  RSP: 0018:ffffb4e78113bde0 EFLAGS: 00010286  RAX: ffff976126be6d10 RBX: ffff97615cdb8438 RCX: 0000000000020000  RDX: ffff97605e6c4c68 RSI: ffff97605e6c4c60 RDI: ffff97615cdb8438  RBP: 0000000000000000 R08: 0000000000278333 R09: 0000000000000001  R10: ffff97605e6c4600 R11: 0000000000000001 R12: ffff97605e6c4c68  R13: 0000000000020000 R14: 0000000000000001 R15: ffff976064fe2c00  FS:  0000000000000000(0000) GS:ffff9776dfd40000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 0000000000000008 CR3: 000000005942c002 CR4: 00000000001706f0  Call Trace:   <TASK>   ? __die+0x1f/0x70   ? page_fault_oops+0x15d/0x440   ? search_module_extables+0xe/0x40   ? fixup_exception+0x22/0x2f0   ? exc_page_fault+0x5f/0x100   ? asm_exc_page_fault+0x22/0x30   ? cachefiles_prepare_write+0x30/0xa0   netfs_rreq_write_to_cache_work+0x135/0x2e0   process_one_work+0x137/0x2c0   worker_thread+0x2e9/0x400   ? __pfx_worker_thread+0x10/0x10   kthread+0xcc/0x100   ? __pfx_kthread+0x10/0x10   ret_from_fork+0x30/0x50   ? __pfx_kthread+0x10/0x10   ret_from_fork_asm+0x1b/0x30   </TASK>  Modules linked in:  CR2: 0000000000000008  ---[ end trace 0000000000000000 ]---This happened because fscache_cookie_state_machine() was slow and wasstill running while another process invoked fscache_unuse_cookie();this led to a fscache_cookie_lru_do_one() call, setting theFSCACHE_COOKIE_DO_LRU_DISCARD flag, which was picked up byfscache_cookie_state_machine(), withdrawing the cookie viacachefiles_withdraw_cookie(), clearing cookie->cache_priv.At the same time, yet another process invokedcachefiles_prepare_write(), which found a NULL pointer in this codeline:  struct cachefiles_object *object = cachefiles_cres_object(cres);The next line crashes, obviously:  struct cachefiles_cache *cache = object->volume->cache;During cachefiles_prepare_write(), the \"n_accesses\" counter isnon-zero (via fscache_begin_operation()).  The cookie must not bewithdrawn until it drops to zero.The counter is checked by fscache_cookie_state_machine() beforeswitching to FSCACHE_COOKIE_STATE_RELINQUISHING andFSCACHE_COOKIE_STATE_WITHDRAWING (in \"caseFSCACHE_COOKIE_STATE_FAILED\"), but not forFSCACHE_COOKIE_STATE_LRU_DISCARDING (\"caseFSCACHE_COOKIE_STATE_ACTIVE\").This patch adds the missing check.  With a non-zero access counter,the function returns and the next fscache_end_cookie_access() callwill queue another fscache_cookie_state_machine() call to handle thestill-pending FSCACHE_COOKIE_DO_LRU_DISCARD.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45000` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-fips - 5.4.0-1007.8\nlinux-image-unsigned-hmac-5.4.0-1007-fips - 5.4.0-1007.8\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:fs/netfs/fscache_cookie: add missing \"n_accesses\" checkThis fixes a NULL pointer dereference bug due to a data race whichlooks like this:  BUG: kernel NULL pointer dereference, address: 0000000000000008  #PF: supervisor read access in kernel mode  #PF: error_code(0x0000) - not-present page  PGD 0 P4D 0  Oops: 0000 [#1] SMP PTI  CPU: 33 PID: 16573 Comm: kworker/u97:799 Not tainted 6.8.7-cm4all1-hp+#43  Hardware name: HP ProLiant DL380 Gen9/ProLiant DL380 Gen9, BIOS P8910/17/2018  Workqueue: events_unbound netfs_rreq_write_to_cache_work  RIP: 0010:cachefiles_prepare_write+0x30/0xa0  Code: 57 41 56 45 89 ce 41 55 49 89 cd 41 54 49 89 d4 55 53 48 89 fb 4883 ec 08 48 8b 47 08 48 83 7f 10 00 48 89 34 24 48 8b 68 20 <48> 8b 45 084c 8b 38 74 45 49 8b 7f 50 e8 4e a9 b0 ff 48 8b 73 10  RSP: 0018:ffffb4e78113bde0 EFLAGS: 00010286  RAX: ffff976126be6d10 RBX: ffff97615cdb8438 RCX: 0000000000020000  RDX: ffff97605e6c4c68 RSI: ffff97605e6c4c60 RDI: ffff97615cdb8438  RBP: 0000000000000000 R08: 0000000000278333 R09: 0000000000000001  R10: ffff97605e6c4600 R11: 0000000000000001 R12: ffff97605e6c4c68  R13: 0000000000020000 R14: 0000000000000001 R15: ffff976064fe2c00  FS:  0000000000000000(0000) GS:ffff9776dfd40000(0000)knlGS:0000000000000000  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033  CR2: 0000000000000008 CR3: 000000005942c002 CR4: 00000000001706f0  Call Trace:   <TASK>   ? __die+0x1f/0x70   ? page_fault_oops+0x15d/0x440   ? search_module_extables+0xe/0x40   ? fixup_exception+0x22/0x2f0   ? exc_page_fault+0x5f/0x100   ? asm_exc_page_fault+0x22/0x30   ? cachefiles_prepare_write+0x30/0xa0   netfs_rreq_write_to_cache_work+0x135/0x2e0   process_one_work+0x137/0x2c0   worker_thread+0x2e9/0x400   ? __pfx_worker_thread+0x10/0x10   kthread+0xcc/0x100   ? __pfx_kthread+0x10/0x10   ret_from_fork+0x30/0x50   ? __pfx_kthread+0x10/0x10   ret_from_fork_asm+0x1b/0x30   </TASK>  Modules linked in:  CR2: 0000000000000008  ---[ end trace 0000000000000000 ]---This happened because fscache_cookie_state_machine() was slow and wasstill running while another process invoked fscache_unuse_cookie();this led to a fscache_cookie_lru_do_one() call, setting theFSCACHE_COOKIE_DO_LRU_DISCARD flag, which was picked up byfscache_cookie_state_machine(), withdrawing the cookie viacachefiles_withdraw_cookie(), clearing cookie->cache_priv.At the same time, yet another process invokedcachefiles_prepare_write(), which found a NULL pointer in this codeline:  struct cachefiles_object *object = cachefiles_cres_object(cres);The next line crashes, obviously:  struct cachefiles_cache *cache = object->volume->cache;During cachefiles_prepare_write(), the \"n_accesses\" counter isnon-zero (via fscache_begin_operation()).  The cookie must not bewithdrawn until it drops to zero.The counter is checked by fscache_cookie_state_machine() beforeswitching to FSCACHE_COOKIE_STATE_RELINQUISHING andFSCACHE_COOKIE_STATE_WITHDRAWING (in \"caseFSCACHE_COOKIE_STATE_FAILED\"), but not forFSCACHE_COOKIE_STATE_LRU_DISCARDING (\"caseFSCACHE_COOKIE_STATE_ACTIVE\").This patch adds the missing check.  With a non-zero access counter,the function returns and the next fscache_end_cookie_access() callwill queue another fscache_cookie_state_machine() call to handle thestill-pending FSCACHE_COOKIE_DO_LRU_DISCARD.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-45000` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1011-bluefield - 5.4.0-1011.14\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-fips - 5.4.0-1007.8\nlinux-image-unsigned-hmac-5.4.0-1007-fips - 5.4.0-1007.8\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-gkeop - 5.15.0-1003.5~20.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-ibm - 5.4.0-1004.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 20.04 LTS"
@@ -84,7 +84,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
@@ -111,27 +111,27 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
 						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
-						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
-						"comment": "linux-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.8')."
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1011.14')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
-						"comment": "linux-aws-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
+						"comment": "linux-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.8')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-azure-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+						"comment": "linux-aws-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-azure-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-gcp-fips package in fips/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
@@ -151,7 +151,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -167,31 +167,31 @@
 						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201499000000010",
+						"test_ref": "oval:com.ubuntu.focal:tst:201499000000000",
 						"comment": "linux-gkeop-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
-						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -211,7 +211,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -239,7 +239,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000170",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

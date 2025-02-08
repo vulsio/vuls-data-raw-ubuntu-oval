@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26937 on Ubuntu Pro FIPS-updates 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/i915/gt: Reset queue_priority_hint on parking Originally, with strictin order execution, we could complete execution only when the queue wasempty. Preempt-to-busy allows replacement of an active request that maycomplete before the preemption is processed by HW. If that happens, therequest is retired from the queue, but the queue_priority_hint remains set,preventing direct submission until after the next CS interrupt isprocessed. This preempt-to-busy race can be triggered by the heartbeat,which will also act as the power-management barrier and upon completionallow us to idle the HW. We may process the completion of the heartbeat,and begin parking the engine before the CS event that restores thequeue_priority_hint, causing us to fail the assertion that it is MIN. <3>[166.210729] __engine_park:283GEM_BUG_ON(engine->sched_engine->queue_priority_hint != (-((int)(~0U >> 1))- 1)) <0>[ 166.210781] Dumping ftrace buffer: <0>[ 166.210795]--------------------------------- ... <0>[ 167.302811] drm_fdin-1097 2..s1.165741070us : trace_ports: 0000:00:02.0 rcs0: promote { ccid:20 1217:2 prio0 } <0>[ 167.302861] drm_fdin-1097 2d.s2. 165741072us :execlists_submission_tasklet: 0000:00:02.0 rcs0: preempting last=1217:2,prio=0, hint=2147483646 <0>[ 167.302928] drm_fdin-1097 2d.s2. 165741072us :__i915_request_unsubmit: 0000:00:02.0 rcs0: fence 1217:2, current 0 <0>[167.302992] drm_fdin-1097 2d.s2. 165741073us : __i915_request_submit:0000:00:02.0 rcs0: fence 3:4660, current 4659 <0>[ 167.303044]drm_fdin-1097 2d.s1. 165741076us : execlists_submission_tasklet:0000:00:02.0 rcs0: context:3 schedule-in, ccid:40 <0>[ 167.303095]drm_fdin-1097 2d.s1. 165741077us : trace_ports: 0000:00:02.0 rcs0: submit {ccid:40 3:4660* prio 2147483646 } <0>[ 167.303159] kworker/-89 11.....165741139us : i915_request_retire.part.0: 0000:00:02.0 rcs0: fence c90:2,current 2 <0>[ 167.303208] kworker/-89 11..... 165741148us :__intel_context_do_unpin: 0000:00:02.0 rcs0: context:c90 unpin <0>[167.303272] kworker/-89 11..... 165741159us : i915_request_retire.part.0:0000:00:02.0 rcs0: fence 1217:2, current 2 <0>[ 167.303321] kworker/-8911..... 165741166us : __intel_context_do_unpin: 0000:00:02.0 rcs0:context:1217 unpin <0>[ 167.303384] kworker/-89 11..... 165741170us :i915_request_retire.part.0: 0000:00:02.0 rcs0: fence 3:4660, current 4660<0>[ 167.303434] kworker/-89 11d..1. 165741172us : __intel_context_retire:0000:00:02.0 rcs0: context:1216 retire runtime: { total:56028ns,avg:56028ns } <0>[ 167.303484] kworker/-89 11..... 165741198us :__engine_park: 0000:00:02.0 rcs0: parked <0>[ 167.303534] <idle>-0 5d.H3.165741207us : execlists_irq_handler: 0000:00:02.0 rcs0: semaphore yield:00000040 <0>[ 167.303583] kworker/-89 11..... 165741397us :__intel_context_retire: 0000:00:02.0 rcs0: context:1217 retire runtime: {total:325575ns, avg:0ns } <0>[ 167.303756] kworker/-89 11..... 165741777us: __intel_context_retire: 0000:00:02.0 rcs0: context:c90 retire runtime: {total:0ns, avg:0ns } <0>[ 167.303806] kworker/-89 11..... 165742017us :__engine_park: __engine_park:283GEM_BUG_ON(engine->sched_engine->queue_priority_hint != (-((int)(~0U >> 1))- 1)) <0>[ 167.303811] --------------------------------- <4>[ 167.304722]------------[ cut here ]------------ <2>[ 167.304725] kernel BUG atdrivers/gpu/drm/i915/gt/intel_engine_pm.c:283! <4>[ 167.304731] invalidopcode: 0000 [#1] PREEMPT SMP NOPTI <4>[ 167.304734] CPU: 11 PID: 89 Comm:kworker/11:1 Tainted: G W 6.8.0-rc2-CI_DRM_14193-gc655e0fd2804+ #1 <4>[167.304736] Hardware name: Intel Corporation Rocket Lake ClientPlatform/RocketLake S UDIMM 6L RVP, BIOS RKLSFWI1.R00.3173.A03.220421013804/21/2022 <4>[ 167.304738] Workqueue: i915-unordered retire_work_handler[i915] <4>[ 16 ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26937` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-116-generic - 5.15.0-116.126\nlinux-image-5.15.0-116-generic-lpae - 5.15.0-116.126\nlinux-image-unsigned-5.15.0-116-generic - 5.15.0-116.126\nlinux-image-unsigned-5.15.0-116-generic-64k - 5.15.0-116.126\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-kvm - 5.15.0-1062.67\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-aws - 5.15.0-1065.71\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-azure - 5.15.0-1068.77\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-azure-fde - 5.15.0-1068.77.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-gcp - 5.15.0-1064.72\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gke - 5.15.0-1062.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1048-gkeop - 5.15.0-1048.55\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-ibm - 5.15.0-1058.61\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-intel-iotg - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-116-lowlatency - 5.15.0-116.126\nlinux-image-unsigned-5.15.0-116-lowlatency-64k - 5.15.0-116.126\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-nvidia - 5.15.0-1060.61\nlinux-image-unsigned-5.15.0-1060-nvidia-lowlatency - 5.15.0-1060.61\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-oracle - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-5.15.0-1058-raspi - 5.15.0-1058.61\nNo subscription required\n\nlinux-image-5.15.0-1035-xilinx-zynqmp - 5.15.0-1035.39\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/i915/gt: Reset queue_priority_hint on parking Originally, with strictin order execution, we could complete execution only when the queue wasempty. Preempt-to-busy allows replacement of an active request that maycomplete before the preemption is processed by HW. If that happens, therequest is retired from the queue, but the queue_priority_hint remains set,preventing direct submission until after the next CS interrupt isprocessed. This preempt-to-busy race can be triggered by the heartbeat,which will also act as the power-management barrier and upon completionallow us to idle the HW. We may process the completion of the heartbeat,and begin parking the engine before the CS event that restores thequeue_priority_hint, causing us to fail the assertion that it is MIN. <3>[166.210729] __engine_park:283GEM_BUG_ON(engine->sched_engine->queue_priority_hint != (-((int)(~0U >> 1))- 1)) <0>[ 166.210781] Dumping ftrace buffer: <0>[ 166.210795]--------------------------------- ... <0>[ 167.302811] drm_fdin-1097 2..s1.165741070us : trace_ports: 0000:00:02.0 rcs0: promote { ccid:20 1217:2 prio0 } <0>[ 167.302861] drm_fdin-1097 2d.s2. 165741072us :execlists_submission_tasklet: 0000:00:02.0 rcs0: preempting last=1217:2,prio=0, hint=2147483646 <0>[ 167.302928] drm_fdin-1097 2d.s2. 165741072us :__i915_request_unsubmit: 0000:00:02.0 rcs0: fence 1217:2, current 0 <0>[167.302992] drm_fdin-1097 2d.s2. 165741073us : __i915_request_submit:0000:00:02.0 rcs0: fence 3:4660, current 4659 <0>[ 167.303044]drm_fdin-1097 2d.s1. 165741076us : execlists_submission_tasklet:0000:00:02.0 rcs0: context:3 schedule-in, ccid:40 <0>[ 167.303095]drm_fdin-1097 2d.s1. 165741077us : trace_ports: 0000:00:02.0 rcs0: submit {ccid:40 3:4660* prio 2147483646 } <0>[ 167.303159] kworker/-89 11.....165741139us : i915_request_retire.part.0: 0000:00:02.0 rcs0: fence c90:2,current 2 <0>[ 167.303208] kworker/-89 11..... 165741148us :__intel_context_do_unpin: 0000:00:02.0 rcs0: context:c90 unpin <0>[167.303272] kworker/-89 11..... 165741159us : i915_request_retire.part.0:0000:00:02.0 rcs0: fence 1217:2, current 2 <0>[ 167.303321] kworker/-8911..... 165741166us : __intel_context_do_unpin: 0000:00:02.0 rcs0:context:1217 unpin <0>[ 167.303384] kworker/-89 11..... 165741170us :i915_request_retire.part.0: 0000:00:02.0 rcs0: fence 3:4660, current 4660<0>[ 167.303434] kworker/-89 11d..1. 165741172us : __intel_context_retire:0000:00:02.0 rcs0: context:1216 retire runtime: { total:56028ns,avg:56028ns } <0>[ 167.303484] kworker/-89 11..... 165741198us :__engine_park: 0000:00:02.0 rcs0: parked <0>[ 167.303534] <idle>-0 5d.H3.165741207us : execlists_irq_handler: 0000:00:02.0 rcs0: semaphore yield:00000040 <0>[ 167.303583] kworker/-89 11..... 165741397us :__intel_context_retire: 0000:00:02.0 rcs0: context:1217 retire runtime: {total:325575ns, avg:0ns } <0>[ 167.303756] kworker/-89 11..... 165741777us: __intel_context_retire: 0000:00:02.0 rcs0: context:c90 retire runtime: {total:0ns, avg:0ns } <0>[ 167.303806] kworker/-89 11..... 165742017us :__engine_park: __engine_park:283GEM_BUG_ON(engine->sched_engine->queue_priority_hint != (-((int)(~0U >> 1))- 1)) <0>[ 167.303811] --------------------------------- <4>[ 167.304722]------------[ cut here ]------------ <2>[ 167.304725] kernel BUG atdrivers/gpu/drm/i915/gt/intel_engine_pm.c:283! <4>[ 167.304731] invalidopcode: 0000 [#1] PREEMPT SMP NOPTI <4>[ 167.304734] CPU: 11 PID: 89 Comm:kworker/11:1 Tainted: G W 6.8.0-rc2-CI_DRM_14193-gc655e0fd2804+ #1 <4>[167.304736] Hardware name: Intel Corporation Rocket Lake ClientPlatform/RocketLake S UDIMM 6L RVP, BIOS RKLSFWI1.R00.3173.A03.220421013804/21/2022 <4>[ 167.304738] Workqueue: i915-unordered retire_work_handler[i915] <4>[ 16 ---truncated---\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26937` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-116-generic - 5.15.0-116.126\nlinux-image-5.15.0-116-generic-lpae - 5.15.0-116.126\nlinux-image-unsigned-5.15.0-116-generic - 5.15.0-116.126\nlinux-image-unsigned-5.15.0-116-generic-64k - 5.15.0-116.126\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-kvm - 5.15.0-1062.67\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-aws - 5.15.0-1065.71\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-azure - 5.15.0-1068.77\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-azure-fde - 5.15.0-1068.77.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-115-fips - 5.15.0-115.125+fips1\nlinux-image-unsigned-hmac-5.15.0-115-fips - 5.15.0-115.125+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1064-gcp - 5.15.0-1064.72\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-gke - 5.15.0-1062.68\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1048-gkeop - 5.15.0-1048.55\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-ibm - 5.15.0-1058.61\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-intel-iotg - 5.15.0-1060.66\nNo subscription required\n\nlinux-image-unsigned-5.15.0-116-lowlatency - 5.15.0-116.126\nlinux-image-unsigned-5.15.0-116-lowlatency-64k - 5.15.0-116.126\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1060-nvidia - 5.15.0-1060.61\nlinux-image-unsigned-5.15.0-1060-nvidia-lowlatency - 5.15.0-1060.61\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-oracle - 5.15.0-1063.69\nNo subscription required\n\nlinux-image-5.15.0-1058-raspi - 5.15.0-1058.61\nNo subscription required\n\nlinux-image-5.15.0-1035-xilinx-zynqmp - 5.15.0-1035.39\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1065-aws-fips - 5.15.0-1065.71+fips1\nlinux-image-unsigned-hmac-5.15.0-1065-aws-fips - 5.15.0-1065.71+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1068-azure-fips - 5.15.0-1068.77+fips1\nlinux-image-unsigned-hmac-5.15.0-1068-azure-fips - 5.15.0-1068.77+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1064-gcp-fips - 5.15.0-1064.72+fips1\nlinux-image-unsigned-hmac-5.15.0-1064-gcp-fips - 5.15.0-1064.72+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 22.04 LTS"
@@ -69,7 +69,7 @@
 						"comment": "linux-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-hwe-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000100",
 						"comment": "linux-kvm package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.67')."
 					},
 					{
@@ -121,11 +121,11 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000460",
-						"comment": "linux-fips package in fips-updates/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-115.125+fips1')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000040",
+						"comment": "linux-fips package in fips-updates/jammy was vulnerable but has been fixed (note: '5.15.0-115.125+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000040",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000050",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1064.72')."
 					},
 					{
@@ -141,23 +141,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000050",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000060",
 						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.68')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000070",
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1048.55')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000080",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.61')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000090",
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1060.66')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000110",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-116.126')."
 					},
 					{
@@ -173,7 +173,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000150",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1060.61')."
 					},
 					{
@@ -185,7 +185,7 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000120",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1063.69')."
 					},
 					{
@@ -209,7 +209,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000130",
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1058.61')."
 					},
 					{
@@ -225,20 +225,20 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000140",
 						"comment": "linux-xilinx-zynqmp package in jammy was vulnerable but has been fixed (note: '5.15.0-1035.39')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
-						"comment": "linux-aws-fips package in fips-updates/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1065.71+fips1')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000160",
+						"comment": "linux-aws-fips package in fips-updates/jammy was vulnerable but has been fixed (note: '5.15.0-1065.71+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
-						"comment": "linux-azure-fips package in fips-updates/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1068.77+fips1')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000170",
+						"comment": "linux-azure-fips package in fips-updates/jammy was vulnerable but has been fixed (note: '5.15.0-1068.77+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000450",
-						"comment": "linux-gcp-fips package in fips-updates/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1064.72+fips1')."
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000180",
+						"comment": "linux-gcp-fips package in fips-updates/jammy was vulnerable but has been fixed (note: '5.15.0-1064.72+fips1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000470",

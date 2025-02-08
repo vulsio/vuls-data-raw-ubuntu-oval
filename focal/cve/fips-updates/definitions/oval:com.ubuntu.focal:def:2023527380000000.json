@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2023-52738 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/amdgpu/fence: Fix oops due to non-matching drm_sched init/finiCurrently amdgpu calls drm_sched_fini() from the fence driver sw finiroutine - such function is expected to be called only after the respectiveinit function - drm_sched_init() - was executed successfully. Happens thatwe faced a driver probe failure in the Steam Deck recently, and thefunction drm_sched_fini() was called even without its counter-part had beenpreviously called, causing the following oops: amdgpu: probe of0000:04:00.0 failed with error -110 BUG: kernel NULL pointer dereference,address: 0000000000000090 PGD 0 P4D 0 Oops: 0002 [#1] PREEMPT SMP NOPTICPU: 0 PID: 609 Comm: systemd-udevd Not tainted 6.2.0-rc3-gpiccoli #338Hardware name: Valve Jupiter/Jupiter, BIOS F7A0113 11/04/2022 RIP:0010:drm_sched_fini+0x84/0xa0 [gpu_sched] [...] Call Trace: <TASK>amdgpu_fence_driver_sw_fini+0xc8/0xd0 [amdgpu]amdgpu_device_fini_sw+0x2b/0x3b0 [amdgpu]amdgpu_driver_release_kms+0x16/0x30 [amdgpu]devm_drm_dev_init_release+0x49/0x70 [...] To prevent that, check if thedrm_sched was properly initialized for a given ring before calling its finicounter-part. Notice ideally we'd use sched.ready for that; such field isset as the latest thing on drm_sched_init(). But amdgpu seems to \"override\"the meaning of such field - in the above oops for example, it was a GFXring causing the crash, and the sched.ready field was set to true in thering init routine, regardless of the state of the DRM scheduler. Hence, weended-up using sched.ops as per Christian's suggestion [0], and alsoremoved the no_scheduler check [1]. [0]https://lore.kernel.org/amd-gfx/984ee981-2906-0eaf-ccec-9f80975cb136@amd.com/[1]https://lore.kernel.org/amd-gfx/cd0e2994-f85f-d837-609f-7056d5fb7231@amd.com/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52738` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-72-generic - 5.15.0-72.79~20.04.1\nlinux-image-5.15.0-72-generic-lpae - 5.15.0-72.79~20.04.1\nlinux-image-unsigned-5.15.0-72-generic - 5.15.0-72.79~20.04.1\nlinux-image-unsigned-5.15.0-72-generic-64k - 5.15.0-72.79~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1036-aws - 5.15.0-1036.40~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1038-azure - 5.15.0-1038.45~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1038-azure-fde - 5.15.0-1038.45~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-gcp - 5.15.0-1034.42~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1020-gkeop - 5.15.0-1020.25~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1030-intel-iotg - 5.15.0-1030.35~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-72-lowlatency - 5.15.0-72.79~20.04.1\nlinux-image-unsigned-5.15.0-72-lowlatency-64k - 5.15.0-72.79~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1035-oracle - 5.15.0-1035.41~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:drm/amdgpu/fence: Fix oops due to non-matching drm_sched init/finiCurrently amdgpu calls drm_sched_fini() from the fence driver sw finiroutine - such function is expected to be called only after the respectiveinit function - drm_sched_init() - was executed successfully. Happens thatwe faced a driver probe failure in the Steam Deck recently, and thefunction drm_sched_fini() was called even without its counter-part had beenpreviously called, causing the following oops: amdgpu: probe of0000:04:00.0 failed with error -110 BUG: kernel NULL pointer dereference,address: 0000000000000090 PGD 0 P4D 0 Oops: 0002 [#1] PREEMPT SMP NOPTICPU: 0 PID: 609 Comm: systemd-udevd Not tainted 6.2.0-rc3-gpiccoli #338Hardware name: Valve Jupiter/Jupiter, BIOS F7A0113 11/04/2022 RIP:0010:drm_sched_fini+0x84/0xa0 [gpu_sched] [...] Call Trace: <TASK>amdgpu_fence_driver_sw_fini+0xc8/0xd0 [amdgpu]amdgpu_device_fini_sw+0x2b/0x3b0 [amdgpu]amdgpu_driver_release_kms+0x16/0x30 [amdgpu]devm_drm_dev_init_release+0x49/0x70 [...] To prevent that, check if thedrm_sched was properly initialized for a given ring before calling its finicounter-part. Notice ideally we'd use sched.ready for that; such field isset as the latest thing on drm_sched_init(). But amdgpu seems to \"override\"the meaning of such field - in the above oops for example, it was a GFXring causing the crash, and the sched.ready field was set to true in thering init routine, regardless of the state of the DRM scheduler. Hence, weended-up using sched.ops as per Christian's suggestion [0], and alsoremoved the no_scheduler check [1]. [0]https://lore.kernel.org/amd-gfx/984ee981-2906-0eaf-ccec-9f80975cb136@amd.com/[1]https://lore.kernel.org/amd-gfx/cd0e2994-f85f-d837-609f-7056d5fb7231@amd.com/\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2023-52738` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-72-generic - 5.15.0-72.79~20.04.1\nlinux-image-5.15.0-72-generic-lpae - 5.15.0-72.79~20.04.1\nlinux-image-unsigned-5.15.0-72-generic - 5.15.0-72.79~20.04.1\nlinux-image-unsigned-5.15.0-72-generic-64k - 5.15.0-72.79~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1036-aws - 5.15.0-1036.40~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1038-azure - 5.15.0-1038.45~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1038-azure-fde - 5.15.0-1038.45~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1011-bluefield - 5.4.0-1011.14\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-gcp - 5.15.0-1034.42~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1020-gkeop - 5.15.0-1020.25~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-ibm - 5.4.0-1004.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1030-intel-iotg - 5.15.0-1030.35~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-72-lowlatency - 5.15.0-72.79~20.04.1\nlinux-image-unsigned-5.15.0-72-lowlatency-64k - 5.15.0-72.79~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1035-oracle - 5.15.0-1035.41~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
@@ -104,23 +104,23 @@
 						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1038.45~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
-						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
-						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1011.14')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
-						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
+						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-gcp-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					},
 					{
@@ -160,12 +160,12 @@
 						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1020.25~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
-						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
@@ -176,7 +176,7 @@
 						"comment": "linux-intel-iotg-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1030.35~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
@@ -228,7 +228,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000170",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

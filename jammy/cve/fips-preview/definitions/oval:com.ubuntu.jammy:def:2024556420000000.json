@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-55642 on Ubuntu Pro FIPS-preview 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:block: Prevent potential deadlocks in zone write plug error recoveryZone write plugging for handling writes to zones of a zoned blockdevice always execute a zone report whenever a write BIO to a zonefails. The intent of this is to ensure that the tracking of a zone writepointer is always correct to ensure that the alignment to a zone writepointer of write BIOs can be checked on submission and that we canalways correctly emulate zone append operations using regular writeBIOs.However, this error recovery scheme introduces a potential deadlock if adevice queue freeze is initiated while BIOs are still plugged in a zonewrite plug and one of these write operation fails. In such case, thedisk zone write plug error recovery work is scheduled and executes areport zone. This in turn can result in a request allocation in theunderlying driver to issue the report zones command to the device. Butwith the device queue freeze already started, this allocation willblock, preventing the report zone execution and the continuation of theprocessing of the plugged BIOs. As plugged BIOs hold a queue usagereference, the queue freeze itself will never complete, resulting in adeadlock.Avoid this problem by completely removing from the zone write pluggingcode the use of report zones operations after a failed write operation,instead relying on the device user to either execute a report zones,reset the zone, finish the zone, or give up writing to the device (whichis a fairly common pattern for file systems which degrade to read-onlyafter write failures). This is not an unreasonnable requirement as allwell-behaved applications, FSes and device mapper already use reportzones to recover from write errors whenever possible by comparing thecurrent position of a zone write pointer with what their assumptionabout the position is.The changes to remove the automatic error recovery are as follows: - Completely remove the error recovery work and its associated   resources (zone write plug list head, disk error list, and disk   zone_wplugs_work work struct). This also removes the functions   disk_zone_wplug_set_error() and disk_zone_wplug_clear_error(). - Change the BLK_ZONE_WPLUG_ERROR zone write plug flag into   BLK_ZONE_WPLUG_NEED_WP_UPDATE. This new flag is set for a zone write   plug whenever a write opration targetting the zone of the zone write   plug fails. This flag indicates that the zone write pointer offset is   not reliable and that it must be updated when the next report zone,   reset zone, finish zone or disk revalidation is executed. - Modify blk_zone_write_plug_bio_endio() to set the   BLK_ZONE_WPLUG_NEED_WP_UPDATE flag for the target zone of a failed   write BIO. - Modify the function disk_zone_wplug_set_wp_offset() to clear this   new flag, thus implementing recovery of a correct write pointer   offset with the reset (all) zone and finish zone operations. - Modify blkdev_report_zones() to always use the disk_report_zones_cb()   callback so that disk_zone_wplug_sync_wp_offset() can be called for   any zone marked with the BLK_ZONE_WPLUG_NEED_WP_UPDATE flag.   This implements recovery of a correct write pointer offset for zone   write plugs marked with BLK_ZONE_WPLUG_NEED_WP_UPDATE and within   the range of the report zones operation executed by the user. - Modify blk_revalidate_seq_zone() to call   disk_zone_wplug_sync_wp_offset() for all sequential write required   zones when a zoned block device is revalidated, thus always resolving   any inconsistency between the write pointer offset of zone write   plugs and the actual write pointer position of sequential zones.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-55642` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-73-fips - 5.15.0-73.80+fips1\nlinux-image-unsigned-hmac-5.15.0-73-fips - 5.15.0-73.80+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nlinux-image-unsigned-hmac-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:block: Prevent potential deadlocks in zone write plug error recoveryZone write plugging for handling writes to zones of a zoned blockdevice always execute a zone report whenever a write BIO to a zonefails. The intent of this is to ensure that the tracking of a zone writepointer is always correct to ensure that the alignment to a zone writepointer of write BIOs can be checked on submission and that we canalways correctly emulate zone append operations using regular writeBIOs.However, this error recovery scheme introduces a potential deadlock if adevice queue freeze is initiated while BIOs are still plugged in a zonewrite plug and one of these write operation fails. In such case, thedisk zone write plug error recovery work is scheduled and executes areport zone. This in turn can result in a request allocation in theunderlying driver to issue the report zones command to the device. Butwith the device queue freeze already started, this allocation willblock, preventing the report zone execution and the continuation of theprocessing of the plugged BIOs. As plugged BIOs hold a queue usagereference, the queue freeze itself will never complete, resulting in adeadlock.Avoid this problem by completely removing from the zone write pluggingcode the use of report zones operations after a failed write operation,instead relying on the device user to either execute a report zones,reset the zone, finish the zone, or give up writing to the device (whichis a fairly common pattern for file systems which degrade to read-onlyafter write failures). This is not an unreasonnable requirement as allwell-behaved applications, FSes and device mapper already use reportzones to recover from write errors whenever possible by comparing thecurrent position of a zone write pointer with what their assumptionabout the position is.The changes to remove the automatic error recovery are as follows: - Completely remove the error recovery work and its associated   resources (zone write plug list head, disk error list, and disk   zone_wplugs_work work struct). This also removes the functions   disk_zone_wplug_set_error() and disk_zone_wplug_clear_error(). - Change the BLK_ZONE_WPLUG_ERROR zone write plug flag into   BLK_ZONE_WPLUG_NEED_WP_UPDATE. This new flag is set for a zone write   plug whenever a write opration targetting the zone of the zone write   plug fails. This flag indicates that the zone write pointer offset is   not reliable and that it must be updated when the next report zone,   reset zone, finish zone or disk revalidation is executed. - Modify blk_zone_write_plug_bio_endio() to set the   BLK_ZONE_WPLUG_NEED_WP_UPDATE flag for the target zone of a failed   write BIO. - Modify the function disk_zone_wplug_set_wp_offset() to clear this   new flag, thus implementing recovery of a correct write pointer   offset with the reset (all) zone and finish zone operations. - Modify blkdev_report_zones() to always use the disk_report_zones_cb()   callback so that disk_zone_wplug_sync_wp_offset() can be called for   any zone marked with the BLK_ZONE_WPLUG_NEED_WP_UPDATE flag.   This implements recovery of a correct write pointer offset for zone   write plugs marked with BLK_ZONE_WPLUG_NEED_WP_UPDATE and within   the range of the report zones operation executed by the user. - Modify blk_revalidate_seq_zone() to call   disk_zone_wplug_sync_wp_offset() for all sequential write required   zones when a zoned block device is revalidated, thus always resolving   any inconsistency between the write pointer offset of zone write   plugs and the actual write pointer position of sequential zones.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-55642` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-5.13.0-19-generic-lpae - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-generic-64k - 5.13.0-19.19\nlinux-image-unsigned-5.13.0-19-lowlatency - 5.13.0-19.19\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1004-kvm - 5.13.0-1004.4\nNo subscription required\n\nlinux-image-5.13.0-1005-aws - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1006-azure - 5.13.0-1006.7\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-73-fips - 5.15.0-73.80+fips1\nlinux-image-unsigned-hmac-5.15.0-73-fips - 5.15.0-73.80+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1051-aws-fips - 5.15.0-1051.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nlinux-image-unsigned-hmac-5.15.0-1053-azure-fips - 5.15.0-1053.61+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nlinux-image-unsigned-hmac-5.15.0-1048-gcp-fips - 5.15.0-1048.56+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.13.0-1005-gcp - 5.13.0-1005.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-gke - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1001-gkeop - 5.15.0-1001.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1002-ibm - 5.15.0-1002.2\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1004-intel-iotg - 5.15.0-1004.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-22-lowlatency - 5.15.0-22.22\nlinux-image-unsigned-5.15.0-22-lowlatency-64k - 5.15.0-22.22\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1005-nvidia - 5.15.0-1005.5\nlinux-image-unsigned-5.15.0-1005-nvidia-64k - 5.15.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.13.0-1008-oracle - 5.13.0-1008.10\nNo subscription required\n\nlinux-image-5.13.0-1008-raspi - 5.13.0-1008.9\nlinux-image-5.13.0-1008-raspi-nolpae - 5.13.0-1008.9\nNo subscription required\n\nlinux-image-5.15.0-1022-xilinx-zynqmp - 5.15.0-1022.26\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-preview 22.04 LTS"
@@ -90,8 +90,8 @@
 						"comment": "linux-azure-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000100",
-						"comment": "linux-azure-fde package in jammy is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"comment": "linux-azure-fde package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000190",
@@ -102,19 +102,19 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
 						"comment": "linux-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-73.80+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
 						"comment": "linux-aws-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1051.56+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
 						"comment": "linux-azure-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1053.61+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
 						"comment": "linux-gcp-fips package in fips-preview/jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1048.56+fips1')."
 					},
 					{
@@ -134,23 +134,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
 						"comment": "linux-gke package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
 						"comment": "linux-gkeop package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1001.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
 						"comment": "linux-ibm package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1002.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
 						"comment": "linux-intel-iotg package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1004.6')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000140",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
 						"comment": "linux-lowlatency package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-22.22')."
 					},
 					{
@@ -166,7 +166,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000150",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000160",
 						"comment": "linux-nvidia package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1005.5')."
 					},
 					{
@@ -202,7 +202,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000170",
 						"comment": "linux-raspi package in jammy, is related to the CVE in some way and has been fixed (note: '5.13.0-1008.9')."
 					},
 					{
@@ -222,7 +222,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000170",
+						"test_ref": "oval:com.ubuntu.jammy:tst:201431800000180",
 						"comment": "linux-xilinx-zynqmp package in jammy, is related to the CVE in some way and has been fixed (note: '5.15.0-1022.26')."
 					}
 				]

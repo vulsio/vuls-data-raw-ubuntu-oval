@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-40957 on Ubuntu Pro FIPS 18.04 LTS (bionic) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:seg6: fix parameter passing when calling NF_HOOK() in End.DX4 and End.DX6behaviorsinput_action_end_dx4() and input_action_end_dx6() are called NF_HOOK() forPREROUTING hook, in PREROUTING hook, we should passing a valid indev,and a NULL outdev to NF_HOOK(), otherwise may trigger a NULL pointerdereference, as below:    [74830.647293] BUG: kernel NULL pointer dereference, address:0000000000000090    [74830.655633] #PF: supervisor read access in kernel mode    [74830.657888] #PF: error_code(0x0000) - not-present page    [74830.659500] PGD 0 P4D 0    [74830.660450] Oops: 0000 [#1] PREEMPT SMP PTI    ...    [74830.664953] Hardware name: Red Hat KVM, BIOS 0.5.1 01/01/2011    [74830.666569] RIP: 0010:rpfilter_mt+0x44/0x15e [ipt_rpfilter]    ...    [74830.689725] Call Trace:    [74830.690402]  <IRQ>    [74830.690953]  ? show_trace_log_lvl+0x1c4/0x2df    [74830.692020]  ? show_trace_log_lvl+0x1c4/0x2df    [74830.693095]  ? ipt_do_table+0x286/0x710 [ip_tables]    [74830.694275]  ? __die_body.cold+0x8/0xd    [74830.695205]  ? page_fault_oops+0xac/0x140    [74830.696244]  ? exc_page_fault+0x62/0x150    [74830.697225]  ? asm_exc_page_fault+0x22/0x30    [74830.698344]  ? rpfilter_mt+0x44/0x15e [ipt_rpfilter]    [74830.699540]  ipt_do_table+0x286/0x710 [ip_tables]    [74830.700758]  ? ip6_route_input+0x19d/0x240    [74830.701752]  nf_hook_slow+0x3f/0xb0    [74830.702678]  input_action_end_dx4+0x19b/0x1e0    [74830.703735]  ? input_action_end_t+0xe0/0xe0    [74830.704734]  seg6_local_input_core+0x2d/0x60    [74830.705782]  lwtunnel_input+0x5b/0xb0    [74830.706690]  __netif_receive_skb_one_core+0x63/0xa0    [74830.707825]  process_backlog+0x99/0x140    [74830.709538]  __napi_poll+0x2c/0x160    [74830.710673]  net_rx_action+0x296/0x350    [74830.711860]  __do_softirq+0xcb/0x2ac    [74830.713049]  do_softirq+0x63/0x90input_action_end_dx4() passing a NULL indev to NF_HOOK(), and finallytrigger a NULL dereference in rpfilter_mt()->rpfilter_is_loopback():    static bool    rpfilter_is_loopback(const struct sk_buff *skb,          \t       const struct net_device *in)    {            // in is NULL            return skb->pkt_type == PACKET_LOOPBACK ||          \t in->flags & IFF_LOOPBACK;    }\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40957` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1018-aws - 5.4.0-1018.18~18.04.1\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1020-azure - 5.4.0-1020.20~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-gcp - 5.4.0-1019.19~18.04.2\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1007-oracle - 4.15.0-1007.9\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1019-oracle - 5.4.0-1019.19~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:seg6: fix parameter passing when calling NF_HOOK() in End.DX4 and End.DX6behaviorsinput_action_end_dx4() and input_action_end_dx6() are called NF_HOOK() forPREROUTING hook, in PREROUTING hook, we should passing a valid indev,and a NULL outdev to NF_HOOK(), otherwise may trigger a NULL pointerdereference, as below:    [74830.647293] BUG: kernel NULL pointer dereference, address:0000000000000090    [74830.655633] #PF: supervisor read access in kernel mode    [74830.657888] #PF: error_code(0x0000) - not-present page    [74830.659500] PGD 0 P4D 0    [74830.660450] Oops: 0000 [#1] PREEMPT SMP PTI    ...    [74830.664953] Hardware name: Red Hat KVM, BIOS 0.5.1 01/01/2011    [74830.666569] RIP: 0010:rpfilter_mt+0x44/0x15e [ipt_rpfilter]    ...    [74830.689725] Call Trace:    [74830.690402]  <IRQ>    [74830.690953]  ? show_trace_log_lvl+0x1c4/0x2df    [74830.692020]  ? show_trace_log_lvl+0x1c4/0x2df    [74830.693095]  ? ipt_do_table+0x286/0x710 [ip_tables]    [74830.694275]  ? __die_body.cold+0x8/0xd    [74830.695205]  ? page_fault_oops+0xac/0x140    [74830.696244]  ? exc_page_fault+0x62/0x150    [74830.697225]  ? asm_exc_page_fault+0x22/0x30    [74830.698344]  ? rpfilter_mt+0x44/0x15e [ipt_rpfilter]    [74830.699540]  ipt_do_table+0x286/0x710 [ip_tables]    [74830.700758]  ? ip6_route_input+0x19d/0x240    [74830.701752]  nf_hook_slow+0x3f/0xb0    [74830.702678]  input_action_end_dx4+0x19b/0x1e0    [74830.703735]  ? input_action_end_t+0xe0/0xe0    [74830.704734]  seg6_local_input_core+0x2d/0x60    [74830.705782]  lwtunnel_input+0x5b/0xb0    [74830.706690]  __netif_receive_skb_one_core+0x63/0xa0    [74830.707825]  process_backlog+0x99/0x140    [74830.709538]  __napi_poll+0x2c/0x160    [74830.710673]  net_rx_action+0x296/0x350    [74830.711860]  __do_softirq+0xcb/0x2ac    [74830.713049]  do_softirq+0x63/0x90input_action_end_dx4() passing a NULL indev to NF_HOOK(), and finallytrigger a NULL dereference in rpfilter_mt()->rpfilter_is_loopback():    static bool    rpfilter_is_loopback(const struct sk_buff *skb,          \t       const struct net_device *in)    {            // in is NULL            return skb->pkt_type == PACKET_LOOPBACK ||          \t in->flags & IFF_LOOPBACK;    }\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40957` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.13.0-16-generic - 4.13.0-16.19\nlinux-image-4.13.0-16-generic-lpae - 4.13.0-16.19\nlinux-image-4.13.0-16-lowlatency - 4.13.0-16.19\nlinux-image-extra-4.13.0-16-generic - 4.13.0-16.19\nNo subscription required\n\nlinux-image-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-generic-lpae - 5.4.0-37.41~18.04.1\nlinux-image-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-generic - 5.4.0-37.41~18.04.1\nlinux-image-unsigned-5.4.0-37-lowlatency - 5.4.0-37.41~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1002-kvm - 4.15.0-1002.2\nNo subscription required\n\nlinux-image-4.15.0-1001-aws - 4.15.0-1001.1\nNo subscription required\n\nlinux-image-5.4.0-1020-aws - 5.4.0-1020.20~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1082-azure - 4.15.0-1082.92\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1022-azure - 5.4.0-1022.22~18.04.1\nNo subscription required\n\nlinux-image-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-4.15.0-1011-fips - 4.15.0-1011.12\nlinux-image-unsigned-hmac-4.15.0-1011-fips - 4.15.0-1011.12\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-2000-aws-fips - 4.15.0-2000.4\nlinux-image-unsigned-hmac-4.15.0-2000-aws-fips - 4.15.0-2000.4\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1002-azure-fips - 4.15.0-1002.2\nlinux-image-unsigned-hmac-4.15.0-1002-azure-fips - 4.15.0-1002.2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nlinux-image-unsigned-hmac-4.15.0-1001-gcp-fips - 4.15.0-1001.1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1071-gcp - 4.15.0-1071.81\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-gcp - 5.4.0-1021.21~18.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1010-ibm - 5.4.0-1010.11~18.04.2\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1008-oracle - 4.15.0-1008.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-oracle - 5.4.0-1021.21~18.04.1\nNo subscription required\n\nlinux-image-5.4.0-1013-raspi - 5.4.0-1013.13~18.04.1\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS 18.04 LTS"
@@ -79,8 +79,8 @@
 						"comment": "linux-aws-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-aws-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000110",
-						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1018.18~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000010",
+						"comment": "linux-aws-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.2')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000070",
@@ -95,23 +95,23 @@
 						"comment": "linux-azure-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000080",
-						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.20~18.04.1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
-						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000010",
-						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000020",
-						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
+						"comment": "linux-azure-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000030",
+						"comment": "linux-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1011.12')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000040",
+						"comment": "linux-aws-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-2000.4')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000050",
+						"comment": "linux-azure-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1002.2')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000060",
 						"comment": "linux-gcp-fips package in fips/bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1001.1')."
 					},
 					{
@@ -127,8 +127,8 @@
 						"comment": "linux-gcp-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000100",
-						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.2')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000070",
+						"comment": "linux-gcp-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000050",
@@ -143,12 +143,12 @@
 						"comment": "linux-gkeop-5.4: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000040",
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000080",
 						"comment": "linux-ibm-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1010.11~18.04.2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:200747740000130",
-						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1007.9')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000000",
+						"comment": "linux-oracle package in bionic, is related to the CVE in some way and has been fixed (note: '4.15.0-1008.10')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000140",
@@ -159,8 +159,8 @@
 						"comment": "linux-oracle-5.3: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.4')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.bionic:tst:201325960000090",
-						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1019.19~18.04.1')."
+						"test_ref": "oval:com.ubuntu.bionic:tst:201431800000090",
+						"comment": "linux-oracle-5.4 package in bionic, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21~18.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.bionic:tst:201245420000100",

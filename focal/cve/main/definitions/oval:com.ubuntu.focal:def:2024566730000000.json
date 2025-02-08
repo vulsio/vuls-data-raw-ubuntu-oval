@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-56673 on Ubuntu 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:riscv: mm: Do not call pmd dtor on vmemmap page table teardownThe vmemmap's, which is used for RV64 with SPARSEMEM_VMEMMAP, pagetables are populated using pmd (page middle directory) hugetables.However, the pmd allocation is not using the generic mechanism used bythe VMA code (e.g. pmd_alloc()), or the RISC-V specificcreate_pgd_mapping()/alloc_pmd_late(). Instead, the vmemmap page tablecode allocates a page, and calls vmemmap_set_pmd(). This results inthat the pmd ctor is *not* called, nor would it make sense to do so.Now, when tearing down a vmemmap page table pmd, the cleanup codewould unconditionally, and incorrectly call the pmd dtor, whichresults in a crash (best case).This issue was found when running the HMM selftests:  | tools/testing/selftests/mm# ./test_hmm.sh smoke  | ... # when unloading the test_hmm.ko module  | page: refcount:1 mapcount:0 mapping:0000000000000000 index:0x0pfn:0x10915b  | flags: 0x1000000000000000(node=0|zone=1)  | raw: 1000000000000000 0000000000000000 dead0000000001220000000000000000  | raw: 0000000000000000 0000000000000000 00000001ffffffff0000000000000000  | page dumped because: VM_BUG_ON_PAGE(ptdesc->pmd_huge_pte)  | ------------[ cut here ]------------  | kernel BUG at include/linux/mm.h:3080!  | Kernel BUG [#1]  | Modules linked in: test_hmm(-) sch_fq_codel fuse drmdrm_panel_orientation_quirks backlight dm_mod  | CPU: 1 UID: 0 PID: 514 Comm: modprobe Tainted: G        W6.12.0-00982-gf2a4f1682d07 #2  | Tainted: [W]=WARN  | Hardware name: riscv-virtio qemu/qemu, BIOS 2024.10 10/01/2024  | epc : remove_pgd_mapping+0xbec/0x1070  |  ra : remove_pgd_mapping+0xbec/0x1070  | epc : ffffffff80010a68 ra : ffffffff80010a68 sp : ff20000000a73940  |  gp : ffffffff827b2d88 tp : ff6000008785da40 t0 : ffffffff80fbce04  |  t1 : 0720072007200720 t2 : 706d756420656761 s0 : ff20000000a73a50  |  s1 : ff6000008915cff8 a0 : 0000000000000039 a1 : 0000000000000008  |  a2 : ff600003fff0de20 a3 : 0000000000000000 a4 : 0000000000000000  |  a5 : 0000000000000000 a6 : c0000000ffffefff a7 : ffffffff824469b8  |  s2 : ff1c0000022456c0 s3 : ff1ffffffdbfffff s4 : ff6000008915c000  |  s5 : ff6000008915c000 s6 : ff6000008915c000 s7 : ff1ffffffdc00000  |  s8 : 0000000000000001 s9 : ff1ffffffdc00000 s10: ffffffff819a31f0  |  s11: ffffffffffffffff t3 : ffffffff8000c950 t4 : ff60000080244f00  |  t5 : ff60000080244000 t6 : ff20000000a73708  | status: 0000000200000120 badaddr: ffffffff80010a68 cause:0000000000000003  | [<ffffffff80010a68>] remove_pgd_mapping+0xbec/0x1070  | [<ffffffff80fd238e>] vmemmap_free+0x14/0x1e  | [<ffffffff8032e698>] section_deactivate+0x220/0x452  | [<ffffffff8032ef7e>] sparse_remove_section+0x4a/0x58  | [<ffffffff802f8700>] __remove_pages+0x7e/0xba  | [<ffffffff803760d8>] memunmap_pages+0x2bc/0x3fe  | [<ffffffff02a3ca28>] dmirror_device_remove_chunks+0x2ea/0x518[test_hmm]  | [<ffffffff02a3e026>] hmm_dmirror_exit+0x3e/0x1018 [test_hmm]  | [<ffffffff80102c14>] __riscv_sys_delete_module+0x15a/0x2a6  | [<ffffffff80fd020c>] do_trap_ecall_u+0x1f2/0x266  | [<ffffffff80fde0a2>] _new_vmalloc_restore_context_a0+0xc6/0xd2  | Code: bf51 7597 0184 8593 76a5 854a 4097 0029 80e7 2c00 (9002) 7597  | ---[ end trace 0000000000000000 ]---  | Kernel panic - not syncing: Fatal exception in interruptAdd a check to avoid calling the pmd dtor, if the calling context isvmemmap_free().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56673` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1014-aws - 5.15.0-1014.18~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1033-ibm - 5.15.0-1033.36~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:riscv: mm: Do not call pmd dtor on vmemmap page table teardownThe vmemmap's, which is used for RV64 with SPARSEMEM_VMEMMAP, pagetables are populated using pmd (page middle directory) hugetables.However, the pmd allocation is not using the generic mechanism used bythe VMA code (e.g. pmd_alloc()), or the RISC-V specificcreate_pgd_mapping()/alloc_pmd_late(). Instead, the vmemmap page tablecode allocates a page, and calls vmemmap_set_pmd(). This results inthat the pmd ctor is *not* called, nor would it make sense to do so.Now, when tearing down a vmemmap page table pmd, the cleanup codewould unconditionally, and incorrectly call the pmd dtor, whichresults in a crash (best case).This issue was found when running the HMM selftests:  | tools/testing/selftests/mm# ./test_hmm.sh smoke  | ... # when unloading the test_hmm.ko module  | page: refcount:1 mapcount:0 mapping:0000000000000000 index:0x0pfn:0x10915b  | flags: 0x1000000000000000(node=0|zone=1)  | raw: 1000000000000000 0000000000000000 dead0000000001220000000000000000  | raw: 0000000000000000 0000000000000000 00000001ffffffff0000000000000000  | page dumped because: VM_BUG_ON_PAGE(ptdesc->pmd_huge_pte)  | ------------[ cut here ]------------  | kernel BUG at include/linux/mm.h:3080!  | Kernel BUG [#1]  | Modules linked in: test_hmm(-) sch_fq_codel fuse drmdrm_panel_orientation_quirks backlight dm_mod  | CPU: 1 UID: 0 PID: 514 Comm: modprobe Tainted: G        W6.12.0-00982-gf2a4f1682d07 #2  | Tainted: [W]=WARN  | Hardware name: riscv-virtio qemu/qemu, BIOS 2024.10 10/01/2024  | epc : remove_pgd_mapping+0xbec/0x1070  |  ra : remove_pgd_mapping+0xbec/0x1070  | epc : ffffffff80010a68 ra : ffffffff80010a68 sp : ff20000000a73940  |  gp : ffffffff827b2d88 tp : ff6000008785da40 t0 : ffffffff80fbce04  |  t1 : 0720072007200720 t2 : 706d756420656761 s0 : ff20000000a73a50  |  s1 : ff6000008915cff8 a0 : 0000000000000039 a1 : 0000000000000008  |  a2 : ff600003fff0de20 a3 : 0000000000000000 a4 : 0000000000000000  |  a5 : 0000000000000000 a6 : c0000000ffffefff a7 : ffffffff824469b8  |  s2 : ff1c0000022456c0 s3 : ff1ffffffdbfffff s4 : ff6000008915c000  |  s5 : ff6000008915c000 s6 : ff6000008915c000 s7 : ff1ffffffdc00000  |  s8 : 0000000000000001 s9 : ff1ffffffdc00000 s10: ffffffff819a31f0  |  s11: ffffffffffffffff t3 : ffffffff8000c950 t4 : ff60000080244f00  |  t5 : ff60000080244000 t6 : ff20000000a73708  | status: 0000000200000120 badaddr: ffffffff80010a68 cause:0000000000000003  | [<ffffffff80010a68>] remove_pgd_mapping+0xbec/0x1070  | [<ffffffff80fd238e>] vmemmap_free+0x14/0x1e  | [<ffffffff8032e698>] section_deactivate+0x220/0x452  | [<ffffffff8032ef7e>] sparse_remove_section+0x4a/0x58  | [<ffffffff802f8700>] __remove_pages+0x7e/0xba  | [<ffffffff803760d8>] memunmap_pages+0x2bc/0x3fe  | [<ffffffff02a3ca28>] dmirror_device_remove_chunks+0x2ea/0x518[test_hmm]  | [<ffffffff02a3e026>] hmm_dmirror_exit+0x3e/0x1018 [test_hmm]  | [<ffffffff80102c14>] __riscv_sys_delete_module+0x15a/0x2a6  | [<ffffffff80fd020c>] do_trap_ecall_u+0x1f2/0x266  | [<ffffffff80fde0a2>] _new_vmalloc_restore_context_a0+0xc6/0xd2  | Code: bf51 7597 0184 8593 76a5 854a 4097 0029 80e7 2c00 (9002) 7597  | ---[ end trace 0000000000000000 ]---  | Kernel panic - not syncing: Fatal exception in interruptAdd a check to avoid calling the pmd dtor, if the calling context isvmemmap_free().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-56673` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-5.15.0-33-generic-lpae - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-generic-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1015-aws - 5.15.0-1015.19~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-azure - 5.15.0-1007.8~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1019-azure-fde - 5.15.0-1019.24~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1011-bluefield - 5.4.0-1011.14\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1006-gcp - 5.15.0-1006.9~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-ibm - 5.4.0-1004.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1034-ibm - 5.15.0-1034.37~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1003-intel-iotg - 5.15.0-1003.5~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-33-lowlatency - 5.15.0-33.34~20.04.1\nlinux-image-unsigned-5.15.0-33-lowlatency-64k - 5.15.0-33.34~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1007-oracle - 5.15.0-1007.9~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 20.04 LTS"
@@ -75,7 +75,7 @@
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201431800000020",
-						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1014.18~20.04.1')."
+						"comment": "linux-aws-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1015.19~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201325960000030",
@@ -102,12 +102,12 @@
 						"comment": "linux-azure-fde: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-azure-fde-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201245420000400",
-						"comment": "linux-azure-fde-5.15 package in focal is affected and may need fixing."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
+						"comment": "linux-azure-fde-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1019.24~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
-						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1011.14')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201325960000040",
@@ -126,7 +126,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
 						"comment": "linux-gcp-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1006.9~20.04.1')."
 					},
 					{
@@ -146,27 +146,27 @@
 						"comment": "linux-gkeop-5.15: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of life, was needs-triage')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
-						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
-						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1033.36~20.04.1')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"comment": "linux-ibm-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1034.37~20.04.1')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.focal:tst:201245420000250",
 						"comment": "linux-intel-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-intel-iotg-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1003.5~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-33.34~20.04.1')."
 					},
 					{
@@ -186,7 +186,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
 						"comment": "linux-oracle-5.15 package in focal, is related to the CVE in some way and has been fixed (note: '5.15.0-1007.9~20.04.1')."
 					},
 					{
@@ -214,7 +214,7 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					}
 				]

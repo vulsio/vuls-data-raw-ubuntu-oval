@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-40954 on Ubuntu Pro FIPS-updates 22.04 LTS (jammy) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: do not leave a dangling sk pointer, when socket creation failsIt is possible to trigger a use-after-free by:  * attaching an fentry probe to __sock_release() and the probe calling the    bpf_get_socket_cookie() helper  * running traceroute -I 1.1.1.1 on a freshly booted VMA KASAN enabled kernel will log something like below (decoded andstripped):==================================================================BUG: KASAN: slab-use-after-free in __sock_gen_cookie(./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)Read of size 8 at addr ffff888007110dd8 by task traceroute/299CPU: 2 PID: 299 Comm: traceroute Tainted: G            E      6.10.0-rc2+#2Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.16.2-debian-1.16.2-1 04/01/2014Call Trace: <TASK>dump_stack_lvl (lib/dump_stack.c:117 (discriminator 1))print_report (mm/kasan/report.c:378 mm/kasan/report.c:488)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_report (mm/kasan/report.c:603)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_check_range (mm/kasan/generic.c:183 mm/kasan/generic.c:189)__sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)bpf_get_socket_ptr_cookie (./arch/x86/include/asm/preempt.h:94./include/linux/sock_diag.h:42 net/core/filter.c:5094net/core/filter.c:5092)bpf_prog_875642cf11f1d139___sock_release+0x6e/0x8ebpf_trampoline_6442506592+0x47/0xaf__sock_release (net/socket.c:652)__sock_create (net/socket.c:1601)...Allocated by task 299 on cpu 2 at 78.328492s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)__kasan_slab_alloc (mm/kasan/common.c:312 mm/kasan/common.c:338)kmem_cache_alloc_noprof (mm/slub.c:3941 mm/slub.c:4000 mm/slub.c:4007)sk_prot_alloc (net/core/sock.c:2075)sk_alloc (net/core/sock.c:2134)inet_create (net/ipv4/af_inet.c:327 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Freed by task 299 on cpu 2 at 78.328502s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)kasan_save_free_info (mm/kasan/generic.c:582)poison_slab_object (mm/kasan/common.c:242)__kasan_slab_free (mm/kasan/common.c:256)kmem_cache_free (mm/slub.c:4437 mm/slub.c:4511)__sk_destruct (net/core/sock.c:2117 net/core/sock.c:2208)inet_create (net/ipv4/af_inet.c:397 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Fix this by clearing the struct socket reference in sk_common_release() tocoverall protocol families create functions, which may already attached thereference to the sk object with sock_init_data().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40954` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-kvm - 5.15.0-1066.71\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure - 5.15.0-1072.81\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure-fde - 5.15.0-1072.81.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-gke - 5.15.0-1066.72\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-ibm - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-121-lowlatency - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-lowlatency-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-nvidia - 5.15.0-1064.65\nlinux-image-unsigned-5.15.0-1064-nvidia-lowlatency - 5.15.0-1064.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-oracle - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-5.15.0-1062-raspi - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-5.15.0-1035-xilinx-zynqmp - 5.15.0-1035.39\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: do not leave a dangling sk pointer, when socket creation failsIt is possible to trigger a use-after-free by:  * attaching an fentry probe to __sock_release() and the probe calling the    bpf_get_socket_cookie() helper  * running traceroute -I 1.1.1.1 on a freshly booted VMA KASAN enabled kernel will log something like below (decoded andstripped):==================================================================BUG: KASAN: slab-use-after-free in __sock_gen_cookie(./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)Read of size 8 at addr ffff888007110dd8 by task traceroute/299CPU: 2 PID: 299 Comm: traceroute Tainted: G            E      6.10.0-rc2+#2Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.16.2-debian-1.16.2-1 04/01/2014Call Trace: <TASK>dump_stack_lvl (lib/dump_stack.c:117 (discriminator 1))print_report (mm/kasan/report.c:378 mm/kasan/report.c:488)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_report (mm/kasan/report.c:603)? __sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)kasan_check_range (mm/kasan/generic.c:183 mm/kasan/generic.c:189)__sock_gen_cookie (./arch/x86/include/asm/atomic64_64.h:15./include/linux/atomic/atomic-arch-fallback.h:2583./include/linux/atomic/atomic-instrumented.h:1611 net/core/sock_diag.c:29)bpf_get_socket_ptr_cookie (./arch/x86/include/asm/preempt.h:94./include/linux/sock_diag.h:42 net/core/filter.c:5094net/core/filter.c:5092)bpf_prog_875642cf11f1d139___sock_release+0x6e/0x8ebpf_trampoline_6442506592+0x47/0xaf__sock_release (net/socket.c:652)__sock_create (net/socket.c:1601)...Allocated by task 299 on cpu 2 at 78.328492s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)__kasan_slab_alloc (mm/kasan/common.c:312 mm/kasan/common.c:338)kmem_cache_alloc_noprof (mm/slub.c:3941 mm/slub.c:4000 mm/slub.c:4007)sk_prot_alloc (net/core/sock.c:2075)sk_alloc (net/core/sock.c:2134)inet_create (net/ipv4/af_inet.c:327 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Freed by task 299 on cpu 2 at 78.328502s:kasan_save_stack (mm/kasan/common.c:48)kasan_save_track (mm/kasan/common.c:68)kasan_save_free_info (mm/kasan/generic.c:582)poison_slab_object (mm/kasan/common.c:242)__kasan_slab_free (mm/kasan/common.c:256)kmem_cache_free (mm/slub.c:4437 mm/slub.c:4511)__sk_destruct (net/core/sock.c:2117 net/core/sock.c:2208)inet_create (net/ipv4/af_inet.c:397 net/ipv4/af_inet.c:252)__sock_create (net/socket.c:1572)__sys_socket (net/socket.c:1660 net/socket.c:1644 net/socket.c:1706)__x64_sys_socket (net/socket.c:1718)do_syscall_64 (arch/x86/entry/common.c:52 arch/x86/entry/common.c:83)entry_SYSCALL_64_after_hwframe (arch/x86/entry/entry_64.S:130)Fix this by clearing the struct socket reference in sk_common_release() tocoverall protocol families create functions, which may already attached thereference to the sk object with sock_init_data().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-40954` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-5.15.0-121-generic-lpae - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-generic-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-kvm - 5.15.0-1066.71\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1069-aws - 5.15.0-1069.75\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure - 5.15.0-1072.81\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1072-azure-fde - 5.15.0-1072.81.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-121-fips - 5.15.0-121.131+fips1\nlinux-image-unsigned-hmac-5.15.0-121-fips - 5.15.0-121.131+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1069-aws-fips - 5.15.0-1069.75+fips1\nlinux-image-unsigned-hmac-5.15.0-1069-aws-fips - 5.15.0-1069.75+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1072-azure-fips - 5.15.0-1072.81+fips1\nlinux-image-unsigned-hmac-5.15.0-1072-azure-fips - 5.15.0-1072.81+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1068-gcp-fips - 5.15.0-1068.76+fips1\nlinux-image-unsigned-hmac-5.15.0-1068-gcp-fips - 5.15.0-1068.76+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.15.0-1068-gcp - 5.15.0-1068.76\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1066-gke - 5.15.0-1066.72\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1052-gkeop - 5.15.0-1052.59\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1062-ibm - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-intel-iotg - 5.15.0-1064.70\nNo subscription required\n\nlinux-image-unsigned-5.15.0-121-lowlatency - 5.15.0-121.131\nlinux-image-unsigned-5.15.0-121-lowlatency-64k - 5.15.0-121.131\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1064-nvidia - 5.15.0-1064.65\nlinux-image-unsigned-5.15.0-1064-nvidia-lowlatency - 5.15.0-1064.65\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1067-oracle - 5.15.0-1067.73\nNo subscription required\n\nlinux-image-5.15.0-1062-raspi - 5.15.0-1062.65\nNo subscription required\n\nlinux-image-5.15.0-1035-xilinx-zynqmp - 5.15.0-1035.39\nNo subscription required",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 22.04 LTS"
@@ -119,23 +119,23 @@
 						"comment": "linux-azure-fde-6.2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-azure-6.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000460",
-						"comment": "linux-fips package in fips-updates/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-121.131+fips1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000430",
-						"comment": "linux-aws-fips package in fips-updates/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1069.75+fips1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000440",
-						"comment": "linux-azure-fips package in fips-updates/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1072.81+fips1')."
-					},
-					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:201245420000450",
-						"comment": "linux-gcp-fips package in fips-updates/jammy is affected. An update containing the fix has been completed and is pending publication (note: '5.15.0-1068.76+fips1')."
-					},
-					{
 						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000050",
+						"comment": "linux-fips package in fips-updates/jammy was vulnerable but has been fixed (note: '5.15.0-121.131+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000060",
+						"comment": "linux-aws-fips package in fips-updates/jammy was vulnerable but has been fixed (note: '5.15.0-1069.75+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000070",
+						"comment": "linux-azure-fips package in fips-updates/jammy was vulnerable but has been fixed (note: '5.15.0-1072.81+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000080",
+						"comment": "linux-gcp-fips package in fips-updates/jammy was vulnerable but has been fixed (note: '5.15.0-1068.76+fips1')."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000090",
 						"comment": "linux-gcp package in jammy was vulnerable but has been fixed (note: '5.15.0-1068.76')."
 					},
 					{
@@ -151,23 +151,23 @@
 						"comment": "linux-gcp-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000060",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000100",
 						"comment": "linux-gke package in jammy was vulnerable but has been fixed (note: '5.15.0-1066.72')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000070",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000110",
 						"comment": "linux-gkeop package in jammy was vulnerable but has been fixed (note: '5.15.0-1052.59')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000080",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000120",
 						"comment": "linux-ibm package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.65')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000090",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000130",
 						"comment": "linux-intel-iotg package in jammy was vulnerable but has been fixed (note: '5.15.0-1064.70')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000100",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000140",
 						"comment": "linux-lowlatency package in jammy was vulnerable but has been fixed (note: '5.15.0-121.131')."
 					},
 					{
@@ -183,7 +183,7 @@
 						"comment": "linux-lowlatency-hwe-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-lowlatency-hwe-6.8')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000110",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000150",
 						"comment": "linux-nvidia package in jammy was vulnerable but has been fixed (note: '5.15.0-1064.65')."
 					},
 					{
@@ -195,7 +195,7 @@
 						"comment": "linux-nvidia-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-nvidia-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000120",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000160",
 						"comment": "linux-oracle package in jammy was vulnerable but has been fixed (note: '5.15.0-1067.73')."
 					},
 					{
@@ -219,7 +219,7 @@
 						"comment": "linux-oem-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oem-6.8, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022487720000170",
 						"comment": "linux-raspi package in jammy was vulnerable but has been fixed (note: '5.15.0-1062.65')."
 					},
 					{
@@ -235,7 +235,7 @@
 						"comment": "linux-starfive-6.5: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'end of kernel support, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000130",
+						"test_ref": "oval:com.ubuntu.jammy:tst:2022380960000140",
 						"comment": "linux-xilinx-zynqmp package in jammy was vulnerable but has been fixed (note: '5.15.0-1035.39')."
 					},
 					{

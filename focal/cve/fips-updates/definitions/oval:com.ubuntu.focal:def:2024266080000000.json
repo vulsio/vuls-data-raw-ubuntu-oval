@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-26608 on Ubuntu Pro FIPS-updates 20.04 LTS (focal) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved: ksmbd:fix global oob in ksmbd_nl_policy Similar to a reported issue (check thecommit b33fb5b801c6 (\"net: qualcomm: rmnet: fix global oob inrmnet_policy\"), my local fuzzer finds another global out-of-bounds read forpolicy ksmbd_nl_policy. See bug trace below:================================================================== BUG:KASAN: global-out-of-bounds in validate_nla lib/nlattr.c:386 [inline] BUG:KASAN: global-out-of-bounds in __nla_validate_parse+0x24af/0x2750lib/nlattr.c:600 Read of size 1 at addr ffffffff8f24b100 by tasksyz-executor.1/62810 CPU: 0 PID: 62810 Comm: syz-executor.1 Tainted: G N6.1.0 #3 Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.13.0-1ubuntu1.1 04/01/2014 Call Trace: <TASK> __dump_stacklib/dump_stack.c:88 [inline] dump_stack_lvl+0x8b/0xb3 lib/dump_stack.c:106print_address_description mm/kasan/report.c:284 [inline]print_report+0x172/0x475 mm/kasan/report.c:395 kasan_report+0xbb/0x1c0mm/kasan/report.c:495 validate_nla lib/nlattr.c:386 [inline]__nla_validate_parse+0x24af/0x2750 lib/nlattr.c:600 __nla_parse+0x3e/0x50lib/nlattr.c:697 __nlmsg_parse include/net/netlink.h:748 [inline]genl_family_rcv_msg_attrs_parse.constprop.0+0x1b0/0x290net/netlink/genetlink.c:565 genl_family_rcv_msg_doit+0xda/0x330net/netlink/genetlink.c:734 genl_family_rcv_msg net/netlink/genetlink.c:833[inline] genl_rcv_msg+0x441/0x780 net/netlink/genetlink.c:850netlink_rcv_skb+0x14f/0x410 net/netlink/af_netlink.c:2540genl_rcv+0x24/0x40 net/netlink/genetlink.c:861 netlink_unicast_kernelnet/netlink/af_netlink.c:1319 [inline] netlink_unicast+0x54e/0x800net/netlink/af_netlink.c:1345 netlink_sendmsg+0x930/0xe50net/netlink/af_netlink.c:1921 sock_sendmsg_nosec net/socket.c:714 [inline]sock_sendmsg+0x154/0x190 net/socket.c:734 ____sys_sendmsg+0x6df/0x840net/socket.c:2482 ___sys_sendmsg+0x110/0x1b0 net/socket.c:2536__sys_sendmsg+0xf3/0x1c0 net/socket.c:2565 do_syscall_x64arch/x86/entry/common.c:50 [inline] do_syscall_64+0x3b/0x90arch/x86/entry/common.c:80 entry_SYSCALL_64_after_hwframe+0x63/0xcd RIP:0033:0x7fdd66a8f359 Code: 28 00 00 00 75 05 48 83 c4 28 c3 e8 f1 19 00 0090 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 b8 ff ff ff f7 d8 64 89 01 48 RSP:002b:00007fdd65e00168 EFLAGS: 00000246 ORIG_RAX: 000000000000002e RAX:ffffffffffffffda RBX: 00007fdd66bbcf80 RCX: 00007fdd66a8f359 RDX:0000000000000000 RSI: 0000000020000500 RDI: 0000000000000003 RBP:00007fdd66ada493 R08: 0000000000000000 R09: 0000000000000000 R10:0000000000000000 R11: 0000000000000246 R12: 0000000000000000 R13:00007ffc84b81aff R14: 00007fdd65e00300 R15: 0000000000022000 </TASK> Thebuggy address belongs to the variable: ksmbd_nl_policy+0x100/0xa80 Thebuggy address belongs to the physical page: page:0000000034f47940refcount:1 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x1ccc4bflags: 0x200000000001000(reserved|node=0|zone=2) raw: 0200000000001000ffffea00073312c8 ffffea00073312c8 0000000000000000 raw: 00000000000000000000000000000000 00000001ffffffff 0000000000000000 page dumped because:kasan: bad access detected Memory state around the buggy address:ffffffff8f24b000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00ffffffff8f24b080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>ffffffff8f24b100: f9 f9 f9 f9 00 00 f9 f9 f9 f9 f9 f9 00 00 07 f9 ^ffffffff8f24b180: f9 f9 f9 f9 00 05 f9 f9 f9 f9 f9 f9 00 00 00 05ffffffff8f24b200: f9 f9 f9 f9 00 00 03 f9 f9 f9 f9 f9 00 00 04 f9================================================================== To fixit, add a placeholder named __KSMBD_EVENT_MAX and let KSMBD_EVENT_MAX to beits original value - 1 according to what other netlink families do. Alsochange two sites that refer the KSMBD_EVENT_MAX to correct value.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26608` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-106-generic - 5.15.0-106.116~20.04.1\nlinux-image-5.15.0-106-generic-lpae - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-generic - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-generic-64k - 5.15.0-106.116~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-aws - 5.15.0-1061.67~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-azure - 5.15.0-1063.72~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-azure-fde - 5.15.0-1063.72~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1007-bluefield - 5.4.0-1007.10\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-gcp - 5.15.0-1059.67~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1044-gkeop - 5.15.0-1044.51~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1003-ibm - 5.4.0-1003.4\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1054-ibm - 5.15.0-1054.57~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-106-lowlatency - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-lowlatency-64k - 5.15.0-106.116~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-oracle - 5.15.0-1059.65~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved: ksmbd:fix global oob in ksmbd_nl_policy Similar to a reported issue (check thecommit b33fb5b801c6 (\"net: qualcomm: rmnet: fix global oob inrmnet_policy\"), my local fuzzer finds another global out-of-bounds read forpolicy ksmbd_nl_policy. See bug trace below:================================================================== BUG:KASAN: global-out-of-bounds in validate_nla lib/nlattr.c:386 [inline] BUG:KASAN: global-out-of-bounds in __nla_validate_parse+0x24af/0x2750lib/nlattr.c:600 Read of size 1 at addr ffffffff8f24b100 by tasksyz-executor.1/62810 CPU: 0 PID: 62810 Comm: syz-executor.1 Tainted: G N6.1.0 #3 Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS1.13.0-1ubuntu1.1 04/01/2014 Call Trace: <TASK> __dump_stacklib/dump_stack.c:88 [inline] dump_stack_lvl+0x8b/0xb3 lib/dump_stack.c:106print_address_description mm/kasan/report.c:284 [inline]print_report+0x172/0x475 mm/kasan/report.c:395 kasan_report+0xbb/0x1c0mm/kasan/report.c:495 validate_nla lib/nlattr.c:386 [inline]__nla_validate_parse+0x24af/0x2750 lib/nlattr.c:600 __nla_parse+0x3e/0x50lib/nlattr.c:697 __nlmsg_parse include/net/netlink.h:748 [inline]genl_family_rcv_msg_attrs_parse.constprop.0+0x1b0/0x290net/netlink/genetlink.c:565 genl_family_rcv_msg_doit+0xda/0x330net/netlink/genetlink.c:734 genl_family_rcv_msg net/netlink/genetlink.c:833[inline] genl_rcv_msg+0x441/0x780 net/netlink/genetlink.c:850netlink_rcv_skb+0x14f/0x410 net/netlink/af_netlink.c:2540genl_rcv+0x24/0x40 net/netlink/genetlink.c:861 netlink_unicast_kernelnet/netlink/af_netlink.c:1319 [inline] netlink_unicast+0x54e/0x800net/netlink/af_netlink.c:1345 netlink_sendmsg+0x930/0xe50net/netlink/af_netlink.c:1921 sock_sendmsg_nosec net/socket.c:714 [inline]sock_sendmsg+0x154/0x190 net/socket.c:734 ____sys_sendmsg+0x6df/0x840net/socket.c:2482 ___sys_sendmsg+0x110/0x1b0 net/socket.c:2536__sys_sendmsg+0xf3/0x1c0 net/socket.c:2565 do_syscall_x64arch/x86/entry/common.c:50 [inline] do_syscall_64+0x3b/0x90arch/x86/entry/common.c:80 entry_SYSCALL_64_after_hwframe+0x63/0xcd RIP:0033:0x7fdd66a8f359 Code: 28 00 00 00 75 05 48 83 c4 28 c3 e8 f1 19 00 0090 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 b8 ff ff ff f7 d8 64 89 01 48 RSP:002b:00007fdd65e00168 EFLAGS: 00000246 ORIG_RAX: 000000000000002e RAX:ffffffffffffffda RBX: 00007fdd66bbcf80 RCX: 00007fdd66a8f359 RDX:0000000000000000 RSI: 0000000020000500 RDI: 0000000000000003 RBP:00007fdd66ada493 R08: 0000000000000000 R09: 0000000000000000 R10:0000000000000000 R11: 0000000000000246 R12: 0000000000000000 R13:00007ffc84b81aff R14: 00007fdd65e00300 R15: 0000000000022000 </TASK> Thebuggy address belongs to the variable: ksmbd_nl_policy+0x100/0xa80 Thebuggy address belongs to the physical page: page:0000000034f47940refcount:1 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x1ccc4bflags: 0x200000000001000(reserved|node=0|zone=2) raw: 0200000000001000ffffea00073312c8 ffffea00073312c8 0000000000000000 raw: 00000000000000000000000000000000 00000001ffffffff 0000000000000000 page dumped because:kasan: bad access detected Memory state around the buggy address:ffffffff8f24b000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00ffffffff8f24b080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>ffffffff8f24b100: f9 f9 f9 f9 00 00 f9 f9 f9 f9 f9 f9 00 00 07 f9 ^ffffffff8f24b180: f9 f9 f9 f9 00 05 f9 f9 f9 f9 f9 f9 00 00 00 05ffffffff8f24b200: f9 f9 f9 f9 00 00 03 f9 f9 f9 f9 f9 00 00 04 f9================================================================== To fixit, add a placeholder named __KSMBD_EVENT_MAX and let KSMBD_EVENT_MAX to beits original value - 1 according to what other netlink families do. Alsochange two sites that refer the KSMBD_EVENT_MAX to correct value.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-26608` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-5.4.0-9-generic-lpae - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-generic - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-lowlatency - 5.4.0-9.12\nlinux-image-unsigned-5.4.0-9-snapdragon - 5.4.0-9.12\nNo subscription required\n\nlinux-image-5.15.0-106-generic - 5.15.0-106.116~20.04.1\nlinux-image-5.15.0-106-generic-lpae - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-generic - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-generic-64k - 5.15.0-106.116~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1004-kvm - 5.4.0-1004.4\nNo subscription required\n\nlinux-image-5.4.0-1005-aws - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1061-aws - 5.15.0-1061.67~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1006-azure - 5.4.0-1006.6\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-azure - 5.15.0-1063.72~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1063-azure-fde - 5.15.0-1063.72~20.04.1.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1011-bluefield - 5.4.0-1011.14\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1026-fips - 5.4.0-1026.30\nlinux-image-unsigned-hmac-5.4.0-1026-fips - 5.4.0-1026.30\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1005-gcp - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-gcp - 5.15.0-1059.67~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1008-gkeop - 5.4.0-1008.9\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1044-gkeop - 5.15.0-1044.51~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1004-ibm - 5.4.0-1004.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1054-ibm - 5.15.0-1054.57~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1058-intel-iotg - 5.15.0-1058.64~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1001-iot - 5.4.0-1001.3\nNo subscription required\n\nlinux-image-unsigned-5.15.0-106-lowlatency - 5.15.0-106.116~20.04.1\nlinux-image-unsigned-5.15.0-106-lowlatency-64k - 5.15.0-106.116~20.04.1\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1005-oracle - 5.4.0-1005.5\nNo subscription required\n\nlinux-image-unsigned-5.15.0-1059-oracle - 5.15.0-1059.65~20.04.1\nNo subscription required\n\nlinux-image-5.4.0-1007-raspi - 5.4.0-1007.7\nNo subscription required\n\nlinux-image-5.4.0-1020-xilinx-zynqmp - 5.4.0-1020.24\nNo subscription required\n\nlinux-image-unsigned-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nlinux-image-unsigned-hmac-5.4.0-1021-aws-fips - 5.4.0-1021.21+fips2\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nlinux-image-unsigned-hmac-5.4.0-1022-azure-fips - 5.4.0-1022.22+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro\n\nlinux-image-unsigned-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nlinux-image-unsigned-hmac-5.4.0-1021-gcp-fips - 5.4.0-1021.21+fips1\nAvailable with Ubuntu Pro: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu Pro FIPS-updates 20.04 LTS"
@@ -120,11 +120,11 @@
 						"comment": "linux-azure-fde-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1063.72~20.04.1.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000040",
-						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1007.10')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
+						"comment": "linux-bluefield package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1011.14')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000050",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
 						"comment": "linux-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1026.30')."
 					},
 					{
@@ -144,7 +144,7 @@
 						"comment": "linux-gcp-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-gcp-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000100",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000110",
 						"comment": "linux-gcp-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1059.67~20.04.1')."
 					},
 					{
@@ -160,15 +160,15 @@
 						"comment": "linux-gkeop package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1008.9')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000120",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000130",
 						"comment": "linux-gkeop-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1044.51~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000100",
-						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1003.4')."
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000110",
+						"comment": "linux-ibm package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1004.5')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000140",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000150",
 						"comment": "linux-ibm-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1054.57~20.04.1')."
 					},
 					{
@@ -180,11 +180,11 @@
 						"comment": "linux-intel-iotg-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1058.64~20.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000130",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000140",
 						"comment": "linux-iot package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1001.3')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000170",
 						"comment": "linux-lowlatency-hwe-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-106.116~20.04.1')."
 					},
 					{
@@ -204,7 +204,7 @@
 						"comment": "linux-oracle-5.13: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'superseded by linux-oracle-5.15')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000180",
+						"test_ref": "oval:com.ubuntu.focal:tst:2023524350000190",
 						"comment": "linux-oracle-5.15 package in focal was vulnerable but has been fixed (note: '5.15.0-1059.65~20.04.1')."
 					},
 					{
@@ -232,19 +232,19 @@
 						"comment": "linux-raspi2: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'replaced by linux-raspi')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000160",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000170",
 						"comment": "linux-xilinx-zynqmp package in focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1020.24')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000060",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
 						"comment": "linux-aws-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips2')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000070",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
 						"comment": "linux-azure-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1022.22+fips1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.focal:tst:201431800000080",
+						"test_ref": "oval:com.ubuntu.focal:tst:201431800000090",
 						"comment": "linux-gcp-fips package in fips-updates/focal, is related to the CVE in some way and has been fixed (note: '5.4.0-1021.21+fips1')."
 					}
 				]
