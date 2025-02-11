@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-41066 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:ibmvnic: Add tx check to prevent skb leakBelow is a summary of how the driver stores a reference to an skb duringtransmit:    tx_buff[free_map[consumer_index]]->skb = new_skb;    free_map[consumer_index] = IBMVNIC_INVALID_MAP;    consumer_index ++;Where variable data looks like this:    free_map == [4, IBMVNIC_INVALID_MAP, IBMVNIC_INVALID_MAP, 0, 3]                                               \tconsumer_index^    tx_buff == [skb=null, skb=<ptr>, skb=<ptr>, skb=null, skb=null]The driver has checks to ensure that free_map[consumer_index] pointed toa valid index but there was no check to ensure that this index pointedto an unused/null skb address. So, if, by some chance, our free_map andtx_buff lists become out of sync then we were previously risking anskb memory leak. This could then cause tcp congestion control to stopsending packets, eventually leading to ETIMEDOUT.Therefore, add a conditional to ensure that the skb address is null. Ifnot then warn the user (because this is still a bug that should bepatched) and free the old pointer to prevent memleak/tcp problems.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41066` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-unsigned-4.15.0-1185-azure - 4.15.0-1185.200~14.04.1\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:ibmvnic: Add tx check to prevent skb leakBelow is a summary of how the driver stores a reference to an skb duringtransmit:    tx_buff[free_map[consumer_index]]->skb = new_skb;    free_map[consumer_index] = IBMVNIC_INVALID_MAP;    consumer_index ++;Where variable data looks like this:    free_map == [4, IBMVNIC_INVALID_MAP, IBMVNIC_INVALID_MAP, 0, 3]                                               \tconsumer_index^    tx_buff == [skb=null, skb=<ptr>, skb=<ptr>, skb=null, skb=null]The driver has checks to ensure that free_map[consumer_index] pointed toa valid index but there was no check to ensure that this index pointedto an unused/null skb address. So, if, by some chance, our free_map andtx_buff lists become out of sync then we were previously risking anskb memory leak. This could then cause tcp congestion control to stopsending packets, eventually leading to ETIMEDOUT.Therefore, add a conditional to ensure that the skb address is null. Ifnot then warn the user (because this is still a bug that should bepatched) and free the old pointer to prevent memleak/tcp problems.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-41066` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-3.11.0-12-generic - 3.11.0-12.19\nlinux-image-3.11.0-12-generic-lpae - 3.11.0-12.19\nlinux-image-extra-3.11.0-12-generic - 3.11.0-12.19\nNo subscription required\n\nlinux-image-4.4.0-263-generic - 4.4.0-263.297~14.04.1\nlinux-image-unsigned-4.4.0-263-generic - 4.4.0-263.297~14.04.1\nlinux-image-unsigned-4.4.0-263-lowlatency - 4.4.0-263.297~14.04.1\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro\n\nlinux-image-4.4.0-1140-aws - 4.4.0-1140.146\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1185-azure - 4.15.0-1185.200~14.04.1\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240729",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7089-1,7090-1,7089-2,7089-3,7095-1,7089-4,7089-5,7089-6,7089-7,7156-1,7233-1,7233-2,7233-3"
+				"usns": "7089-1,7090-1,7089-2,7089-3,7095-1,7089-4,7089-5,7089-6,7089-7,7156-1,7233-1,7233-2,7233-3,7262-1"
 			},
 			"public_date_at_usn": "2024-07-29 15:15:00 UTC",
 			"ref": [
@@ -40,7 +40,8 @@
 				"https://ubuntu.com/security/notices/USN-7156-1",
 				"https://ubuntu.com/security/notices/USN-7233-1",
 				"https://ubuntu.com/security/notices/USN-7233-2",
-				"https://ubuntu.com/security/notices/USN-7233-3"
+				"https://ubuntu.com/security/notices/USN-7233-3",
+				"https://ubuntu.com/security/notices/USN-7262-1"
 			]
 		}
 	},
@@ -55,12 +56,12 @@
 						"comment": "linux package in trusty, is related to the CVE in some way and has been fixed (note: '3.11.0-12.19')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected. An update containing the fix has been completed and is pending publication (note: '4.4.0-263.297~14.04.1')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2024385530000000",
+						"comment": "linux-lts-xenial package in trusty was vulnerable but has been fixed (note: '4.4.0-263.297~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected. An update containing the fix has been completed and is pending publication (note: '4.4.0-1140.146')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2024385530000010",
+						"comment": "linux-aws package in trusty was vulnerable but has been fixed (note: '4.4.0-1140.146')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:2024265950000000",

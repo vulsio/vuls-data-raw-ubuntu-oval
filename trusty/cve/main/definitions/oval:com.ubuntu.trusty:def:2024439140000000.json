@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-43914 on Ubuntu 14.04 LTS (trusty) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:md/raid5: avoid BUG_ON() while continue reshape after reassemblingCurrently, mdadm support --revert-reshape to abort the reshape whilereassembling, as the test 07revert-grow. However, following BUG_ON()can be triggerred by the test:kernel BUG at drivers/md/raid5.c:6278!invalid opcode: 0000 [#1] PREEMPT SMP PTIirq event stamp: 158985CPU: 6 PID: 891 Comm: md0_reshape Not tainted 6.9.0-03335-g7592a0b0049a #94RIP: 0010:reshape_request+0x3f1/0xe60Call Trace: <TASK> raid5_sync_request+0x43d/0x550 md_do_sync+0xb7a/0x2110 md_thread+0x294/0x2b0 kthread+0x147/0x1c0 ret_from_fork+0x59/0x70 ret_from_fork_asm+0x1a/0x30 </TASK>Root cause is that --revert-reshape update the raid_disks from 5 to 4,while reshape position is still set, and after reassembling the array,reshape position will be read from super block, then during reshape thechecking of 'writepos' that is caculated by old reshape position willfail.Fix this panic the easy way first, by converting the BUG_ON() toWARN_ON(), and stop the reshape if checkings fail.Noted that mdadm must fix --revert-shape as well, and probably md/raidshould enhance metadata validation as well, however this meansreassemble will fail and there must be user tools to fix the wrongmetadata.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-43914` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-4.15.0-1185-azure - 4.15.0-1185.200~14.04.1\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:md/raid5: avoid BUG_ON() while continue reshape after reassemblingCurrently, mdadm support --revert-reshape to abort the reshape whilereassembling, as the test 07revert-grow. However, following BUG_ON()can be triggerred by the test:kernel BUG at drivers/md/raid5.c:6278!invalid opcode: 0000 [#1] PREEMPT SMP PTIirq event stamp: 158985CPU: 6 PID: 891 Comm: md0_reshape Not tainted 6.9.0-03335-g7592a0b0049a #94RIP: 0010:reshape_request+0x3f1/0xe60Call Trace: <TASK> raid5_sync_request+0x43d/0x550 md_do_sync+0xb7a/0x2110 md_thread+0x294/0x2b0 kthread+0x147/0x1c0 ret_from_fork+0x59/0x70 ret_from_fork_asm+0x1a/0x30 </TASK>Root cause is that --revert-reshape update the raid_disks from 5 to 4,while reshape position is still set, and after reassembling the array,reshape position will be read from super block, then during reshape thechecking of 'writepos' that is caculated by old reshape position willfail.Fix this panic the easy way first, by converting the BUG_ON() toWARN_ON(), and stop the reshape if checkings fail.Noted that mdadm must fix --revert-shape as well, and probably md/raidshould enhance metadata validation as well, however this meansreassemble will fail and there must be user tools to fix the wrongmetadata.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-43914` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-4.4.0-263-generic - 4.4.0-263.297~14.04.1\nlinux-image-unsigned-4.4.0-263-generic - 4.4.0-263.297~14.04.1\nlinux-image-unsigned-4.4.0-263-lowlatency - 4.4.0-263.297~14.04.1\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro\n\nlinux-image-4.4.0-1140-aws - 4.4.0-1140.146\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro\n\nlinux-image-unsigned-4.15.0-1185-azure - 4.15.0-1185.200~14.04.1\nAvailable with Ubuntu Pro with Legacy support add-on: https://ubuntu.com/pro",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 14.04 LTS"
@@ -24,7 +24,7 @@
 				"public": "20240826",
 				"cvss_score": "5.5",
 				"cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-				"usns": "7088-1,7088-2,7088-3,7088-4,7100-1,7100-2,7088-5,7119-1,7123-1,7144-1,7154-1,7155-1,7156-1,7154-2,7194-1,7196-1,7233-1,7233-2,7233-3"
+				"usns": "7088-1,7088-2,7088-3,7088-4,7100-1,7100-2,7088-5,7119-1,7123-1,7144-1,7154-1,7155-1,7156-1,7154-2,7194-1,7196-1,7233-1,7233-2,7233-3,7262-1"
 			},
 			"public_date_at_usn": "2024-08-26 11:15:00 UTC",
 			"ref": [
@@ -46,7 +46,8 @@
 				"https://ubuntu.com/security/notices/USN-7196-1",
 				"https://ubuntu.com/security/notices/USN-7233-1",
 				"https://ubuntu.com/security/notices/USN-7233-2",
-				"https://ubuntu.com/security/notices/USN-7233-3"
+				"https://ubuntu.com/security/notices/USN-7233-3",
+				"https://ubuntu.com/security/notices/USN-7262-1"
 			]
 		}
 	},
@@ -61,12 +62,12 @@
 						"comment": "linux: while related to the CVE in some way, a decision has been made to ignore this issue (note: 'ESM criteria, was needed')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000010",
-						"comment": "linux-lts-xenial package in trusty is affected. An update containing the fix has been completed and is pending publication (note: '4.4.0-263.297~14.04.1')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2024385530000000",
+						"comment": "linux-lts-xenial package in trusty was vulnerable but has been fixed (note: '4.4.0-263.297~14.04.1')."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.trusty:tst:200747740000020",
-						"comment": "linux-aws package in trusty is affected. An update containing the fix has been completed and is pending publication (note: '4.4.0-1140.146')."
+						"test_ref": "oval:com.ubuntu.trusty:tst:2024385530000010",
+						"comment": "linux-aws package in trusty was vulnerable but has been fixed (note: '4.4.0-1140.146')."
 					},
 					{
 						"test_ref": "oval:com.ubuntu.trusty:tst:2024265950000000",
