@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2025216930000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2025-21693 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:mm: zswap: properly synchronize freeing resources during CPU hotunplugIn zswap_compress() and zswap_decompress(), the per-CPU acomp_ctx of thecurrent CPU at the beginning of the operation is retrieved and usedthroughout.  However, since neither preemption nor migration are disabled,it is possible that the operation continues on a different CPU.If the original CPU is hotunplugged while the acomp_ctx is still in use,we run into a UAF bug as some of the resources attached to the acomp_ctxare freed during hotunplug in zswap_cpu_comp_dead() (i.e.acomp_ctx.buffer, acomp_ctx.req, or acomp_ctx.acomp).The problem was introduced in commit 1ec3b5fe6eec (\"mm/zswap: move to usecrypto_acomp API for hardware acceleration\") when the switch to thecrypto_acomp API was made.  Prior to that, the per-CPU crypto_comp wasretrieved using get_cpu_ptr() which disables preemption and makes sure theCPU cannot go away from under us.  Preemption cannot be disabled with thecrypto_acomp API as a sleepable context is needed.Use the acomp_ctx.mutex to synchronize CPU hotplug callbacks allocatingand freeing resources with compression/decompression paths.  Make surethat acomp_ctx.req is NULL when the resources are freed.  In thecompression/decompression paths, check if acomp_ctx.req is NULL afteracquiring the mutex (meaning the CPU was offlined) and retry on the newCPU.The initialization of acomp_ctx.mutex is moved from the CPU hotplugcallback to the pool initialization where it belongs (where the mutex isallocated).  In addition to adding clarity, this makes sure that CPUhotplug cannot reinitialize a mutex that is already locked bycompression/decompression.Previously a fix was attempted by holding cpus_read_lock() [1].  Thiswould have caused a potential deadlock as it is possible for code alreadyholding the lock to fall into reclaim and enter zswap (causing adeadlock).  A fix was also attempted using SRCU for synchronization, butJohannes pointed out that synchronize_srcu() cannot be used in CPU hotplugnotifiers [2].Alternative fixes that were considered/attempted and could have worked:- Refcounting the per-CPU acomp_ctx. This involves complexity in  handling the race between the refcount dropping to zero in  zswap_[de]compress() and the refcount being re-initialized when the  CPU is onlined.- Disabling migration before getting the per-CPU acomp_ctx [3], but  that's discouraged and is a much bigger hammer than needed, and could  result in subtle performance issues.[1]https://lkml.kernel.org/20241219212437.2714151-1-yosryahmed@google.com/[2]https://lkml.kernel.org/20250107074724.1756696-2-yosryahmed@google.com/[3]https://lkml.kernel.org/20250107222236.2715883-2-yosryahmed@google.com/[yosryahmed@google.com: remove comment]  Link:https://lkml.kernel.org/r/CAJD7tkaxS1wjn+swugt8QCvQ-rVF5RZnjxwPGX17k8x9zSManA@mail.gmail.com",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2025-21693",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2025-21693"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-02-11",
+			"cve": {
+				"text": "CVE-2025-21693",
+				"href": "https://ubuntu.com/security/CVE-2025-21693",
+				"public": "20250211"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
