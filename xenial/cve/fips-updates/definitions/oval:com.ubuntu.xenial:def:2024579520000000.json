@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024579520000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-57952 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:Revert \"libfs: fix infinite directory reads for offset dir\"The current directory offset allocator (based on mtree_alloc_cyclic)stores the next offset value to return in octx->next_offset. Thismechanism typically returns values that increase monotonically overtime. Eventually, though, the newly allocated offset value wrapsback to a low number (say, 2) which is smaller than other already-allocated offset values.Yu Kuai <yukuai3@huawei.com> reports that, after commit 64a7ce76fb90(\"libfs: fix infinite directory reads for offset dir\"), if adirectory's offset allocator wraps, existing entries are no longervisible via readdir/getdents because offset_readdir() stops listingentries once an entry's offset is larger than octx->next_offset.These entries vanish persistently -- they can be looked up, but willnever again appear in readdir(3) output.The reason for this is that the commit treats directory offsets asmonotonically increasing integer values rather than opaque cookies,and introduces this comparison:\tif (dentry2offset(dentry) >= last_index) {On 64-bit platforms, the directory offset value upper bound is2^63 - 1. Directory offsets will monotonically increase for millionsof years without wrapping.On 32-bit platforms, however, LONG_MAX is 2^31 - 1. The allocatorcan wrap after only a few weeks (at worst).Revert commit 64a7ce76fb90 (\"libfs: fix infinite directory reads foroffset dir\") to prepare for a fix that can work properly on 32-bitsystems and might apply to recent LTS kernels where shmem employsthe simple_offset mechanism.",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-57952",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-57952"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-02-13",
+			"cve": {
+				"text": "CVE-2024-57952",
+				"href": "https://ubuntu.com/security/CVE-2024-57952",
+				"public": "20250213"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}

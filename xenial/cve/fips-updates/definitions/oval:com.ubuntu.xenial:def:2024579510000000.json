@@ -1,0 +1,74 @@
+{
+	"class": "vulnerability",
+	"id": "oval:com.ubuntu.xenial:def:2024579510000000",
+	"version": "1",
+	"metadata": {
+		"title": "CVE-2024-57951 on Ubuntu Pro FIPS 16.04 LTS (xenial) - medium",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:hrtimers: Handle CPU state correctly on hotplugConsider a scenario where a CPU transitions from CPUHP_ONLINE to halfwaythrough a CPU hotunplug down to CPUHP_HRTIMERS_PREPARE, and then back toCPUHP_ONLINE:Since hrtimers_prepare_cpu() does not run, cpu_base.hres_active remains setto 1 throughout. However, during a CPU unplug operation, the tick and theclockevents are shut down at CPUHP_AP_TICK_DYING. On return to the onlinestate, for instance CFS incorrectly assumes that the hrtick is alreadyactive, and the chance of the clockevent device to transition to oneshotmode is also lost forever for the CPU, unless it goes back to a lower statethan CPUHP_HRTIMERS_PREPARE once.This round-trip reveals another issue; cpu_base.online is not set to 1after the transition, which appears as a WARN_ON_ONCE in enqueue_hrtimer().Aside of that, the bulk of the per CPU state is not reset either, whichmeans there are dangling pointers in the worst case.Address this by adding a corresponding startup() callback, which resets thestale per CPU state and sets the online flag.[ tglx: Make the new callback unconditionally available, remove the online  \tmodification in the prepare() callback and clear the remaining  \tstate in the starting callback instead of the prepare callback ]",
+		"affected": {
+			"family": "unix",
+			"platform": "Ubuntu Pro FIPS 16.04 LTS"
+		},
+		"reference": {
+			"source": "CVE",
+			"ref_id": "CVE-2024-57951",
+			"ref_url": "https://www.cve.org/CVERecord?id=CVE-2024-57951"
+		},
+		"advisory": {
+			"severity": "Medium",
+			"rights": "Copyright (C) 2025 Canonical Ltd.",
+			"public_date": "2025-02-13",
+			"cve": {
+				"text": "CVE-2024-57951",
+				"href": "https://ubuntu.com/security/CVE-2024-57951",
+				"public": "20250213"
+			}
+		}
+	},
+	"notes": {},
+	"criteria": {
+		"criterias": [
+			{
+				"operator": "OR",
+				"criterions": [
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000000",
+						"comment": "linux package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000040",
+						"comment": "linux-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000070",
+						"comment": "linux-kvm package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000030",
+						"comment": "linux-aws package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000080",
+						"comment": "linux-aws-hwe package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000050",
+						"comment": "linux-azure package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000100",
+						"comment": "linux-fips package in fips-updates/xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000060",
+						"comment": "linux-gcp package in xenial is affected and may need fixing."
+					},
+					{
+						"test_ref": "oval:com.ubuntu.xenial:tst:201245420000090",
+						"comment": "linux-oracle package in xenial is affected and may need fixing."
+					}
+				]
+			}
+		]
+	}
+}
