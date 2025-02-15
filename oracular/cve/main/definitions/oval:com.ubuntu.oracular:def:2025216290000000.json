@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2025-21629 on Ubuntu 24.10 (oracular) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:net: reenable NETIF_F_IPV6_CSUM offload for BIG TCP packetsThe blamed commit disabled hardware offoad of IPv6 packets withextension headers on devices that advertise NETIF_F_IPV6_CSUM,based on the definition of that feature in skbuff.h: *   * - %NETIF_F_IPV6_CSUM *     - Driver (device) is only able to checksum plain *       TCP or UDP packets over IPv6. These are specifically *       unencapsulated packets of the form IPv6|TCP or *       IPv6|UDP where the Next Header field in the IPv6 *       header is either TCP or UDP. IPv6 extension headers *       are not supported with this feature. This feature *       cannot be set in features for a device with *       NETIF_F_HW_CSUM also set. This feature is being *       DEPRECATED (see below).The change causes skb_warn_bad_offload to fire for BIG TCPpackets.[  496.310233] WARNING: CPU: 13 PID: 23472 at net/core/dev.c:3129skb_warn_bad_offload+0xc4/0xe0[  496.310297]  ? skb_warn_bad_offload+0xc4/0xe0[  496.310300]  skb_checksum_help+0x129/0x1f0[  496.310303]  skb_csum_hwoffload_help+0x150/0x1b0[  496.310306]  validate_xmit_skb+0x159/0x270[  496.310309]  validate_xmit_skb_list+0x41/0x70[  496.310312]  sch_direct_xmit+0x5c/0x250[  496.310317]  __qdisc_run+0x388/0x620BIG TCP introduced an IPV6_TLV_JUMBO IPv6 extension header tocommunicate packet length, as this is an IPv6 jumbogram. But, thefeature is only enabled on devices that support BIG TCP TSO. Theheader is only present for PF_PACKET taps like tcpdump, and nottransmitted by physical devices.For this specific case of extension headers that are nottransmitted, return to the situation before the blamed commitand support hardware offload.ipv6_has_hopopt_jumbo() tests not only whether this header is present,but also that it is the only extension header before a terminal (L4)header.\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2025-21629` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-unsigned-6.8.0-1008-aws - 6.8.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-azure - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1007-gcp - 6.8.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-31-lowlatency - 6.8.0-31.31.1\nlinux-image-unsigned-6.8.0-31-lowlatency-64k - 6.8.0-31.31.1\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-oracle - 6.8.0-1005.5\nlinux-image-unsigned-6.8.0-1005-oracle-64k - 6.8.0-1005.5\nNo subscription required\n\nlinux-image-6.8.0-1004-raspi - 6.8.0-1004.4\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:net: reenable NETIF_F_IPV6_CSUM offload for BIG TCP packetsThe blamed commit disabled hardware offoad of IPv6 packets withextension headers on devices that advertise NETIF_F_IPV6_CSUM,based on the definition of that feature in skbuff.h: *   * - %NETIF_F_IPV6_CSUM *     - Driver (device) is only able to checksum plain *       TCP or UDP packets over IPv6. These are specifically *       unencapsulated packets of the form IPv6|TCP or *       IPv6|UDP where the Next Header field in the IPv6 *       header is either TCP or UDP. IPv6 extension headers *       are not supported with this feature. This feature *       cannot be set in features for a device with *       NETIF_F_HW_CSUM also set. This feature is being *       DEPRECATED (see below).The change causes skb_warn_bad_offload to fire for BIG TCPpackets.[  496.310233] WARNING: CPU: 13 PID: 23472 at net/core/dev.c:3129skb_warn_bad_offload+0xc4/0xe0[  496.310297]  ? skb_warn_bad_offload+0xc4/0xe0[  496.310300]  skb_checksum_help+0x129/0x1f0[  496.310303]  skb_csum_hwoffload_help+0x150/0x1b0[  496.310306]  validate_xmit_skb+0x159/0x270[  496.310309]  validate_xmit_skb_list+0x41/0x70[  496.310312]  sch_direct_xmit+0x5c/0x250[  496.310317]  __qdisc_run+0x388/0x620BIG TCP introduced an IPV6_TLV_JUMBO IPv6 extension header tocommunicate packet length, as this is an IPv6 jumbogram. But, thefeature is only enabled on devices that support BIG TCP TSO. Theheader is only present for PF_PACKET taps like tcpdump, and nottransmitted by physical devices.For this specific case of extension headers that are nottransmitted, return to the situation before the blamed commitand support hardware offload.ipv6_has_hopopt_jumbo() tests not only whether this header is present,but also that it is the only extension header before a terminal (L4)header.",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.10"
@@ -36,28 +36,28 @@
 						"comment": "linux package in oracular is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.oracular:tst:201431800000010",
-						"comment": "linux-aws package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1008.8')."
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000010",
+						"comment": "linux-aws package in oracular is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.oracular:tst:201431800000020",
-						"comment": "linux-azure package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000020",
+						"comment": "linux-azure package in oracular is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.oracular:tst:201431800000030",
-						"comment": "linux-gcp package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1007.7')."
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000030",
+						"comment": "linux-gcp package in oracular is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.oracular:tst:201431800000050",
-						"comment": "linux-lowlatency package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-31.31.1')."
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000060",
+						"comment": "linux-lowlatency package in oracular is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.oracular:tst:201431800000040",
-						"comment": "linux-oracle package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1005.5')."
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000040",
+						"comment": "linux-oracle package in oracular is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.oracular:tst:201431800000060",
-						"comment": "linux-raspi package in oracular, is related to the CVE in some way and has been fixed (note: '6.8.0-1004.4')."
+						"test_ref": "oval:com.ubuntu.oracular:tst:201245420000050",
+						"comment": "linux-raspi package in oracular is affected and needs fixing."
 					}
 				]
 			}

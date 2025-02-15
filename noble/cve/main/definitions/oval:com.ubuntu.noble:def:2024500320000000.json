@@ -4,7 +4,7 @@
 	"version": "1",
 	"metadata": {
 		"title": "CVE-2024-50032 on Ubuntu 24.04 LTS (noble) - medium",
-		"description": "In the Linux kernel, the following vulnerability has been resolved:rcu/nocb: Fix rcuog wake-up from offline softirqAfter a CPU has set itself offline and before it eventually callsrcutree_report_cpu_dead(), there are still opportunities for callbacksto be enqueued, for example from a softirq. When that happens on NOCB,the rcuog wake-up is deferred through an IPI to an online CPU in ordernot to call into the scheduler and risk arming the RT-bandwidth afterhrtimers have been migrated out and disabled.But performing a synchronized IPI from a softirq is buggy as reported inthe following scenario:        WARNING: CPU: 1 PID: 26 at kernel/smp.c:633smp_call_function_single        Modules linked in: rcutorture torture        CPU: 1 UID: 0 PID: 26 Comm: migration/1 Not tainted6.11.0-rc1-00012-g9139f93209d1 #1        Stopper: multi_cpu_stop+0x0/0x320 <- __stop_cpus+0xd0/0x120        RIP: 0010:smp_call_function_single        <IRQ>        swake_up_one_online        __call_rcu_nocb_wake        __call_rcu_common        ? rcu_torture_one_read        call_timer_fn        __run_timers        run_timer_softirq        handle_softirqs        irq_exit_rcu        ? tick_handle_periodic        sysvec_apic_timer_interrupt        </IRQ>Fix this with forcing deferred rcuog wake up through the NOCB timer whenthe CPU is offline. The actual wake up will happen fromrcutree_report_cpu_dead().\n\n    Update Instructions:\n\n    Run `sudo pro fix CVE-2024-50032` to fix the vulnerability. The problem can be corrected\n    by updating your system to the following package versions:\n\nlinux-image-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic - 6.5.0-9.9\nlinux-image-unsigned-6.5.0-9-generic-64k - 6.5.0-9.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1008-aws - 6.5.0-1008.8\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-azure - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1007-gcp - 6.5.0-1007.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-gke - 6.8.0-1003.5\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1009-ibm - 6.5.0-1009.9\nNo subscription required\n\nlinux-image-unsigned-6.5.0-9-lowlatency - 6.5.0-9.9.1\nlinux-image-unsigned-6.5.0-9-lowlatency-64k - 6.5.0-9.9.1\nNo subscription required\n\nlinux-image-unsigned-6.5.0-1010-oracle - 6.5.0-1010.10\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1003-oem - 6.8.0-1003.3\nNo subscription required\n\nlinux-image-6.5.0-1005-raspi - 6.5.0-1005.7\nNo subscription required\n\nlinux-image-unsigned-6.8.0-1005-intel - 6.8.0-1001.6\nNo subscription required",
+		"description": "In the Linux kernel, the following vulnerability has been resolved:rcu/nocb: Fix rcuog wake-up from offline softirqAfter a CPU has set itself offline and before it eventually callsrcutree_report_cpu_dead(), there are still opportunities for callbacksto be enqueued, for example from a softirq. When that happens on NOCB,the rcuog wake-up is deferred through an IPI to an online CPU in ordernot to call into the scheduler and risk arming the RT-bandwidth afterhrtimers have been migrated out and disabled.But performing a synchronized IPI from a softirq is buggy as reported inthe following scenario:        WARNING: CPU: 1 PID: 26 at kernel/smp.c:633smp_call_function_single        Modules linked in: rcutorture torture        CPU: 1 UID: 0 PID: 26 Comm: migration/1 Not tainted6.11.0-rc1-00012-g9139f93209d1 #1        Stopper: multi_cpu_stop+0x0/0x320 <- __stop_cpus+0xd0/0x120        RIP: 0010:smp_call_function_single        <IRQ>        swake_up_one_online        __call_rcu_nocb_wake        __call_rcu_common        ? rcu_torture_one_read        call_timer_fn        __run_timers        run_timer_softirq        handle_softirqs        irq_exit_rcu        ? tick_handle_periodic        sysvec_apic_timer_interrupt        </IRQ>Fix this with forcing deferred rcuog wake up through the NOCB timer whenthe CPU is offline. The actual wake up will happen fromrcutree_report_cpu_dead().",
 		"affected": {
 			"family": "unix",
 			"platform": "Ubuntu 24.04 LTS"
@@ -34,48 +34,48 @@
 				"operator": "OR",
 				"criterions": [
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000000",
-						"comment": "linux package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000000",
+						"comment": "linux package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000010",
-						"comment": "linux-aws package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1008.8')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000010",
+						"comment": "linux-aws package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000020",
-						"comment": "linux-azure package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000030",
+						"comment": "linux-azure package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000030",
-						"comment": "linux-gcp package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1007.7')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000040",
+						"comment": "linux-gcp package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000050",
-						"comment": "linux-gke package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.5')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000020",
+						"comment": "linux-gke package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000060",
-						"comment": "linux-ibm package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1009.9')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000070",
+						"comment": "linux-ibm package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000080",
-						"comment": "linux-lowlatency package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-9.9.1')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000080",
+						"comment": "linux-lowlatency package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000040",
-						"comment": "linux-oracle package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1010.10')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000050",
+						"comment": "linux-oracle package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000090",
-						"comment": "linux-oem-6.8 package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1003.3')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000090",
+						"comment": "linux-oem-6.8 package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000100",
-						"comment": "linux-raspi package in noble, is related to the CVE in some way and has been fixed (note: '6.5.0-1005.7')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000060",
+						"comment": "linux-raspi package in noble is affected and needs fixing."
 					},
 					{
-						"test_ref": "oval:com.ubuntu.noble:tst:201431800000070",
-						"comment": "linux-intel package in noble, is related to the CVE in some way and has been fixed (note: '6.8.0-1001.6')."
+						"test_ref": "oval:com.ubuntu.noble:tst:201245420000100",
+						"comment": "linux-intel package in noble is affected and needs fixing."
 					}
 				]
 			}
